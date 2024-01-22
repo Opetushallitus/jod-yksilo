@@ -1,0 +1,8 @@
+logging:
+  config: classpath:logback-cloud.xml
+  level:
+    root: INFO
+    fi.okm.jod: INFO
+
+server:
+  forward-headers-strategy: native
