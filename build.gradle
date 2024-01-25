@@ -138,3 +138,9 @@ bootJar {
     )
   }
 }
+
+springBoot {
+  buildInfo {
+    excludes = ['time']
+  }
+}

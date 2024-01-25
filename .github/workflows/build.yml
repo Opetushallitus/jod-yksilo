@@ -1,5 +1,6 @@
 name: build
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -8,14 +9,14 @@ on:
       - main
       - develop
 jobs:
-  gradle:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: corretto
           java-version: 21
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -24,10 +25,57 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Package
-          path: build/libs/*.jar
+          name: application
+          path: |
+            build/libs/jod-yksilo-*.jar
+            !build/libs/*-plain.jar
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Reports
+          name: reports
           path: build/reports/
+
+  package:
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: application
+          path: build/libs
+
+      - uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.JOD_AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/metadata-action@v5
+        id: docker-meta
+        with:
+          images: "${{ vars.JOD_ECR }}/oph/jod-yksilo"
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.JOD_ECR }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          file: docker/Dockerfile
+          context: .
+          platforms: linux/arm64,linux/amd64
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
