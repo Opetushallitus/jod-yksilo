@@ -71,11 +71,12 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
+          pull: true
           push: true
-          file: docker/Dockerfile
-          context: .
           platforms: linux/arm64,linux/amd64
           tags: ${{ steps.docker-meta.outputs.tags }}
           labels: ${{ steps.docker-meta.outputs.labels }}
+          file: docker/Dockerfile
+          context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
