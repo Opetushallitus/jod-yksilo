@@ -18,9 +18,10 @@ jobs:
         with:
           distribution: corretto
           java-version: 21
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Execute Gradle build
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build with Gradle
         run: ./gradlew build
 
       - uses: actions/upload-artifact@v4
@@ -49,7 +50,7 @@ jobs:
           name: application
           path: build/libs
 
-      - uses: aws-actions/configure-aws-credentials@v3
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.JOD_AWS_ROLE_ARN }}
           aws-region: eu-west-1
