@@ -61,6 +61,11 @@ jobs:
         id: docker-meta
         with:
           images: "${{ vars.JOD_ECR }}/oph/jod-yksilo"
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=sha
 
       - name: Login to ECR
         id: ecr-login
