@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
@@ -42,6 +43,9 @@ jobs:
       id-token: write
       contents: read
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.docker-meta.outputs.tags }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,9 +67,6 @@ jobs:
         with:
           images: "${{ vars.JOD_ECR }}/oph/jod-yksilo"
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
             type=sha
 
       - name: Login to ECR
@@ -76,9 +77,10 @@ jobs:
 
       - name: Build and push image
         uses: docker/build-push-action@v5
+        id: docker-build
         with:
           pull: true
-          push: true
+          push: "${{ github.ref == 'refs/heads/main' }}"
           platforms: linux/arm64,linux/amd64
           tags: ${{ steps.docker-meta.outputs.tags }}
           labels: ${{ steps.docker-meta.outputs.labels }}
@@ -86,3 +88,42 @@ jobs:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - if: github.ref == 'refs/heads/main'
+        run: |
+          cat <<EOF >>$GITHUB_STEP_SUMMARY
+          Created image: ${{ steps.docker-meta.outputs.tags }}
+          EOF
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.JOD_AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Download task definition
+        run: >
+          aws ecs describe-task-definition
+          --task-definition ${{ vars.JOD_ECS_TASKDEF }}
+          --query taskDefinition > task-definition.json
+
+      - uses: aws-actions/amazon-ecs-render-task-definition@v1
+        id: render-task-def
+        with:
+          task-definition: task-definition.json
+          container-name: JodYksiloContainer
+          image: ${{ needs.package.outputs.tags }}
+
+      - name: Deploy ECS Service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ vars.JOD_ECS_SERVICE }}
+          cluster: ${{ vars.JOD_ECS_CLUSTER }}
+          wait-for-service-stability: true
