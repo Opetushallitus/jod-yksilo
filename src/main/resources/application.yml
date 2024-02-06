@@ -7,16 +7,11 @@ spring:
     virtual:
       enabled: true
 
-server:
-  error:
-    include-stacktrace: never
-    include-exception: false
-
 springdoc:
   api-docs:
     enabled: true
     path: /openapi/openapi.json
-  packages-to-scan: "org.example"
+  packages-to-scan: "fi.okm.jod"
   default-produces-media-type: "application/json"
   swagger-ui:
     enabled: "${springdoc.api-docs.enabled:false}"
