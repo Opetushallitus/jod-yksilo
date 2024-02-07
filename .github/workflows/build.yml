@@ -56,7 +56,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.JOD_AWS_ROLE_ARN }}
+          role-to-assume: ${{ vars.JOD_UTIL_AWS_ROLE_ARN }}
           aws-region: eu-west-1
 
       - uses: docker/setup-buildx-action@v3
@@ -80,7 +80,7 @@ jobs:
         id: docker-build
         with:
           pull: true
-          push: "${{ github.ref == 'refs/heads/main' }}"
+          push: "${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}"
           platforms: linux/arm64,linux/amd64
           tags: ${{ steps.docker-meta.outputs.tags }}
           labels: ${{ steps.docker-meta.outputs.labels }}
@@ -96,15 +96,16 @@ jobs:
           EOF
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
       id-token: write
     needs: package
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.JOD_AWS_ROLE_ARN }}
+          role-to-assume: ${{ vars.JOD_AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
 
       - name: Download task definition
