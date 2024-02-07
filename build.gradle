@@ -133,8 +133,8 @@ snyk {
 bootJar {
   manifest {
     attributes(
-      'Implementation-Title': "${rootProject.name}",
-      'Implementation-Version': "${project.version}"
+        'Implementation-Title': "${rootProject.name}",
+        'Implementation-Version': "${project.version}"
     )
   }
 }
@@ -143,4 +143,16 @@ springBoot {
   buildInfo {
     excludes = ['time']
   }
+}
+
+tasks.register('installGitHooks', Copy) {
+  from("${rootProject.rootDir}/scripts/git-hooks") {
+    include 'pre-*'
+  }
+  into "${rootProject.rootDir}/.git/hooks"
+  fileMode 0775
+}
+
+if (System.getenv("CI") == null) {
+  build.dependsOn('installGitHooks')
 }
