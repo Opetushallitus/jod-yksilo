@@ -118,7 +118,7 @@ jobs:
         id: render-task-def
         with:
           task-definition: task-definition.json
-          container-name: JodYksiloContainer
+          container-name: ${{ vars.JOD_ECS_APP_CONTAINER }}
           image: ${{ needs.package.outputs.tags }}
 
       - name: Deploy ECS Service
