@@ -28,6 +28,7 @@ compileJava {
 
 repositories {
   mavenCentral()
+  maven { url "https://build.shibboleth.net/nexus/content/repositories/releases/" }
 }
 
 ext {
@@ -47,6 +48,8 @@ dependencies {
 
   implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
+
+  implementation 'org.springframework.security:spring-security-saml2-service-provider'
 
   implementation 'io.micrometer:micrometer-tracing-bridge-brave'
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
