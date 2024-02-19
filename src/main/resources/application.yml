@@ -1,3 +1,6 @@
+server:
+  port : 8081
+
 spring:
   main:
     banner-mode: off
@@ -6,6 +9,16 @@ spring:
   threads:
     virtual:
       enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/jod
+        registration:
+          keycloak:
+            client-id: yksilo
+            scope: openid, profile, email, offline_access
 
 springdoc:
   api-docs:
