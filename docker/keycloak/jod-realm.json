@@ -1080,7 +1080,18 @@
         }
       }
     ],
-    "org.keycloak.keys.KeyProvider": []
+    "org.keycloak.storage.UserStorageProvider": [
+      {
+        "id": "05bb1da4-3f29-443f-af26-b90e451da0e4",
+        "name": "JOD",
+        "providerId": "jod-user-storage",
+        "subComponents": {},
+        "config": {
+          "cachePolicy": ["NO_CACHE"],
+          "enabled": ["true"]
+        }
+      }
+    ]
   },
   "internationalizationEnabled": false,
   "supportedLocales": [],
