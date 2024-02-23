@@ -7,9 +7,6 @@ logging:
 server:
   forward-headers-strategy: native
   shutdown: graceful
-  error:
-    include-stacktrace: never
-    include-exception: false
 
 springdoc:
   api-docs:

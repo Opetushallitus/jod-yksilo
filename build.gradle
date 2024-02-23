@@ -89,9 +89,9 @@ checkstyle {
 spotless {
   java {
     googleJavaFormat()
-    licenseHeader """\
+    licenseHeader '''\
     /*
-     * Copyright (c) \$YEAR The Finnish Ministry of Education and Culture, The Finnish
+     * Copyright (c) $YEAR The Finnish Ministry of Education and Culture, The Finnish
      * The Ministry of Economic Affairs and Employment, The Finnish National Agency of
      * Education (Opetushallitus) and The Finnish Development and Administration centre
      * for ELY Centres and TE Offices (KEHA).
@@ -99,7 +99,7 @@ spotless {
      * Licensed under the EUPL-1.2-or-later.
      */
 
-     """.stripIndent()
+     '''.stripIndent()
   }
 }
 
