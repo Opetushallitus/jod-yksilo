@@ -40,6 +40,10 @@ spring:
       relyingparty:
         registration:
           jodsuomifi:
+            singlelogout:
+              url: "{baseUrl}/logout/saml2/slo/{registrationId}"
+              response-url: "{baseUrl}/logout/saml2/slo/{registrationId}"
+              binding: post
             signing:
               credentials:
                 - private-key-location: "classpath:rp.key"
@@ -56,6 +60,12 @@ spring:
               singlelogout:
                 binding: "REDIRECT"
                 url: "https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO"
+server:
+  error:
+    include-stacktrace: never
+    include-exception: false
+    whitelabel:
+      enabled: false
 
 server:
   error:
