@@ -11,19 +11,39 @@ package fi.okm.jod.yksilo.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import org.opensaml.saml.saml2.core.NameIDType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
+import org.springframework.security.saml2.provider.service.web.authentication.logout.OpenSaml4LogoutRequestResolver;
+import org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class Saml2LoginConfig {
   @Bean
-  SecurityFilterChain samlSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
-    http.saml2Login(withDefaults());
-    http.saml2Logout(withDefaults());
-    http.saml2Metadata(withDefaults());
-    return http.build();
+  SecurityFilterChain samlSecurityFilterChain(
+      HttpSecurity http, Saml2LogoutRequestResolver logoutRequestResolver) throws Exception {
+    return http.saml2Login(login -> login.defaultSuccessUrl("/api/v1/user", true))
+        .saml2Logout(
+            logout -> {
+              logout.logoutResponse(
+                  response -> response.logoutUrl("/logout/saml2/slo/{registrationId}"));
+              logout.logoutRequest(request -> request.logoutRequestResolver(logoutRequestResolver));
+            })
+        .saml2Metadata(withDefaults())
+        .build();
+  }
+
+  @Bean
+  Saml2LogoutRequestResolver logoutRequestResolver(
+      RelyingPartyRegistrationRepository registrations) {
+    var resolver = new OpenSaml4LogoutRequestResolver(registrations);
+
+    // Suomi.fi tunnistus requires that the nameId format is set to transient
+    resolver.setParametersConsumer(
+        (parameters) -> parameters.getLogoutRequest().getNameID().setFormat(NameIDType.TRANSIENT));
+    return resolver;
   }
 }
