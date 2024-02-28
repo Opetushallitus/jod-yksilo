@@ -1,9 +1,3 @@
-logging:
-  config: classpath:logback-cloud.xml
-  level:
-    root: INFO
-    fi.okm.jod: INFO
-
 server:
   forward-headers-strategy: native
   shutdown: graceful
@@ -14,3 +8,9 @@ server:
 springdoc:
   api-docs:
     enabled: false
+
+logging:
+  config: classpath:logback-cloud.xml
+  level:
+    root: INFO
+    fi.okm.jod: INFO
