@@ -42,12 +42,6 @@ public class RedisIamAuthCredentialsProvider implements RedisCredentialsProvider
   @Override
   public Mono<RedisCredentials> resolveCredentials() {
     RedisCredentials redisCredentials = RedisCredentials.just(username, iamAuthTokenProvider.get());
-
-    log.debug(
-        "Using credentials: {}, {}",
-        redisCredentials.getUsername(),
-        String.valueOf(redisCredentials.getPassword()));
-
     return Mono.just(redisCredentials);
   }
 
