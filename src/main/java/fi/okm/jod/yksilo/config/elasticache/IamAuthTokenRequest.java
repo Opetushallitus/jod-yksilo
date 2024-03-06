@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.config.elasticache;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -21,8 +20,9 @@ import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 
 public class IamAuthTokenRequest {
-  private static final SdkHttpMethod REQUEST_METHOD = SdkHttpMethod.GET;
-  private static final String REQUEST_PROTOCOL = "http://";
+  private static final String REQUEST_PROTOCOL = "http";
+  private static final String REQUEST_PROTOCOL_WITH_COLON_AND_SLASHES = REQUEST_PROTOCOL + "://";
+  private static final String REQUEST_PATH = "/";
   private static final String PARAM_ACTION = "Action";
   private static final String PARAM_USER = "User";
   private static final String PARAM_RESOURCE_TYPE = "ResourceType";
@@ -44,22 +44,20 @@ public class IamAuthTokenRequest {
   public String toSignedRequestUri(AwsCredentials credentials) {
     SdkHttpFullRequest request = getSignableRequest();
     request = sign(request, credentials);
-    return request.getUri().toString().replace(REQUEST_PROTOCOL, "");
+    return request.getUri().toString().replace(REQUEST_PROTOCOL_WITH_COLON_AND_SLASHES, "");
   }
 
   private SdkHttpFullRequest getSignableRequest() {
     return SdkHttpFullRequest.builder()
-        .method(REQUEST_METHOD)
-        .uri(getRequestUri())
+        .method(SdkHttpMethod.GET)
+        .protocol(REQUEST_PROTOCOL)
+        .host(cacheName)
+        .encodedPath(REQUEST_PATH)
         .appendRawQueryParameter(PARAM_ACTION, ACTION_NAME)
         .appendRawQueryParameter(PARAM_USER, userId)
         .putRawQueryParameter(
             PARAM_RESOURCE_TYPE, Collections.singletonList(RESOURCE_TYPE_SERVERLESS_CACHE))
         .build();
-  }
-
-  private URI getRequestUri() {
-    return URI.create(String.format("%s%s/", REQUEST_PROTOCOL, cacheName));
   }
 
   private SdkHttpFullRequest sign(SdkHttpFullRequest request, AwsCredentials credentials) {
