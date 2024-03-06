@@ -14,8 +14,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
 import io.lettuce.core.RedisCredentialsProvider;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +39,10 @@ import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 @EnableRedisHttpSession
 @Slf4j
 public class SessionConfig implements BeanClassLoaderAware {
+
+  @Value("${spring.data.redis.cache-name:}")
+  private String cacheName;
+
   private ClassLoader loader;
 
   @Override
@@ -62,8 +68,9 @@ public class SessionConfig implements BeanClassLoaderAware {
               @Override
               public RedisCredentialsProvider createCredentialsProvider(
                   @NonNull RedisConfiguration redisConfiguration) {
-                if (redisConfiguration
-                    instanceof RedisStandaloneConfiguration redisStandaloneConfiguration) {
+                if (!Objects.equals(cacheName, "")
+                    && redisConfiguration
+                        instanceof RedisStandaloneConfiguration redisStandaloneConfiguration) {
                   // Custom implementation of RedisCredentialsProvider for IAM Authentication.
 
                   // References:
@@ -73,25 +80,14 @@ public class SessionConfig implements BeanClassLoaderAware {
                   // The username is the same as the user id.
                   String username = redisStandaloneConfiguration.getUsername();
 
-                  // The cache name is the subdomain of the host name without the last part.
-                  String hostName = redisStandaloneConfiguration.getHostName();
-                  String subdomain = hostName.split("\\.")[0];
-                  String cacheName = subdomain.substring(0, subdomain.lastIndexOf("-"));
-
                   // The region is same as this application's region.
                   Region region = new DefaultAwsRegionProviderChain().getRegion();
 
-                  log.debug(
-                      "Using IAM Authentication for Redis with username: {}, cacheName: {}, region: {}",
-                      username,
-                      cacheName,
-                      region);
+                  IamAuthTokenRequest iamAuthTokenRequest =
+                      new IamAuthTokenRequest(username, cacheName, region);
 
                   AwsCredentialsProvider awsCredentialsProvider =
                       DefaultCredentialsProvider.create();
-
-                  IamAuthTokenRequest iamAuthTokenRequest =
-                      new IamAuthTokenRequest(username, cacheName, region);
 
                   return new RedisIamAuthCredentialsProvider(
                       username, iamAuthTokenRequest, awsCredentialsProvider);
