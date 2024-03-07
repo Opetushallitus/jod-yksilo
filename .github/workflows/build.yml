@@ -135,3 +135,10 @@ jobs:
           service: ${{ vars.JOD_ECS_SERVICE }}
           cluster: ${{ vars.JOD_ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      - name: Update image tag parameter
+        env:
+          TAG: ${{ needs.package.outputs.tags }}
+        run: >
+          aws ssm put-parameter --overwrite --type String
+          --name ${{ vars.JOD_IMAGE_TAG_PARAM }} --value "${TAG##*:}"
