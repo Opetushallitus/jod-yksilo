@@ -28,7 +28,7 @@ import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapt
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-public class SessionConfigTest {
+class SessionConfigTest {
 
   @Test
   void testSessionConfigBeans() {
