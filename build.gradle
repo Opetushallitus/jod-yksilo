@@ -27,6 +27,7 @@ compileJava {
 
 repositories {
   mavenCentral()
+  maven { url "https://build.shibboleth.net/nexus/content/repositories/releases/" }
 }
 
 ext {
@@ -40,6 +41,8 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
   implementation 'org.springframework.session:spring-session-data-redis'
+
+  implementation 'org.springframework.security:spring-security-saml2-service-provider'
 
   implementation 'io.micrometer:micrometer-tracing-bridge-brave'
   implementation 'io.zipkin.aws:brave-propagation-aws'

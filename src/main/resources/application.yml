@@ -6,6 +6,37 @@ spring:
   threads:
     virtual:
       enabled: true
+  security:
+    saml2:
+      relyingparty:
+        registration:
+          jodsuomifi:
+            singlelogout:
+              url: "{baseUrl}/logout/saml2/slo/{registrationId}"
+              response-url: "{baseUrl}/logout/saml2/slo/{registrationId}"
+              binding: post
+            signing:
+              credentials:
+                - private-key-location: "classpath:rp.key"
+                  certificate-location: "classpath:rp.crt"
+            decryption:
+              credentials:
+                - private-key-location: "classpath:rp.key"
+                  certificate-location: "classpath:rp.crt"
+            assertingparty:
+              metadata-uri: "https://static.apro.tunnistus.fi/static/metadata/idp-metadata.xml"
+              singlesignon:
+                binding: "REDIRECT"
+                url: "https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SSO"
+              singlelogout:
+                binding: "REDIRECT"
+                url: "https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO"
+server:
+  error:
+    include-stacktrace: never
+    include-exception: false
+    whitelabel:
+      enabled: false
 
 springdoc:
   api-docs:
