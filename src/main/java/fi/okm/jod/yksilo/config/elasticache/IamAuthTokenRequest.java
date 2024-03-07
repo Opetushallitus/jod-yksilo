@@ -20,54 +20,38 @@ import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 
 public class IamAuthTokenRequest {
-  private static final String REQUEST_PROTOCOL = "http";
-  private static final String REQUEST_PROTOCOL_WITH_COLON_AND_SLASHES = REQUEST_PROTOCOL + "://";
-  private static final String REQUEST_PATH = "/";
-  private static final String PARAM_ACTION = "Action";
-  private static final String PARAM_USER = "User";
-  private static final String PARAM_RESOURCE_TYPE = "ResourceType";
-  private static final String RESOURCE_TYPE_SERVERLESS_CACHE = "ServerlessCache";
-  private static final String ACTION_NAME = "connect";
-  private static final String SERVICE_NAME = "elasticache";
   private static final Duration TOKEN_EXPIRY_DURATION_SECONDS = Duration.ofSeconds(900);
 
-  private final String userId;
-  private final String cacheName;
+  private final SdkHttpFullRequest request;
   private final Region region;
+  private final Aws4Signer signer;
 
   public IamAuthTokenRequest(String userId, String cacheName, Region region) {
-    this.userId = userId;
-    this.cacheName = cacheName;
+    this.request =
+        SdkHttpFullRequest.builder()
+            .method(SdkHttpMethod.GET)
+            .protocol("http")
+            .host(cacheName)
+            .encodedPath("/")
+            .appendRawQueryParameter("Action", "connect")
+            .appendRawQueryParameter("User", userId)
+            .putRawQueryParameter("ResourceType", Collections.singletonList("ServerlessCache"))
+            .build();
     this.region = region;
+    this.signer = Aws4Signer.create();
   }
 
   public String toSignedRequestUri(AwsCredentials credentials) {
-    SdkHttpFullRequest request = getSignableRequest();
-    request = sign(request, credentials);
-    return request.getUri().toString().replace(REQUEST_PROTOCOL_WITH_COLON_AND_SLASHES, "");
-  }
-
-  private SdkHttpFullRequest getSignableRequest() {
-    return SdkHttpFullRequest.builder()
-        .method(SdkHttpMethod.GET)
-        .protocol(REQUEST_PROTOCOL)
-        .host(cacheName)
-        .encodedPath(REQUEST_PATH)
-        .appendRawQueryParameter(PARAM_ACTION, ACTION_NAME)
-        .appendRawQueryParameter(PARAM_USER, userId)
-        .putRawQueryParameter(
-            PARAM_RESOURCE_TYPE, Collections.singletonList(RESOURCE_TYPE_SERVERLESS_CACHE))
-        .build();
+    return sign(request, credentials).getUri().toString().replace("http://", "");
   }
 
   private SdkHttpFullRequest sign(SdkHttpFullRequest request, AwsCredentials credentials) {
     Instant expiryInstant = Instant.now().plus(TOKEN_EXPIRY_DURATION_SECONDS);
-    Aws4Signer signer = Aws4Signer.create();
     Aws4PresignerParams signerParams =
         Aws4PresignerParams.builder()
             .signingRegion(region)
             .awsCredentials(credentials)
-            .signingName(SERVICE_NAME)
+            .signingName("elasticache")
             .expirationTime(expiryInstant)
             .build();
     return signer.presign(request, signerParams);
