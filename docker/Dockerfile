@@ -10,6 +10,7 @@ RUN :\
 
 FROM baseimage
 COPY --chmod=444 build/libs/jod-yksilo*.jar /opt/app/application.jar
+
 USER app
 WORKDIR /opt/app
 
@@ -17,3 +18,5 @@ ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=40 -XX:MaxMetaspaceSize=256m"
 ENTRYPOINT ["/bin/bash","-c",\
  "exec /usr/bin/java -XX:+ExitOnOutOfMemoryError \
  $JAVA_OPTIONS -jar /opt/app/application.jar \"$@\"", "--"]
+
+VOLUME ["/tmp"]
