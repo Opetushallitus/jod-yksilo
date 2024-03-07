@@ -14,6 +14,3 @@ logging:
   level:
     root: INFO
     fi.okm.jod: INFO
-#    fi.okm.jod: DEBUG # For debugging
-#    io.awspring.cloud: DEBUG # For debugging
-#    io.lettuce.core: DEBUG # For debugging

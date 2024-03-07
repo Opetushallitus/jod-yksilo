@@ -31,9 +31,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
 @Configuration(proxyBeanMethods = false)
 @EnableRedisHttpSession
@@ -61,7 +59,8 @@ public class SessionConfig implements BeanClassLoaderAware {
 
   @Bean
   @Profile("cloud")
-  LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer() {
+  LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer(
+      AwsCredentialsProvider awsCredentialsProvider, Region region) {
     return builder ->
         builder.redisCredentialsProviderFactory(
             new RedisCredentialsProviderFactory() {
@@ -80,14 +79,8 @@ public class SessionConfig implements BeanClassLoaderAware {
                   // The username is the same as the user id.
                   String username = redisStandaloneConfiguration.getUsername();
 
-                  // The region is same as this application's region.
-                  Region region = new DefaultAwsRegionProviderChain().getRegion();
-
                   IamAuthTokenRequest iamAuthTokenRequest =
                       new IamAuthTokenRequest(username, cacheName, region);
-
-                  AwsCredentialsProvider awsCredentialsProvider =
-                      DefaultCredentialsProvider.create();
 
                   return new RedisIamAuthCredentialsProvider(
                       username, iamAuthTokenRequest, awsCredentialsProvider);
