@@ -16,11 +16,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import fi.okm.jod.yksilo.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(PingController.class)
+@WebMvcTest(
+    value = PingController.class,
+    excludeAutoConfiguration = {OAuth2ClientAutoConfiguration.class})
 @Import(SecurityConfig.class)
 class PingControllerTest {
 
