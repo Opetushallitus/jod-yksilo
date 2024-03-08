@@ -14,12 +14,10 @@ import io.lettuce.core.RedisCredentials;
 import io.lettuce.core.RedisCredentialsProvider;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
-@Slf4j
-public class RedisIamAuthCredentialsProvider implements RedisCredentialsProvider {
+public final class RedisIamAuthCredentialsProvider implements RedisCredentialsProvider {
 
   private final String username;
   private final IamAuthTokenRequest iamAuthTokenRequest;

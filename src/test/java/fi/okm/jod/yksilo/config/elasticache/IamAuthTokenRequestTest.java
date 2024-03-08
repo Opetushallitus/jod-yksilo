@@ -9,11 +9,10 @@
 
 package fi.okm.jod.yksilo.config.elasticache;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 
 class IamAuthTokenRequestTest {
@@ -23,11 +22,12 @@ class IamAuthTokenRequestTest {
 
   @Test
   void testToSignedRequestUri() {
-    AwsCredentials mockCredentials = mock(AwsCredentials.class);
-    String expectedUri =
+    var testAwsCredentials = AwsBasicCredentials.create("accessKey", "secretKey");
+    String expectedUriPrefix =
         CACHE_NAME + "/?Action=connect&User=" + USERNAME + "&ResourceType=ServerlessCache";
     IamAuthTokenRequest request = new IamAuthTokenRequest(USERNAME, CACHE_NAME, Region.EU_WEST_1);
-    String signedUri = request.toSignedRequestUri(mockCredentials);
-    assertEquals(expectedUri, signedUri);
+    String signedUri = request.toSignedRequestUri(testAwsCredentials);
+    assertTrue(signedUri.startsWith(expectedUriPrefix));
+    assertTrue(signedUri.contains("X-Amz-Signature"));
   }
 }

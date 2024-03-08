@@ -11,32 +11,27 @@ package fi.okm.jod.yksilo.config.elasticache;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.lettuce.core.RedisCredentials;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.regions.Region;
 
 class RedisIamAuthCredentialsProviderTest {
 
-  private static final String USERNAME = "user123";
-  private static final String PASSWORD = "password123";
+  private static final String USER_ID = "user123";
+  private static final String CACHE_NAME = "cache-123";
 
   @Test
   void testResolveCredentials() {
-    IamAuthTokenRequest mockIamAuthTokenRequest = mock(IamAuthTokenRequest.class);
-    AwsCredentialsProvider mockAwsCredentialsProvider = mock(AwsCredentialsProvider.class);
-    when(mockIamAuthTokenRequest.toSignedRequestUri(any())).thenReturn(PASSWORD);
-    RedisIamAuthCredentialsProvider provider =
+    var tokenRequest = new IamAuthTokenRequest(USER_ID, CACHE_NAME, Region.EU_WEST_1);
+    var provider =
         new RedisIamAuthCredentialsProvider(
-            USERNAME, mockIamAuthTokenRequest, mockAwsCredentialsProvider);
-    Mono<RedisCredentials> credentialsMono = provider.resolveCredentials();
-    RedisCredentials credentials = credentialsMono.block();
+            USER_ID, tokenRequest, () -> AwsBasicCredentials.create("accessKey", "secretKey"));
+    var credentials = provider.resolveCredentials().block();
+
     assertNotNull(credentials);
-    assertEquals(USERNAME, credentials.getUsername());
-    assertEquals(PASSWORD, new String(credentials.getPassword()));
-    verify(mockIamAuthTokenRequest).toSignedRequestUri(any());
-    verify(mockAwsCredentialsProvider).resolveCredentials();
+    assertEquals(USER_ID, credentials.getUsername());
+    assertTrue(String.valueOf(credentials.getPassword()).contains("X-Amz-Signature"));
   }
 }

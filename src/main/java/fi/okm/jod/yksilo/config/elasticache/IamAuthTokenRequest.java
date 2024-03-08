@@ -19,7 +19,7 @@ import software.amazon.awssdk.http.SdkHttpFullRequest;
 import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 
-public class IamAuthTokenRequest {
+public final class IamAuthTokenRequest {
   private static final Duration TOKEN_EXPIRY_DURATION_SECONDS = Duration.ofSeconds(900);
 
   private final SdkHttpFullRequest request;
@@ -30,7 +30,7 @@ public class IamAuthTokenRequest {
     this.request =
         SdkHttpFullRequest.builder()
             .method(SdkHttpMethod.GET)
-            .protocol("http")
+            .protocol("https")
             .host(cacheName)
             .encodedPath("/")
             .appendRawQueryParameter("Action", "connect")
@@ -42,7 +42,7 @@ public class IamAuthTokenRequest {
   }
 
   public String toSignedRequestUri(AwsCredentials credentials) {
-    return sign(request, credentials).getUri().toString().replace("http://", "");
+    return sign(request, credentials).getUri().toString().replace("https://", "");
   }
 
   private SdkHttpFullRequest sign(SdkHttpFullRequest request, AwsCredentials credentials) {
