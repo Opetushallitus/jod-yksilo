@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.config.elasticache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 import fi.okm.jod.yksilo.config.AwsConfig;
 import fi.okm.jod.yksilo.config.SessionConfig;
@@ -29,7 +28,7 @@ import org.springframework.session.config.annotation.web.http.EnableSpringHttpSe
 import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapter;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
+import software.amazon.awssdk.regions.Region;
 
 class SessionConfigTest {
 
@@ -54,9 +53,12 @@ class SessionConfigTest {
   void testSessionConfigBeansWithCloudProfile() {
     System.setProperty("aws.region", "eu-west-1");
 
-    mock(DefaultAwsRegionProviderChain.class);
     AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
     context.getEnvironment().addActiveProfile("cloud");
+    context
+        .getEnvironment()
+        .getSystemProperties()
+        .put("aws.region", Region.regions().getFirst().id());
     context.register(DefaultConfiguration.class);
     context.register(AwsConfig.class);
     context.register(SessionConfig.class);
