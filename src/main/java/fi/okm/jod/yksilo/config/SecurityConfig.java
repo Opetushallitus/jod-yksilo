@@ -46,25 +46,25 @@ public class SecurityConfig {
             })
         .build();
   }
-}
 
-final class CacheControlHeadersWriter implements HeaderWriter {
-  /*
-   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#dont_cache
-   *
-   * stale-if-error=0, see:
-   * https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html#ExpirationDownloadDist
-   * If the origin is [now] unreachable and the minimum or maximum TTL value is greater than 0,
-   * CloudFront will serve the object that it got from the origin previously. To avoid this
-   * behavior, include the Cache-Control: stale-if-error=0 directive.
-   */
-  private static final String CACHE_CONTROL_HEADER_VALUE =
-      "private, no-cache, no-store, stale-if-error=0";
+  static final class CacheControlHeadersWriter implements HeaderWriter {
+    /*
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#dont_cache
+     *
+     * stale-if-error=0, see:
+     * https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html#ExpirationDownloadDist
+     * If the origin is [now] unreachable and the minimum or maximum TTL value is greater than 0,
+     * CloudFront will serve the object that it got from the origin previously. To avoid this
+     * behavior, include the Cache-Control: stale-if-error=0 directive.
+     */
+    private static final String CACHE_CONTROL_HEADER_VALUE =
+        "private, no-cache, no-store, stale-if-error=0";
 
-  @Override
-  public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
-    if (!response.containsHeader(HttpHeaders.CACHE_CONTROL)) {
-      response.addHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_HEADER_VALUE);
+    @Override
+    public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
+      if (!response.containsHeader(HttpHeaders.CACHE_CONTROL)) {
+        response.addHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_HEADER_VALUE);
+      }
     }
   }
 }
