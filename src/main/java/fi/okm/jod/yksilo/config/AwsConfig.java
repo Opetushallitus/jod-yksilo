@@ -16,18 +16,24 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
+import software.amazon.awssdk.services.rds.RdsClient;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("cloud")
 public class AwsConfig {
 
   @Bean
-  public AwsCredentialsProvider awsCredeawsCredentialsProviderntialsProvider() {
+  public AwsCredentialsProvider awsCredentialsProvider() {
     return DefaultCredentialsProvider.create();
   }
 
   @Bean
   public Region region() {
     return new DefaultAwsRegionProviderChain().getRegion();
+  }
+
+  @Bean
+  public RdsClient rdsClient(Region region) {
+    return RdsClient.builder().region(region).build();
   }
 }

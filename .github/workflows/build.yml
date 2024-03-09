@@ -40,6 +40,7 @@ jobs:
             !build/libs/*-plain.jar
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: reports
           path: build/reports/

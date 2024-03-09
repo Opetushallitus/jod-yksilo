@@ -1,3 +1,7 @@
+spring:
+  datasource:
+    type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
+
 server:
   forward-headers-strategy: native
   shutdown: graceful
