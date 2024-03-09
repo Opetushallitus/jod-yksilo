@@ -38,6 +38,7 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+  implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
   implementation 'org.springframework.session:spring-session-data-redis'
 
@@ -46,6 +47,8 @@ dependencies {
 
   implementation platform('software.amazon.awssdk:bom:2.24.11')
   implementation 'software.amazon.awssdk:auth'
+  implementation 'software.amazon.awssdk:rds'
+
   implementation 'com.google.guava:guava:33.0.0-jre'
 
   // Logging in JSON format
@@ -56,6 +59,8 @@ dependencies {
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
   developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+  runtimeOnly 'org.postgresql:postgresql'
 
   annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
   annotationProcessor 'org.projectlombok:lombok'

@@ -7,18 +7,17 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config.elasticache;
+package fi.okm.jod.yksilo.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import fi.okm.jod.yksilo.config.AwsConfig;
-import fi.okm.jod.yksilo.config.SessionConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -28,7 +27,10 @@ import org.springframework.session.config.annotation.web.http.EnableSpringHttpSe
 import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapter;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
 class SessionConfigTest {
 
@@ -51,8 +53,6 @@ class SessionConfigTest {
 
   @Test
   void testSessionConfigBeansWithCloudProfile() {
-    System.setProperty("aws.region", "eu-west-1");
-
     AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
     context.getEnvironment().addActiveProfile("cloud");
     context
@@ -60,7 +60,6 @@ class SessionConfigTest {
         .getSystemProperties()
         .put("aws.region", Region.regions().getFirst().id());
     context.register(DefaultConfiguration.class);
-    context.register(AwsConfig.class);
     context.register(SessionConfig.class);
     context.setServletContext(new MockServletContext());
     context.refresh();
@@ -70,13 +69,23 @@ class SessionConfigTest {
     assertThat(context.getBean(SessionRepository.class)).isNotNull();
     assertThat(context.getBean(RedisSerializer.class)).isNotNull();
     assertThat(context.getBean(LettuceClientConfigurationBuilderCustomizer.class)).isNotNull();
-
-    System.clearProperty("aws.region");
   }
 
   @Configuration
   @EnableSpringHttpSession
   static class DefaultConfiguration {
+
+    @Bean
+    @Profile("cloud")
+    public AwsCredentialsProvider awsCredentialsProvider() {
+      return DefaultCredentialsProvider.create();
+    }
+
+    @Bean
+    @Profile("cloud")
+    public Region region() {
+      return new DefaultAwsRegionProviderChain().getRegion();
+    }
 
     @Bean
     RedisConnectionFactory redisConnectionFactory() {
