@@ -3,7 +3,7 @@ spring:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
 
 server:
-  forward-headers-strategy: native
+  forward-headers-strategy: none
   shutdown: graceful
   error:
     include-stacktrace: never

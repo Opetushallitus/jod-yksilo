@@ -23,6 +23,7 @@ public class PingController {
 
   @GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
   public String ping() {
+    log.info("Ping received");
     return "pong";
   }
 }
