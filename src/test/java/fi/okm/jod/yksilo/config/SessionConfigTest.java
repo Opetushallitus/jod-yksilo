@@ -22,17 +22,27 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.session.SessionRepository;
-import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisIndexedHttpSession;
 import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapter;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
+@Testcontainers
 class SessionConfigTest {
+
+  @Container
+  static GenericContainer<?> redisContainer =
+      new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
 
   @Test
   void testSessionConfigBeans() {
@@ -49,6 +59,8 @@ class SessionConfigTest {
     assertThrows(
         NoSuchBeanDefinitionException.class,
         () -> context.getBean(LettuceClientConfigurationBuilderCustomizer.class));
+
+    context.close();
   }
 
   @Test
@@ -69,10 +81,13 @@ class SessionConfigTest {
     assertThat(context.getBean(SessionRepository.class)).isNotNull();
     assertThat(context.getBean(RedisSerializer.class)).isNotNull();
     assertThat(context.getBean(LettuceClientConfigurationBuilderCustomizer.class)).isNotNull();
+
+    context.close();
   }
 
-  @Configuration
-  @EnableSpringHttpSession
+  @Configuration(proxyBeanMethods = false)
+  @EnableWebSecurity
+  @EnableRedisIndexedHttpSession
   static class DefaultConfiguration {
 
     @Bean
@@ -89,7 +104,8 @@ class SessionConfigTest {
 
     @Bean
     RedisConnectionFactory redisConnectionFactory() {
-      return new LettuceConnectionFactory();
+      return new LettuceConnectionFactory(
+          redisContainer.getHost(), redisContainer.getFirstMappedPort());
     }
   }
 }
