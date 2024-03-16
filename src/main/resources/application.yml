@@ -6,6 +6,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: "create-drop" # FIXME: Just for early development without migrations
 
 springdoc:
   api-docs:

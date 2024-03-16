@@ -33,6 +33,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize -> {
               authorize.requestMatchers("/api/v1/ping").permitAll();
+              authorize.requestMatchers("/api/v1/demo").permitAll();
               authorize.anyRequest().authenticated();
             })
         .headers(
