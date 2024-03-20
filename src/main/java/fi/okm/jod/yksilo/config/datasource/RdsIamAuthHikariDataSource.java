@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.config.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -21,7 +20,6 @@ public class RdsIamAuthHikariDataSource extends HikariDataSource {
   private RdsClient rdsClient;
 
   @Autowired
-  @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
   public void setRdsClient(RdsClient rdsClient) {
     this.rdsClient = rdsClient;
   }
