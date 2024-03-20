@@ -16,10 +16,10 @@ import io.lettuce.core.RedisCredentialsProvider;
 import java.util.Objects;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -75,7 +75,7 @@ public class SessionConfig implements BeanClassLoaderAware {
   }
 
   @Bean
-  @ConditionalOnBean(value = {AwsCredentialsProvider.class, Region.class})
+  @Profile("cloud")
   LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer(
       AwsCredentialsProvider awsCredentialsProvider, Region region) {
     return builder ->
