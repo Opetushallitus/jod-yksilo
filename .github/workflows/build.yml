@@ -131,11 +131,21 @@ jobs:
 
       - name: Deploy ECS Service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        id: ecs-deploy
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ vars.JOD_ECS_SERVICE }}
           cluster: ${{ vars.JOD_ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      - name: Ensure that deploy worked
+        run: |
+          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ vars.JOD_ECS_CLUSTER }} --services ${{ vars.JOD_ECS_SERVICE }} --query services[0].deployments[0].taskDefinition --output text)
+          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
+          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
+            echo "Deployment was rolled back"
+            exit 1
+          fi
 
       - name: Update image tag parameter
         env:
