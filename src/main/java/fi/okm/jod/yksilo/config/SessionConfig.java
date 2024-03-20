@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
 import io.lettuce.core.RedisCredentialsProvider;
@@ -48,7 +47,6 @@ public class SessionConfig implements BeanClassLoaderAware {
   private ClassLoader loader;
 
   @Override
-  @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
   public void setBeanClassLoader(@NonNull ClassLoader classLoader) {
     this.loader = classLoader;
   }
