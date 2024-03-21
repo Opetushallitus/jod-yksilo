@@ -20,25 +20,19 @@ import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.RedisCredentialsProviderFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.lang.NonNull;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.session.data.redis.RedisIndexedSessionRepository;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisIndexedHttpSession;
-import org.springframework.session.security.SpringSessionBackedSessionRegistry;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 
 @Configuration(proxyBeanMethods = false)
-@EnableRedisIndexedHttpSession
+@EnableRedisHttpSession
 public class SessionConfig implements BeanClassLoaderAware {
 
   @Value("${spring.data.redis.cache-name:}")
@@ -57,21 +51,6 @@ public class SessionConfig implements BeanClassLoaderAware {
     var mapper = new ObjectMapper();
     mapper.registerModules(SecurityJackson2Modules.getModules(this.loader));
     return new GenericJackson2JsonRedisSerializer(mapper);
-  }
-
-  @Bean
-  public SessionRegistry sessionRegistry(RedisIndexedSessionRepository sessionRepository) {
-    return new SpringSessionBackedSessionRegistry<>(sessionRepository);
-  }
-
-  @Bean
-  @Order(2)
-  public SecurityFilterChain sessionFilterChain(HttpSecurity http, SessionRegistry sessionRegistry)
-      throws Exception {
-    return http.sessionManagement(
-            sessionManagement ->
-                sessionManagement.maximumSessions(1).sessionRegistry(sessionRegistry))
-        .build();
   }
 
   @Bean
