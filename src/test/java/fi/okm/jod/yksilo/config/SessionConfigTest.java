@@ -24,7 +24,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.session.SessionRepository;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisIndexedHttpSession;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapter;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -87,7 +87,7 @@ class SessionConfigTest {
 
   @Configuration(proxyBeanMethods = false)
   @EnableWebSecurity
-  @EnableRedisIndexedHttpSession
+  @EnableRedisHttpSession
   static class DefaultConfiguration {
 
     @Bean

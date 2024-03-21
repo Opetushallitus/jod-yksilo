@@ -8,8 +8,16 @@ spring:
       enabled: true
   jpa:
     hibernate:
-      ddl-auto: "create-drop" # FIXME: Just for early development without migrations
-
+      ddl-auto: "create" # FIXME: Just for early development without migrations
+    open-in-view: false
+    generate-ddl: true
+  data:
+    redis:
+      repositories:
+        enabled: false
+    jpa:
+        repositories:
+            enabled: true
 springdoc:
   api-docs:
     enabled: true
@@ -25,3 +33,4 @@ springdoc:
 logging:
   level:
     fi.okm.jod: DEBUG
+    sql: DEBUG
