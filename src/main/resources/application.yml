@@ -10,14 +10,11 @@ spring:
     hibernate:
       ddl-auto: "create" # FIXME: Just for early development without migrations
     open-in-view: false
-    generate-ddl: true
   data:
     redis:
       repositories:
         enabled: false
-    jpa:
-        repositories:
-            enabled: true
+
 springdoc:
   api-docs:
     enabled: true
