@@ -3,5 +3,4 @@
   <include resource="org/springframework/boot/logging/logback/base.xml" />
   <logger name="ROOT" level="INFO"/>
   <logger name="org.springframework.test" level="WARN" />
-  <logger name="org.example" level="DEBUG"/>
 </configuration>
