@@ -18,6 +18,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.CacheControlConfig;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.HeaderWriter;
 
@@ -30,10 +32,15 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.securityMatcher("/api/**")
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
+        .requestCache(RequestCacheConfigurer::disable)
+        .csrf(
+            csrf -> csrf.requireCsrfProtectionMatcher(request -> request.getSession(false) != null))
         .authorizeHttpRequests(
             authorize -> {
-              authorize.requestMatchers("/api/v1/ping").permitAll();
-              authorize.requestMatchers("/api/v1/demo").permitAll();
+              authorize.requestMatchers("/api/ping").permitAll();
+              authorize.requestMatchers("/api/demo").permitAll();
+              authorize.requestMatchers("/api/ehdotus/**").permitAll();
               authorize.anyRequest().authenticated();
             })
         .headers(

@@ -1,6 +1,8 @@
 spring:
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
+  config:
+    import: "aws-parameterstore:/jod/config/"
 
 server:
   forward-headers-strategy: none

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Mock controller (to be removed). */
 @RestController
-@RequestMapping(path = "/api/v1/demo")
+@RequestMapping(path = "/api/demo")
 public class DemoController {
 
   private final DemoService demoService;

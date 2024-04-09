@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.SecurityConfig;
+import fi.okm.jod.yksilo.controller.errorhandler.ErrorInfoFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(PingController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, ErrorInfoFactory.class})
 class PingControllerTest {
 
   @Autowired private MockMvc mockMvc;
@@ -29,13 +30,13 @@ class PingControllerTest {
   @Test
   void shouldReturnPong() throws Exception {
     mockMvc
-        .perform(get("/api/v1/ping"))
+        .perform(get("/api/ping"))
         .andExpect(status().isOk())
         .andExpect(content().string("pong"));
   }
 
   @Test
   void shouldFailWithForbidden() throws Exception {
-    mockMvc.perform(get("/api/v1/pong")).andExpect(status().isForbidden());
+    mockMvc.perform(get("/api/pong")).andExpect(status().isForbidden());
   }
 }

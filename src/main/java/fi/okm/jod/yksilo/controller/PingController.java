@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Mock controller (to be removed). */
 @RestController
-@RequestMapping(path = "/api/v1/ping")
+@RequestMapping(path = "/api/ping")
 @Slf4j
 public class PingController {
 
