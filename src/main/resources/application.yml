@@ -1,8 +1,6 @@
 spring:
   main:
     banner-mode: off
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   threads:
     virtual:
       enabled: true
@@ -14,11 +12,21 @@ spring:
     redis:
       repositories:
         enabled: false
+  mvc:
+    log-resolved-exception: false
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-exception: false
 
 springdoc:
   api-docs:
     enabled: true
     path: /openapi/openapi.json
+    version: openapi_3_1
   packages-to-scan: "fi.okm.jod"
   default-produces-media-type: "application/json"
   swagger-ui:
@@ -31,3 +39,12 @@ logging:
   level:
     fi.okm.jod: DEBUG
     sql: DEBUG
+    org:
+      springframework:
+        web:
+          servlet:
+            PageNotFound: off
+
+recommendation:
+  skills:
+    baseUrl: ""
