@@ -7,7 +7,8 @@
     <!-- Ignored bug patterns -->
     <Bug pattern="
       EI_EXPOSE_REP,
-      EI_EXPOSE_REP2"
+      EI_EXPOSE_REP2,
+      SE_BAD_FIELD"
     />
   </Match>
 </FindBugsFilter>

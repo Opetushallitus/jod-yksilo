@@ -53,6 +53,7 @@ dependencies {
   implementation platform('software.amazon.awssdk:bom:2.25.26')
   implementation 'software.amazon.awssdk:auth'
   implementation 'software.amazon.awssdk:rds'
+  implementation 'software.amazon.awssdk:sagemakerruntime'
 
   implementation 'com.google.guava:guava:33.1.0-jre'
 
