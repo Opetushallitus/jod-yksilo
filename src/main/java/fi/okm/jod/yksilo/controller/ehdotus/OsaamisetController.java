@@ -7,17 +7,14 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller;
+package fi.okm.jod.yksilo.controller.ehdotus;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
 import java.time.Duration;
 import java.util.List;
-import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.ClientHttpRequestFactories;
@@ -35,13 +32,11 @@ import org.springframework.web.client.RestClientException;
 @RestController
 @RequestMapping(path = "/api/ehdotus/osaamiset")
 @Slf4j
-public class OsaamisetEhdotusController {
+public class OsaamisetController {
 
   private final RestClient restClient;
-  private static final Pattern NON_WORD =
-      Pattern.compile("[^\\w\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
 
-  public OsaamisetEhdotusController(
+  public OsaamisetController(
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
       @Value("${recommendation.skills.baseUrl}") String baseUrl) {
@@ -71,15 +66,19 @@ public class OsaamisetEhdotusController {
   }
 
   @PostMapping
-  public ResponseEntity<List<Osaaminen>> createOsaamisetEhdotus(@RequestBody @Valid Taidot taidot) {
-    final String input = normalize(taidot.kuvaus());
+  public ResponseEntity<List<Osaaminen>> createEhdotus(@RequestBody @Valid Taidot taidot) {
 
     record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations) {}
     record Skill(URI uri, String label, URI skillType, double score) {}
     record Result(List<Skill> skills) {}
 
     try {
-      var result = restClient.post().body(new Input(input, 13, 1)).retrieve().body(Result.class);
+      var result =
+          restClient
+              .post()
+              .body(new Input(taidot.kuvaus().value(), 13, 1))
+              .retrieve()
+              .body(Result.class);
 
       if (result == null || result.skills() == null) {
         return ResponseEntity.ok(List.of());
@@ -97,11 +96,7 @@ public class OsaamisetEhdotusController {
     }
   }
 
-  private static String normalize(String str) {
-    return NON_WORD.matcher(Normalizer.normalize(str, Form.NFKC)).replaceAll(" ").trim();
-  }
+  public record Taidot(@NotNull @Size(min = 1, max = 10_000) NormalizedString kuvaus) {}
 
   public record Osaaminen(URI id, String nimi, URI tyyppi, double osuvuus) {}
-
-  public record Taidot(@NotNull @Size(min = 1, max = 10_000) String kuvaus) {}
 }

@@ -48,3 +48,5 @@ logging:
 recommendation:
   skills:
     baseUrl: ""
+  tyomahdollisuus:
+    endpoint: ""

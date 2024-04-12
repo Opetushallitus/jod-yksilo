@@ -17,8 +17,9 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 import software.amazon.awssdk.services.rds.RdsClient;
+import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 
-@Configuration(proxyBeanMethods = false)
+@Configuration
 @Profile("cloud")
 public class AwsConfig {
 
@@ -34,6 +35,14 @@ public class AwsConfig {
 
   @Bean
   public RdsClient rdsClient(Region region) {
-    return RdsClient.builder().region(region).build();
+    return RdsClient.builder().credentialsProvider(awsCredentialsProvider()).region(region).build();
+  }
+
+  @Bean
+  public SageMakerRuntimeClient sageMakerRuntimeClient(Region region) {
+    return SageMakerRuntimeClient.builder()
+        .credentialsProvider(awsCredentialsProvider())
+        .region(region)
+        .build();
   }
 }
