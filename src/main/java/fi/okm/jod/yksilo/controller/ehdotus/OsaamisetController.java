@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
+import fi.okm.jod.yksilo.dto.NormalizedString;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

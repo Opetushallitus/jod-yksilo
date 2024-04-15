@@ -9,9 +9,11 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
+import fi.okm.jod.yksilo.controller.ehdotus.TyomahdollisuudetController.Request.Data;
+import fi.okm.jod.yksilo.dto.NormalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import jakarta.validation.Valid;
-import java.net.URI;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,16 +40,18 @@ public class TyomahdollisuudetController {
   }
 
   @PostMapping
-  public ResponseEntity<Object> createEhdotus(@RequestBody @Valid List<Osaaminen> osaamiset) {
+  public ResponseEntity<Object> createEhdotus(
+      @RequestBody @Valid @Size(max = 1_000)
+          List<@Size(min = 1, max = 1_000) NormalizedString> osaamiset) {
 
     log.info("Creating a suggestion for tyomahdollisuudet");
 
-    var request = new Request(osaamiset.stream().map(o -> o.nimi().value()).toList());
+    var request = new Request(new Data(osaamiset.stream().map(NormalizedString::value).toList()));
 
     return ResponseEntity.ok(inferenceService.infer(endpoint, request, Object.class));
   }
 
-  public record Osaaminen(URI id, NormalizedString nimi) {}
-
-  public record Request(List<String> osaamiset) {}
+  public record Request(Data data) {
+    record Data(List<String> osaamiset) {}
+  }
 }
