@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.ehdotus;
+package fi.okm.jod.yksilo.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

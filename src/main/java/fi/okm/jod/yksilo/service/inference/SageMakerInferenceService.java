@@ -46,7 +46,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
-              .customAttributes(tracer.currentSpan().toString())
+              .customAttributes(tracer.currentSpan().context().traceIdString())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();
@@ -56,12 +56,10 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
     } catch (IOException e) {
       throw new ServiceException("Invoking SageMaker failed", e);
     } catch (SageMakerRuntimeException se) {
-      switch (se.awsErrorDetails().errorCode()) {
-        case "ThrottlingException":
-          throw new ServiceOverloadedException("SageMaker is throttling requests", se);
-        default:
-          throw new ServiceException("Inference failed", se);
+      if ("ThrottlingException".equals(se.awsErrorDetails().errorCode())) {
+        throw new ServiceOverloadedException("SageMaker is throttling requests", se);
       }
+      throw new ServiceException("Inference failed", se);
     }
   }
 }
