@@ -50,3 +50,12 @@ recommendation:
     baseUrl: ""
   tyomahdollisuus:
     endpoint: ""
+
+management:
+  observations:
+    annotations:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics"
