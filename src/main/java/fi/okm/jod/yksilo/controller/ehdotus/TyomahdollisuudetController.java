@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 import fi.okm.jod.yksilo.controller.ehdotus.TyomahdollisuudetController.Request.Data;
 import fi.okm.jod.yksilo.dto.NormalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -40,6 +41,7 @@ public class TyomahdollisuudetController {
   }
 
   @PostMapping
+  @Timed
   public ResponseEntity<Object> createEhdotus(
       @RequestBody @Valid @Size(max = 1_000)
           List<@Size(min = 1, max = 1_000) NormalizedString> osaamiset) {

@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.dto.NormalizedString;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -70,12 +71,14 @@ public class OsaamisetController {
   }
 
   @PostMapping
+  @Timed
   public ResponseEntity<List<Osaaminen>> createEhdotus(@RequestBody @Valid Taidot taidot) {
 
     record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations) {}
     record Skill(URI uri, String label, URI skillType, double score) {}
     record Result(List<Skill> skills) {}
 
+    log.info("Creating a suggestion for osaamiset");
     try {
       var result =
           restClient
