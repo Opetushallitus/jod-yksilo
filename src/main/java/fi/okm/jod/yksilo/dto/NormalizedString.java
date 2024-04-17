@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import static org.springframework.util.StringUtils.hasLength;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.text.Normalizer;
@@ -27,7 +29,7 @@ public record NormalizedString(@JsonValue String value) {
       Pattern.compile("[^\\w\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
 
   private static String normalize(String str) {
-    return (str == null || str.isEmpty())
+    return hasLength(str)
         ? str
         : NON_WORD.matcher(Normalizer.normalize(str, Form.NFKC)).replaceAll(" ").trim();
   }
