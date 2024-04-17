@@ -29,7 +29,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 
 @Configuration(proxyBeanMethods = false)
 @EnableRedisHttpSession
@@ -56,7 +56,7 @@ public class SessionConfig implements BeanClassLoaderAware {
   @Bean
   @Profile("cloud")
   LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer(
-      AwsCredentialsProvider awsCredentialsProvider, Region region) {
+      AwsCredentialsProvider awsCredentialsProvider, AwsRegionProvider regionProvider) {
     return builder ->
         builder.redisCredentialsProviderFactory(
             new RedisCredentialsProviderFactory() {
@@ -76,7 +76,7 @@ public class SessionConfig implements BeanClassLoaderAware {
                   String username = redisStandaloneConfiguration.getUsername();
 
                   IamAuthTokenRequest iamAuthTokenRequest =
-                      new IamAuthTokenRequest(username, cacheName, region);
+                      new IamAuthTokenRequest(username, cacheName, regionProvider.getRegion());
 
                   return new RedisIamAuthCredentialsProvider(
                       username, iamAuthTokenRequest, awsCredentialsProvider);

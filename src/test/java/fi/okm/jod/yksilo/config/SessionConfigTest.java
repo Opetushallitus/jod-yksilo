@@ -35,6 +35,7 @@ import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
 @Testcontainers
@@ -98,8 +99,8 @@ class SessionConfigTest {
 
     @Bean
     @Profile("cloud")
-    public Region region() {
-      return new DefaultAwsRegionProviderChain().getRegion();
+    public AwsRegionProvider regionProvider() {
+      return DefaultAwsRegionProviderChain.builder().build();
     }
 
     @Bean

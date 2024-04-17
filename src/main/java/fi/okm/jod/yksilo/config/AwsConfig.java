@@ -13,9 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
+import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 
@@ -24,25 +22,20 @@ import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 public class AwsConfig {
 
   @Bean
-  public AwsCredentialsProvider awsCredentialsProvider() {
-    return DefaultCredentialsProvider.create();
+  public RdsClient rdsClient(
+      AwsCredentialsProvider credentialsProvider, AwsRegionProvider regionProvider) {
+    return RdsClient.builder()
+        .credentialsProvider(credentialsProvider)
+        .region(regionProvider.getRegion())
+        .build();
   }
 
   @Bean
-  public Region region() {
-    return new DefaultAwsRegionProviderChain().getRegion();
-  }
-
-  @Bean
-  public RdsClient rdsClient(Region region) {
-    return RdsClient.builder().credentialsProvider(awsCredentialsProvider()).region(region).build();
-  }
-
-  @Bean
-  public SageMakerRuntimeClient sageMakerRuntimeClient(Region region) {
+  public SageMakerRuntimeClient sageMakerRuntimeClient(
+      AwsCredentialsProvider credentialsProvider, AwsRegionProvider regionProvider) {
     return SageMakerRuntimeClient.builder()
-        .credentialsProvider(awsCredentialsProvider())
-        .region(region)
+        .credentialsProvider(credentialsProvider)
+        .region(regionProvider.getRegion())
         .build();
   }
 }
