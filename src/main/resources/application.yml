@@ -14,6 +14,8 @@ spring:
         enabled: false
   mvc:
     log-resolved-exception: false
+  flyway:
+    enabled: false
 
 server:
   error:
@@ -58,4 +60,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,metrics"
+        include: "health"

@@ -16,7 +16,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rds.RdsClient;
 
-public class RdsIamAuthHikariDataSourceTest {
+class RdsAuthTokenProviderTest {
 
   private static final String HOST = "localhost";
   private static final Integer PORT = 5432;
@@ -30,13 +30,10 @@ public class RdsIamAuthHikariDataSourceTest {
             .region(Region.regions().getFirst())
             .credentialsProvider(() -> AwsBasicCredentials.create("accessKey", "secretKey"))
             .build();
-    String password;
-    try (RdsIamAuthHikariDataSource dataSource = new RdsIamAuthHikariDataSource()) {
-      dataSource.setRdsClient(rdsClient);
-      dataSource.setJdbcUrl("jdbc:postgresql://" + HOST + ":" + PORT + "/testdb");
-      dataSource.setUsername(USERNAME);
-      password = dataSource.getPassword();
-    }
+
+    var tokenProvider = new RdsIamAuthTokenProvider(rdsClient);
+    var jdbcUri = "jdbc:postgresql://" + HOST + ":" + PORT + "/testdb";
+    var password = tokenProvider.generateAuthToken(jdbcUri, USERNAME);
 
     assertTrue(password.startsWith(expectedPasswordPrefix));
     assertTrue(password.contains("X-Amz-Signature"));

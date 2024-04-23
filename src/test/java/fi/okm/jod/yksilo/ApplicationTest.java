@@ -29,7 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 @DirtiesContext
 @Testcontainers
 @AutoConfigureMockMvc
-public class ApplicationTest {
+class ApplicationTest {
 
   @Autowired private MockMvc mockMvc;
 
@@ -42,7 +42,7 @@ public class ApplicationTest {
       new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
 
   @Test
-  public void contextLoads() throws Exception {
+  void contextLoads() throws Exception {
     mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
   }
 }
