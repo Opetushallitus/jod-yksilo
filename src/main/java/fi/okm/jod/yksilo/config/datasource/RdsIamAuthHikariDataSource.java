@@ -10,31 +10,19 @@
 package fi.okm.jod.yksilo.config.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
-import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
-import software.amazon.awssdk.services.rds.RdsClient;
-import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest;
 
 public class RdsIamAuthHikariDataSource extends HikariDataSource {
 
-  private RdsClient rdsClient;
+  private RdsIamAuthTokenProvider rdsAuthTokenProvider;
 
   @Autowired
-  public void setRdsClient(RdsClient rdsClient) {
-    this.rdsClient = rdsClient;
+  public void setAuthTokenProvider(RdsIamAuthTokenProvider rdsAuthTokenProvider) {
+    this.rdsAuthTokenProvider = rdsAuthTokenProvider;
   }
 
   @Override
   public String getPassword() {
-    // Generate URI from the JDBC URL by removing the "jdbc:" prefix.
-    URI jdbcUri = URI.create(getJdbcUrl().substring(5));
-    return rdsClient
-        .utilities()
-        .generateAuthenticationToken(
-            GenerateAuthenticationTokenRequest.builder()
-                .username(getUsername())
-                .hostname(jdbcUri.getHost())
-                .port(jdbcUri.getPort())
-                .build());
+    return rdsAuthTokenProvider.generateAuthToken(getJdbcUrl(), getUsername());
   }
 }
