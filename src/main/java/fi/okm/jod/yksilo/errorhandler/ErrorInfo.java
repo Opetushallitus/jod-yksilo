@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.errorhandler;
+package fi.okm.jod.yksilo.errorhandler;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.micrometer.tracing.Span;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public record ErrorInfo(
     ErrorCode errorCode,
-    String traceId,
+    @JsonInclude(JsonInclude.Include.NON_NULL) String traceId,
     @JsonInclude(JsonInclude.Include.NON_NULL) List<String> errorDetails) {
 
   ErrorInfo(ErrorCode errorCode, Span span, List<String> errorDetails) {
@@ -23,10 +23,12 @@ public record ErrorInfo(
   }
 
   public enum ErrorCode {
-    VALIDATION_FAILURE,
     ACCESS_DENIED,
+    AUTHENTICATION_FAILURE,
+    INVALID_REQUEST,
     MESSAGE_NOT_READABLE,
-    UNSPECIFIED_ERROR,
     RESOURCE_NOT_FOUND,
+    UNSPECIFIED_ERROR,
+    VALIDATION_FAILURE,
   }
 }

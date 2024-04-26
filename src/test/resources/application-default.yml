@@ -1,4 +1,4 @@
 logging:
   level:
+    root: INFO
     fi.okm.jod: DEBUG
-    org.springframework: WARN

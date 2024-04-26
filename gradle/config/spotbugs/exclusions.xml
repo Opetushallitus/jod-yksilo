@@ -8,7 +8,8 @@
     <Bug pattern="
       EI_EXPOSE_REP,
       EI_EXPOSE_REP2,
-      SE_BAD_FIELD"
+      SE_BAD_FIELD,
+      CT_CONSTRUCTOR_THROW"
     />
   </Match>
 </FindBugsFilter>
