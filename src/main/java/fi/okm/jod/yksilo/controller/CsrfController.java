@@ -10,20 +10,19 @@
 package fi.okm.jod.yksilo.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Mock controller (to be removed). */
+/** Provides the CSRF token for the front-end */
 @RestController
-@RequestMapping(path = "/api/ping")
+@RequestMapping(path = "/api/csrf")
 @Slf4j
-public class PingController {
+public class CsrfController {
 
-  @GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-  public String ping() {
-    log.info("Ping received");
-    return "pong";
+  @GetMapping
+  public CsrfToken csrf(CsrfToken csrfToken) {
+    return csrfToken;
   }
 }

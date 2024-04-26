@@ -7,10 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.errorhandler;
+package fi.okm.jod.yksilo.errorhandler;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import fi.okm.jod.yksilo.controller.errorhandler.ErrorInfo.ErrorCode;
+import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

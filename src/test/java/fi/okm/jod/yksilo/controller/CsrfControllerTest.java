@@ -10,33 +10,36 @@
 package fi.okm.jod.yksilo.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.SecurityConfig;
-import fi.okm.jod.yksilo.controller.errorhandler.ErrorInfoFactory;
+import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(PingController.class)
-@Import({SecurityConfig.class, ErrorInfoFactory.class})
-class PingControllerTest {
+@WebMvcTest(CsrfController.class)
+@Import({ErrorInfoFactory.class, SecurityConfig.class})
+class CsrfControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
   @Test
-  void shouldReturnPong() throws Exception {
+  @WithMockUser
+  void shouldReturnCsrfToken() throws Exception {
     mockMvc
-        .perform(get("/api/ping"))
+        .perform(get("/api/csrf"))
         .andExpect(status().isOk())
-        .andExpect(content().string("pong"));
+        .andExpect(jsonPath("$.token").isNotEmpty());
   }
 
   @Test
-  void shouldFailWithForbidden() throws Exception {
-    mockMvc.perform(get("/api/pong")).andExpect(status().isForbidden());
+  void shouldNotReturnCsrfTokenIfUnauthenticated() throws Exception {
+    mockMvc.perform(post("/api/csrf")).andExpect(jsonPath("$.token").doesNotExist());
   }
 }

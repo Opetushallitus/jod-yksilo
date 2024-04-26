@@ -7,9 +7,11 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.errorhandler;
+package fi.okm.jod.yksilo.errorhandler;
 
-import fi.okm.jod.yksilo.controller.errorhandler.ErrorInfo.ErrorCode;
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
+import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import io.micrometer.tracing.Tracer;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.RequestDispatcher;
@@ -20,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,19 +35,43 @@ import org.springframework.web.bind.annotation.RestController;
 public class FallbackErrorController implements ErrorController {
   private final Tracer tracer;
 
-  /** Renders errors as JSON. */
-  @SuppressWarnings("java:S6857")
+  /** Renders (almost all) unhandled errors as JSON. */
+  @SuppressWarnings({"java:S6857", "java:S3752"})
   @RequestMapping(path = "${server.error.path:/error}")
   public ResponseEntity<ErrorInfo> error(HttpServletRequest request) {
 
-    var status = getStatus(request);
-    var exception = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
-    log.error("Request failed with status {}", status, exception);
+    HttpStatus status;
+    Throwable exception;
+    ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+
+    if (request.getAttribute(WebAttributes.ACCESS_DENIED_403) instanceof Throwable ex) {
+      exception = ex;
+      status = HttpStatus.FORBIDDEN;
+      errorCode = ErrorCode.ACCESS_DENIED;
+    } else {
+      exception = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+      if (exception instanceof AuthenticationException) {
+        status = HttpStatus.FORBIDDEN;
+        errorCode = ErrorCode.AUTHENTICATION_FAILURE;
+      } else {
+        status = getStatus(request);
+      }
+    }
+
+    if (status.is5xxServerError()) {
+      errorCode = ErrorCode.UNSPECIFIED_ERROR;
+      log.error("Request failed: {}", kv("status", status.value()), exception);
+    } else {
+      log.warn(
+          "Request failed: {}, {}",
+          kv("status", status.value()),
+          kv("reason", exception.toString()));
+    }
 
     return ResponseEntity.status(status)
-        .body(
-            new ErrorInfo(
-                ErrorCode.UNSPECIFIED_ERROR, tracer.currentSpan(), List.of(status.name())));
+        .header("Cache-Control", "private, no-cache, no-store, stale-if-error=0")
+        .header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+        .body(new ErrorInfo(errorCode, tracer.currentSpan(), List.of(status.name())));
   }
 
   private HttpStatus getStatus(HttpServletRequest request) {

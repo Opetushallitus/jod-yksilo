@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.errorhandler;
+package fi.okm.jod.yksilo.errorhandler;
 
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
