@@ -59,7 +59,7 @@ public class TomcatErrorReportValve extends ErrorReportValve {
       response.setHeader("Cache-Control", "private, no-cache, no-store, stale-if-error=0");
       var writer = response.getReporter();
       if (writer != null) {
-        if (statusCode < 500) {
+        if (statusCode == 400) {
           writer.write(invalidRequestJson);
         } else {
           writer.write(unspecifiedErrorJson);
