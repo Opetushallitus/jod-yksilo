@@ -30,6 +30,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
@@ -88,13 +89,18 @@ public class SecurityConfig {
   SecurityFilterChain loginFilterChain(HttpSecurity http) throws Exception {
     log.warn("WARNING: Using mock authentication.");
 
-    var successHandler = new SimpleUrlAuthenticationSuccessHandler("/");
     var redirectStrategy = new DefaultRedirectStrategy();
     redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
-    successHandler.setRedirectStrategy(redirectStrategy);
+
+    var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/?loginSuccess");
+    loginSuccessHandler.setRedirectStrategy(redirectStrategy);
+
+    var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+    logoutSuccessHandler.setRedirectStrategy(redirectStrategy);
 
     return http.securityMatcher("/login", "/logout")
-        .formLogin(login -> login.successHandler(successHandler))
+        .formLogin(login -> login.successHandler(loginSuccessHandler))
+        .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
         .build();
   }
 
