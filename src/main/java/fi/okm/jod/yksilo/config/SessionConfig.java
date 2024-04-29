@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
 import io.lettuce.core.RedisCredentialsProvider;
-import java.util.Objects;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
@@ -21,13 +20,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConfiguration;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.RedisConfiguration.WithAuthentication;
 import org.springframework.data.redis.connection.lettuce.RedisCredentialsProviderFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.lang.NonNull;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 
@@ -63,9 +63,8 @@ public class SessionConfig implements BeanClassLoaderAware {
               @Override
               public RedisCredentialsProvider createCredentialsProvider(
                   @NonNull RedisConfiguration redisConfiguration) {
-                if (!Objects.equals(cacheName, "")
-                    && redisConfiguration
-                        instanceof RedisStandaloneConfiguration redisStandaloneConfiguration) {
+                if (StringUtils.hasLength(cacheName)
+                    && redisConfiguration instanceof WithAuthentication authentication) {
                   // Custom implementation of RedisCredentialsProvider for IAM Authentication.
 
                   // References:
@@ -73,7 +72,7 @@ public class SessionConfig implements BeanClassLoaderAware {
                   // https://github.com/aws-samples/elasticache-iam-auth-demo-app/tree/main
 
                   // The username is the same as the user id.
-                  String username = redisStandaloneConfiguration.getUsername();
+                  String username = authentication.getUsername();
 
                   IamAuthTokenRequest iamAuthTokenRequest =
                       new IamAuthTokenRequest(username, cacheName, regionProvider.getRegion());
