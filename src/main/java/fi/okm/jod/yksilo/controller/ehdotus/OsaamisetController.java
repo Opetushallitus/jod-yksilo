@@ -42,7 +42,7 @@ public class OsaamisetController {
   public OsaamisetController(
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
-      @Value("${recommendation.skills.baseUrl}") String baseUrl) {
+      @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
     log.info("Creating OsaamisetEhdotusController, baseUrl: {}", baseUrl);
 
     var requestFactory =
