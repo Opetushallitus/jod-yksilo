@@ -12,12 +12,16 @@ package fi.okm.jod.yksilo.config;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +33,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -46,7 +51,9 @@ public class SecurityConfig {
 
   @Bean
   @SuppressWarnings("java:S4502")
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, @Value("${jod.session.maxDuration}") Duration sessionMaxDuration)
+      throws Exception {
     return http.securityMatcher("/api/**")
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -81,6 +88,18 @@ public class SecurityConfig {
               headers.cacheControl(CacheControlConfig::disable);
               headers.addHeaderWriter(new CacheControlHeadersWriter());
             })
+        .addFilterBefore(
+            (request, response, chain) -> {
+              if (request instanceof HttpServletRequest req
+                  && req.getSession(false) instanceof HttpSession session
+                  && (System.currentTimeMillis() - session.getCreationTime())
+                      > sessionMaxDuration.toMillis()) {
+                req.logout();
+                throw new AccessDeniedException("Session maximum duration exceeded");
+              }
+              chain.doFilter(request, response);
+            },
+            AuthorizationFilter.class)
         .build();
   }
 
@@ -101,6 +120,12 @@ public class SecurityConfig {
     return http.securityMatcher("/login", "/logout")
         .formLogin(login -> login.successHandler(loginSuccessHandler))
         .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
+        .headers(
+            headers ->
+                headers.contentSecurityPolicy(
+                    csp ->
+                        csp.policyDirectives(
+                            "default-src 'self'; frame-ancestors 'none'; style-src 'self' https://maxcdn.bootstrapcdn.com https://getbootstrap.com;")))
         .build();
   }
 
@@ -136,7 +161,6 @@ public class SecurityConfig {
     }
   }
 
-  /** XorCsrfTokenRequestAttributeHandler leaks failure information if the token is invalid. */
   static final class HardenedCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
     private final XorCsrfTokenRequestAttributeHandler delegate =
         new XorCsrfTokenRequestAttributeHandler();
@@ -150,6 +174,7 @@ public class SecurityConfig {
     @Override
     public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
       try {
+        // fails with IllegalArgumentException if the token is invalid instead of returning null
         return delegate.resolveCsrfTokenValue(request, csrfToken);
       } catch (Exception e) {
         log.warn("Failed to resolve CSRF token value: {}", e.toString());

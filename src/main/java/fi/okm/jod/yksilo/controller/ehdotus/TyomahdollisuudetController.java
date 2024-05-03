@@ -35,7 +35,7 @@ public class TyomahdollisuudetController {
 
   public TyomahdollisuudetController(
       InferenceService<Request, Object> inferenceService,
-      @Value("${recommendation.tyomahdollisuus.endpoint}") String endpoint) {
+      @Value("${jod.recommendation.tyomahdollisuus.endpoint}") String endpoint) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
   }
