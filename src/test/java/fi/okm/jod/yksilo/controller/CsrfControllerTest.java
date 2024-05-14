@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fi.okm.jod.yksilo.config.SecurityConfig;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CsrfController.class)
-@Import({ErrorInfoFactory.class, SecurityConfig.class})
+@Import({ErrorInfoFactory.class})
 class CsrfControllerTest {
 
   @Autowired private MockMvc mockMvc;

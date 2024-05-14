@@ -10,17 +10,16 @@
 package fi.okm.jod.yksilo.service;
 
 @SuppressWarnings("serial")
-public class ServiceException extends RuntimeException {
-
-  public ServiceException(String message) {
+public class NotFoundException extends ServiceException {
+  public NotFoundException(String message) {
     super(message);
   }
 
-  public ServiceException(Throwable cause) {
-    super(cause);
+  public NotFoundException(String message, Throwable cause) {
+    super(message, cause);
   }
 
-  public ServiceException(String message, Throwable cause) {
-    super(message, cause);
+  public NotFoundException(Throwable cause) {
+    super(cause);
   }
 }

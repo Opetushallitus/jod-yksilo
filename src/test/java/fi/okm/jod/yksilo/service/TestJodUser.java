@@ -9,18 +9,17 @@
 
 package fi.okm.jod.yksilo.service;
 
-@SuppressWarnings("serial")
-public class ServiceException extends RuntimeException {
+import fi.okm.jod.yksilo.domain.JodUser;
+import java.util.UUID;
 
-  public ServiceException(String message) {
-    super(message);
+record TestJodUser(UUID id) implements JodUser {
+
+  @Override
+  public UUID getId() {
+    return id();
   }
 
-  public ServiceException(Throwable cause) {
-    super(cause);
-  }
-
-  public ServiceException(String message, Throwable cause) {
-    super(message, cause);
+  static JodUser of(String uuid) {
+    return new TestJodUser(UUID.fromString(uuid));
   }
 }

@@ -11,6 +11,8 @@ package fi.okm.jod.yksilo.errorhandler;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
+import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -69,6 +72,12 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     var info = errorInfo.of(ErrorCode.RESOURCE_NOT_FOUND, null);
     return handleExceptionInternal(ex, info, headers, status, request);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  protected ResponseEntity<Object> handleServiceException(ServiceException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.RESOURCE_NOT_FOUND, List.of(ex.getMessage()));
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
   }
 
   @Override

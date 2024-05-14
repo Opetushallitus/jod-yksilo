@@ -9,17 +9,7 @@
 
 package fi.okm.jod.yksilo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import java.io.Serializable;
-import lombok.Getter;
-import lombok.Setter;
-
-/** Mock entity (to be removed). */
-@Entity
-@Getter
-@Setter
-public class DemoEntity implements Serializable {
-  @Id @GeneratedValue private Long id;
+public enum OsaamisenLahdeTyyppi {
+  TOIMENKUVA,
+  KOULUTUS
 }

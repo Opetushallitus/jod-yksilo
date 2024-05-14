@@ -7,10 +7,8 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.repository;
+package fi.okm.jod.yksilo.dto.validationgroup;
 
-import fi.okm.jod.yksilo.entity.DemoEntity;
-import org.springframework.data.repository.CrudRepository;
+import jakarta.validation.groups.Default;
 
-/** Mock repository (to be removed). */
-public interface DemoRepository extends CrudRepository<DemoEntity, Long> {}
+public interface Update extends Default {}
