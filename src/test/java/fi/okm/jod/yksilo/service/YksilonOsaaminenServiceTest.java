@@ -13,6 +13,7 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahde;
+import fi.okm.jod.yksilo.dto.OsaaminenLisaysDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
@@ -20,6 +21,7 @@ import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,12 +60,14 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
         () -> {
           service.add(
               user,
-              URI.create("urn:osaaminen1"),
-              new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuva));
-          service.add(
-              user,
-              URI.create("urn:osaaminen1"),
-              new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutus));
+              List.of(
+                  new OsaaminenLisaysDto(
+                      URI.create("urn:osaaminen1"),
+                      new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuva)),
+                  new OsaaminenLisaysDto(
+                      URI.create("urn:osaaminen1"),
+                      new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutus))));
+
           entityManager.flush();
         });
     var result = service.findAll(user);
