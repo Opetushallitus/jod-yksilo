@@ -9,16 +9,22 @@
 
 package fi.okm.jod.yksilo.config;
 
+import fi.okm.jod.yksilo.domain.MockJodUserImpl;
+import fi.okm.jod.yksilo.repository.YksiloRepository;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.UncheckedIOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,7 +34,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.CacheControlConfig;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -40,6 +45,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.header.HeaderWriter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StringUtils;
 
 /** Spring security filter chain configuration. */
@@ -52,21 +58,50 @@ public class SecurityConfig {
   @Bean
   @SuppressWarnings("java:S4502")
   public SecurityFilterChain securityFilterChain(
-      HttpSecurity http, @Value("${jod.session.maxDuration}") Duration sessionMaxDuration)
+      HttpSecurity http,
+      Environment env,
+      @Value("${jod.session.maxDuration}") Duration sessionMaxDuration)
       throws Exception {
+
+    RequestMatcher[] csrfIgnoringRequestMatchers;
+    // for development, to be removed
+    // makes it possible to test the API locally using Swagger UI
+    if (!env.matchesProfiles("cloud")
+        && Boolean.TRUE.equals(
+            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
+      csrfIgnoringRequestMatchers =
+          new RequestMatcher[] {
+            request -> request.getSession(false) == null,
+            request -> {
+              try {
+                if (InetAddress.getByName(request.getRemoteAddr()).isLoopbackAddress()) {
+                  log.warn("Allowing request without CSRF");
+                  return true;
+                }
+              } catch (UnknownHostException e) {
+                throw new UncheckedIOException(e);
+              }
+              return false;
+            }
+          };
+    } else {
+      csrfIgnoringRequestMatchers =
+          new RequestMatcher[] {request -> request.getSession(false) == null};
+    }
+
     return http.securityMatcher("/api/**")
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .requestCache(RequestCacheConfigurer::disable)
         .csrf(
             csrf -> {
-              csrf.ignoringRequestMatchers(request -> request.getSession(false) == null);
+              csrf.ignoringRequestMatchers(csrfIgnoringRequestMatchers);
               csrf.csrfTokenRequestHandler(new HardenedCsrfTokenRequestHandler());
             })
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers("/api/ehdotus/**")
+                    .requestMatchers("/api/ehdotus/**", "/api/osaamiset")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -130,13 +165,21 @@ public class SecurityConfig {
   }
 
   @Bean
-  UserDetailsService mockUserDetailsService() {
+  @SuppressWarnings("java:S5804")
+  UserDetailsService mockUserDetailsService(YksiloRepository yksilot) {
     log.warn("WARNING: Using mock user details service.");
     return username -> {
-      if (!StringUtils.hasLength(username) || username.length() > 100) {
+      if (!StringUtils.hasLength(username)
+          || username.length() > 100
+          || !username.strip().equals(username)) {
         throw new UsernameNotFoundException("Invalid username");
       }
-      return User.builder().username(username).password("{noop}password").roles("USER").build();
+      try {
+        var yksilo = yksilot.getByTunnus(username);
+        return new MockJodUserImpl(yksilo.getTunnus(), yksilo.getId());
+      } catch (Exception e) {
+        throw new UsernameNotFoundException("User not found", e);
+      }
     };
   }
 

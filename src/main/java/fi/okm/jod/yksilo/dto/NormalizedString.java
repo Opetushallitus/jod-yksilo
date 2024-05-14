@@ -26,11 +26,11 @@ public record NormalizedString(@JsonValue String value) {
   }
 
   private static final Pattern NON_WORD =
-      Pattern.compile("[^\\w\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
+      Pattern.compile("[^\\w\\p{Punct}\\p{gc=S}]+", Pattern.UNICODE_CHARACTER_CLASS);
 
   private static String normalize(String str) {
     return hasLength(str)
         ? str
-        : NON_WORD.matcher(Normalizer.normalize(str, Form.NFKC)).replaceAll(" ").trim();
+        : NON_WORD.matcher(Normalizer.normalize(str.strip(), Form.NFKC)).replaceAll(" ");
   }
 }

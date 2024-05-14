@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.controller.ehdotus.TyomahdollisuudetController.Request.
 import fi.okm.jod.yksilo.dto.NormalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/ehdotus/tyomahdollisuudet")
 @Slf4j
+@Tag(name = "ehdotus")
 public class TyomahdollisuudetController {
 
   private final InferenceService<Request, Object> inferenceService;

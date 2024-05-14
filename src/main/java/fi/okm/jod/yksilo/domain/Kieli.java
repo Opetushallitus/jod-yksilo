@@ -7,20 +7,15 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service;
+package fi.okm.jod.yksilo.domain;
 
-@SuppressWarnings("serial")
-public class ServiceException extends RuntimeException {
+public enum Kieli {
+  FI,
+  SV,
+  EN;
 
-  public ServiceException(String message) {
-    super(message);
-  }
-
-  public ServiceException(Throwable cause) {
-    super(cause);
-  }
-
-  public ServiceException(String message, Throwable cause) {
-    super(message, cause);
+  @Override
+  public String toString() {
+    return name().toLowerCase();
   }
 }

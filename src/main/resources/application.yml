@@ -8,6 +8,7 @@ spring:
     hibernate:
       ddl-auto: "create" # FIXME: Just for early development without migrations
     open-in-view: false
+    defer-datasource-initialization: true # FIXME: Just for early development without migrations
   data:
     redis:
       repositories:
@@ -18,6 +19,9 @@ spring:
     enabled: false
   session:
     timeout: 30m
+  sql:
+    init:
+      mode: always # FIXME: Just for early development without migrations
 
 server:
   error:

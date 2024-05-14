@@ -7,20 +7,15 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service;
+package fi.okm.jod.yksilo.repository;
 
-@SuppressWarnings("serial")
-public class ServiceException extends RuntimeException {
+import fi.okm.jod.yksilo.entity.Yksilo;
+import java.util.UUID;
+import org.springframework.data.repository.Repository;
 
-  public ServiceException(String message) {
-    super(message);
-  }
+public interface YksiloRepository extends Repository<Yksilo, UUID> {
 
-  public ServiceException(Throwable cause) {
-    super(cause);
-  }
+  Yksilo getByTunnus(String tunnus);
 
-  public ServiceException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  Yksilo getReferenceById(UUID id);
 }

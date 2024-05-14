@@ -12,4 +12,7 @@
       CT_CONSTRUCTOR_THROW"
     />
   </Match>
+  <Match>
+    <Annotation name="jakarta.persistence.metamodel.StaticMetamodel" />
+  </Match>
 </FindBugsFilter>

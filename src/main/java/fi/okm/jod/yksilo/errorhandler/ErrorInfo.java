@@ -30,5 +30,6 @@ public record ErrorInfo(
     RESOURCE_NOT_FOUND,
     UNSPECIFIED_ERROR,
     VALIDATION_FAILURE,
+    SERVICE_ERROR,
   }
 }

@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.dto.NormalizedString;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -35,11 +36,12 @@ import org.springframework.web.client.RestClientException;
 @RestController
 @RequestMapping(path = "/api/ehdotus/osaamiset")
 @Slf4j
-public class OsaamisetController {
+@Tag(name = "ehdotus", description = "Ehdotus (POC)")
+public class OsaamisetEhdotusController {
 
   private final RestClient restClient;
 
-  public OsaamisetController(
+  public OsaamisetEhdotusController(
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
       @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
