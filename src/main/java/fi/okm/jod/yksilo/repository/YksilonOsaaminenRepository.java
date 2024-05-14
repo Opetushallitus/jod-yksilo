@@ -27,4 +27,6 @@ public interface YksilonOsaaminenRepository extends Repository<YksilonOsaaminen,
   YksilonOsaaminen save(YksilonOsaaminen yksilonOsaaminen);
 
   Optional<YksilonOsaaminen> findByYksiloIdAndId(UUID yksiloId, UUID id);
+
+  List<YksilonOsaaminen> saveAll(Iterable<YksilonOsaaminen> list);
 }

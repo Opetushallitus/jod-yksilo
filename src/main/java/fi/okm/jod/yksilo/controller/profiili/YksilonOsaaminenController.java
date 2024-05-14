@@ -10,19 +10,17 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.domain.OsaamisenLahde;
+import fi.okm.jod.yksilo.dto.OsaaminenLisaysDto;
 import fi.okm.jod.yksilo.dto.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import java.net.URI;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/profiili/osaamiset")
@@ -48,13 +45,10 @@ class YksilonOsaaminenController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  ResponseEntity<Void> add(
-      @Valid @RequestBody YksilonOsaaminenController.OsaaminenLisaysDto dto,
+  void add(
+      @RequestBody @NotEmpty @Size(max = 1000) @Valid List<OsaaminenLisaysDto> dtos,
       @AuthenticationPrincipal JodUser user) {
-    var id = service.add(user, dto.osaaminen(), dto.lahde());
-    var location =
-        ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri();
-    return ResponseEntity.created(location).build();
+    service.add(user, dtos);
   }
 
   @DeleteMapping("/{id}")
@@ -62,7 +56,4 @@ class YksilonOsaaminenController {
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);
   }
-
-  record OsaaminenLisaysDto(
-      @NotNull @Schema(description = "Reference") URI osaaminen, @NotNull OsaamisenLahde lahde) {}
 }

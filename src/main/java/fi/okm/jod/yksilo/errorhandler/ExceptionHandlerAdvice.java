@@ -27,6 +27,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -51,6 +52,20 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       details = List.of("JsonMappingFailure");
     }
     var info = errorInfo.of(ErrorCode.MESSAGE_NOT_READABLE, details);
+    return handleExceptionInternal(ex, info, headers, status, request);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleHandlerMethodValidationException(
+      HandlerMethodValidationException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    var details =
+        ex.getAllValidationResults().stream()
+            .flatMap(e -> e.getResolvableErrors().stream().map(r -> r.getDefaultMessage()))
+            .toList();
+    var info = errorInfo.of(ErrorCode.VALIDATION_FAILURE, details);
     return handleExceptionInternal(ex, info, headers, status, request);
   }
 
