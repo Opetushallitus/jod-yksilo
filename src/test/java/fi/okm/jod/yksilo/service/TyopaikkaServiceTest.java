@@ -13,7 +13,7 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;

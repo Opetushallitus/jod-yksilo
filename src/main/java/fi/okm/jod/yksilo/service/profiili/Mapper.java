@@ -9,11 +9,11 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
-import fi.okm.jod.yksilo.dto.KoulutusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.dto.ToimenkuvaDto;
-import fi.okm.jod.yksilo.dto.TyopaikkaDto;
-import fi.okm.jod.yksilo.dto.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Toimenkuva;

@@ -42,6 +42,8 @@ springdoc:
     validator-url: none
     path: /openapi/openapi.html
     disable-swagger-default-url: true
+    operations-sorter: alpha
+    tags-sorter: alpha
 
 logging:
   level:

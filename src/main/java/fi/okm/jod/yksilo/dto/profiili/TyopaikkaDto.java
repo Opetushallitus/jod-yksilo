@@ -7,8 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.profiili;
 
+import fi.okm.jod.yksilo.dto.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.validator.PrintableString;

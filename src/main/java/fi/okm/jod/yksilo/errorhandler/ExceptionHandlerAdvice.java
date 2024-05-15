@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +93,13 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   @ExceptionHandler(NotFoundException.class)
   protected ResponseEntity<Object> handleServiceException(ServiceException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.RESOURCE_NOT_FOUND, List.of(ex.getMessage()));
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+  }
+
+  @ExceptionHandler(ServiceValidationException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      ServiceValidationException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.VALIDATION_FAILURE, List.of(ex.getMessage()));
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
   }
 

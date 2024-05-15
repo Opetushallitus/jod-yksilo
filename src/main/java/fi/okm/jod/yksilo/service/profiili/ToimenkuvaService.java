@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.repository.ToimenkuvaRepository;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;

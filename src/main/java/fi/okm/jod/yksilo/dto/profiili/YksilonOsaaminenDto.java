@@ -7,9 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.profiili;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import java.util.UUID;
 

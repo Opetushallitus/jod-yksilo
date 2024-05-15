@@ -7,16 +7,21 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.profiili;
 
+import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.validator.PrintableString;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.UUID;
 
 public record KoulutusDto(
-    UUID id,
+    @Null(groups = Add.class) @NotNull(groups = Update.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     LocalDate alkuPvm,

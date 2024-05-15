@@ -10,11 +10,10 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -36,19 +35,17 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/tyopaikat/{id}/toimenkuvat")
 @RequiredArgsConstructor
-@Tag(name = "profiili", description = "Yksilön profiilin hallinta")
+@Tag(name = "profiili")
 class ToimenkuvaController {
   private final ToimenkuvaService service;
 
   @GetMapping
-  @Operation(tags = "profiili")
   List<ToimenkuvaDto> getAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(tags = "profiili")
   ResponseEntity<Void> add(
       @PathVariable UUID id,
       @Validated({Add.class}) @RequestBody ToimenkuvaDto dto,
@@ -66,7 +63,6 @@ class ToimenkuvaController {
 
   @PostMapping("/{toimenkuvaId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(tags = "profiili")
   void update(
       @PathVariable UUID id,
       @PathVariable UUID toimenkuvaId,
@@ -81,7 +77,6 @@ class ToimenkuvaController {
 
   @DeleteMapping("/{toimenkuvaId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(tags = "profiili")
   void delete(
       @PathVariable UUID id,
       @PathVariable UUID toimenkuvaId,
