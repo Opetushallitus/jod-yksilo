@@ -9,8 +9,16 @@
 
 package fi.okm.jod.yksilo.domain;
 
+import static java.util.Objects.requireNonNull;
+
 import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record OsaamisenLahde(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {}
+public record OsaamisenLahde(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {
+
+  public OsaamisenLahde {
+    requireNonNull(tyyppi);
+    requireNonNull(id);
+  }
+}

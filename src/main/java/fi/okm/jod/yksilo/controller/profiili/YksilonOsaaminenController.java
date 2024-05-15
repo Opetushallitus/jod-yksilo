@@ -10,8 +10,8 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.OsaaminenLisaysDto;
-import fi.okm.jod.yksilo.dto.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,7 +46,7 @@ class YksilonOsaaminenController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   void add(
-      @RequestBody @NotEmpty @Size(max = 1000) @Valid List<OsaaminenLisaysDto> dtos,
+      @RequestBody @NotEmpty @Size(max = 1000) @Valid List<YksilonOsaaminenLisaysDto> dtos,
       @AuthenticationPrincipal JodUser user) {
     service.add(user, dtos);
   }

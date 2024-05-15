@@ -13,7 +13,7 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahde;
-import fi.okm.jod.yksilo.dto.OsaaminenLisaysDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
@@ -61,10 +61,10 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
           service.add(
               user,
               List.of(
-                  new OsaaminenLisaysDto(
+                  new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
                       new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuva)),
-                  new OsaaminenLisaysDto(
+                  new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
                       new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutus))));
 

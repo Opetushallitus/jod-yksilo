@@ -10,8 +10,8 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.OsaaminenLisaysDto;
-import fi.okm.jod.yksilo.dto.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
@@ -45,7 +45,7 @@ public class YksilonOsaaminenService {
     return Mapper.mapYksilonOsaaminen(repository.findAllByYksiloId(user.getId(), sort));
   }
 
-  public List<UUID> add(JodUser user, List<OsaaminenLisaysDto> dtos) {
+  public List<UUID> add(JodUser user, List<YksilonOsaaminenLisaysDto> dtos) {
 
     if (Set.copyOf(dtos).size() != dtos.size()) {
       throw new ServiceValidationException("Duplicates found");

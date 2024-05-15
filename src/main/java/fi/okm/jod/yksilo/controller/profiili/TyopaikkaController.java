@@ -10,11 +10,10 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +35,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/tyopaikat")
 @RequiredArgsConstructor
-@Tag(name = "profiili", description = "Yksilön profiilin hallinta")
+@Tag(name = "profiili")
 class TyopaikkaController {
   private final TyopaikkaService service;
 
@@ -70,7 +69,6 @@ class TyopaikkaController {
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(tags = "profiili")
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);
   }
