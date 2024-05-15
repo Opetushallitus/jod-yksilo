@@ -35,8 +35,8 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
 
   @Autowired YksilonOsaaminenService service;
 
-  private UUID toimenkuva;
-  private UUID koulutus;
+  private UUID toimenkuvaId;
+  private UUID koulutusId;
 
   @BeforeEach
   public void setUp() {
@@ -46,12 +46,12 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
 
     var toimenkuva = new Toimenkuva(tyopaikka);
     toimenkuva.setNimi(ls("Toimenkuva"));
-    this.toimenkuva = entityManager.persist(toimenkuva).getId();
+    this.toimenkuvaId = entityManager.persist(toimenkuva).getId();
 
     var koulutus = new Koulutus(yksilo);
     koulutus.setNimi(ls("Koulutus"));
     entityManager.persist(koulutus);
-    this.koulutus = koulutus.getId();
+    this.koulutusId = koulutus.getId();
   }
 
   @Test
@@ -63,10 +63,10 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
               List.of(
                   new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
-                      new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuva)),
+                      new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)),
                   new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
-                      new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutus))));
+                      new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutusId))));
 
           entityManager.flush();
         });
