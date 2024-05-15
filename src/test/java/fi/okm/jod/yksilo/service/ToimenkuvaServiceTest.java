@@ -32,7 +32,7 @@ import org.springframework.test.context.jdbc.Sql;
 class ToimenkuvaServiceTest extends AbstractServiceTest {
 
   @Autowired ToimenkuvaService service;
-  private UUID tyopaikka;
+  private UUID tyopaikkaId;
 
   @BeforeEach
   public void setUp() {
@@ -40,7 +40,7 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
         new Tyopaikka(
             entityManager.find(Yksilo.class, user.getId()),
             new LocalizedString(Map.of(Kieli.FI, "Testi")));
-    this.tyopaikka = entityManager.persist(tyopaikka).getId();
+    this.tyopaikkaId = entityManager.persist(tyopaikka).getId();
     entityManager.flush();
   }
 
@@ -50,7 +50,7 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
         () -> {
           service.add(
               user,
-              tyopaikka,
+              tyopaikkaId,
               new ToimenkuvaDto(
                   null,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -60,7 +60,7 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          var result = service.findAll(user, tyopaikka);
+          var result = service.findAll(user, tyopaikkaId);
           assertEquals(1, result.size());
         });
   }
