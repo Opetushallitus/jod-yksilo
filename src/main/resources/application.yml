@@ -19,6 +19,7 @@ spring:
     enabled: false
   session:
     timeout: 30m
+
   sql:
     init:
       mode: always # FIXME: Just for early development without migrations

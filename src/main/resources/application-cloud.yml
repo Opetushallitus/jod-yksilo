@@ -10,6 +10,9 @@ server:
   error:
     include-stacktrace: never
     include-exception: false
+  tomcat:
+    custom:
+      secure-connector: true
 
 springdoc:
   api-docs:
