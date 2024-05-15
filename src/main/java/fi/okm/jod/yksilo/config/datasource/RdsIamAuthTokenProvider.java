@@ -11,14 +11,14 @@ package fi.okm.jod.yksilo.config.datasource;
 
 import java.net.URI;
 import java.util.Objects;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.rds.RdsUtilities;
 import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest;
 
 @Component
-@ConditionalOnBean(RdsClient.class)
+@Profile("cloud")
 public class RdsIamAuthTokenProvider {
   private final RdsUtilities rdsUtilities;
 
