@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.errorhandler.TomcatErrorReportValve;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.core.StandardHost;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
@@ -23,12 +24,14 @@ import org.springframework.stereotype.Component;
 /** Overrides the low-level Tomcat error report valve to force JSON error responses in all cases. */
 @Component
 @Slf4j
-public class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
   private final String invalidRequest;
   private final String unspecifiedError;
+  private final CustomTomcatProperties properties;
 
-  public TomcatCustomizer(ObjectMapper mapper) {
+  TomcatCustomizer(ObjectMapper mapper, CustomTomcatProperties properties) {
+    this.properties = properties;
     try {
       this.invalidRequest =
           mapper.writeValueAsString(new ErrorInfo(ErrorCode.INVALID_REQUEST, null, null));
@@ -44,6 +47,14 @@ public class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServle
   @Override
   public void customize(TomcatServletWebServerFactory factory) {
 
+    if (properties.secureConnector()) {
+      factory.addConnectorCustomizers(
+          connector -> {
+            connector.setSecure(true);
+            connector.setScheme("https");
+          });
+    }
+
     factory.addContextCustomizers(
         context -> {
           if (context.getParent() instanceof StandardHost host) {
@@ -54,4 +65,7 @@ public class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServle
           }
         });
   }
+
+  @ConfigurationProperties("server.tomcat.custom")
+  record CustomTomcatProperties(boolean secureConnector) {}
 }

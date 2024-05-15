@@ -33,7 +33,7 @@ repositories {
 ext {
   spotbugsVersion = "4.8.5"
   //flyway 9.x does not claim support for PostgreSQL 16
-  set("flyway.version", "10.12.0")
+  set("flyway.version", "10.13.0")
 }
 
 dependencies {
@@ -53,7 +53,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.25.46')
+  implementation platform('software.amazon.awssdk:bom:2.25.52')
   implementation 'software.amazon.awssdk:auth'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -77,9 +77,10 @@ dependencies {
 
   runtimeOnly 'org.postgresql:postgresql'
 
+  annotationProcessor 'org.springframework:spring-context-indexer'
   annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-  annotationProcessor 'org.projectlombok:lombok'
   annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
+  annotationProcessor 'org.projectlombok:lombok'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
@@ -214,5 +215,15 @@ openApi {
         "--spring.main.lazy-initialization=true",
         "--logging.level.root=WARN",
     ]
+  }
+}
+
+tasks.named("dependencyUpdates").configure {
+  checkConstraints = true
+  checkBuildEnvironmentConstraints = true
+  rejectVersionIf {
+    it.candidate.version.containsIgnoreCase("alpha")
+        || it.candidate.version.containsIgnoreCase("beta")
+        || it.candidate.version.matches(".*-M\\d+")
   }
 }
