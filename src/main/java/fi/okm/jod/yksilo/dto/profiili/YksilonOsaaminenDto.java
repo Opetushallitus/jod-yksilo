@@ -10,8 +10,8 @@
 package fi.okm.jod.yksilo.dto.profiili;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import java.util.UUID;
 
 public record YksilonOsaaminenDto(

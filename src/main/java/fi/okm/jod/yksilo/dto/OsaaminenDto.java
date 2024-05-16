@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.net.URI;
 
 public record OsaaminenDto(URI uri, LocalizedString nimi, LocalizedString kuvaus) {}

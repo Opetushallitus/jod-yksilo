@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.validator.PrintableString;

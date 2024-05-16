@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -17,4 +16,4 @@ import java.net.URI;
 
 public record YksilonOsaaminenLisaysDto(
     @NotNull @Schema(description = "Reference") URI osaaminen,
-    @NotNull @Valid OsaamisenLahde lahde) {}
+    @NotNull @Valid OsaamisenLahdeDto lahde) {}
