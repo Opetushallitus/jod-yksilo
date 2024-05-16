@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -48,12 +48,13 @@ public class Tyopaikka {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 10)
+  @BatchSize(size = 20)
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
   @Getter
   @OneToMany(mappedBy = "tyopaikka", fetch = FetchType.LAZY)
+  @BatchSize(size = 20)
   private List<Toimenkuva> toimenkuvat = new ArrayList<>();
 
   protected Tyopaikka() {

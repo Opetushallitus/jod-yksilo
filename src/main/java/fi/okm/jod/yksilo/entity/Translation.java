@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;

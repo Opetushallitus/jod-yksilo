@@ -10,14 +10,13 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
 import java.util.Map;
@@ -29,14 +28,14 @@ import org.hibernate.annotations.Immutable;
 @Getter
 @Immutable
 public class Osaaminen {
-  @Id @GeneratedValue @Getter private Long id;
+  @Id private Long id;
 
   @Column(unique = true, nullable = false)
   private String uri;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 10)
+  @BatchSize(size = 100)
   private Map<Kieli, Kaannos> kaannos;
 
   @Embeddable

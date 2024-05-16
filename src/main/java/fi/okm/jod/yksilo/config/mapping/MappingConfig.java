@@ -11,7 +11,7 @@ package fi.okm.jod.yksilo.config.mapping;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.testutil;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.util.Map;
 
 public interface LocalizedStrings {

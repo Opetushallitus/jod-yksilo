@@ -7,12 +7,11 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.domain;
 
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fi.okm.jod.yksilo.domain.Kieli;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

@@ -12,10 +12,10 @@ package fi.okm.jod.yksilo.service;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fi.okm.jod.yksilo.domain.OsaamisenLahde;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
@@ -63,10 +63,10 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
               List.of(
                   new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
-                      new OsaamisenLahde(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)),
+                      new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)),
                   new YksilonOsaaminenLisaysDto(
                       URI.create("urn:osaaminen1"),
-                      new OsaamisenLahde(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutusId))));
+                      new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutusId))));
 
           entityManager.flush();
         });

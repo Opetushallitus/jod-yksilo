@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.entity;
 import static fi.okm.jod.yksilo.entity.Translation.merge;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -51,7 +51,7 @@ public class Toimenkuva {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 10)
+  @BatchSize(size = 100)
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
@@ -68,19 +68,19 @@ public class Toimenkuva {
   }
 
   public LocalizedString getNimi() {
-    return new LocalizedString(kaannos, Toimenkuva.Kaannos::getNimi);
+    return new LocalizedString(kaannos, Kaannos::getNimi);
   }
 
   public LocalizedString getKuvaus() {
-    return new LocalizedString(kaannos, Toimenkuva.Kaannos::getKuvaus);
+    return new LocalizedString(kaannos, Kaannos::getKuvaus);
   }
 
   public void setNimi(LocalizedString nimi) {
-    merge(nimi, kaannos, Toimenkuva.Kaannos::new, Toimenkuva.Kaannos::setNimi);
+    merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
   }
 
   public void setKuvaus(LocalizedString kuvaus) {
-    merge(kuvaus, kaannos, Toimenkuva.Kaannos::new, Toimenkuva.Kaannos::setKuvaus);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   @Embeddable

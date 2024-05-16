@@ -7,12 +7,11 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.domain;
 
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import fi.okm.jod.yksilo.domain.Kieli;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.text.Normalizer;
 import java.util.Arrays;

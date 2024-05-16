@@ -7,9 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.entity;
+package fi.okm.jod.yksilo.domain;
 
 public enum OsaamisenLahdeTyyppi {
   TOIMENKUVA,
-  KOULUTUS
+  KOULUTUS,
 }

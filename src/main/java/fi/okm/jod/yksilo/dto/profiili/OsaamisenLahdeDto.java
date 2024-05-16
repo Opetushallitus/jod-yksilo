@@ -7,17 +7,17 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.domain;
+package fi.okm.jod.yksilo.dto.profiili;
 
 import static java.util.Objects.requireNonNull;
 
-import fi.okm.jod.yksilo.entity.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record OsaamisenLahde(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {
+public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, UUID id) {
 
-  public OsaamisenLahde {
+  public OsaamisenLahdeDto {
     requireNonNull(tyyppi);
     requireNonNull(id);
   }

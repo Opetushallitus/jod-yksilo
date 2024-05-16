@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.entity;
 import static fi.okm.jod.yksilo.entity.Translation.merge;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.LocalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
