@@ -10,13 +10,13 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.Repository;
 
 public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
-  Optional<Osaaminen> findByUri(String uri);
+  List<Osaaminen> findByUriIn(Collection<String> uri);
 
   @EntityGraph(attributePaths = {"kaannos"})
   List<Osaaminen> findAll();

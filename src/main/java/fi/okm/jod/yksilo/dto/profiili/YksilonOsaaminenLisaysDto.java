@@ -13,7 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.Set;
 
 public record YksilonOsaaminenLisaysDto(
-    @NotNull @Schema(description = "Reference") URI osaaminen,
+    @NotNull @Schema(description = "Reference") Set<URI> osaamiset,
     @NotNull @Valid OsaamisenLahdeDto lahde) {}

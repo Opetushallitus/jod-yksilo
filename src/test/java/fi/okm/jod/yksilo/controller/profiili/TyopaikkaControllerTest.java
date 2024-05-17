@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller.profiili;
 
+import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,12 +18,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -47,10 +49,16 @@ class TyopaikkaControllerTest {
 
     var dto =
         new TyopaikkaDto(
-            UUID.randomUUID(),
+            null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
-            LocalDate.MAX,
-            LocalDate.MIN);
+            Set.of(
+                new ToimenkuvaDto(
+                    null,
+                    ls("Toimenkuva"),
+                    null,
+                    LocalDate.of(2024, 5, 1),
+                    LocalDate.of(2023, 5, 1),
+                    null)));
     mockMvc
         .perform(
             post("/api/profiili/tyopaikat")

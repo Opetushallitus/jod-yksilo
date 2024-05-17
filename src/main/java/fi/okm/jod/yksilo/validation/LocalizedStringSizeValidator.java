@@ -7,29 +7,29 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.validator;
+package fi.okm.jod.yksilo.validation;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.regex.Pattern;
+import jakarta.validation.constraints.Size;
 
-public class PrintableLocalizedStringValidator
-    implements ConstraintValidator<PrintableString, LocalizedString> {
+public class LocalizedStringSizeValidator implements ConstraintValidator<Size, LocalizedString> {
 
-  private static final Pattern PAT =
-      Pattern.compile("[\\w\\p{Punct}\\p{gc=S}\\x20]*", Pattern.UNICODE_CHARACTER_CLASS);
+  private int min;
+  private int max;
+
+  @Override
+  public void initialize(Size constraintAnnotation) {
+    this.min = constraintAnnotation.min();
+    this.max = constraintAnnotation.max();
+  }
 
   @Override
   public boolean isValid(LocalizedString value, ConstraintValidatorContext context) {
     if (value == null) {
       return true;
     }
-    for (var s : value.asMap().values()) {
-      if (!PAT.matcher(s).matches()) {
-        return false;
-      }
-    }
-    return true;
+    return value.asMap().values().stream().allMatch(s -> s.length() >= min && s.length() <= max);
   }
 }

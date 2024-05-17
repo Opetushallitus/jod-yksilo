@@ -24,21 +24,20 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Entity
 public class YksilonOsaaminen {
 
-  @Id @GeneratedValue private UUID id;
+  @Getter @Id @GeneratedValue private UUID id;
 
   @Getter
-  @ManyToOne(fetch = FetchType.LAZY)
   @NotNull
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(nullable = false)
   private Yksilo yksilo;
 
   @Getter
-  @ManyToOne
   @NotNull
+  @ManyToOne
   @JoinColumn(nullable = false)
   private Osaaminen osaaminen;
 
@@ -48,28 +47,35 @@ public class YksilonOsaaminen {
   @Column(nullable = false)
   private OsaamisenLahdeTyyppi lahde;
 
-  @ManyToOne private Koulutus koulutus;
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Koulutus koulutus;
 
-  @ManyToOne private Toimenkuva toimenkuva;
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Toimenkuva toimenkuva;
 
   protected YksilonOsaaminen() {
     // JPA
   }
 
-  public YksilonOsaaminen(Yksilo yksilo, Osaaminen osaaminen) {
-    this.yksilo = yksilo;
+  public YksilonOsaaminen(OsaamisenLahde lahde, Osaaminen osaaminen) {
+    this.yksilo = lahde.getYksilo();
     this.osaaminen = osaaminen;
+    switch (lahde) {
+      case Koulutus k -> {
+        this.lahde = OsaamisenLahdeTyyppi.KOULUTUS;
+        this.koulutus = k;
+      }
+      case Toimenkuva t -> {
+        this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
+        this.toimenkuva = t;
+      }
+    }
   }
 
-  public void setKoulutus(Koulutus koulutus) {
-    this.lahde = OsaamisenLahdeTyyppi.KOULUTUS;
-    this.koulutus = koulutus;
-    this.toimenkuva = null;
-  }
-
-  public void setToimenkuva(Toimenkuva toimenkuva) {
-    this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
-    this.toimenkuva = toimenkuva;
-    this.koulutus = null;
+  public OsaamisenLahde getLahde() {
+    return switch (this.lahde) {
+      case KOULUTUS -> this.koulutus;
+      case TOIMENKUVA -> this.toimenkuva;
+    };
   }
 }

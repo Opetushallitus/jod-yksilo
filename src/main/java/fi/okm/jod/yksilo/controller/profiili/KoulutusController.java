@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
@@ -46,12 +47,12 @@ class KoulutusController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  ResponseEntity<Void> add(
+  ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody KoulutusDto dto, @AuthenticationPrincipal JodUser user) {
     var id = service.add(user, dto);
     var location =
         ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri();
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location).body(new IdDto<>(id));
   }
 
   @GetMapping("/{id}")

@@ -15,13 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
-import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,6 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
   @Autowired YksilonOsaaminenService service;
 
   private UUID toimenkuvaId;
-  private UUID koulutusId;
 
   @BeforeEach
   public void setUp() {
@@ -47,11 +45,6 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
     var toimenkuva = new Toimenkuva(tyopaikka);
     toimenkuva.setNimi(ls("Toimenkuva"));
     this.toimenkuvaId = entityManager.persist(toimenkuva).getId();
-
-    var koulutus = new Koulutus(yksilo);
-    koulutus.setNimi(ls("Koulutus"));
-    entityManager.persist(koulutus);
-    this.koulutusId = koulutus.getId();
   }
 
   @Test
@@ -60,18 +53,14 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
         () -> {
           service.add(
               user,
-              List.of(
-                  new YksilonOsaaminenLisaysDto(
-                      URI.create("urn:osaaminen1"),
-                      new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)),
-                  new YksilonOsaaminenLisaysDto(
-                      URI.create("urn:osaaminen1"),
-                      new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.KOULUTUS, this.koulutusId))));
+              new YksilonOsaaminenLisaysDto(
+                  Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                  new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)));
 
           entityManager.flush();
+          entityManager.clear();
         });
-    var result = service.findAll(user);
+    var result = service.findAll(user, OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId);
     assertEquals(2, result.size());
-    assertSame(result.get(0).osaaminen(), result.get(1).osaaminen());
   }
 }

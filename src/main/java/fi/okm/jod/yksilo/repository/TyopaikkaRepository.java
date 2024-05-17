@@ -10,18 +10,17 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TyopaikkaRepository extends Repository<Tyopaikka, UUID> {
+public interface TyopaikkaRepository extends JpaRepository<Tyopaikka, UUID> {
 
   Optional<Tyopaikka> findByYksiloIdAndId(UUID yksiloId, UUID id);
 
   List<Tyopaikka> findByYksiloId(UUID yksiloId);
 
-  void deleteByYksiloIdAndId(UUID yksiloId, UUID id);
-
-  Tyopaikka save(Tyopaikka tyopaikka);
+  long countByYksilo(Yksilo yksilo);
 }
