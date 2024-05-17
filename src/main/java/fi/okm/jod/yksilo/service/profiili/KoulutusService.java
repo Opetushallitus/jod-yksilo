@@ -45,7 +45,7 @@ public class KoulutusService {
 
   public KoulutusDto get(JodUser user, UUID id) {
     return koulutukset
-        .findByYksiloAndId(yksilot.getReferenceById(user.getId()), id)
+        .findByYksiloIdAndId(user.getId(), id)
         .map(Mapper::mapKoulutus)
         .orElseThrow(KoulutusService::notFound);
   }
@@ -53,7 +53,7 @@ public class KoulutusService {
   public void update(JodUser user, KoulutusDto dto) {
     var entity =
         koulutukset
-            .findByYksiloAndId(yksilot.getReferenceById(user.getId()), dto.id())
+            .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(KoulutusService::notFound);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());

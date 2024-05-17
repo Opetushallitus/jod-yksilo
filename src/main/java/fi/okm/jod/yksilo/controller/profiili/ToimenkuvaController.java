@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
@@ -46,7 +47,7 @@ class ToimenkuvaController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  ResponseEntity<Void> add(
+  ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
       @Validated({Add.class}) @RequestBody ToimenkuvaDto dto,
       @AuthenticationPrincipal JodUser user) {
@@ -58,7 +59,7 @@ class ToimenkuvaController {
             .path("/{toimenkuvaId}")
             .buildAndExpand(toimenkuvaId)
             .toUri();
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location).body(new IdDto<>(toimenkuvaId));
   }
 
   @PostMapping("/{toimenkuvaId}")

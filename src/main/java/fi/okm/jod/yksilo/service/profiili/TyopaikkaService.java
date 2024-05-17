@@ -15,6 +15,8 @@ import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +27,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class TyopaikkaService {
+
   private final YksiloRepository yksilot;
   private final TyopaikkaRepository tyopaikat;
+  private final ToimenkuvaService toimenkuvaService;
 
   public List<TyopaikkaDto> findAll(JodUser user) {
     return tyopaikat.findByYksiloId(user.getId()).stream().map(Mapper::mapTyopaikka).toList();
   }
 
   public void delete(JodUser user, UUID id) {
-    tyopaikat.deleteByYksiloIdAndId(user.getId(), id);
+    var tyopaikka =
+        tyopaikat
+            .findByYksiloIdAndId(user.getId(), id)
+            .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
+    for (var toimenkuva : tyopaikka.getToimenkuvat()) {
+      toimenkuvaService.delete(toimenkuva);
+    }
+    tyopaikka.getToimenkuvat().clear();
+    tyopaikat.delete(tyopaikka);
   }
 
   public void update(JodUser user, TyopaikkaDto dto) {
@@ -42,16 +54,24 @@ public class TyopaikkaService {
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
     entity.setNimi(dto.nimi());
-    entity.setAlkuPvm(dto.alkuPvm());
-    entity.setLoppuPvm(dto.loppuPvm());
     tyopaikat.save(entity);
+    if (dto.toimenkuvat() != null) {
+      throw new UnsupportedOperationException("Updating Toimenkuvat not yet implemented");
+    }
   }
 
   public UUID add(JodUser user, TyopaikkaDto dto) {
+    var yksilo = yksilot.getReferenceById(user.getId());
+    if (tyopaikat.countByYksilo(yksilo) >= Limits.TYOPAIKKA) {
+      throw new ServiceValidationException("Too many Tyopaikka");
+    }
     // prevent duplicates somehow?
-    var entity = new Tyopaikka(yksilot.getReferenceById(user.getId()), dto.nimi());
-    entity.setAlkuPvm(dto.alkuPvm());
-    entity.setLoppuPvm(dto.loppuPvm());
-    return tyopaikat.save(entity).getId();
+    var entity = tyopaikat.save(new Tyopaikka(yksilot.getReferenceById(user.getId()), dto.nimi()));
+    if (dto.toimenkuvat() != null) {
+      for (var toimenkuva : dto.toimenkuvat()) {
+        toimenkuvaService.add(entity, toimenkuva);
+      }
+    }
+    return entity.getId();
   }
 }

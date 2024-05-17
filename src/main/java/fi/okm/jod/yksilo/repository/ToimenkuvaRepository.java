@@ -9,29 +9,37 @@
 
 package fi.okm.jod.yksilo.repository;
 
+import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.TOIMENKUVA;
+
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
-import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.Tyopaikka;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ToimenkuvaRepository extends Repository<Toimenkuva, UUID> {
+public interface ToimenkuvaRepository
+    extends JpaRepository<Toimenkuva, UUID>, OsaamisenLahdeRepository<Toimenkuva> {
 
   default Optional<Toimenkuva> findBy(JodUser user, UUID tyopaikkaId, UUID id) {
     return findByTyopaikkaYksiloIdAndTyopaikkaIdAndId(user.getId(), tyopaikkaId, id);
   }
 
+  @EntityGraph(attributePaths = {"tyopaikka", "tyopaikka.yksilo"})
   Optional<Toimenkuva> findByTyopaikkaYksiloIdAndTyopaikkaIdAndId(
       UUID yksiloId, UUID tyopaikkaId, UUID id);
 
-  Optional<Toimenkuva> findByTyopaikkaYksiloAndId(Yksilo yksilo, UUID id);
+  @EntityGraph(attributePaths = {"tyopaikka", "tyopaikka.yksilo"})
+  Optional<Toimenkuva> findByTyopaikkaYksiloIdAndId(UUID yksiloId, UUID id);
 
-  default long delete(JodUser user, UUID tyopaikkaId, UUID id) {
-    return deleteByTyopaikkaYksiloIdAndTyopaikkaIdAndId(user.getId(), tyopaikkaId, id);
+  @Override
+  default Optional<Toimenkuva> findBy(JodUser user, OsaamisenLahdeDto lahde) {
+    return lahde.tyyppi() == TOIMENKUVA
+        ? findByTyopaikkaYksiloIdAndId(user.getId(), lahde.id())
+        : Optional.empty();
   }
 
-  long deleteByTyopaikkaYksiloIdAndTyopaikkaIdAndId(UUID yksiloId, UUID tyopaikkaId, UUID id);
-
-  Toimenkuva save(Toimenkuva toimenuva);
+  int countByTyopaikka(Tyopaikka tyopaikka);
 }

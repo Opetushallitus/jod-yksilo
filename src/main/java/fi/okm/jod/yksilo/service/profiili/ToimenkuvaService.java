@@ -12,9 +12,12 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
+import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.repository.ToimenkuvaRepository;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ToimenkuvaService {
   private final TyopaikkaRepository tyopaikat;
   private final ToimenkuvaRepository toimenkuvat;
+  private final YksilonOsaaminenService osaamiset;
 
   public List<ToimenkuvaDto> findAll(JodUser user, UUID tyopaikkaId) {
     return tyopaikat
@@ -50,12 +54,25 @@ public class ToimenkuvaService {
         tyopaikat
             .findByYksiloIdAndId(user.getId(), tyopaikkaId)
             .orElseThrow(ToimenkuvaService::notFound);
+
+    if (toimenkuvat.countByTyopaikka(tyopaikka) >= Limits.TOIMENKUVA_PER_TYOPAIKKA) {
+      throw new ServiceValidationException("Too many Toimenkuva");
+    }
+
+    return add(tyopaikka, dto).getId();
+  }
+
+  Toimenkuva add(Tyopaikka tyopaikka, ToimenkuvaDto dto) {
     var entity = new Toimenkuva(tyopaikka);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
-    return toimenkuvat.save(entity).getId();
+    var toimenkuva = toimenkuvat.save(entity);
+    if (dto.osaamiset() != null) {
+      osaamiset.add(toimenkuva, dto.osaamiset());
+    }
+    return toimenkuva;
   }
 
   public void update(JodUser user, UUID tyopaikka, ToimenkuvaDto dto) {
@@ -64,12 +81,20 @@ public class ToimenkuvaService {
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     toimenkuvat.save(entity);
+    if (dto.osaamiset() != null) {
+      osaamiset.update(entity, dto.osaamiset());
+    }
   }
 
   public void delete(JodUser user, UUID tyopaikka, UUID id) {
-    if (toimenkuvat.delete(user, tyopaikka, id) != 1) {
-      throw notFound();
-    }
+    var toimenkuva =
+        toimenkuvat.findBy(user, tyopaikka, id).orElseThrow(ToimenkuvaService::notFound);
+    delete(toimenkuva);
+  }
+
+  void delete(Toimenkuva toimenkuva) {
+    osaamiset.deleteAll(toimenkuva.getOsaamiset());
+    toimenkuvat.delete(toimenkuva);
   }
 
   static NotFoundException notFound() {

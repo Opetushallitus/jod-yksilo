@@ -7,9 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.profiili;
+package fi.okm.jod.yksilo.validation;
 
-import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import java.util.UUID;
-
-public record YksilonOsaaminenDto(UUID id, OsaaminenDto osaaminen, OsaamisenLahdeDto lahde) {}
+public interface Limits {
+  int TYOPAIKKA = 10_0000;
+  int TOIMENKUVA_PER_TYOPAIKKA = 1_000;
+}

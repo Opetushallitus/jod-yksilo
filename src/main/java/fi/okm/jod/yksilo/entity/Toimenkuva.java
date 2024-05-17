@@ -29,6 +29,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +40,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Toimenkuva {
+public non-sealed class Toimenkuva implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;
@@ -56,6 +57,7 @@ public class Toimenkuva {
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(mappedBy = "toimenkuva", fetch = FetchType.LAZY)
+  @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
   protected Toimenkuva() {
@@ -65,6 +67,7 @@ public class Toimenkuva {
   public Toimenkuva(Tyopaikka tyopaikka) {
     this.tyopaikka = tyopaikka;
     this.kaannos = new EnumMap<>(Kieli.class);
+    this.osaamiset = new HashSet<>();
   }
 
   public LocalizedString getNimi() {
@@ -81,6 +84,10 @@ public class Toimenkuva {
 
   public void setKuvaus(LocalizedString kuvaus) {
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
+  }
+
+  public Yksilo getYksilo() {
+    return tyopaikka.getYksilo();
   }
 
   @Embeddable

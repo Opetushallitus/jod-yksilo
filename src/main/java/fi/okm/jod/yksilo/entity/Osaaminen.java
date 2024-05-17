@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -40,7 +39,8 @@ public class Osaaminen {
 
   @Embeddable
   public record Kaannos(
-      @Basic(optional = false) String nimi, @Basic(optional = false) String kuvaus) {}
+      @Column(nullable = false) String nimi,
+      @Column(nullable = false, columnDefinition = "TEXT") String kuvaus) {}
 
   public LocalizedString getNimi() {
     return new LocalizedString(kaannos, Kaannos::nimi);

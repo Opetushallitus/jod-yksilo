@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/osaamiset")
 @RequiredArgsConstructor
-@Tag(name = "osaaminen", description = "Osaamisten (ESCO) listaus")
+@Tag(name = "osaamiset", description = "Osaamisten (ESCO) listaus")
 class OsaaminenController {
   private final OsaaminenRepository osaamiset;
 

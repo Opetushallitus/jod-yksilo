@@ -7,18 +7,24 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.profiili;
-
-import static java.util.Objects.requireNonNull;
+package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
-import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import java.util.UUID;
 
-public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {
+public sealed interface OsaamisenLahde permits Toimenkuva, Koulutus {
 
-  public OsaamisenLahdeDto {
-    requireNonNull(tyyppi);
-    requireNonNull(id);
+  UUID getId();
+
+  Yksilo getYksilo();
+
+  Set<YksilonOsaaminen> getOsaamiset();
+
+  default OsaamisenLahdeTyyppi getTyyppi() {
+    return switch (this) {
+      case Toimenkuva ignored -> OsaamisenLahdeTyyppi.TOIMENKUVA;
+      case Koulutus ignored -> OsaamisenLahdeTyyppi.KOULUTUS;
+    };
   }
 }

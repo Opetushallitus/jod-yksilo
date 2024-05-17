@@ -12,22 +12,17 @@ package fi.okm.jod.yksilo.dto.profiili;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
-import fi.okm.jod.yksilo.validator.PrintableString;
+import fi.okm.jod.yksilo.validation.Limits;
+import fi.okm.jod.yksilo.validation.PrintableString;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 public record TyopaikkaDto(
     @Null(groups = Add.class) @NotNull(groups = Update.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    LocalDate alkuPvm,
-    LocalDate loppuPvm)
-    implements ValidInterval {
-
-  public TyopaikkaDto(LocalizedString nimi, LocalDate alkuPvm, LocalDate loppuPvm) {
-    this(null, nimi, alkuPvm, loppuPvm);
-  }
-}
+    @Size(max = Limits.TOIMENKUVA_PER_TYOPAIKKA) Set<@Valid ToimenkuvaDto> toimenkuvat) {}

@@ -18,8 +18,11 @@ import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
+import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
-@Import(ToimenkuvaService.class)
+@Import({ToimenkuvaService.class, YksilonOsaaminenService.class})
 class ToimenkuvaServiceTest extends AbstractServiceTest {
 
   @Autowired ToimenkuvaService service;
@@ -56,12 +59,55 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                   null,
                   LocalDate.of(2021, 1, 1),
-                  LocalDate.of(2021, 12, 31)));
+                  LocalDate.of(2021, 12, 31),
+                  Set.of(URI.create("urn:osaaminen1"))));
           entityManager.flush();
           entityManager.clear();
 
           var result = service.findAll(user, tyopaikkaId);
           assertEquals(1, result.size());
+        });
+  }
+
+  @Test
+  void shouldUpdateToimenkuva() {
+    assertDoesNotThrow(
+        () -> {
+          var id =
+              service.add(
+                  user,
+                  tyopaikkaId,
+                  new ToimenkuvaDto(
+                      null,
+                      ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
+                      null,
+                      LocalDate.of(2021, 1, 1),
+                      LocalDate.of(2021, 12, 31),
+                      Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
+          entityManager.flush();
+          entityManager.clear();
+
+          var updated =
+              Set.of(
+                  URI.create("urn:osaaminen2"),
+                  URI.create("urn:osaaminen6"),
+                  URI.create("urn:osaaminen5"),
+                  URI.create("urn:osaaminen4"));
+          service.update(
+              user,
+              tyopaikkaId,
+              new ToimenkuvaDto(
+                  id,
+                  ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
+                  null,
+                  LocalDate.of(2021, 1, 1),
+                  LocalDate.of(2021, 12, 31),
+                  updated));
+          entityManager.flush();
+          entityManager.clear();
+
+          var result = service.get(user, tyopaikkaId, id);
+          assertEquals(updated, result.osaamiset());
         });
   }
 }

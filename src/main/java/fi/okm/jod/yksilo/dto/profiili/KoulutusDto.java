@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.dto.profiili;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.dto.validationgroup.Update;
-import fi.okm.jod.yksilo.validator.PrintableString;
+import fi.okm.jod.yksilo.validation.PrintableString;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
