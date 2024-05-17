@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.validator;
+package fi.okm.jod.yksilo.validation;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.validation.ConstraintValidator;

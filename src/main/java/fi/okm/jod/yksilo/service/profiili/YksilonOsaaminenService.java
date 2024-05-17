@@ -10,83 +10,96 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
+import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
-import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
-import fi.okm.jod.yksilo.repository.ToimenkuvaRepository;
-import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.repository.OsaamisenLahdeRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@Slf4j
 @RequiredArgsConstructor
 public class YksilonOsaaminenService {
 
   private final YksilonOsaaminenRepository repository;
-  private final OsaaminenRepository osaamiset;
-  private final YksiloRepository yksilot;
-  private final KoulutusRepository koulutukset;
-  private final ToimenkuvaRepository toimenkuvat;
+  private final OsaaminenRepository osaamisetRepository;
+  private final List<OsaamisenLahdeRepository<?>> lahteet;
 
-  public List<YksilonOsaaminenDto> findAll(JodUser user) {
-    var sort = Sort.by(YksilonOsaaminen_.LAHDE, YksilonOsaaminen_.OSAAMINEN, YksilonOsaaminen_.ID);
-    return Mapper.mapYksilonOsaaminen(repository.findAllByYksiloId(user.getId(), sort));
-  }
+  public List<YksilonOsaaminenDto> findAll(JodUser user, OsaamisenLahdeTyyppi tyyppi, UUID id) {
 
-  public List<UUID> add(JodUser user, List<YksilonOsaaminenLisaysDto> dtos) {
-
-    if (Set.copyOf(dtos).size() != dtos.size()) {
-      throw new ServiceValidationException("Duplicates found");
+    if (tyyppi != null && id != null) {
+      return lahteet.stream()
+          .flatMap(s -> s.findBy(user, new OsaamisenLahdeDto(tyyppi, id)).stream())
+          .findFirst()
+          .map(l -> Mapper.mapYksilonOsaaminen(l.getOsaamiset()))
+          .orElse(List.of());
     }
 
-    var yksilo = yksilot.getReferenceById(user.getId());
+    var sort =
+        Sort.by(
+            YksilonOsaaminen_.LAHDE,
+            YksilonOsaaminen_.TOIMENKUVA,
+            YksilonOsaaminen_.KOULUTUS,
+            YksilonOsaaminen_.ID);
+    return Mapper.mapYksilonOsaaminen(repository.findAllBy(user.getId(), tyyppi, sort));
+  }
 
-    return repository
-        .saveAll(
-            dtos.stream()
-                .map(
-                    dto -> {
-                      var osaaminen =
-                          osaamiset
-                              .findByUri(dto.osaaminen().toString())
-                              .orElseThrow(() -> new NotFoundException("Unknown osaaminen"));
+  public List<UUID> add(JodUser user, YksilonOsaaminenLisaysDto dto) {
+    var lahde =
+        lahteet.stream()
+            .flatMap(s -> s.findBy(user, dto.lahde()).stream())
+            .findFirst()
+            .orElseThrow(() -> new ServiceValidationException("Unknown OsaamisenLahde"));
+    return add(lahde, dto.osaamiset()).stream().map(YksilonOsaaminen::getId).toList();
+  }
 
-                      var entity = new YksilonOsaaminen(yksilo, osaaminen);
+  List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
+    var osaamiset = osaamisetRepository.findByUriIn(ids.stream().map(Object::toString).toList());
+    if (osaamiset.size() != ids.size()) {
+      throw new ServiceValidationException("Unknown osaaminen");
+    }
+    return repository.saveAll(osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList());
+  }
 
-                      switch (dto.lahde().tyyppi()) {
-                        case TOIMENKUVA:
-                          entity.setToimenkuva(
-                              toimenkuvat
-                                  .findByTyopaikkaYksiloAndId(yksilo, dto.lahde().id())
-                                  .orElseThrow(() -> new NotFoundException("Unknown Toimenkuva")));
-                          break;
-                        case KOULUTUS:
-                          entity.setKoulutus(
-                              koulutukset
-                                  .findByYksiloAndId(yksilo, dto.lahde().id())
-                                  .orElseThrow(() -> new NotFoundException("Unknown Koulutus")));
-                          break;
-                        default:
-                          throw new ServiceValidationException("Invalid OsaamisenLahde");
-                      }
-                      return entity;
-                    })
-                .toList())
-        .stream()
-        .map(YksilonOsaaminen::getId)
-        .toList();
+  void update(OsaamisenLahde lahde, Set<URI> ids) {
+    var refs = ids.stream().map(Object::toString).collect(Collectors.toSet());
+    for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {
+      var o = i.next();
+      final String uri = o.getOsaaminen().getUri();
+      if (!refs.contains(uri)) {
+        i.remove();
+        repository.delete(o);
+      } else {
+        refs.remove(uri);
+      }
+    }
+    var osaamiset = osaamisetRepository.findByUriIn(refs);
+    if (osaamiset.size() != refs.size()) {
+      throw new ServiceValidationException("Unknown osaaminen");
+    }
+    lahde
+        .getOsaamiset()
+        .addAll(
+            repository.saveAll(
+                osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
   }
 
   public YksilonOsaaminenDto get(JodUser user, UUID id) {
@@ -96,7 +109,13 @@ public class YksilonOsaaminenService {
         .orElseThrow(() -> new NotFoundException("Not found"));
   }
 
-  public void delete(JodUser user, UUID id) {
-    repository.deleteByYksiloIdAndId(user.getId(), id);
+  public void delete(JodUser user, Set<UUID> ids) {
+    if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
+      throw new NotFoundException("Not found");
+    }
+  }
+
+  void deleteAll(Set<YksilonOsaaminen> osaamiset) {
+    repository.deleteAll(osaamiset);
   }
 }

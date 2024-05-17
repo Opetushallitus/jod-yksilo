@@ -25,9 +25,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
@@ -36,7 +38,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Koulutus {
+public non-sealed class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;
@@ -50,6 +52,9 @@ public class Koulutus {
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 10)
   private Map<Kieli, Kaannos> kaannos;
+
+  @OneToMany(mappedBy = "koulutus", fetch = FetchType.LAZY)
+  private Set<YksilonOsaaminen> osaamiset;
 
   protected Koulutus() {}
 

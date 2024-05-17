@@ -7,9 +7,6 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.profiili;
+package fi.okm.jod.yksilo.dto;
 
-import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import java.util.UUID;
-
-public record YksilonOsaaminenDto(UUID id, OsaaminenDto osaaminen, OsaamisenLahdeDto lahde) {}
+public record IdDto<T>(T id) {}

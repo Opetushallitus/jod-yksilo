@@ -14,15 +14,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
-import java.time.LocalDate;
+import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
-@Import(TyopaikkaService.class)
+@Import({TyopaikkaService.class, ToimenkuvaService.class, YksilonOsaaminenService.class})
 class TyopaikkaServiceTest extends AbstractServiceTest {
 
   @Autowired TyopaikkaService service;
@@ -31,15 +32,11 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
   void shouldAddTyopaikka() {
     assertDoesNotThrow(
         () -> {
-          var id =
-              service.add(
-                  user,
-                  new TyopaikkaDto(
-                      ls(Kieli.FI, "nimi"), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31)));
+          var id = service.add(user, new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), null));
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new TyopaikkaDto(id, updatedNimi, LocalDate.of(2024, 1, 1), null));
+          service.update(user, new TyopaikkaDto(id, updatedNimi, null));
           entityManager.flush();
           entityManager.clear();
 

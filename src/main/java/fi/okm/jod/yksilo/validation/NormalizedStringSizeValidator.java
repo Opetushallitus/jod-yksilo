@@ -7,14 +7,14 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.validator;
+package fi.okm.jod.yksilo.validation;
 
-import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.NormalizedString;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraints.Size;
 
-public class LocalizedStringSizeValidator implements ConstraintValidator<Size, LocalizedString> {
+public class NormalizedStringSizeValidator implements ConstraintValidator<Size, NormalizedString> {
 
   private int min;
   private int max;
@@ -26,10 +26,12 @@ public class LocalizedStringSizeValidator implements ConstraintValidator<Size, L
   }
 
   @Override
-  public boolean isValid(LocalizedString value, ConstraintValidatorContext context) {
+  public boolean isValid(NormalizedString value, ConstraintValidatorContext context) {
     if (value == null) {
       return true;
     }
-    return value.asMap().values().stream().allMatch(s -> s.length() >= min && s.length() <= max);
+
+    int size = value.value().length();
+    return size >= min && size <= max;
   }
 }
