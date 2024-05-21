@@ -40,7 +40,7 @@ public class Osaaminen {
 
   @Embeddable
   public record Kaannos(
-      @Basic(optional = false) String nimi, @Basic(optional = false) String kuvaus) {}
+      @Column(columnDefinition="TEXT") String nimi, @Column(columnDefinition="TEXT") String kuvaus) {}
 
   public LocalizedString getNimi() {
     return new LocalizedString(kaannos, Kaannos::nimi);
