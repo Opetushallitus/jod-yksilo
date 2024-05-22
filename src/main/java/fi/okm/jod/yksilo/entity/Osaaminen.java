@@ -11,12 +11,17 @@ package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MapKeyEnumerated;
+import java.util.Map;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
-
-import java.util.Map;
 
 @Entity
 @Getter
@@ -34,7 +39,8 @@ public class Osaaminen {
 
   @Embeddable
   public record Kaannos(
-      @Column(columnDefinition="TEXT") String nimi, @Column(columnDefinition="TEXT") String kuvaus) {}
+      @Column(columnDefinition = "TEXT") String nimi,
+      @Column(columnDefinition = "TEXT") String kuvaus) {}
 
   public LocalizedString getNimi() {
     return new LocalizedString(kaannos, Kaannos::nimi);
