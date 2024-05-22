@@ -15,5 +15,3 @@ INSERT INTO osaaminen_kaannos(osaaminen_id, kaannos_key, nimi, kuvaus)
 VALUES (1, 'FI', 'Osaaminen 1', 'Kuvaus 1'),
        (2, 'FI', 'Osaaminen 2', 'Kuvaus 2'),
        (3, 'FI', 'Osaaminen 3', 'Kuvaus 3');
-
-SELECT setval('osaaminen_seq', (SELECT MAX(id) FROM osaaminen));
