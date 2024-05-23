@@ -11,10 +11,8 @@ package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
@@ -23,7 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record ToimenkuvaDto(
-    @Null(groups = Add.class) @NotNull(groups = Update.class) UUID id,
+    @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @PrintableString @Size(max = 10000) LocalizedString kuvaus,
     LocalDate alkuPvm,

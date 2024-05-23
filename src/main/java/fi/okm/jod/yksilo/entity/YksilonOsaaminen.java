@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.entity;
 
+import static java.util.Objects.requireNonNull;
+
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,7 +60,7 @@ public class YksilonOsaaminen {
   }
 
   public YksilonOsaaminen(OsaamisenLahde lahde, Osaaminen osaaminen) {
-    this.yksilo = lahde.getYksilo();
+    this.yksilo = requireNonNull(lahde.getYksilo());
     this.osaaminen = osaaminen;
     switch (lahde) {
       case Koulutus k -> {

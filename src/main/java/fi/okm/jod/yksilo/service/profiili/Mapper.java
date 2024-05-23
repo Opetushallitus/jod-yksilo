@@ -17,6 +17,7 @@ import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
@@ -31,48 +32,59 @@ final class Mapper {
 
   private Mapper() {}
 
-  static ToimenkuvaDto mapToimenkuva(Toimenkuva t) {
-    return t == null
+  static ToimenkuvaDto mapToimenkuva(Toimenkuva entity) {
+    return entity == null
         ? null
         : new ToimenkuvaDto(
-            t.getId(),
-            t.getNimi(),
-            t.getKuvaus(),
-            t.getAlkuPvm(),
-            t.getLoppuPvm(),
-            t.getOsaamiset().stream()
+            entity.getId(),
+            entity.getNimi(),
+            entity.getKuvaus(),
+            entity.getAlkuPvm(),
+            entity.getLoppuPvm(),
+            entity.getOsaamiset().stream()
                 .map(o -> URI.create(o.getOsaaminen().getUri()))
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
-  static TyopaikkaDto mapTyopaikka(Tyopaikka t) {
-    return t == null
+  static TyopaikkaDto mapTyopaikka(Tyopaikka entity) {
+    return entity == null
         ? null
         : new TyopaikkaDto(
-            t.getId(),
-            t.getNimi(),
-            t.getToimenkuvat().stream().map(Mapper::mapToimenkuva).collect(Collectors.toSet()));
+            entity.getId(),
+            entity.getNimi(),
+            entity.getToimenkuvat().stream()
+                .map(Mapper::mapToimenkuva)
+                .collect(Collectors.toSet()));
   }
 
-  static KoulutusDto mapKoulutus(Koulutus k) {
-    return k == null
+  static KoulutusDto mapKoulutus(Koulutus entity) {
+    return entity == null
         ? null
-        : new KoulutusDto(k.getId(), k.getNimi(), k.getKuvaus(), k.getAlkuPvm(), k.getLoppuPvm());
+        : new KoulutusDto(
+            entity.getId(),
+            entity.getNimi(),
+            entity.getKuvaus(),
+            entity.getAlkuPvm(),
+            entity.getLoppuPvm());
   }
 
-  static OsaaminenDto mapOsaaminen(Osaaminen o) {
-    return o == null ? null : new OsaaminenDto(URI.create(o.getUri()), o.getNimi(), o.getKuvaus());
+  static OsaaminenDto mapOsaaminen(Osaaminen entity) {
+    return entity == null
+        ? null
+        : new OsaaminenDto(URI.create(entity.getUri()), entity.getNimi(), entity.getKuvaus());
   }
 
   static YksilonOsaaminenDto mapYksilonOsaaminen(YksilonOsaaminen entity) {
     return entity == null
         ? null
         : new YksilonOsaaminenDto(
-            entity.getId(), mapOsaaminen(entity.getOsaaminen()), mapOsaamisenLahde(entity));
+            entity.getId(),
+            mapOsaaminen(entity.getOsaaminen()),
+            mapOsaamisenLahde(entity.getLahde()));
   }
 
-  private static OsaamisenLahdeDto mapOsaamisenLahde(YksilonOsaaminen entity) {
-    return new OsaamisenLahdeDto(entity.getLahde().getTyyppi(), entity.getLahde().getId());
+  private static OsaamisenLahdeDto mapOsaamisenLahde(OsaamisenLahde entity) {
+    return entity == null ? null : new OsaamisenLahdeDto(entity.getTyyppi(), entity.getId());
   }
 
   static <T, U> Function<T, U> cachingMapper(Function<T, U> mapper) {
@@ -80,15 +92,20 @@ final class Mapper {
     return (T object) -> object == null ? null : mappingCache.computeIfAbsent(object, mapper);
   }
 
-  static List<YksilonOsaaminenDto> mapYksilonOsaaminen(Collection<YksilonOsaaminen> items) {
+  static List<YksilonOsaaminenDto> mapYksilonOsaaminen(Collection<YksilonOsaaminen> entities) {
+    if (entities == null || entities.isEmpty()) {
+      return List.of();
+    }
 
     final var mapOsaaminen = cachingMapper(Mapper::mapOsaaminen);
 
-    return items.stream()
+    return entities.stream()
         .map(
-            o ->
+            entity ->
                 new YksilonOsaaminenDto(
-                    o.getId(), mapOsaaminen.apply(o.getOsaaminen()), mapOsaamisenLahde(o)))
+                    entity.getId(),
+                    mapOsaaminen.apply(entity.getOsaaminen()),
+                    mapOsaamisenLahde(entity.getLahde())))
         .toList();
   }
 }
