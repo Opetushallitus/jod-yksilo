@@ -13,9 +13,9 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.dto.validationgroup.Update;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,11 +56,11 @@ class TyopaikkaController {
     return ResponseEntity.created(location).body(new IdDto<>(id));
   }
 
-  @PostMapping("/{id}")
+  @PatchMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
-      @Validated(Update.class) @RequestBody TyopaikkaDto dto,
+      @Valid @RequestBody TyopaikkaDto dto,
       @AuthenticationPrincipal JodUser user) {
 
     if (dto.id() == null || !id.equals(dto.id())) {

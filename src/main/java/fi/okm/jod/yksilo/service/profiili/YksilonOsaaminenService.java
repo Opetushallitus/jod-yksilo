@@ -23,6 +23,7 @@ import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -80,21 +81,27 @@ public class YksilonOsaaminenService {
   }
 
   void update(OsaamisenLahde lahde, Set<URI> ids) {
+
+    var deleted = new ArrayList<YksilonOsaaminen>(lahde.getOsaamiset().size());
     var refs = ids.stream().map(Object::toString).collect(Collectors.toSet());
+
     for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {
       var o = i.next();
       final String uri = o.getOsaaminen().getUri();
       if (!refs.contains(uri)) {
         i.remove();
-        repository.delete(o);
+        deleted.add(o);
       } else {
         refs.remove(uri);
       }
     }
+    repository.deleteAllInBatch(deleted);
+
     var osaamiset = osaamisetRepository.findByUriIn(refs);
     if (osaamiset.size() != refs.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
+
     lahde
         .getOsaamiset()
         .addAll(
@@ -110,12 +117,14 @@ public class YksilonOsaaminenService {
   }
 
   public void delete(JodUser user, Set<UUID> ids) {
+    // Note. Bypasses persistence context
     if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
       throw new NotFoundException("Not found");
     }
   }
 
   void deleteAll(Set<YksilonOsaaminen> osaamiset) {
-    repository.deleteAll(osaamiset);
+    // Note. bypasses persistence context
+    repository.deleteAllInBatch(osaamiset);
   }
 }

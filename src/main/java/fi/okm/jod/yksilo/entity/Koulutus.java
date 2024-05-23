@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import static fi.okm.jod.yksilo.entity.Translation.merge;
+import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -59,7 +60,7 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   protected Koulutus() {}
 
   public Koulutus(Yksilo yksilo) {
-    this.yksilo = yksilo;
+    this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
   }
 

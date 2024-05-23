@@ -9,16 +9,8 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import static java.util.Objects.requireNonNull;
-
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {
-
-  public OsaamisenLahdeDto {
-    requireNonNull(tyyppi);
-    requireNonNull(id);
-  }
-}
+public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {}

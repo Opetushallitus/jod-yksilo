@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.entity;
 
+import static java.util.Objects.requireNonNull;
+
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
@@ -62,7 +64,7 @@ public class Tyopaikka {
   }
 
   public Tyopaikka(Yksilo yksilo, LocalizedString nimi) {
-    this.yksilo = yksilo;
+    this.yksilo = requireNonNull(yksilo);
     var tmp = new EnumMap<Kieli, Kaannos>(Kieli.class);
     nimi.asMap().forEach((key, value) -> tmp.put(key, new Kaannos(value)));
     this.kaannos = tmp;

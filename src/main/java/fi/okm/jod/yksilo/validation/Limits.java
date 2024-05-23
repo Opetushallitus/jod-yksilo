@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.validation;
 
-public interface Limits {
-  int TYOPAIKKA = 10_0000;
-  int TOIMENKUVA_PER_TYOPAIKKA = 1_000;
+public final class Limits {
+  public static final int TYOPAIKKA = 10_0000;
+  public static final int TOIMENKUVA_PER_TYOPAIKKA = 1_000;
+
+  private Limits() {}
 }

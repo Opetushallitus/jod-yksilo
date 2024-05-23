@@ -82,7 +82,7 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
                       ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                       null,
                       LocalDate.of(2021, 1, 1),
-                      LocalDate.of(2021, 12, 31),
+                      null,
                       Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
           entityManager.flush();
           entityManager.clear();
