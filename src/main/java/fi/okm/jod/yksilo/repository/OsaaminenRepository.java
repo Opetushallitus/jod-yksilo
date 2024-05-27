@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.Repository;
 
 public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
+
   List<Osaaminen> findByUriIn(Collection<String> uri);
 
   @EntityGraph(attributePaths = {"kaannos"})

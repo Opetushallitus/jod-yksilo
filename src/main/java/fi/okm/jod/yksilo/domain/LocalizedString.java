@@ -57,6 +57,15 @@ public final class LocalizedString {
     return values;
   }
 
+  public boolean isEmpty() {
+    return values.isEmpty();
+  }
+
+  // for JSON serialization, map empty to null
+  public Map<Kieli, String> toJson() {
+    return values.isEmpty() ? null : values;
+  }
+
   /**
    * Creates a new instance of LocalizedString from a Map, normalizing the string values. Intended
    * to be used when deserializing JSON.

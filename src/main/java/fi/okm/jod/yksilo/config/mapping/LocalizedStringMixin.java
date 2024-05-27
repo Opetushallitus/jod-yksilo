@@ -17,5 +17,5 @@ import java.util.Map;
 // is in the actual class
 interface LocalizedStringMixin {
   @JsonValue
-  Map<Kieli, String> asMap();
+  Map<Kieli, String> toJson();
 }

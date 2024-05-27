@@ -82,7 +82,7 @@ public class YksilonOsaaminenService {
 
   void update(OsaamisenLahde lahde, Set<URI> ids) {
 
-    var deleted = new ArrayList<YksilonOsaaminen>(lahde.getOsaamiset().size());
+    var deleted = new ArrayList<YksilonOsaaminen>();
     var refs = ids.stream().map(Object::toString).collect(Collectors.toSet());
 
     for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {

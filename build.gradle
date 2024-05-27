@@ -111,7 +111,7 @@ tasks.named('test', Test) {
 }
 
 checkstyle {
-  toolVersion = '10.12.7'
+  toolVersion = '10.17.0'
   showViolations = false
 
   def archive = configurations.checkstyle.filter {
@@ -138,7 +138,7 @@ spotless {
 }
 
 jacoco {
-  toolVersion = "0.8.11"
+  toolVersion = "0.8.12"
 }
 
 test.finalizedBy jacocoTestReport
@@ -204,6 +204,7 @@ sonar {
     property "sonar.organization", "opetushallitus"
     property "sonar.host.url", "https://sonarcloud.io"
     property "sonar.java.spotbugs.reportPaths", "build/reports/spotbugs/main.xml"
+    property "sonar.cpd.exclusions", "src/**/entity/*.java"
   }
 }
 

@@ -64,7 +64,7 @@ class YksilonOsaaminenController {
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
-      @RequestBody @NotEmpty @Size(max = 1000) Set<UUID> ids,
+      @RequestParam @NotEmpty @Size(max = 1000) Set<UUID> ids,
       @AuthenticationPrincipal JodUser user) {
     service.delete(user, ids);
   }

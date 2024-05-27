@@ -10,11 +10,13 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.entity.Kategoria;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenLahde;
@@ -65,7 +67,16 @@ final class Mapper {
             entity.getNimi(),
             entity.getKuvaus(),
             entity.getAlkuPvm(),
-            entity.getLoppuPvm());
+            entity.getLoppuPvm(),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .collect(Collectors.toUnmodifiableSet()));
+  }
+
+  static KategoriaDto mapKategoria(Kategoria entity) {
+    return entity == null
+        ? null
+        : new KategoriaDto(entity.getId(), entity.getNimi(), entity.getKuvaus());
   }
 
   static OsaaminenDto mapOsaaminen(Osaaminen entity) {

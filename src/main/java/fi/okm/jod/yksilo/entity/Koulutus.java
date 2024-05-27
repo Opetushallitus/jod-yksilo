@@ -23,12 +23,15 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -39,6 +42,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
+@Table(indexes = {@Index(columnList = "yksilo_id")})
 public non-sealed class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
@@ -49,12 +53,18 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
+  @Getter
+  @ManyToOne(fetch = FetchType.LAZY)
+  @Setter
+  private Kategoria kategoria;
+
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 10)
+  @BatchSize(size = 100)
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(mappedBy = "koulutus", fetch = FetchType.LAZY)
+  @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
   protected Koulutus() {}
@@ -62,6 +72,7 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   public Koulutus(Yksilo yksilo) {
     this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
+    this.osaamiset = new HashSet<>();
   }
 
   public LocalizedString getNimi() {

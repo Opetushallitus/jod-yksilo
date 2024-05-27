@@ -9,22 +9,23 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.PrintableString;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.Set;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
-public record KoulutusDto(
-    @Null(groups = Add.class) UUID id,
-    @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = 10000) @PrintableString LocalizedString kuvaus,
-    LocalDate alkuPvm,
-    LocalDate loppuPvm,
-    Set<URI> osaamiset)
-    implements ValidInterval {}
+@Slf4j
+public record KategoriaDto(
+    UUID id,
+    @Size(max = 200) @PrintableString LocalizedString nimi,
+    @Size(max = 10000) @PrintableString LocalizedString kuvaus) {
+
+  @JsonIgnore
+  @AssertTrue(message = "nimi is required")
+  public boolean isValid() {
+    return id != null || nimi != null && !nimi.isEmpty();
+  }
+}

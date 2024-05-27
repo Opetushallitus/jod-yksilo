@@ -14,9 +14,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -25,10 +24,8 @@ import org.hibernate.annotations.BatchSize;
 @Getter
 public class Yksilo {
 
-  @Transient private boolean isNew = false;
-
-  @Column(updatable = false, nullable = false)
   @Id
+  @Column(updatable = false, nullable = false)
   private UUID id;
 
   @NotNull
@@ -37,12 +34,11 @@ public class Yksilo {
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY)
   @BatchSize(size = 10)
-  private List<Tyopaikka> tyopaikat;
+  private Set<YksilonOsaaminen> osaamiset;
 
   public Yksilo(UUID uuid, String user) {
     this.id = uuid;
     this.tunnus = user;
-    this.isNew = true;
   }
 
   protected Yksilo() {

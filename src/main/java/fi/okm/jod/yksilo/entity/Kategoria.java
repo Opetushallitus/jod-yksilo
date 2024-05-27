@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.Toimenkuva.Kaannos;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -27,51 +28,40 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
-import java.time.LocalDate;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
-@Getter
-@Table(indexes = {@Index(columnList = "tyopaikka_id")})
-public non-sealed class Toimenkuva implements OsaamisenLahde {
-  @GeneratedValue @Id private UUID id;
-
-  @Setter private LocalDate alkuPvm;
-  @Setter private LocalDate loppuPvm;
+@Table(indexes = {@Index(columnList = "yksilo_id")})
+public class Kategoria {
+  @Id @GeneratedValue @Getter UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
-  private Tyopaikka tyopaikka;
+  @Getter
+  private Yksilo yksilo;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 100)
-  @NotEmpty
+  @BatchSize(size = 10)
   private Map<Kieli, Kaannos> kaannos;
 
-  @OneToMany(mappedBy = "toimenkuva", fetch = FetchType.LAZY)
-  @BatchSize(size = 100)
-  private Set<YksilonOsaaminen> osaamiset;
-
-  protected Toimenkuva() {
+  protected Kategoria() {
     // For JPA
   }
 
-  public Toimenkuva(Tyopaikka tyopaikka) {
-    this.tyopaikka = requireNonNull(tyopaikka);
+  public Kategoria(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
+    this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
-    this.osaamiset = new HashSet<>();
+    merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
+    if (kuvaus != null) {
+      merge(nimi, kaannos, Kaannos::new, Kaannos::setKuvaus);
+    }
   }
 
   public LocalizedString getNimi() {
@@ -88,10 +78,6 @@ public non-sealed class Toimenkuva implements OsaamisenLahde {
 
   public void setKuvaus(LocalizedString kuvaus) {
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
-  }
-
-  public Yksilo getYksilo() {
-    return tyopaikka.getYksilo();
   }
 
   @Embeddable
