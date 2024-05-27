@@ -12,37 +12,98 @@ package fi.okm.jod.yksilo.service;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
-import java.time.LocalDate;
+import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
+import java.net.URI;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
-@Import(KoulutusService.class)
+@Import({KoulutusService.class, YksilonOsaaminenService.class})
 class KoulutusServiceTest extends AbstractServiceTest {
 
   @Autowired KoulutusService service;
 
   @Test
-  void shouldAddKoulutus() {
+  void shouldAddAndUpdateKoulutus() {
     assertDoesNotThrow(
         () -> {
-          var id = service.add(user, new KoulutusDto(ls("nimi"), null, null, null));
+          var id =
+              service.merge(
+                  user,
+                  new KategoriaDto(null, ls("kategoria"), null),
+                  Set.of(
+                      new KoulutusDto(
+                          null,
+                          ls("nimi"),
+                          null,
+                          null,
+                          null,
+                          Set.of(URI.create("urn:osaaminen1")))));
           entityManager.flush();
 
-          var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(
-              user, new KoulutusDto(id, updatedNimi, null, LocalDate.of(2024, 1, 1), null));
+          service.upsert(
+              user,
+              new KategoriaDto(id, null, null),
+              Set.of(
+                  new KoulutusDto(
+                      null, ls("nimi2"), null, null, null, Set.of(URI.create("urn:osaaminen1")))));
           entityManager.flush();
           entityManager.clear();
 
           var result = service.findAll(user);
-          assertEquals(1, result.size());
-          assertEquals(updatedNimi, result.getFirst().nimi());
+          assertEquals(2, result.getFirst().koulutukset().size());
+          assertEquals(ls("kategoria"), result.getFirst().kategoria().nimi());
+
+          id =
+              service.merge(
+                  user,
+                  result.getFirst().kategoria(),
+                  Set.of(
+                      new KoulutusDto(
+                          null,
+                          ls("nimi"),
+                          null,
+                          null,
+                          null,
+                          Set.of(URI.create("urn:osaaminen1")))));
+          entityManager.flush();
+          entityManager.clear();
+
+          result = service.findAll(user, id);
+          assertEquals(1, result.getFirst().koulutukset().size());
+        });
+  }
+
+  @Test
+  void shouldHandleNullKategoria() {
+    assertDoesNotThrow(
+        () -> {
+          service.merge(
+              user,
+              null,
+              Set.of(
+                  new KoulutusDto(
+                      null, ls("nimi"), null, null, null, Set.of(URI.create("urn:osaaminen1")))));
+          entityManager.flush();
+
+          service.merge(
+              user,
+              new KategoriaDto(null, ls("kategoria"), null),
+              Set.of(
+                  new KoulutusDto(
+                      null, ls("nimi2"), null, null, null, Set.of(URI.create("urn:osaaminen1")))));
+          entityManager.flush();
+          entityManager.clear();
+
+          var result = service.findAll(user);
+          assertEquals(2, result.size());
+          assertEquals(1, result.stream().filter(e -> e.kategoria() == null).count());
         });
   }
 }

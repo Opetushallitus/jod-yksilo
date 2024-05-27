@@ -7,8 +7,13 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.validationgroup;
+package fi.okm.jod.yksilo.dto.profiili;
 
-import jakarta.validation.groups.Default;
+import fi.okm.jod.yksilo.validation.Limits;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
+import java.util.Set;
 
-public interface Update extends Default {}
+public record KoulutusKategoriaDto(
+    @Valid KategoriaDto kategoria,
+    @Size(max = Limits.KOULUTUS) Set<@Valid KoulutusDto> koulutukset) {}

@@ -19,14 +19,22 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(
+    indexes = {
+      @Index(columnList = "yksilo_id,lahde"),
+      @Index(columnList = "koulutus_id"),
+      @Index(columnList = "toimenkuva_id"),
+    })
 public class YksilonOsaaminen {
 
   @Getter @Id @GeneratedValue private UUID id;

@@ -14,6 +14,8 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +103,16 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       ServiceValidationException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.VALIDATION_FAILURE, List.of(ex.getMessage()));
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      ConstraintViolationException ex, WebRequest request) {
+    var info =
+        errorInfo.of(
+            ErrorCode.VALIDATION_FAILURE,
+            ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList());
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
   @Override
