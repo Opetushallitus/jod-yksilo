@@ -49,7 +49,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
 
           service.upsert(
               user,
-              new KategoriaDto(id, null, null),
+              new KategoriaDto(id.kategoria(), null, null),
               Set.of(
                   new KoulutusDto(
                       null, ls("nimi2"), null, null, null, Set.of(URI.create("urn:osaaminen1")))));
@@ -75,13 +75,13 @@ class KoulutusServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          result = service.findAll(user, id);
+          result = service.findAll(user, id.kategoria());
           assertEquals(1, result.getFirst().koulutukset().size());
         });
   }
 
   @Test
-  void shouldHandleNullKategoria() {
+  void shouldHandleNullKategoriaSpecially() {
     assertDoesNotThrow(
         () -> {
           service.merge(
@@ -94,7 +94,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
 
           service.merge(
               user,
-              new KategoriaDto(null, ls("kategoria"), null),
+              null,
               Set.of(
                   new KoulutusDto(
                       null, ls("nimi2"), null, null, null, Set.of(URI.create("urn:osaaminen1")))));
@@ -102,8 +102,18 @@ class KoulutusServiceTest extends AbstractServiceTest {
           entityManager.clear();
 
           var result = service.findAll(user);
-          assertEquals(2, result.size());
-          assertEquals(1, result.stream().filter(e -> e.kategoria() == null).count());
+          assertEquals(1, result.size());
+          assertEquals(2, result.getFirst().koulutukset().size());
         });
+  }
+
+  @Test
+  void shouldNotAllowEmptyKategoria() {
+    final var kategoriaDto = new KategoriaDto(null, ls("nimi"), null);
+
+    assertThrows(
+        ServiceValidationException.class, () -> service.merge(user, kategoriaDto, Set.of()));
+
+    assertThrows(ServiceValidationException.class, () -> service.merge(user, kategoriaDto, null));
   }
 }
