@@ -10,9 +10,9 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,17 +51,23 @@ class KoulutusController {
   }
 
   @PutMapping
-  ResponseEntity<IdDto<UUID>> update(
+  @ResponseStatus(HttpStatus.OK)
+  KoulutusUpdateResultDto update(
       @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
-    var id = service.merge(user, dto.kategoria(), dto.koulutukset());
-    return ResponseEntity.ok(new IdDto<>(id));
+    return service.merge(user, dto.kategoria(), dto.koulutukset());
   }
 
   @PatchMapping
-  ResponseEntity<IdDto<UUID>> partialUpdate(
+  @ResponseStatus(HttpStatus.OK)
+  KoulutusUpdateResultDto partialUpdate(
       @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
-    var id = service.upsert(user, dto.kategoria(), dto.koulutukset());
-    return ResponseEntity.ok(new IdDto<>(id));
+    return service.upsert(user, dto.kategoria(), dto.koulutukset());
+  }
+
+  @GetMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  KoulutusKategoriaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    return service.find(user, id);
   }
 
   @DeleteMapping("/{id}")
@@ -73,7 +78,6 @@ class KoulutusController {
 
   @GetMapping("/kategoriat")
   List<KategoriaDto> getKategoriat(@AuthenticationPrincipal JodUser user) {
-
     return service.getKategoriat(user);
   }
 }

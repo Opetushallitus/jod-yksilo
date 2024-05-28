@@ -18,6 +18,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
 import fi.okm.jod.yksilo.entity.Kategoria;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.Koulutus_;
@@ -48,7 +49,16 @@ public class KoulutusService {
 
   private final YksilonOsaaminenService osaamiset;
 
-  /** Find Koulutus matching the give criteria.* */
+  public KoulutusKategoriaDto find(JodUser user, UUID id) {
+    return koulutukset
+        .findByYksiloIdAndId(user.getId(), id)
+        .map(
+            k ->
+                new KoulutusKategoriaDto(
+                    Mapper.mapKategoria(k.getKategoria()), Set.of(Mapper.mapKoulutus(k))))
+        .orElseThrow(KoulutusService::notFound);
+  }
+
   public List<KoulutusKategoriaDto> findAll(JodUser user) {
     final Yksilo yksilo = yksilot.getReferenceById(user.getId());
     var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
@@ -76,16 +86,22 @@ public class KoulutusService {
         .toList();
   }
 
-  public UUID merge(JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
+  public KoulutusUpdateResultDto merge(
+      JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
     return merge(user, kategoriaDto, dtos, false);
   }
 
-  public UUID upsert(JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
+  public KoulutusUpdateResultDto upsert(
+      JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
     return merge(user, kategoriaDto, dtos, true);
   }
 
-  private UUID merge(
+  private KoulutusUpdateResultDto merge(
       JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos, boolean partial) {
+
+    if ((dtos == null || dtos.isEmpty()) && kategoriaDto != null && kategoriaDto.id() == null) {
+      throw new ServiceValidationException("Empty Kategoria not created");
+    }
 
     final var yksilo = yksilot.getReferenceById(user.getId());
 
@@ -95,38 +111,42 @@ public class KoulutusService {
       kategoria.setKuvaus(kategoriaDto.kuvaus());
     }
 
-    final var ids = HashSet.<UUID>newHashSet(dtos.size());
+    final Set<UUID> touched = dtos == null ? Set.of() : HashSet.newHashSet(dtos.size());
 
-    for (var dto : dtos) {
-      var koulutus = resolve(yksilo, dto);
-      koulutus.setKategoria(kategoria);
-      koulutus.setNimi(dto.nimi());
-      koulutus.setKuvaus(dto.kuvaus());
-      koulutus.setAlkuPvm(dto.alkuPvm());
-      koulutus.setLoppuPvm(dto.loppuPvm());
-      ids.add(koulutukset.save(koulutus).getId());
+    if (dtos != null) {
 
-      if (dto.osaamiset() != null) {
-        osaamiset.update(koulutus, dto.osaamiset());
+      for (var dto : dtos) {
+        var koulutus = resolve(yksilo, dto);
+        koulutus.setKategoria(kategoria);
+        koulutus.setNimi(dto.nimi());
+        koulutus.setKuvaus(dto.kuvaus());
+        koulutus.setAlkuPvm(dto.alkuPvm());
+        koulutus.setLoppuPvm(dto.loppuPvm());
+        touched.add(koulutukset.save(koulutus).getId());
+
+        if (dto.osaamiset() != null) {
+          osaamiset.update(koulutus, dto.osaamiset());
+        }
       }
-    }
 
-    if (!partial) {
-      var removed = koulutukset.findByKategoriaAndIdNotIn(kategoria, ids);
-      if (!removed.isEmpty()) {
-        koulutukset.deleteOsaamiset(removed.stream().map(Koulutus::getId).toList());
-        koulutukset.deleteAll(removed);
+      if (!partial && kategoria != null) {
+        var removed = koulutukset.findByKategoriaAndIdNotIn(kategoria, touched);
+        if (!removed.isEmpty()) {
+          koulutukset.deleteOsaamiset(removed.stream().map(Koulutus::getId).toList());
+          koulutukset.deleteAll(removed);
+        }
       }
+
+      koulutukset.flush();
+
+      if (koulutukset.countByYksilo(yksilo) > Limits.KOULUTUS) {
+        throw new ServiceValidationException("Limit for number of Koulutus exceeded");
+      }
+
+      kategoriat.deleteOrphaned(yksilo);
     }
 
-    koulutukset.flush();
-
-    if (koulutukset.countByYksilo(yksilo) > Limits.KOULUTUS) {
-      throw new ServiceValidationException("Limit for number of Koulutus exceeded");
-    }
-
-    kategoriat.deleteOrphaned(yksilo);
-    return kategoria == null ? null : kategoria.getId();
+    return new KoulutusUpdateResultDto(kategoria == null ? null : kategoria.getId(), touched);
   }
 
   public void delete(JodUser user, Set<UUID> ids) {
@@ -134,7 +154,7 @@ public class KoulutusService {
     var entities = koulutukset.findByYksiloAndIdIn(yksilo, ids);
 
     if (entities.size() != ids.size()) {
-      throw new NotFoundException("Some Koulutus not found");
+      throw new NotFoundException("Koulutus not found");
     }
 
     koulutukset.deleteOsaamiset(ids);
