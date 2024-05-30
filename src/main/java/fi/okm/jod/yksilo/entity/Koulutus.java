@@ -56,7 +56,7 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   @Getter
   @ManyToOne(fetch = FetchType.LAZY)
   @Setter
-  private Kategoria kategoria;
+  private KoulutusKategoria kategoria;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)

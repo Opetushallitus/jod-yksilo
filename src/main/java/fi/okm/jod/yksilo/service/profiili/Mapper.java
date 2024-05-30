@@ -16,8 +16,8 @@ import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
-import fi.okm.jod.yksilo.entity.Kategoria;
 import fi.okm.jod.yksilo.entity.Koulutus;
+import fi.okm.jod.yksilo.entity.KoulutusKategoria;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
@@ -73,7 +73,7 @@ final class Mapper {
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
-  static KategoriaDto mapKategoria(Kategoria entity) {
+  static KategoriaDto mapKategoria(KoulutusKategoria entity) {
     return entity == null
         ? null
         : new KategoriaDto(entity.getId(), entity.getNimi(), entity.getKuvaus());

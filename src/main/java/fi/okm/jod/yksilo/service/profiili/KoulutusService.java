@@ -19,11 +19,11 @@ import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
-import fi.okm.jod.yksilo.entity.Kategoria;
 import fi.okm.jod.yksilo.entity.Koulutus;
+import fi.okm.jod.yksilo.entity.KoulutusKategoria;
 import fi.okm.jod.yksilo.entity.Koulutus_;
 import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.repository.KategoriaRepository;
+import fi.okm.jod.yksilo.repository.KoulutusKategoriaRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class KoulutusService {
   private final KoulutusRepository koulutukset;
   private final YksiloRepository yksilot;
-  private final KategoriaRepository kategoriat;
+  private final KoulutusKategoriaRepository kategoriat;
 
   private final YksilonOsaaminenService osaamiset;
 
@@ -162,7 +162,7 @@ public class KoulutusService {
     kategoriat.deleteOrphaned(yksilo);
   }
 
-  private Kategoria resolve(Yksilo yksilo, KategoriaDto dto) {
+  private KoulutusKategoria resolve(Yksilo yksilo, KategoriaDto dto) {
     if (dto == null) {
       return null;
     }
@@ -179,7 +179,7 @@ public class KoulutusService {
 
     if (existing.isEmpty()) {
       if (dto.id() == null) {
-        return kategoriat.save(new Kategoria(yksilo, dto.nimi(), dto.kuvaus()));
+        return kategoriat.save(new KoulutusKategoria(yksilo, dto.nimi(), dto.kuvaus()));
       } else {
         throw new ServiceValidationException("Kategoria not found");
       }
