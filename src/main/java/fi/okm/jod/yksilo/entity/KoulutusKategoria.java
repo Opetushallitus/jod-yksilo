@@ -14,7 +14,6 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.entity.Toimenkuva.Kaannos;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -38,7 +37,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(indexes = {@Index(columnList = "yksilo_id")})
-public class Kategoria {
+public class KoulutusKategoria {
   @Id @GeneratedValue @Getter UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -51,11 +50,11 @@ public class Kategoria {
   @BatchSize(size = 10)
   private Map<Kieli, Kaannos> kaannos;
 
-  protected Kategoria() {
+  protected KoulutusKategoria() {
     // For JPA
   }
 
-  public Kategoria(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
+  public KoulutusKategoria(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
     this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);

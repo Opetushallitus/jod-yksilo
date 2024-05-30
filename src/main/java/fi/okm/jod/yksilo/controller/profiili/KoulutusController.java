@@ -81,6 +81,12 @@ class KoulutusController {
     return service.upsert(user, dto.kategoria(), dto.koulutukset());
   }
 
+  @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  void deleteAll(@RequestParam Set<UUID> koulutukset, @AuthenticationPrincipal JodUser user) {
+    service.delete(user, koulutukset);
+  }
+
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   KoulutusKategoriaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {

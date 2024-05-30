@@ -13,8 +13,8 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.KOULUTUS;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
-import fi.okm.jod.yksilo.entity.Kategoria;
 import fi.okm.jod.yksilo.entity.Koulutus;
+import fi.okm.jod.yksilo.entity.KoulutusKategoria;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +53,8 @@ public interface KoulutusRepository
 
   @Query(
       "SELECT k FROM Koulutus k WHERE ((:kategoria IS NULL AND k.kategoria IS NULL) OR k.kategoria = :kategoria) AND k.id NOT IN :ids")
-  List<Koulutus> findByKategoriaAndIdNotIn(@Nullable Kategoria kategoria, Collection<UUID> ids);
+  List<Koulutus> findByKategoriaAndIdNotIn(
+      @Nullable KoulutusKategoria kategoria, Collection<UUID> ids);
 
   int countByYksilo(Yksilo yksilo);
 }
