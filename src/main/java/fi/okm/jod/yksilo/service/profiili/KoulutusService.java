@@ -173,7 +173,7 @@ public class KoulutusService {
             .filter(e -> e.getNimi().equals(dto.nimi()) || e.getId().equals(dto.id()))
             .toList();
 
-    if (existing.size() > 1) {
+    if (existing.size() > 1 || dto.id() == null && !existing.isEmpty()) {
       throw new ServiceValidationException("Duplicate Kategoria");
     }
 

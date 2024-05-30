@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.config;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.models.info.Info;
+import java.lang.reflect.Method;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -45,13 +46,18 @@ class OpenApiConfig {
   @Bean
   public OperationCustomizer operationCustomizer() {
     return (operation, handlerMethod) -> {
-      if (!handlerMethod.getMethod().isAnnotationPresent(Operation.class)) {
+      if (hasDefaultOperationId(handlerMethod.getMethod())) {
         operation.setOperationId(
             uncapitalize(handlerMethod.getBeanType().getSimpleName().replace("Controller", ""))
                 + capitalize(handlerMethod.getMethod().getName()));
       }
       return operation;
     };
+  }
+
+  private static boolean hasDefaultOperationId(Method method) {
+    return !method.isAnnotationPresent(Operation.class)
+        || method.getAnnotation(Operation.class).operationId().isBlank();
   }
 
   private static String capitalize(String str) {

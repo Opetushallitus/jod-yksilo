@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,8 +51,16 @@ class KoulutusController {
     };
   }
 
-  @PutMapping
+  @PostMapping
   @ResponseStatus(HttpStatus.OK)
+  @Operation(
+      summary = "Adds or replaces a Kategoria and its associated Koulutus",
+      description =
+          """
+          This endpoint can be used to add a new Kategoria and its associated Koulutus or to
+          update an existing Kategoria and its associated Koulutus. When updating, unlisted
+          existing Koulutus will be removed from the Kategoria, unless the Kategoria is null.
+          """)
   KoulutusUpdateResultDto update(
       @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
     return service.merge(user, dto.kategoria(), dto.koulutukset());
@@ -59,6 +68,14 @@ class KoulutusController {
 
   @PatchMapping
   @ResponseStatus(HttpStatus.OK)
+  @Operation(
+      summary = "Updates a Kategoria and its associated Koulutus",
+      description =
+          """
+          This endpoint can be used to add a new Kategoria and its associated Koulutus or to
+          do a partial update. Unlike update, this endpoint will not remove unlisted existing
+          Koulutus.
+          """)
   KoulutusUpdateResultDto partialUpdate(
       @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
     return service.upsert(user, dto.kategoria(), dto.koulutukset());
