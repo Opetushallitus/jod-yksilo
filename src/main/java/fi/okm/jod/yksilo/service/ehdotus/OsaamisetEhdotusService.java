@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.service.ehdotus;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.service.ServiceException;
-import io.micrometer.core.annotation.Timed;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -25,7 +24,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -71,8 +69,6 @@ public class OsaamisetEhdotusService {
     // can be a security risk. RestClient also does not bound the response size in any way.
   }
 
-  @PostMapping
-  @Timed
   public List<Ehdotus> createEhdotus(String kuvaus) {
 
     record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations) {}
