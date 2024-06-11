@@ -122,6 +122,7 @@ checkstyle {
 
 spotless {
   java {
+    target 'src/*/**/*.java'
     googleJavaFormat()
     licenseHeader '''\
     /*
