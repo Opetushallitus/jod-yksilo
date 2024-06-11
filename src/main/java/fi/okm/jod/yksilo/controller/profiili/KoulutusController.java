@@ -11,8 +11,10 @@ package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,70 +32,90 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/koulutukset")
+@RequestMapping("/api/profiili")
 @RequiredArgsConstructor
 @Tag(name = "profiili")
 class KoulutusController {
   private final KoulutusService service;
 
-  @GetMapping
-  List<KoulutusKategoriaDto> find(
-      @AuthenticationPrincipal JodUser user, @RequestParam(required = false) String kategoriaId) {
-    return switch (kategoriaId) {
-      case null -> service.findAll(user);
-      case "null" -> service.findAll(user, null);
-      default -> service.findAll(user, UUID.fromString(kategoriaId));
-    };
-  }
-
-  @PostMapping
+  @GetMapping(path = "/koulutukset")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-      summary = "Adds or replaces a Kategoria and its associated Koulutus",
+      summary = "Get all koutukset and kategoriat of the user",
       description =
           """
-          This endpoint can be used to add a new Kategoria and its associated Koulutus or to
-          update an existing Kategoria and its associated Koulutus. When updating, unlisted
-          existing Koulutus will be removed from the Kategoria, unless the Kategoria is null.
-          """)
-  KoulutusUpdateResultDto update(
-      @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
-    return service.merge(user, dto.kategoria(), dto.koulutukset());
+              This endpoint can be used to get all koultukset and kategoriat of the user.
+              """)
+  List<KoulutusKategoriaDto> find(@AuthenticationPrincipal JodUser user) {
+    return service.findAll(user);
   }
 
-  @PatchMapping
+  @PostMapping(path = "/koulutukset")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-      summary = "Updates a Kategoria and its associated Koulutus",
+      summary = "Adds a new set of koulutus and its associated kategoria",
       description =
           """
-          This endpoint can be used to add a new Kategoria and its associated Koulutus or to
-          do a partial update. Unlike update, this endpoint will not remove unlisted existing
-          Koulutus.
-          """)
-  KoulutusUpdateResultDto partialUpdate(
+              This endpoint can be used to add a new Kategoria and its associated Koulutus.
+              If kategoria is not present koulutus will be added without kategoria.
+              """)
+  KoulutusUpdateResultDto create(
       @RequestBody @Valid KoulutusKategoriaDto dto, @AuthenticationPrincipal JodUser user) {
-    return service.upsert(user, dto.kategoria(), dto.koulutukset());
+    return service.create(user, dto.kategoria(), dto.koulutukset());
   }
 
-  @DeleteMapping
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void deleteAll(@RequestParam Set<UUID> koulutukset, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, koulutukset);
+  @PatchMapping(path = "/koulutukset/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+      summary = "Updates the koulutus by id",
+      description =
+          """
+              This endpoint can be used to update Koulutus.
+              """)
+  KoulutusUpdateResultDto updateKoulutus(
+      @RequestBody @Valid KoulutusDto dto,
+      @AuthenticationPrincipal JodUser user,
+      @PathVariable String koulutusId) {
+    if (UUID.fromString(koulutusId) != dto.id()) {
+      throw new ServiceValidationException("path variable and dto id must match");
+    }
+    return service.update(user, dto);
   }
 
-  @GetMapping("/{id}")
+  @PatchMapping(path = "/kategoriat/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+      summary = "Updates a Kategoria by id",
+      description =
+          """
+              This endpoint can be used to update the kagoria by id.
+              """)
+  KoulutusUpdateResultDto updateKategoria(
+      @RequestBody @Valid KategoriaDto dto,
+      @AuthenticationPrincipal JodUser user,
+      @PathVariable String kategoriaId) {
+    if (UUID.fromString(kategoriaId) != dto.id()) {
+      throw new ServiceValidationException("path variable and dto id must match");
+    }
+    return service.update(user, dto);
+  }
+
+  @GetMapping("/koulutukset/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   KoulutusKategoriaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.find(user, id);
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/kategoriat/{id}")
+  @Operation(
+      summary = "Delete the kategoria by id",
+      description = """
+      This endpoint can be used to delete the kategoria by id
+      """)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, Set.of(id));

@@ -29,6 +29,7 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -46,31 +47,7 @@ public class KoulutusService {
   private final KoulutusRepository koulutukset;
   private final YksiloRepository yksilot;
   private final KoulutusKategoriaRepository kategoriat;
-
-  private final YksilonOsaaminenService osaamiset;
-
-  public KoulutusKategoriaDto find(JodUser user, UUID id) {
-    return koulutukset
-        .findByYksiloIdAndId(user.getId(), id)
-        .map(
-            k ->
-                new KoulutusKategoriaDto(
-                    Mapper.mapKategoria(k.getKategoria()), Set.of(Mapper.mapKoulutus(k))))
-        .orElseThrow(KoulutusService::notFound);
-  }
-
-  public List<KoulutusKategoriaDto> findAll(JodUser user) {
-    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
-    var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
-    return groupByKategoria(koulutukset.findByYksilo(yksilo, sort));
-  }
-
-  public List<KoulutusKategoriaDto> findAll(JodUser user, UUID kategoriaId) {
-
-    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
-    var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
-    return groupByKategoria(koulutukset.findByYksiloAndKategoriaId(yksilo, kategoriaId, sort));
-  }
+  private final YksilonOsaaminenService yksilonOsaamiset;
 
   private static List<KoulutusKategoriaDto> groupByKategoria(List<Koulutus> result) {
     var kategoriaMapper = cachingMapper(Mapper::mapKategoria);
@@ -86,6 +63,73 @@ public class KoulutusService {
         .toList();
   }
 
+  private static void validateKategoriaNotEmpty(KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
+    if ((dtos == null || dtos.isEmpty()) && kategoriaDto != null && kategoriaDto.id() == null) {
+      throw new ServiceValidationException("Empty Kategoria not created");
+    }
+  }
+
+  static NotFoundException notFound() {
+    return new NotFoundException("Not found");
+  }
+
+  public List<KoulutusKategoriaDto> findAll(JodUser user) {
+    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
+    var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
+    return groupByKategoria(koulutukset.findByYksilo(yksilo, sort));
+  }
+
+  public KoulutusKategoriaDto find(JodUser user, UUID id) {
+    return koulutukset
+        .findByYksiloIdAndId(user.getId(), id)
+        .map(
+            k ->
+                new KoulutusKategoriaDto(
+                    Mapper.mapKategoria(k.getKategoria()), Set.of(Mapper.mapKoulutus(k))))
+        .orElseThrow(KoulutusService::notFound);
+  }
+
+  public KoulutusKategoriaDto findKategoriaById(JodUser user, UUID kategoriaId) {
+    return kategoriat
+        .findByYksiloAndId(yksilot.getReferenceById(user.getId()), kategoriaId)
+        .map(k -> new KoulutusKategoriaDto(Mapper.mapKategoria(k), Collections.emptySet()))
+        .orElseThrow(KoulutusService::notFound);
+  }
+
+  public List<KoulutusKategoriaDto> findAll(JodUser user, UUID kategoriaId) {
+
+    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
+    var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
+    return groupByKategoria(koulutukset.findByYksiloAndKategoriaId(yksilo, kategoriaId, sort));
+  }
+
+  public KoulutusUpdateResultDto create(
+      JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
+
+    validateKategoriaNotEmpty(kategoriaDto, dtos);
+    final var yksilo = yksilot.getReferenceById(user.getId());
+    final var newKoulutusKategoria =
+        kategoriaDto != null
+            ? kategoriat.save(
+                new KoulutusKategoria(yksilo, kategoriaDto.nimi(), kategoriaDto.kuvaus()))
+            : null;
+    final var newSetOfKoulutus =
+        dtos.stream()
+            .map(
+                dto -> {
+                  final var newKoulutus = new Koulutus(yksilo);
+                  newKoulutus.setKategoria(newKoulutusKategoria);
+                  newKoulutus.setNimi(dto.nimi());
+                  newKoulutus.setKuvaus(dto.kuvaus());
+                  newKoulutus.setAlkuPvm(dto.alkuPvm());
+                  newKoulutus.setLoppuPvm(dto.loppuPvm());
+                  return koulutukset.save(newKoulutus).getId();
+                })
+            .collect(toSet());
+    return new KoulutusUpdateResultDto(
+        newKoulutusKategoria != null ? newKoulutusKategoria.getId() : null, newSetOfKoulutus);
+  }
+
   public KoulutusUpdateResultDto merge(
       JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos) {
     return merge(user, kategoriaDto, dtos, false);
@@ -99,9 +143,7 @@ public class KoulutusService {
   private KoulutusUpdateResultDto merge(
       JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos, boolean partial) {
 
-    if ((dtos == null || dtos.isEmpty()) && kategoriaDto != null && kategoriaDto.id() == null) {
-      throw new ServiceValidationException("Empty Kategoria not created");
-    }
+    validateKategoriaNotEmpty(kategoriaDto, dtos);
 
     final var yksilo = yksilot.getReferenceById(user.getId());
 
@@ -125,7 +167,7 @@ public class KoulutusService {
         touched.add(koulutukset.save(koulutus).getId());
 
         if (dto.osaamiset() != null) {
-          osaamiset.update(koulutus, dto.osaamiset());
+          yksilonOsaamiset.update(koulutus, dto.osaamiset());
         }
       }
 
@@ -204,7 +246,34 @@ public class KoulutusService {
         .toList();
   }
 
-  static NotFoundException notFound() {
-    return new NotFoundException("Not found");
+  public KoulutusUpdateResultDto update(JodUser user, KoulutusDto koulutus) {
+    final var yksilo = yksilot.getReferenceById(user.getId());
+    koulutukset
+        .findByYksiloIdAndId(yksilo.getId(), koulutus.id())
+        .ifPresent(
+            k -> {
+              k.setAlkuPvm(koulutus.alkuPvm());
+              k.setLoppuPvm(koulutus.loppuPvm());
+              k.setNimi(koulutus.nimi());
+              k.setKuvaus(koulutus.kuvaus());
+              if (koulutus.osaamiset() != null) {
+                yksilonOsaamiset.update(k, koulutus.osaamiset());
+              }
+            });
+
+    return new KoulutusUpdateResultDto(null, Collections.emptySet());
+  }
+
+  public KoulutusUpdateResultDto update(JodUser user, KategoriaDto kategoria) {
+    var yksilo = yksilot.getReferenceById(user.getId());
+    kategoriat
+        .findByYksiloAndId(yksilo, kategoria.id())
+        .ifPresent(
+            k -> {
+              k.setKuvaus(kategoria.kuvaus());
+              k.setNimi(kategoria.nimi());
+            });
+
+    return new KoulutusUpdateResultDto(kategoria.id(), null);
   }
 }

@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-final class Mapper {
+public final class Mapper {
 
   private Mapper() {}
 
-  static ToimenkuvaDto mapToimenkuva(Toimenkuva entity) {
+  public static ToimenkuvaDto mapToimenkuva(Toimenkuva entity) {
     return entity == null
         ? null
         : new ToimenkuvaDto(
@@ -48,7 +48,7 @@ final class Mapper {
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
-  static TyopaikkaDto mapTyopaikka(Tyopaikka entity) {
+  public static TyopaikkaDto mapTyopaikka(Tyopaikka entity) {
     return entity == null
         ? null
         : new TyopaikkaDto(
@@ -59,7 +59,7 @@ final class Mapper {
                 .collect(Collectors.toSet()));
   }
 
-  static KoulutusDto mapKoulutus(Koulutus entity) {
+  public static KoulutusDto mapKoulutus(Koulutus entity) {
     return entity == null
         ? null
         : new KoulutusDto(
@@ -73,19 +73,19 @@ final class Mapper {
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
-  static KategoriaDto mapKategoria(KoulutusKategoria entity) {
+  public static KategoriaDto mapKategoria(KoulutusKategoria entity) {
     return entity == null
         ? null
         : new KategoriaDto(entity.getId(), entity.getNimi(), entity.getKuvaus());
   }
 
-  static OsaaminenDto mapOsaaminen(Osaaminen entity) {
+  public static OsaaminenDto mapOsaaminen(Osaaminen entity) {
     return entity == null
         ? null
         : new OsaaminenDto(URI.create(entity.getUri()), entity.getNimi(), entity.getKuvaus());
   }
 
-  static YksilonOsaaminenDto mapYksilonOsaaminen(YksilonOsaaminen entity) {
+  public static YksilonOsaaminenDto mapYksilonOsaaminen(YksilonOsaaminen entity) {
     return entity == null
         ? null
         : new YksilonOsaaminenDto(
