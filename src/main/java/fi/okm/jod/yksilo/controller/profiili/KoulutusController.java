@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusUpdateResultDto;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,10 +44,10 @@ class KoulutusController {
   @GetMapping(path = "/koulutukset")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-      summary = "Get all koutukset and kategoriat of the user",
+      summary = "Get all koulutukset and kategoriat of the user",
       description =
           """
-              This endpoint can be used to get all koultukset and kategoriat of the user.
+              This endpoint can be used to get all koulutukset and kategoriat of the user.
               """)
   List<KoulutusKategoriaDto> find(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
@@ -77,11 +76,11 @@ class KoulutusController {
               This endpoint can be used to update Koulutus.
               """)
   KoulutusUpdateResultDto updateKoulutus(
+      @PathVariable UUID id,
       @RequestBody @Valid KoulutusDto dto,
-      @AuthenticationPrincipal JodUser user,
-      @PathVariable String koulutusId) {
-    if (UUID.fromString(koulutusId) != dto.id()) {
-      throw new ServiceValidationException("path variable and dto id must match");
+      @AuthenticationPrincipal JodUser user) {
+    if (dto.id() == null || !id.equals(dto.id())) {
+      throw new IllegalArgumentException("Invalid identifier");
     }
     return service.update(user, dto);
   }
@@ -95,17 +94,17 @@ class KoulutusController {
               This endpoint can be used to update the kagoria by id.
               """)
   KoulutusUpdateResultDto updateKategoria(
+      @PathVariable UUID id,
       @RequestBody @Valid KategoriaDto dto,
-      @AuthenticationPrincipal JodUser user,
-      @PathVariable String kategoriaId) {
-    if (UUID.fromString(kategoriaId) != dto.id()) {
-      throw new ServiceValidationException("path variable and dto id must match");
+      @AuthenticationPrincipal JodUser user) {
+    if (dto.id() == null || !id.equals(dto.id())) {
+      throw new IllegalArgumentException("Invalid identifier");
     }
     return service.update(user, dto);
   }
 
   @GetMapping("/koulutukset/{id}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ResponseStatus(HttpStatus.OK)
   KoulutusKategoriaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.find(user, id);
   }
