@@ -110,11 +110,11 @@ class KoulutusController {
     return service.find(user, id);
   }
 
-  @DeleteMapping("/kategoriat/{id}")
+  @DeleteMapping("/koulutukset/{id}")
   @Operation(
-      summary = "Delete the kategoria by id",
+      summary = "Delete the koulutus by id",
       description = """
-      This endpoint can be used to delete the kategoria by id
+      This endpoint can be used to delete the koulutus by id
       """)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
