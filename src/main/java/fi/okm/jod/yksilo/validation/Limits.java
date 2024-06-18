@@ -13,6 +13,8 @@ public final class Limits {
   public static final int TYOPAIKKA = 10_0000;
   public static final int TOIMENKUVA_PER_TYOPAIKKA = 1_000;
   public static final int KOULUTUS = 10_000;
+  public static final int TOIMINTO = 1_000;
+  public static final int PATEVYYS_PER_TOIMINTO = 1_000;
 
   private Limits() {}
 }

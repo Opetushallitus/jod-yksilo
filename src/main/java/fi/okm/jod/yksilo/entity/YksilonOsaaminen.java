@@ -34,9 +34,9 @@ import lombok.Setter;
       @Index(columnList = "yksilo_id,lahde"),
       @Index(columnList = "koulutus_id"),
       @Index(columnList = "toimenkuva_id"),
+      @Index(columnList = "patevyys_id"),
     })
 public class YksilonOsaaminen {
-
   @Getter @Id @GeneratedValue private UUID id;
 
   @Getter
@@ -63,6 +63,9 @@ public class YksilonOsaaminen {
   @ManyToOne(fetch = FetchType.LAZY)
   private Toimenkuva toimenkuva;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Patevyys patevyys;
+
   protected YksilonOsaaminen() {
     // JPA
   }
@@ -79,6 +82,10 @@ public class YksilonOsaaminen {
         this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
         this.toimenkuva = t;
       }
+      case Patevyys p -> {
+        this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
+        this.patevyys = p;
+      }
     }
   }
 
@@ -86,6 +93,7 @@ public class YksilonOsaaminen {
     return switch (this.lahde) {
       case KOULUTUS -> this.koulutus;
       case TOIMENKUVA -> this.toimenkuva;
+      case PATEVYYS -> this.patevyys;
     };
   }
 }

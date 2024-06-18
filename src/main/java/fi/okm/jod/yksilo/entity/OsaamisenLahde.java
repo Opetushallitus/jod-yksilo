@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import java.util.Set;
 import java.util.UUID;
 
-public sealed interface OsaamisenLahde permits Toimenkuva, Koulutus {
+public sealed interface OsaamisenLahde permits Toimenkuva, Koulutus, Patevyys {
 
   UUID getId();
 
@@ -25,6 +25,7 @@ public sealed interface OsaamisenLahde permits Toimenkuva, Koulutus {
     return switch (this) {
       case Toimenkuva ignored -> OsaamisenLahdeTyyppi.TOIMENKUVA;
       case Koulutus ignored -> OsaamisenLahdeTyyppi.KOULUTUS;
+      case Patevyys ignored -> OsaamisenLahdeTyyppi.PATEVYYS;
     };
   }
 }
