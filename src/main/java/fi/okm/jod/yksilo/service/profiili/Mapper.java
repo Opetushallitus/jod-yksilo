@@ -13,14 +13,18 @@ import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
+import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKategoria;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenLahde;
+import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
+import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
@@ -66,6 +70,28 @@ public final class Mapper {
             entity.getId(),
             entity.getNimi(),
             entity.getKuvaus(),
+            entity.getAlkuPvm(),
+            entity.getLoppuPvm(),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .collect(Collectors.toUnmodifiableSet()));
+  }
+
+  public static ToimintoDto mapToiminto(Toiminto entity) {
+    return entity == null
+        ? null
+        : new ToimintoDto(
+            entity.getId(),
+            entity.getNimi(),
+            entity.getPatevyydet().stream().map(Mapper::mapPatevyys).collect(Collectors.toSet()));
+  }
+
+  public static PatevyysDto mapPatevyys(Patevyys entity) {
+    return entity == null
+        ? null
+        : new PatevyysDto(
+            entity.getId(),
+            entity.getNimi(),
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()

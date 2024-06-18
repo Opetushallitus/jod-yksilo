@@ -12,4 +12,5 @@ package fi.okm.jod.yksilo.domain;
 public enum OsaamisenLahdeTyyppi {
   TOIMENKUVA,
   KOULUTUS,
+  PATEVYYS
 }
