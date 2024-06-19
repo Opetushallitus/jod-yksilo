@@ -115,6 +115,13 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      IllegalArgumentException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of(ex.getMessage()));
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
   @Override
   protected ResponseEntity<Object> handleExceptionInternal(
       Exception ex, Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request) {

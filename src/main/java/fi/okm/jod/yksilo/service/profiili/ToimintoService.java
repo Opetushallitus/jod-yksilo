@@ -73,8 +73,11 @@ public class ToimintoService {
   }
 
   public void delete(JodUser user, Set<UUID> ids) {
-    // Note. Bypasses persistence context
-    if (toiminnot.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
+    this.toiminnot.findByYksiloIdAndIdIn(user.getId(), ids).stream()
+        .map(Toiminto::getPatevyydet)
+        .flatMap(List::stream)
+        .forEach(patevyysService::delete);
+    if (this.toiminnot.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
       throw new NotFoundException("Not found");
     }
   }
