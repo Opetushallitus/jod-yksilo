@@ -65,6 +65,11 @@ public class PatevyysService {
     }
   }
 
+  void delete(Patevyys patevyys) {
+    osaamiset.deleteAll(patevyys.getOsaamiset());
+    patevyydet.delete(patevyys);
+  }
+
   static NotFoundException notFound() {
     return new NotFoundException("Not found");
   }
