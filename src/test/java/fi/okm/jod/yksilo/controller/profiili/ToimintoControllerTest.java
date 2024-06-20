@@ -48,7 +48,7 @@ public class ToimintoControllerTest {
   @Test
   @WithMockUser
   void shouldGetAllToiminnot() throws Exception {
-    mockMvc.perform(get("/api/profiili/toiminnot")).andExpect(status().isOk());
+    mockMvc.perform(get("/api/profiili/vapaa-ajan-toiminnot")).andExpect(status().isOk());
   }
 
   @Test
@@ -68,7 +68,7 @@ public class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            post("/api/profiili/toiminnot")
+            post("/api/profiili/vapaa-ajan-toiminnot")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -91,7 +91,7 @@ public class ToimintoControllerTest {
                     null)));
     mockMvc
         .perform(
-            post("/api/profiili/toiminnot")
+            post("/api/profiili/vapaa-ajan-toiminnot")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -103,7 +103,7 @@ public class ToimintoControllerTest {
   void shouldGetToimintoById() throws Exception {
     UUID id = UUID.randomUUID();
 
-    mockMvc.perform(get("/api/profiili/toiminnot/{id}", id)).andExpect(status().isOk());
+    mockMvc.perform(get("/api/profiili/vapaa-ajan-toiminnot/{id}", id)).andExpect(status().isOk());
   }
 
   @Test
@@ -125,7 +125,7 @@ public class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            put("/api/profiili/toiminnot/{id}", id)
+            put("/api/profiili/vapaa-ajan-toiminnot/{id}", id)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedDto)))
@@ -163,7 +163,7 @@ public class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/profiili/toiminnot")
+            delete("/api/profiili/vapaa-ajan-toiminnot")
                 .with(csrf())
                 .param("ids", ids.stream().map(UUID::toString).toArray(String[]::new)))
         .andExpect(status().isNoContent());
