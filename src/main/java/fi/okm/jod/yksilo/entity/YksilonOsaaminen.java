@@ -83,7 +83,7 @@ public class YksilonOsaaminen {
         this.toimenkuva = t;
       }
       case Patevyys p -> {
-        this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
+        this.lahde = OsaamisenLahdeTyyppi.PATEVYYS;
         this.patevyys = p;
       }
     }
