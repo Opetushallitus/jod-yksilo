@@ -59,6 +59,8 @@ public class PatevyysService {
   public void update(JodUser user, UUID toiminto, PatevyysDto dto) {
     var entity = patevyydet.findBy(user, toiminto, dto.id()).orElseThrow(PatevyysService::notFound);
     entity.setNimi(dto.nimi());
+    entity.setAlkuPvm(dto.alkuPvm());
+    entity.setLoppuPvm(dto.loppuPvm());
     patevyydet.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.update(entity, dto.osaamiset());

@@ -55,8 +55,10 @@ public class TyopaikkaService {
             .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
     entity.setNimi(dto.nimi());
     tyopaikat.save(entity);
-    if (dto.toimenkuvat() != null) {
-      throw new UnsupportedOperationException("Updating Toimenkuvat not yet implemented");
+    var toimenkuvat = dto.toimenkuvat();
+    if (toimenkuvat != null) {
+      toimenkuvat.forEach(
+          toimenkuvaDto -> toimenkuvaService.update(user, entity.getId(), toimenkuvaDto));
     }
   }
 

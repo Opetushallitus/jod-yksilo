@@ -80,6 +80,8 @@ public class ToimenkuvaService {
         toimenkuvat.findBy(user, tyopaikka, dto.id()).orElseThrow(ToimenkuvaService::notFound);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
+    entity.setAlkuPvm(dto.alkuPvm());
+    entity.setLoppuPvm(dto.loppuPvm());
     toimenkuvat.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.update(entity, dto.osaamiset());
