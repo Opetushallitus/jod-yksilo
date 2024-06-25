@@ -8,11 +8,17 @@ RUN :\
     && dnf -qy remove shadow-utils \
     && dnf -qy clean all
 
+FROM baseimage AS app
+
+COPY build/libs/jod-yksilo*.jar /tmp/application.jar
+RUN cd /tmp && java -Djarmode=tools -jar /tmp/application.jar extract
+
 FROM baseimage
-COPY --chmod=444 build/libs/jod-yksilo*.jar /opt/app/application.jar
 
 USER app
 WORKDIR /opt/app
+COPY --from=app --chmod=444 /tmp/application/lib /opt/app/lib
+COPY --from=app --chmod=444 /tmp/application/application.jar /opt/app
 
 ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=40 -XX:MaxMetaspaceSize=256m"
 ENTRYPOINT ["/bin/bash","-c",\
