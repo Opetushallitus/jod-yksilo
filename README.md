@@ -28,3 +28,8 @@ as a build tool.
 * Code style is enforced using Spotless and Checkstyle (based on Google Java Style).
   * You can format the code with `./gradlew spotlessApply`.
   * If using IntelliJ IDEA, the Checkstyle-IDEA and google-java-format plugins are recommended.
+
+In order to locally use the inference endpoints (e.g. /api/ehdotus/osaamiset, work-in-progress),
+some additional configuration is required. Please see the (currently internal) documentation at
+https://wiki.eduuni.fi/pages/viewpage.action?pageId=488735698
+
