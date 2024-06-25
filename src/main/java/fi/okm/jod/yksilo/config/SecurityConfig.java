@@ -101,7 +101,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers("/api/ehdotus/**", "/api/osaamiset")
+                    .requestMatchers("/api/ehdotus/**", "/api/osaamiset", "/api/tyomahdollisuudet")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
