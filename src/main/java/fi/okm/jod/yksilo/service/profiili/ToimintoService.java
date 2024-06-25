@@ -49,7 +49,6 @@ public class ToimintoService {
     if (toiminnot.countByYksilo(yksilo) >= Limits.TOIMINTO) {
       throw new ServiceValidationException("Too many Toiminto");
     }
-    // prevent duplicates somehow?
     var entity = toiminnot.save(new Toiminto(yksilot.getReferenceById(user.getId()), dto.nimi()));
     if (dto.patevyydet() != null) {
       for (var patevyys : dto.patevyydet()) {
@@ -66,9 +65,26 @@ public class ToimintoService {
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
     entity.setNimi(dto.nimi());
     toiminnot.save(entity);
+
+    // Remove patevyydet that are not in the dto
+    entity.getPatevyydet().stream()
+        .filter(
+            patevyys ->
+                dto.patevyydet().stream()
+                    .noneMatch(patevyysDto -> patevyys.getId().equals(patevyysDto.id())))
+        .forEach(patevyysService::delete);
+
+    // Add or update patevyydet
     var patevyydet = dto.patevyydet();
     if (patevyydet != null) {
-      patevyydet.forEach(patevyysDto -> patevyysService.update(user, entity.getId(), patevyysDto));
+      patevyydet.forEach(
+          patevyysDto -> {
+            if (patevyysDto.id() == null) {
+              patevyysService.add(entity, patevyysDto);
+            } else {
+              patevyysService.update(user, entity.getId(), patevyysDto);
+            }
+          });
     }
   }
 
