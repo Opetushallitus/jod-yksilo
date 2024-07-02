@@ -60,6 +60,8 @@ dependencies {
 
   implementation 'com.google.guava:guava:33.2.1-jre'
 
+  implementation 'net.coobird:thumbnailator:0.4.20'
+
   implementation "org.flywaydb:flyway-core"
   implementation "org.flywaydb:flyway-database-postgresql"
 
