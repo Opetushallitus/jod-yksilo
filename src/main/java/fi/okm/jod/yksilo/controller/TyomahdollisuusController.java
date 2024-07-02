@@ -11,13 +11,16 @@ package fi.okm.jod.yksilo.controller;
 
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,5 +41,10 @@ public class TyomahdollisuusController {
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
     return new SivuDto<>(tyomahdollisuusService.findAll(pageable));
+  }
+
+  @GetMapping("/{id}")
+  public TyomahdollisuusFullDto findById(@PathVariable UUID id) {
+    return tyomahdollisuusService.findById(id);
   }
 }

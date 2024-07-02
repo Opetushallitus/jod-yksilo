@@ -9,8 +9,4 @@
 
 package fi.okm.jod.yksilo.dto;
 
-import fi.okm.jod.yksilo.domain.LocalizedString;
-import java.util.UUID;
-
-public record TyomahdollisuusDto(
-    UUID id, LocalizedString otsikko, LocalizedString tiivistelma, LocalizedString kuvaus) {}
+public record ArvoDto(String arvo, double osuus) {}
