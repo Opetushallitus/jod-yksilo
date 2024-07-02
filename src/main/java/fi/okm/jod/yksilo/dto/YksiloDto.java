@@ -7,15 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.repository;
+package fi.okm.jod.yksilo.dto;
 
-import fi.okm.jod.yksilo.entity.Yksilo;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
-
-  Yksilo getByTunnus(String tunnus);
-
-  Yksilo getReferenceById(UUID id);
-}
+public record YksiloDto(@NotNull UUID id, UUID kuva) {}

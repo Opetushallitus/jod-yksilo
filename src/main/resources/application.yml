@@ -29,6 +29,10 @@ spring:
   sql:
     init:
       mode: always # FIXME: Just for early development without migrations
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 server:
   error:
