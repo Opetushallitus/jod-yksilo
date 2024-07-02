@@ -9,8 +9,10 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import fi.okm.jod.yksilo.dto.CsrfTokenDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.dto.YksiloDto;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
@@ -28,6 +30,7 @@ import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
 import java.util.Collection;
@@ -35,6 +38,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.security.web.csrf.CsrfToken;
 
 public final class Mapper {
 
@@ -152,5 +156,20 @@ public final class Mapper {
     return entity == null
         ? null
         : new TyomahdollisuusDto(entity.getId(), entity.getNimi(), entity.getKuvaus());
+  }
+
+  public static YksiloDto mapYksilo(Yksilo entity, CsrfToken csrfToken) {
+    return entity == null
+        ? null
+        : new YksiloDto(
+            entity.getId(),
+            mapCsrfToken(csrfToken),
+            entity.getKuva() != null ? entity.getKuva().getId() : null);
+  }
+
+  public static CsrfTokenDto mapCsrfToken(CsrfToken token) {
+    return token == null
+        ? null
+        : new CsrfTokenDto(token.getHeaderName(), token.getParameterName(), token.getToken());
   }
 }
