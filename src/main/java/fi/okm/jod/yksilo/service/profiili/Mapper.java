@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
@@ -26,7 +25,6 @@ import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
-import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
@@ -146,11 +144,5 @@ public final class Mapper {
                     mapOsaaminen.apply(entity.getOsaaminen()),
                     mapOsaamisenLahde(entity.getLahde())))
         .toList();
-  }
-
-  public static TyomahdollisuusDto mapTyomahdollisuus(Tyomahdollisuus entity) {
-    return entity == null
-        ? null
-        : new TyomahdollisuusDto(entity.getId(), entity.getNimi(), entity.getKuvaus());
   }
 }
