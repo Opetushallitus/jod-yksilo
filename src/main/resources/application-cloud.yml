@@ -6,7 +6,7 @@ spring:
 
   sql:
     init:
-      data-locations: classpath:data.sql,classpath:esco-import.sql
+      data-locations: classpath:data.sql,classpath:data-import.sql
 
 server:
   forward-headers-strategy: none

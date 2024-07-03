@@ -9,8 +9,16 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.JakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Map;
 import java.util.UUID;
 
-public record TyomahdollisuusDto(
-    UUID id, LocalizedString otsikko, LocalizedString tiivistelma, LocalizedString kuvaus) {}
+public record TyomahdollisuusFullDto(
+    UUID id,
+    LocalizedString otsikko,
+    LocalizedString tiivistelma,
+    LocalizedString kuvaus,
+    @Schema(propertyNames = JakaumaTyyppi.class, additionalPropertiesSchema = JakaumaDto.class)
+        Map<JakaumaTyyppi, JakaumaDto> jakaumat) {}
