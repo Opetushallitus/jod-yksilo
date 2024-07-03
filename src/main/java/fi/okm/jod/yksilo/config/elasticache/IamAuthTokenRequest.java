@@ -24,7 +24,11 @@ public final class IamAuthTokenRequest {
 
   private final SdkHttpFullRequest request;
   private final Region region;
-  private final Aws4Signer signer;
+
+  // Suppress deprecation warnings for the Aws4Signer class because it is same implementation as
+  // in the software.amazon.awssdk.services.rds.DefaultRdsUtilities.generateAuthenticationToken.
+  @SuppressWarnings("deprecation")
+  private final software.amazon.awssdk.auth.signer.Aws4Signer signer = Aws4Signer.create();
 
   public IamAuthTokenRequest(String userId, String cacheName, Region region) {
     this.request =
@@ -38,7 +42,6 @@ public final class IamAuthTokenRequest {
             .putRawQueryParameter("ResourceType", Collections.singletonList("ServerlessCache"))
             .build();
     this.region = region;
-    this.signer = Aws4Signer.create();
   }
 
   public String toSignedRequestUri(AwsCredentials credentials) {
