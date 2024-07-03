@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TyomahdollisuusRepository
-    extends PagingAndSortingRepository<Tyomahdollisuus, Long> {}
+public interface TyomahdollisuusRepository extends JpaRepository<Tyomahdollisuus, UUID> {}

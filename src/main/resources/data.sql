@@ -21,7 +21,7 @@ VALUES ('495ae98d-593d-4a0f-8d36-daf5cceafdfd'),
        ('e5ff74e0-5eaa-466d-8989-326536c19763'),
        ('9b110e0c-297f-4b0a-8cf1-0c0a812b760b');
 
-INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, nimi, kuvaus)
+INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, otsikko, tiivistelma)
 VALUES ('495ae98d-593d-4a0f-8d36-daf5cceafdfd', 'FI', 'Laborantti', 'Laborantti analysoi näytteitä.'),
        ('e5ff74e0-5eaa-466d-8989-326536c19763', 'FI', 'Tarjoilija', 'Tarjoilija tarjoilee asiakkaille ruokaa ja juomaa.'),
        ('9b110e0c-297f-4b0a-8cf1-0c0a812b760b', 'FI', 'Kuorma-autonkuljettaja', 'Kuorma-autonkuljettaja kuljettaa tavaraa.');
