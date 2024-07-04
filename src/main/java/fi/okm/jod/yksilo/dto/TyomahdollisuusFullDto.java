@@ -12,12 +12,13 @@ package fi.okm.jod.yksilo.dto;
 import fi.okm.jod.yksilo.domain.JakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.UUID;
 
 public record TyomahdollisuusFullDto(
-    UUID id,
-    LocalizedString otsikko,
+    @NotNull UUID id,
+    @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
     @Schema(propertyNames = JakaumaTyyppi.class, additionalPropertiesSchema = JakaumaDto.class)
