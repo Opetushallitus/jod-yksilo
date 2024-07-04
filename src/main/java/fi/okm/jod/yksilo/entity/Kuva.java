@@ -21,6 +21,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public class Kuva {
 
   @NotEmpty @Lob @Setter private byte[] data;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;

@@ -48,6 +48,10 @@ public class YksiloService {
         .orElseThrow(() -> new NotFoundException("Yksilö not found"));
   }
 
+  public void deleteYksilo(JodUser user) {
+    yksilot.deleteById(user.getId());
+  }
+
   public static YksiloDto mapYksilo(Yksilo entity) {
     return entity == null
         ? null

@@ -18,6 +18,8 @@ import fi.okm.jod.yksilo.dto.YksiloCsrfDto;
 import fi.okm.jod.yksilo.service.YksiloService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -54,6 +56,14 @@ public class YksiloController {
         yksiloService.findYksilo(user),
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()));
+  }
+
+  @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteYksilo(HttpServletRequest request, @AuthenticationPrincipal JodUser user)
+      throws ServletException {
+    yksiloService.deleteYksilo(user);
+    request.logout();
   }
 
   @PostMapping(path = "/kuva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
