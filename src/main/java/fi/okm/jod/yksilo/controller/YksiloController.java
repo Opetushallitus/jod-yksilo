@@ -13,6 +13,7 @@ import static org.springframework.http.MediaType.IMAGE_JPEG;
 import static org.springframework.http.MediaType.IMAGE_PNG;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.CsrfTokenDto;
 import fi.okm.jod.yksilo.dto.YksiloCsrfDto;
 import fi.okm.jod.yksilo.service.YksiloService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,7 +50,10 @@ public class YksiloController {
   @GetMapping
   public YksiloCsrfDto getYksilo(
       @AuthenticationPrincipal JodUser user, @Parameter(hidden = true) CsrfToken csrfToken) {
-    return new YksiloCsrfDto(yksiloService.findYksilo(user), csrfToken);
+    return new YksiloCsrfDto(
+        yksiloService.findYksilo(user),
+        new CsrfTokenDto(
+            csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()));
   }
 
   @PostMapping(path = "/kuva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
