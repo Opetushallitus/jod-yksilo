@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -28,6 +29,7 @@ import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -47,6 +49,7 @@ public class Tyopaikka {
   @Setter private LocalDate alkuPvm;
   @Setter private LocalDate loppuPvm;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
@@ -58,7 +61,11 @@ public class Tyopaikka {
   private Map<Kieli, Kaannos> kaannos;
 
   @Getter
-  @OneToMany(mappedBy = "tyopaikka", fetch = FetchType.LAZY)
+  @OneToMany(
+      mappedBy = "tyopaikka",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @BatchSize(size = 20)
   private List<Toimenkuva> toimenkuvat = new ArrayList<>();
 

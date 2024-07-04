@@ -29,6 +29,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -49,11 +50,11 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   @Setter private LocalDate alkuPvm;
   @Setter private LocalDate loppuPvm;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @Getter
   @ManyToOne(fetch = FetchType.LAZY)
   @Setter
   private KoulutusKategoria kategoria;
@@ -67,7 +68,9 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
-  protected Koulutus() {}
+  protected Koulutus() {
+    // For JPA
+  }
 
   public Koulutus(Yksilo yksilo) {
     this.yksilo = requireNonNull(yksilo);

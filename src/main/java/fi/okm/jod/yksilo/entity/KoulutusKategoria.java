@@ -28,6 +28,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
@@ -40,9 +41,10 @@ import org.hibernate.annotations.BatchSize;
 public class KoulutusKategoria {
   @Id @GeneratedValue @Getter UUID id;
 
+  @Getter
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
-  @Getter
   private Yksilo yksilo;
 
   @ElementCollection
