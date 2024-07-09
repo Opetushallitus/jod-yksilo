@@ -88,14 +88,14 @@ public class KoulutusService {
     return groupByKategoria(koulutukset.findByYksilo(yksilo, sort));
   }
 
-  public KoulutusDto find(JodUser user, UUID id) {
+  public KoulutusDto getKoulutus(JodUser user, UUID koulutusId) {
     return koulutukset
-        .findByYksiloIdAndId(user.getId(), id)
+        .findByYksiloIdAndId(user.getId(), koulutusId)
         .map(Mapper::mapKoulutus)
         .orElseThrow(KoulutusService::notFound);
   }
 
-  public KategoriaDto findKategoriaById(JodUser user, UUID kategoriaId) {
+  public KategoriaDto getKategoria(JodUser user, UUID kategoriaId) {
     return kategoriat
         .findByYksiloAndId(yksilot.getReferenceById(user.getId()), kategoriaId)
         .map(Mapper::mapKategoria)
@@ -103,7 +103,6 @@ public class KoulutusService {
   }
 
   public List<KoulutusKategoriaDto> findAll(JodUser user, UUID kategoriaId) {
-
     final Yksilo yksilo = yksilot.getReferenceById(user.getId());
     var sort = Sort.by(Koulutus_.KATEGORIA, Koulutus_.ALKU_PVM, Koulutus_.ID);
     return groupByKategoria(koulutukset.findByYksiloAndKategoriaId(yksilo, kategoriaId, sort));
@@ -178,7 +177,7 @@ public class KoulutusService {
     return new KoulutusUpdateResultDto(kategoria == null ? null : kategoria.getId(), touched);
   }
 
-  public void delete(JodUser user, Set<UUID> ids) {
+  public void deleteKoulutukset(JodUser user, Set<UUID> ids) {
     var yksilo = yksilot.getReferenceById(user.getId());
     var entities = koulutukset.findByYksiloAndIdIn(yksilo, ids);
 

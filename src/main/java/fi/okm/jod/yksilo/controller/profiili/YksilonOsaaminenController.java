@@ -48,8 +48,8 @@ class YksilonOsaaminenController {
   List<YksilonOsaaminenDto> find(
       @AuthenticationPrincipal JodUser user,
       @RequestParam(required = false) OsaamisenLahdeTyyppi tyyppi,
-      @RequestParam(required = false) UUID id) {
-    return service.findAll(user, tyyppi, id);
+      @RequestParam(required = false) UUID lahdeId) {
+    return service.findAll(user, tyyppi, lahdeId);
   }
 
   @PostMapping

@@ -38,17 +38,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/koulutukset")
+@RequestMapping("/api/profiili/koulutuskokonaisuudet")
 @RequiredArgsConstructor
-@Tag(name = "profiili")
-class KoulutusController {
+@Tag(name = "profiili-koulutuskokonaisuudet")
+class KoulutusKokonaisuusController {
   private final KoulutusService service;
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   @Operation(summary = "Get all koulutukset and kategoriat of the user")
-  List<KoulutusKategoriaDto> find(@AuthenticationPrincipal JodUser user) {
-    return service.findAll(user);
+  List<KoulutusKategoriaDto> findAll(
+      @AuthenticationPrincipal JodUser user, @RequestParam(required = false) UUID kategoria) {
+    return kategoria == null ? service.findAll(user) : service.findAll(user, kategoria);
   }
 
   @PostMapping
@@ -72,13 +73,16 @@ class KoulutusController {
     return service.merge(user, dto.kategoria(), dto.koulutukset());
   }
 
-  @DeleteMapping
+  @DeleteMapping("/koulutukset")
+  @Operation(
+      summary = "Deletes one or more Koulutus by ID",
+      description = "Possible resulting empty Kategoria are alse removed.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void deleteAll(@RequestParam Set<UUID> ids, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, ids);
+  void deleteKoulutukset(@RequestParam Set<UUID> ids, @AuthenticationPrincipal JodUser user) {
+    service.deleteKoulutukset(user, ids);
   }
 
-  @PutMapping(path = "/{id}")
+  @PutMapping(path = "/koulutukset/{id}")
   @ResponseStatus(HttpStatus.OK)
   void updateKoulutus(
       @PathVariable UUID id,
@@ -90,16 +94,16 @@ class KoulutusController {
     service.update(user, dto);
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/koulutukset/{id}")
   @ResponseStatus(HttpStatus.OK)
-  KoulutusDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    return service.find(user, id);
+  KoulutusDto getKoulutus(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    return service.getKoulutus(user, id);
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/koulutukset/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, Set.of(id));
+  void deleteKoulutus(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    service.deleteKoulutukset(user, Set.of(id));
   }
 
   @GetMapping("/kategoriat")
