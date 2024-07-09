@@ -2,6 +2,8 @@
 -- This is a temporary solution until database migrations are implemented
 
 -- Osaaminen (ESCO 1.2)
+TRUNCATE osaaminen CASCADE;
+
 CREATE SEQUENCE IF NOT EXISTS osaaminen_seq;
 SELECT setval('osaaminen_seq', (SELECT COALESCE(MAX(id), 1) FROM osaaminen));
 

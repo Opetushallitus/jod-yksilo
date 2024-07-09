@@ -77,7 +77,7 @@ public class OsaamisetEhdotusService {
 
     log.info("Creating a suggestion for osaamiset");
     try {
-      var result = restClient.post().body(new Input(kuvaus, 13, 1)).retrieve().body(Result.class);
+      var result = restClient.post().body(new Input(kuvaus, 37, 1)).retrieve().body(Result.class);
 
       if (result == null || result.skills() == null) {
         return List.of();

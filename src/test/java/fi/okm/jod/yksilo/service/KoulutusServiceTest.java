@@ -13,7 +13,6 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,7 +27,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.util.Pair;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
@@ -50,7 +48,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
         () -> {
           var before = service.findAll(user);
           var resultDto =
-              service.create(
+              service.upsert(
                   user,
                   new KategoriaDto(null, ls("kategoria"), null),
                   Set.of(
@@ -87,11 +85,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
     assertDoesNotThrow(
         () -> {
           var user = TestJodUser.of(TEST_USER_1_UUID.toString());
-          var oldKoulutus =
-              service.find(user, TEST_KOULUTUS_1_UUID).koulutukset().stream()
-                  .filter(k -> k.id().equals(TEST_KOULUTUS_1_UUID))
-                  .findFirst()
-                  .get();
+          var oldKoulutus = service.find(user, TEST_KOULUTUS_1_UUID);
           var newOsaamiset =
               Set.of(
                   URI.create("urn:osaaminen1"),
@@ -101,28 +95,22 @@ class KoulutusServiceTest extends AbstractServiceTest {
           var koulutusToPatch =
               new KoulutusDto(
                   TEST_KOULUTUS_1_UUID,
+                  ls(Kieli.FI, "uusi nimi", Kieli.EN, "new name", Kieli.SV, "nya namn"),
                   ls(
-                      Pair.of(Kieli.FI, "uusi nimi"),
-                      Pair.of(Kieli.EN, "new name"),
-                      Pair.of(Kieli.SV, "nya namn")),
-                  ls(
-                      Pair.of(Kieli.FI, "uusi kuvaus"),
-                      Pair.of(Kieli.EN, "new description"),
-                      Pair.of(Kieli.SV, "nya beskrivning")),
+                      Kieli.FI,
+                      "uusi kuvaus",
+                      Kieli.EN,
+                      "new description",
+                      Kieli.SV,
+                      "nya beskrivning"),
                   oldKoulutus.alkuPvm(),
                   oldKoulutus.loppuPvm(),
                   newOsaamiset);
-          var resultDto = service.update(user, koulutusToPatch);
+
+          service.update(user, koulutusToPatch);
           entityManager.flush();
 
-          assertNotNull(resultDto.koulutukset());
-          assertNull(resultDto.kategoria());
-
-          var updatedKoulutus =
-              service.find(user, TEST_KOULUTUS_1_UUID).koulutukset().stream()
-                  .filter(k -> k.id().equals(TEST_KOULUTUS_1_UUID))
-                  .findFirst()
-                  .get();
+          var updatedKoulutus = service.find(user, TEST_KOULUTUS_1_UUID);
           assertNotNull(updatedKoulutus);
 
           assertEquals("uusi nimi", updatedKoulutus.nimi().get(Kieli.FI));
@@ -152,20 +140,17 @@ class KoulutusServiceTest extends AbstractServiceTest {
               new KategoriaDto(
                   TEST_KATEGORIA_1_UUID,
                   ls(
-                      Pair.of(Kieli.FI, "uusi nimi"),
-                      Pair.of(Kieli.EN, "new name"),
-                      Pair.of(Kieli.SV, "nya namn")),
+                      Kieli.FI, "uusi nimi",
+                      Kieli.EN, "new name",
+                      Kieli.SV, "nya namn"),
                   ls(
-                      Pair.of(Kieli.FI, "uusi kuvaus"),
-                      Pair.of(Kieli.EN, "new description"),
-                      Pair.of(Kieli.SV, "nya beskrivning")));
-          var resultDto = service.update(user, kategoriaToPatch);
+                      Kieli.FI, "uusi kuvaus",
+                      Kieli.EN, "new description",
+                      Kieli.SV, "nya beskrivning"));
+          service.updateKategoria(user, kategoriaToPatch);
           entityManager.flush();
 
-          assertNull(resultDto.koulutukset());
-          assertNotNull(resultDto.kategoria());
-
-          var updatedKategoria = service.findKategoriaById(user, TEST_KATEGORIA_1_UUID).kategoria();
+          var updatedKategoria = service.findKategoriaById(user, TEST_KATEGORIA_1_UUID);
           assertNotNull(updatedKategoria);
 
           assertEquals("uusi nimi", updatedKategoria.nimi().get(Kieli.FI));
@@ -251,8 +236,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
           entityManager.clear();
 
           var result = service.findAll(user);
-          assertEquals(1, result.size());
-          assertEquals(2, result.getFirst().koulutukset().size());
+          assertEquals(2, result.size());
+          assertEquals(1, result.getFirst().koulutukset().size());
         });
   }
 

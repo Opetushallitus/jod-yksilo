@@ -9,7 +9,11 @@
 
 package fi.okm.jod.yksilo.dto;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 
-public record YksiloCsrfDto(@JsonUnwrapped YksiloDto yksilo, @NotNull CsrfTokenDto csrf) {}
+public record YksiloCsrfDto(UUID kuva, @NotNull CsrfTokenDto csrf) {
+  public YksiloCsrfDto(YksiloDto yksilo, CsrfTokenDto csrf) {
+    this(yksilo.kuva(), csrf);
+  }
+}

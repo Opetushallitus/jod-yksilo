@@ -102,7 +102,7 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   protected ResponseEntity<Object> handleServiceException(
       ServiceValidationException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.VALIDATION_FAILURE, List.of(ex.getMessage()));
-    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
