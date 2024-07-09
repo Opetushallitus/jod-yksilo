@@ -48,6 +48,7 @@ public final class LocalizedString {
         };
   }
 
+  @Schema(hidden = true)
   public String get(Kieli kieli) {
     return values.get(requireNonNull(kieli));
   }
@@ -57,11 +58,16 @@ public final class LocalizedString {
     return values;
   }
 
+  @Schema(hidden = true)
   public boolean isEmpty() {
     return values.isEmpty();
   }
 
-  // for JSON serialization, map empty to null
+  /**
+   * For JSON serialization, maps empty to null
+   *
+   * @see fi.okm.jod.yksilo.config.mapping.LocalizedStringMixin
+   */
   public Map<Kieli, String> toJson() {
     return values.isEmpty() ? null : values;
   }

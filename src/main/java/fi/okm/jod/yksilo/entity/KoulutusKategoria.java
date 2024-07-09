@@ -84,6 +84,7 @@ public class KoulutusKategoria {
   @Embeddable
   @Data
   static class Kaannos implements Translation {
+    @NotNull
     @Basic(optional = false)
     String nimi;
 

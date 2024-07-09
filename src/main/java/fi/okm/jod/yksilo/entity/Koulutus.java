@@ -14,6 +14,8 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -44,15 +46,16 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "yksilo_id")})
+@Access(AccessType.FIELD)
 public non-sealed class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;
   @Setter private LocalDate loppuPvm;
 
-  @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
+  @NotNull
   private Yksilo yksilo;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -92,6 +95,13 @@ public non-sealed class Koulutus implements OsaamisenLahde {
 
   public void setKuvaus(LocalizedString kuvaus) {
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
+  }
+
+  @NotNull
+  public Yksilo getYksilo() {
+    // workaround to suppress Hibernate compile-time tooling 6.5.2.Final
+    // warning: member 'getYksilo' of 'Koulutus' is not annotated '@ManyToOne'
+    return yksilo;
   }
 
   @Embeddable

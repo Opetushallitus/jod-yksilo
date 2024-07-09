@@ -42,5 +42,5 @@ class OsaamisetEhdotusController {
     return ResponseEntity.ok(service.createEhdotus(taidot.kuvaus().value()));
   }
 
-  public record Taidot(@NotNull @Size(min = 10, max = 10_000) NormalizedString kuvaus) {}
+  public record Taidot(@NotNull @Size(min = 3, max = 10_000) NormalizedString kuvaus) {}
 }
