@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.HashSet;
@@ -42,14 +43,12 @@ public class TyopaikkaService {
     return tyopaikat
         .findByYksiloIdAndId(user.getId(), id)
         .map(Mapper::mapTyopaikka)
-        .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
+        .orElseThrow(TyopaikkaService::notFound);
   }
 
   public void delete(JodUser user, UUID id) {
     var tyopaikka =
-        tyopaikat
-            .findByYksiloIdAndId(user.getId(), id)
-            .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
+        tyopaikat.findByYksiloIdAndId(user.getId(), id).orElseThrow(TyopaikkaService::notFound);
     for (var toimenkuva : tyopaikka.getToimenkuvat()) {
       toimenkuvaService.delete(toimenkuva);
     }
@@ -60,7 +59,7 @@ public class TyopaikkaService {
     var entity =
         tyopaikat
             .findByYksiloIdAndId(user.getId(), dto.id())
-            .orElseThrow(() -> new NotFoundException("Työpaikka not found"));
+            .orElseThrow(TyopaikkaService::notFound);
     entity.setNimi(dto.nimi());
     tyopaikat.save(entity);
     var toimenkuvat = dto.toimenkuvat();
@@ -100,5 +99,9 @@ public class TyopaikkaService {
     }
 
     return entity.getId();
+  }
+
+  private static ServiceException notFound() {
+    return new NotFoundException("Työpaikka not found");
   }
 }

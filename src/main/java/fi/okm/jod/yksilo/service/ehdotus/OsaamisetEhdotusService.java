@@ -33,6 +33,8 @@ import org.springframework.web.client.RestClientException;
 @Transactional(readOnly = true)
 public class OsaamisetEhdotusService {
 
+  public static final int MAX_NUMBER_OF_SKILLS = 37;
+  public static final int MAX_NUMBER_OF_OCCUPATIONS = 1;
   private final RestClient restClient;
   private final OsaaminenRepository osaamiset;
 
@@ -77,7 +79,12 @@ public class OsaamisetEhdotusService {
 
     log.info("Creating a suggestion for osaamiset");
     try {
-      var result = restClient.post().body(new Input(kuvaus, 37, 1)).retrieve().body(Result.class);
+      var result =
+          restClient
+              .post()
+              .body(new Input(kuvaus, MAX_NUMBER_OF_SKILLS, MAX_NUMBER_OF_OCCUPATIONS))
+              .retrieve()
+              .body(Result.class);
 
       if (result == null || result.skills() == null) {
         return List.of();

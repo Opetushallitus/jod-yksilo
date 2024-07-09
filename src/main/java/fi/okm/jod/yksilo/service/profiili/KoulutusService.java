@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import static fi.okm.jod.yksilo.service.profiili.Mapper.cachingMapper;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toSet;
@@ -118,6 +119,7 @@ public class KoulutusService {
     return merge(user, kategoriaDto, dtos, true);
   }
 
+  @SuppressWarnings("java:S3776")
   private KoulutusUpdateResultDto merge(
       JodUser user, KategoriaDto kategoriaDto, Set<KoulutusDto> dtos, boolean partial) {
 
@@ -247,6 +249,9 @@ public class KoulutusService {
   }
 
   public void updateKategoria(JodUser user, KategoriaDto dto) {
+    requireNonNull(dto);
+    requireNonNull(dto.id());
+
     var kategoria = resolve(yksilot.getReferenceById(user.getId()), dto);
     kategoria.setNimi(dto.nimi());
     kategoria.setKuvaus(dto.kuvaus());
