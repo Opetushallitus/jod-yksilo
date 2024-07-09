@@ -85,7 +85,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
     assertDoesNotThrow(
         () -> {
           var user = TestJodUser.of(TEST_USER_1_UUID.toString());
-          var oldKoulutus = service.find(user, TEST_KOULUTUS_1_UUID);
+          var oldKoulutus = service.getKoulutus(user, TEST_KOULUTUS_1_UUID);
           var newOsaamiset =
               Set.of(
                   URI.create("urn:osaaminen1"),
@@ -110,7 +110,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
           service.update(user, koulutusToPatch);
           entityManager.flush();
 
-          var updatedKoulutus = service.find(user, TEST_KOULUTUS_1_UUID);
+          var updatedKoulutus = service.getKoulutus(user, TEST_KOULUTUS_1_UUID);
           assertNotNull(updatedKoulutus);
 
           assertEquals("uusi nimi", updatedKoulutus.nimi().get(Kieli.FI));
@@ -150,7 +150,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
           service.updateKategoria(user, kategoriaToPatch);
           entityManager.flush();
 
-          var updatedKategoria = service.findKategoriaById(user, TEST_KATEGORIA_1_UUID);
+          var updatedKategoria = service.getKategoria(user, TEST_KATEGORIA_1_UUID);
           assertNotNull(updatedKategoria);
 
           assertEquals("uusi nimi", updatedKategoria.nimi().get(Kieli.FI));
