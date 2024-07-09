@@ -87,6 +87,7 @@ class KoulutusController {
     if (dto.id() == null || !id.equals(dto.id())) {
       throw new IllegalArgumentException("Invalid identifier");
     }
+    service.update(user, dto);
   }
 
   @GetMapping("/{id}")
