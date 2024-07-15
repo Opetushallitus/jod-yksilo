@@ -30,22 +30,11 @@ public final class LocalizedString {
   private final Map<Kieli, String> values;
 
   public LocalizedString(Map<Kieli, String> values) {
-    this.values = Map.copyOf(requireNonNull(values));
-  }
-
-  public <T> LocalizedString(Map<Kieli, T> values, Function<T, String> mapper) {
-    requireNonNull(values);
-    requireNonNull(mapper);
-    this.values =
-        switch (values.size()) {
-          case 0 -> Map.of();
-          case 1 -> {
-            var entry = values.entrySet().iterator().next();
-            var value = entry.getValue() == null ? null : mapper.apply(entry.getValue());
-            yield (value == null) ? Map.of() : Map.of(entry.getKey(), value);
-          }
-          default -> toMap(values, mapper);
-        };
+    var immutableValues = Map.copyOf(requireNonNull(values));
+    if (immutableValues.isEmpty()) {
+      throw new IllegalArgumentException("values must not be empty");
+    }
+    this.values = immutableValues;
   }
 
   @Schema(hidden = true)
@@ -58,27 +47,31 @@ public final class LocalizedString {
     return values;
   }
 
-  @Schema(hidden = true)
-  public boolean isEmpty() {
-    return values.isEmpty();
-  }
-
-  /**
-   * For JSON serialization, maps empty to null
-   *
-   * @see fi.okm.jod.yksilo.config.mapping.LocalizedStringMixin
-   */
-  public Map<Kieli, String> toJson() {
-    return values.isEmpty() ? null : values;
-  }
-
   /**
    * Creates a new instance of LocalizedString from a Map, normalizing the string values. Intended
    * to be used when deserializing JSON.
    */
   @JsonCreator
   public static LocalizedString fromJsonNormalized(Map<Kieli, String> values) {
-    return new LocalizedString(values, s -> Normalizer.normalize(s.strip(), Normalizer.Form.NFKC));
+    return LocalizedString.of(values, s -> Normalizer.normalize(s.strip(), Normalizer.Form.NFKC));
+  }
+
+  public static <T> LocalizedString of(Map<Kieli, T> values, Function<T, String> mapper) {
+    requireNonNull(mapper);
+    if (values == null) {
+      return null;
+    }
+    Map<Kieli, String> map =
+        switch (values.size()) {
+          case 0 -> Map.of();
+          case 1 -> {
+            var entry = values.entrySet().iterator().next();
+            var value = entry.getValue() == null ? null : mapper.apply(entry.getValue());
+            yield (value == null) ? Map.of() : Map.of(entry.getKey(), value);
+          }
+          default -> toMap(values, mapper);
+        };
+    return map.isEmpty() ? null : new LocalizedString(map);
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})

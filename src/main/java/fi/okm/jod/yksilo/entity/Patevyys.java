@@ -74,7 +74,7 @@ public non-sealed class Patevyys implements OsaamisenLahde {
   }
 
   public LocalizedString getNimi() {
-    return new LocalizedString(kaannos, Kaannos::getNimi);
+    return LocalizedString.of(kaannos, Kaannos::getNimi);
   }
 
   public void setNimi(LocalizedString nimi) {

@@ -26,6 +26,6 @@ public record KategoriaDto(
   @JsonIgnore
   @AssertTrue(message = "nimi is required")
   public boolean isValid() {
-    return id != null || nimi != null && !nimi.isEmpty();
+    return id != null || nimi != null;
   }
 }

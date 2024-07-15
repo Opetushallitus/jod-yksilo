@@ -81,7 +81,7 @@ public class Tyopaikka {
   }
 
   public LocalizedString getNimi() {
-    return new LocalizedString(kaannos, Kaannos::nimi);
+    return LocalizedString.of(kaannos, Kaannos::nimi);
   }
 
   public void setNimi(LocalizedString nimi) {
