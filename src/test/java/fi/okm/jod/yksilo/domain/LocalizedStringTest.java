@@ -21,23 +21,23 @@ class LocalizedStringTest {
   void shouldCreateLocalizedString() {
     LocalizedString ls;
 
-    ls = new LocalizedString(Map.of(), Entity::s1);
-    assertTrue(ls.asMap().isEmpty());
+    ls = LocalizedString.of(Map.of(), Entity::s1);
+    assertNull(ls);
 
-    ls = new LocalizedString(Map.of(Kieli.EN, new Entity(null, null)), Entity::s1);
-    assertTrue(ls.asMap().isEmpty());
+    ls = LocalizedString.of(Map.of(Kieli.EN, new Entity(null, null)), Entity::s1);
+    assertNull(ls);
 
     var data1 = new HashMap<Kieli, Entity>();
     data1.put(null, null);
-    ls = new LocalizedString(data1, Entity::s1);
+    ls = LocalizedString.of(data1, Entity::s1);
     // special case, null value is ignored
-    assertTrue(ls.asMap().isEmpty());
+    assertNull(ls);
 
     var data2 = new HashMap<Kieli, Entity>();
     data2.put(null, new Entity("s1", null));
-    assertThrows(NullPointerException.class, () -> new LocalizedString(data2, Entity::s1));
+    assertThrows(NullPointerException.class, () -> LocalizedString.of(data2, Entity::s1));
 
-    ls = new LocalizedString(Map.of(Kieli.EN, new Entity("s1", null)), Entity::s1);
+    ls = LocalizedString.of(Map.of(Kieli.EN, new Entity("s1", null)), Entity::s1);
     assertEquals(Map.of(Kieli.EN, "s1"), ls.asMap());
     assertEquals(ls(Kieli.EN, "s1"), ls);
 
@@ -50,12 +50,14 @@ class LocalizedStringTest {
             Kieli.EN,
             new Entity("s5", null));
 
-    ls = new LocalizedString(data3, Entity::s1);
+    ls = LocalizedString.of(data3, Entity::s1);
+    assertNotNull(ls);
     final Map<Kieli, String> expected1 = Map.of(Kieli.FI, "s1", Kieli.EN, "s5");
     assertEquals(expected1, ls.asMap());
 
-    ls = new LocalizedString(data3, Entity::s2);
+    ls = LocalizedString.of(data3, Entity::s2);
     var expected2 = Map.of(Kieli.FI, "s2", Kieli.SV, "s4");
+    assertNotNull(ls);
     assertEquals(expected2, ls.asMap());
     assertNotEquals(new LocalizedString(expected1), ls);
     assertEquals(new LocalizedString(expected2), ls);

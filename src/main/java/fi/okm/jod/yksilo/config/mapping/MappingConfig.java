@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.mapping;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -25,6 +26,7 @@ public class MappingConfig {
             .featuresToEnable(
                 SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
                 MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+            .serializationInclusion(JsonInclude.Include.NON_NULL)
             .mixIn(LocalizedString.class, LocalizedStringMixin.class);
   }
 }

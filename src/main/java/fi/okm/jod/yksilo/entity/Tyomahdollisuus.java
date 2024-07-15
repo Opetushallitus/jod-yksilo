@@ -52,14 +52,14 @@ public class Tyomahdollisuus {
       @Column(columnDefinition = "TEXT") String kuvaus) {}
 
   public LocalizedString getOtsikko() {
-    return new LocalizedString(kaannos, Kaannos::otsikko);
+    return LocalizedString.of(kaannos, Kaannos::otsikko);
   }
 
   public LocalizedString getKuvaus() {
-    return new LocalizedString(kaannos, Kaannos::kuvaus);
+    return LocalizedString.of(kaannos, Kaannos::kuvaus);
   }
 
   public LocalizedString getTiivistelma() {
-    return new LocalizedString(kaannos, Kaannos::tiivistelma);
+    return LocalizedString.of(kaannos, Kaannos::tiivistelma);
   }
 }

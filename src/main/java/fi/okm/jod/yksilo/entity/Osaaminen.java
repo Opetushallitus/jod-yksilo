@@ -43,10 +43,10 @@ public class Osaaminen {
       @Column(columnDefinition = "TEXT") String kuvaus) {}
 
   public LocalizedString getNimi() {
-    return new LocalizedString(kaannos, Kaannos::nimi);
+    return LocalizedString.of(kaannos, Kaannos::nimi);
   }
 
   public LocalizedString getKuvaus() {
-    return new LocalizedString(kaannos, Kaannos::kuvaus);
+    return LocalizedString.of(kaannos, Kaannos::kuvaus);
   }
 }

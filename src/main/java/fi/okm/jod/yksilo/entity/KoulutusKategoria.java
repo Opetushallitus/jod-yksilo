@@ -66,11 +66,11 @@ public class KoulutusKategoria {
   }
 
   public LocalizedString getNimi() {
-    return new LocalizedString(kaannos, Kaannos::getNimi);
+    return LocalizedString.of(kaannos, Kaannos::getNimi);
   }
 
   public LocalizedString getKuvaus() {
-    return new LocalizedString(kaannos, Kaannos::getKuvaus);
+    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
   }
 
   public void setNimi(LocalizedString nimi) {
