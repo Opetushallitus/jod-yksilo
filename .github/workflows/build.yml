@@ -97,59 +97,29 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - if: github.ref == 'refs/heads/main'
+      - if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         run: |
           cat <<EOF >>$GITHUB_STEP_SUMMARY
-          Created image: ${{ steps.docker-meta.outputs.tags }}
+          Created image:
+          ```${{ steps.docker-meta.outputs.tags }}```
           EOF
 
-  deploy:
+  deploy-dev:
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    needs: package
+    uses: ./.github/workflows/deploy.yml
     permissions:
       id-token: write
-    needs: package
-    runs-on: ubuntu-latest
-    environment: dev
-    steps:
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.JOD_AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-west-1
+    with:
+      environment: dev
+      tag: ${{ needs.package.outputs.tags }}
 
-      - name: Download task definition
-        run: >
-          aws ecs describe-task-definition
-          --task-definition ${{ vars.JOD_ECS_TASKDEF }}
-          --query taskDefinition > task-definition.json
-
-      - uses: aws-actions/amazon-ecs-render-task-definition@v1
-        id: render-task-def
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ vars.JOD_ECS_APP_CONTAINER }}
-          image: ${{ needs.package.outputs.tags }}
-
-      - name: Deploy ECS Service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        id: ecs-deploy
-        with:
-          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: ${{ vars.JOD_ECS_SERVICE }}
-          cluster: ${{ vars.JOD_ECS_CLUSTER }}
-          wait-for-service-stability: true
-
-      - name: Ensure that deploy worked
-        run: |
-          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ vars.JOD_ECS_CLUSTER }} --services ${{ vars.JOD_ECS_SERVICE }} --query services[0].deployments[0].taskDefinition --output text)
-          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
-          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
-            echo "Deployment was rolled back"
-            exit 1
-          fi
-
-      - name: Update image tag parameter
-        env:
-          TAG: ${{ needs.package.outputs.tags }}
-        run: >
-          aws ssm put-parameter --overwrite --type String
-          --name ${{ vars.JOD_IMAGE_TAG_PARAM }} --value "${TAG##*:}"
+  deploy-test:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-dev
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      id-token: write
+    with:
+      environment: test
+      tag: ${{ needs.package.outputs.tags }}
