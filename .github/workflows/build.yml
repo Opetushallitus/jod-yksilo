@@ -101,7 +101,7 @@ jobs:
         run: |
           cat <<EOF >>$GITHUB_STEP_SUMMARY
           Created image:
-          ```${{ steps.docker-meta.outputs.tags }}```
+              ${{ steps.docker-meta.outputs.tags }}
           EOF
 
   deploy-dev:
@@ -116,7 +116,9 @@ jobs:
 
   deploy-test:
     if: github.ref == 'refs/heads/main'
-    needs: deploy-dev
+    needs:
+      - package
+      - deploy-dev
     uses: ./.github/workflows/deploy.yml
     permissions:
       id-token: write
