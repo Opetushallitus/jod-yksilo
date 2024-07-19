@@ -45,8 +45,8 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
 
           var updatedNimi = ls(Kieli.SV, "namn");
           service.update(user, new TyopaikkaDto(id, updatedNimi, null));
-          entityManager.flush();
-          entityManager.clear();
+
+          simulateCommit();
 
           var result = service.findAll(user);
           assertEquals(1, result.size());
@@ -55,7 +55,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldCreateAndRemoveToimenkuvaOnUpdate() {
+  void shouldAddUpdateAndRemoveToimenkuvaOnUpdate() {
     var id =
         service.add(
             user,
@@ -65,17 +65,23 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                 Set.of(
                     new ToimenkuvaDto(
                         null,
-                        ls(Kieli.FI, "nimi"),
+                        ls(Kieli.FI, "nimi1"),
+                        ls(Kieli.FI, "kuvaus"),
+                        LocalDate.now(),
+                        null,
+                        Set.of(URI.create("urn:osaaminen1"))),
+                    new ToimenkuvaDto(
+                        null,
+                        ls(Kieli.FI, "nimi2"),
                         ls(Kieli.FI, "kuvaus"),
                         LocalDate.now(),
                         null,
                         Set.of(URI.create("urn:osaaminen1"))))));
 
-    entityManager.flush();
-    entityManager.clear();
+    simulateCommit();
 
     var tyopaikka = service.find(user, id);
-    var toimenkuvaId = tyopaikka.toimenkuvat().iterator().next().id();
+    var toimenkuvaDtos = tyopaikka.toimenkuvat().toArray(new ToimenkuvaDto[0]);
 
     entityManager.clear();
 
@@ -84,10 +90,18 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
             tyopaikka.id(),
             tyopaikka.nimi(),
             Set.of(
+                toimenkuvaDtos[0],
+                new ToimenkuvaDto(
+                    toimenkuvaDtos[0].id(),
+                    ls(Kieli.FI, "nimi 3"),
+                    ls(Kieli.FI, "kuvaus 3"),
+                    LocalDate.now(),
+                    null,
+                    Set.of(URI.create("urn:osaaminen1"))),
                 new ToimenkuvaDto(
                     null,
-                    ls(Kieli.FI, "nimi 2"),
-                    ls(Kieli.FI, "kuvaus 2"),
+                    ls(Kieli.FI, "nimi 4"),
+                    ls(Kieli.FI, "kuvaus 4"),
                     LocalDate.now(),
                     null,
                     Set.of(URI.create("urn:osaaminen1")))));
@@ -95,8 +109,13 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
     entityManager.flush();
     updatedTyopaikka = service.find(user, id);
 
-    assertEquals(1, updatedTyopaikka.toimenkuvat().size());
-    assertTrue(toimenkuvat.findBy(user, id, toimenkuvaId).isEmpty());
+    assertEquals(2, updatedTyopaikka.toimenkuvat().size());
+    assertTrue(
+        updatedTyopaikka.toimenkuvat().stream()
+            .anyMatch(t -> t.id().equals(toimenkuvaDtos[0].id())));
+    assertTrue(
+        updatedTyopaikka.toimenkuvat().stream()
+            .noneMatch(t -> t.id().equals(toimenkuvaDtos[1].id())));
   }
 
   @Test
@@ -120,11 +139,9 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                                 Set.of(URI.create("urn:osaaminen1")))
                           })));
 
-          entityManager.flush();
-          entityManager.clear();
+          simulateCommit();
 
           service.delete(user, id);
-          entityManager.flush();
         });
   }
 }

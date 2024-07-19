@@ -21,7 +21,6 @@ import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKategoria;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
@@ -115,13 +114,13 @@ public final class Mapper {
     return entity == null
         ? null
         : new YksilonOsaaminenDto(
-            entity.getId(),
-            mapOsaaminen(entity.getOsaaminen()),
-            mapOsaamisenLahde(entity.getLahde()));
+            entity.getId(), mapOsaaminen(entity.getOsaaminen()), mapOsaamisenLahde(entity));
   }
 
-  private static OsaamisenLahdeDto mapOsaamisenLahde(OsaamisenLahde entity) {
-    return entity == null ? null : new OsaamisenLahdeDto(entity.getTyyppi(), entity.getId());
+  private static OsaamisenLahdeDto mapOsaamisenLahde(YksilonOsaaminen entity) {
+    return entity == null
+        ? null
+        : new OsaamisenLahdeDto(entity.getLahdeTyyppi(), entity.getLahde().getId());
   }
 
   static <T, U> Function<T, U> cachingMapper(Function<T, U> mapper) {
@@ -142,7 +141,7 @@ public final class Mapper {
                 new YksilonOsaaminenDto(
                     entity.getId(),
                     mapOsaaminen.apply(entity.getOsaaminen()),
-                    mapOsaamisenLahde(entity.getLahde())))
+                    mapOsaamisenLahde(entity)))
         .toList();
   }
 }

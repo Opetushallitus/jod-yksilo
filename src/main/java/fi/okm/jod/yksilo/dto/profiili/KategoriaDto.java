@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.dto.profiili;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fi.okm.jod.yksilo.domain.Identifiable;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import jakarta.validation.constraints.AssertTrue;
@@ -21,7 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 public record KategoriaDto(
     UUID id,
     @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = 10000) @PrintableString LocalizedString kuvaus) {
+    @Size(max = 10000) @PrintableString LocalizedString kuvaus)
+    implements Identifiable {
 
   @JsonIgnore
   @AssertTrue(message = "nimi is required")

@@ -9,4 +9,6 @@
 
 package fi.okm.jod.yksilo.dto;
 
-public record ArvoDto(String arvo, double osuus) {}
+import jakarta.validation.constraints.NotNull;
+
+public record ArvoDto(@NotNull String arvo, @NotNull double osuus) {}

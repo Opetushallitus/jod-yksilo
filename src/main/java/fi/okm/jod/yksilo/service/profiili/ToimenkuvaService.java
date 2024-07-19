@@ -78,6 +78,10 @@ public class ToimenkuvaService {
   public void update(JodUser user, UUID tyopaikka, ToimenkuvaDto dto) {
     var entity =
         toimenkuvat.findBy(user, tyopaikka, dto.id()).orElseThrow(ToimenkuvaService::notFound);
+    update(entity, dto);
+  }
+
+  void update(Toimenkuva entity, ToimenkuvaDto dto) {
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());

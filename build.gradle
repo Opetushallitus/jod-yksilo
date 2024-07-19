@@ -2,7 +2,7 @@ plugins {
   id 'java'
   id 'jacoco'
 
-  id 'org.springframework.boot' version '3.3.1'
+  id 'org.springframework.boot' version '3.3.2'
   id 'io.spring.dependency-management' version '1.1.6'
 
   id 'checkstyle'
@@ -32,8 +32,7 @@ repositories {
 
 ext {
   spotbugsVersion = "4.8.6"
-  set("flyway.version", "10.15.0")
-  set("lombok.version", "1.18.34")
+  set("flyway.version", "10.16.0")
 }
 
 dependencies {
@@ -53,7 +52,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.26.20')
+  implementation platform('software.amazon.awssdk:bom:2.26.21')
   implementation 'software.amazon.awssdk:auth'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'

@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -38,5 +39,12 @@ public abstract class AbstractServiceTest {
   public void setUpUser() {
     this.user =
         new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID(), "user")).getId());
+  }
+
+  /** Simulates commit by flushing and clearing the entity manager. */
+  @AfterEach
+  public void simulateCommit() {
+    entityManager.flush();
+    entityManager.clear();
   }
 }

@@ -55,11 +55,7 @@ public class Toiminto {
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
-  @OneToMany(
-      mappedBy = "toiminto",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "toiminto", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 20)
   private List<Patevyys> patevyydet = new ArrayList<>();
 

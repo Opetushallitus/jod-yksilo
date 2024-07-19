@@ -36,47 +36,23 @@ public class Yksilo {
   @Column(nullable = false, unique = true)
   private String tunnus;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 10)
   private Set<YksilonOsaaminen> osaamiset;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Tyopaikka> tyopaikat;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<KoulutusKategoria> kategoriat;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Koulutus> koulutukset;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
-  @OneToMany(
-      mappedBy = "yksilo",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.REMOVE,
-      orphanRemoval = true)
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Kuva> kuvat;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
