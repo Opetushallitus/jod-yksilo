@@ -10,7 +10,9 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -18,22 +20,30 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class TyopaikkaService {
 
   private final YksiloRepository yksilot;
   private final TyopaikkaRepository tyopaikat;
   private final ToimenkuvaService toimenkuvaService;
+  private final Updater<Tyopaikka, Toimenkuva, ToimenkuvaDto> updater;
+
+  public TyopaikkaService(
+      YksiloRepository yksilot,
+      TyopaikkaRepository tyopaikat,
+      ToimenkuvaService toimenkuvaService) {
+    this.yksilot = yksilot;
+    this.tyopaikat = tyopaikat;
+    this.toimenkuvaService = toimenkuvaService;
+    this.updater =
+        new Updater<>(toimenkuvaService::add, toimenkuvaService::update, toimenkuvaService::delete);
+  }
 
   public List<TyopaikkaDto> findAll(JodUser user) {
     return tyopaikat.findByYksiloId(user.getId()).stream().map(Mapper::mapTyopaikka).toList();
@@ -62,25 +72,10 @@ public class TyopaikkaService {
             .orElseThrow(TyopaikkaService::notFound);
     entity.setNimi(dto.nimi());
     tyopaikat.save(entity);
-    var toimenkuvat = dto.toimenkuvat();
-    if (toimenkuvat != null) {
-      Set<UUID> ids = new HashSet<>();
-      for (var toimenkuva : toimenkuvat) {
-        if (toimenkuva.id() == null) {
-          var t = toimenkuvaService.add(entity, toimenkuva);
-          entity.getToimenkuvat().add(t);
-          ids.add(t.getId());
-        } else {
-          toimenkuvaService.update(user, entity.getId(), toimenkuva);
-          ids.add(toimenkuva.id());
-        }
-      }
-      for (var it = entity.getToimenkuvat().iterator(); it.hasNext(); ) {
-        var t = it.next();
-        if (!ids.contains(t.getId())) {
-          toimenkuvaService.delete(t);
-          it.remove();
-        }
+
+    if (dto.toimenkuvat() != null) {
+      if (!updater.merge(entity, entity.getToimenkuvat(), dto.toimenkuvat())) {
+        throw new ServiceValidationException("Invalid Toimenkuva in Update");
       }
     }
   }

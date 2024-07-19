@@ -58,6 +58,10 @@ public class PatevyysService {
 
   public void update(JodUser user, UUID toiminto, PatevyysDto dto) {
     var entity = patevyydet.findBy(user, toiminto, dto.id()).orElseThrow(PatevyysService::notFound);
+    update(entity, dto);
+  }
+
+  void update(Patevyys entity, PatevyysDto dto) {
     entity.setNimi(dto.nimi());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());

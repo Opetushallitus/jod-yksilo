@@ -16,5 +16,5 @@ import java.net.URI;
 import java.util.Set;
 
 public record YksilonOsaaminenLisaysDto(
-    @NotNull @Schema(description = "Reference") Set<URI> osaamiset,
+    @NotNull @Schema(description = "Reference") Set<@NotNull URI> osaamiset,
     @NotNull @Valid OsaamisenLahdeDto lahde) {}

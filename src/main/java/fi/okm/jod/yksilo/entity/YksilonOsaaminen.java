@@ -26,7 +26,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(
@@ -47,11 +46,10 @@ public class YksilonOsaaminen {
 
   @Getter
   @NotNull
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(nullable = false)
   private Osaaminen osaaminen;
 
-  @Setter
   @Enumerated(EnumType.STRING)
   @NotNull
   @Column(nullable = false)
@@ -95,5 +93,9 @@ public class YksilonOsaaminen {
       case TOIMENKUVA -> this.toimenkuva;
       case PATEVYYS -> this.patevyys;
     };
+  }
+
+  public OsaamisenLahdeTyyppi getLahdeTyyppi() {
+    return this.lahde;
   }
 }

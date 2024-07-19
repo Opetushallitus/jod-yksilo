@@ -9,4 +9,6 @@
 
 package fi.okm.jod.yksilo.dto;
 
-public record IdDto<T>(T id) {}
+import jakarta.validation.constraints.NotNull;
+
+public record IdDto<T>(@NotNull T id) {}

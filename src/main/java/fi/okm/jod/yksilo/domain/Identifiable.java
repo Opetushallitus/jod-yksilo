@@ -7,11 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.domain;
 
-import fi.okm.jod.yksilo.domain.LocalizedString;
-import jakarta.validation.constraints.NotNull;
-import java.net.URI;
+import java.util.UUID;
 
-public record OsaaminenDto(
-    @NotNull URI uri, @NotNull LocalizedString nimi, @NotNull LocalizedString kuvaus) {}
+public interface Identifiable {
+  UUID id();
+}

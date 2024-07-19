@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-public record JakaumaDto(int maara, int tyhjia, List<ArvoDto> arvot) {}
+public record JakaumaDto(@NotNull int maara, @NotNull int tyhjia, @NotNull List<ArvoDto> arvot) {}

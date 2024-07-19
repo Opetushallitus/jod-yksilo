@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,6 +88,10 @@ public class Tyopaikka {
   public void setNimi(LocalizedString nimi) {
     kaannos.keySet().retainAll(nimi.asMap().keySet());
     nimi.asMap().forEach((key, value) -> kaannos.put(key, new Kaannos(value)));
+  }
+
+  public Optional<Toimenkuva> getToimenkuva(UUID id) {
+    return toimenkuvat.stream().filter(t -> t.getId().equals(id)).findFirst();
   }
 
   @Embeddable

@@ -9,7 +9,11 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
+import fi.okm.jod.yksilo.domain.Identifiable;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record YksilonOsaaminenDto(UUID id, OsaaminenDto osaaminen, OsaamisenLahdeDto lahde) {}
+public record YksilonOsaaminenDto(
+    @NotNull UUID id, @NotNull OsaaminenDto osaaminen, @NotNull OsaamisenLahdeDto lahde)
+    implements Identifiable {}

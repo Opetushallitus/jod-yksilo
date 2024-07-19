@@ -10,7 +10,9 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
+import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.repository.ToimintoRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -20,18 +22,26 @@ import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ToimintoService {
 
   private final YksiloRepository yksilot;
   private final ToimintoRepository toiminnot;
   private final PatevyysService patevyysService;
+  private final Updater<Toiminto, Patevyys, PatevyysDto> updater;
+
+  public ToimintoService(
+      YksiloRepository yksilot, ToimintoRepository toiminnot, PatevyysService patevyysService) {
+    this.yksilot = yksilot;
+    this.toiminnot = toiminnot;
+    this.patevyysService = patevyysService;
+    this.updater =
+        new Updater<>(patevyysService::add, patevyysService::update, patevyysService::delete);
+  }
 
   public List<ToimintoDto> findAll(JodUser user) {
     return toiminnot.findByYksiloId(user.getId()).stream().map(Mapper::mapToiminto).toList();
@@ -52,39 +62,24 @@ public class ToimintoService {
     var entity = toiminnot.save(new Toiminto(yksilot.getReferenceById(user.getId()), dto.nimi()));
     if (dto.patevyydet() != null) {
       for (var patevyys : dto.patevyydet()) {
-        patevyysService.add(entity, patevyys);
+        entity.getPatevyydet().add(patevyysService.add(entity, patevyys));
       }
     }
     return entity.getId();
   }
 
   public void update(JodUser user, ToimintoDto dto) {
+
     var entity =
         toiminnot
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
     entity.setNimi(dto.nimi());
-    toiminnot.save(entity);
 
-    // Remove patevyydet that are not in the dto
-    entity.getPatevyydet().stream()
-        .filter(
-            patevyys ->
-                dto.patevyydet().stream()
-                    .noneMatch(patevyysDto -> patevyys.getId().equals(patevyysDto.id())))
-        .forEach(patevyysService::delete);
-
-    // Add or update patevyydet
-    var patevyydet = dto.patevyydet();
-    if (patevyydet != null) {
-      patevyydet.forEach(
-          patevyysDto -> {
-            if (patevyysDto.id() == null) {
-              patevyysService.add(entity, patevyysDto);
-            } else {
-              patevyysService.update(user, entity.getId(), patevyysDto);
-            }
-          });
+    if (dto.patevyydet() != null) {
+      if (!updater.merge(entity, entity.getPatevyydet(), dto.patevyydet())) {
+        throw new ServiceValidationException("Invalid Patevyys in Update");
+      }
     }
   }
 

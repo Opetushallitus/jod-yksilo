@@ -117,7 +117,6 @@ public class YksilonOsaaminenService {
   }
 
   public void delete(JodUser user, Set<UUID> ids) {
-    // Note. Bypasses persistence context
     if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
       throw new NotFoundException("Not found");
     }

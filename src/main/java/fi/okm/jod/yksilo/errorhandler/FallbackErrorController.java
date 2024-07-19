@@ -65,7 +65,7 @@ public class FallbackErrorController implements ErrorController {
       log.warn(
           "Request failed: {}, {}",
           kv("status", status.value()),
-          kv("reason", exception.toString()));
+          kv("reason", exception == null ? "" : exception.toString()));
     }
 
     return ResponseEntity.status(status)

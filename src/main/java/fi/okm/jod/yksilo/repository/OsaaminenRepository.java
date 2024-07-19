@@ -12,13 +12,15 @@ package fi.okm.jod.yksilo.repository;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import java.util.Collection;
 import java.util.List;
-import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
 
 public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
+  Page<Osaaminen> findAll(Pageable page);
+
   List<Osaaminen> findByUriIn(Collection<String> uri);
 
-  @EntityGraph(attributePaths = {"kaannos"})
-  List<Osaaminen> findAll();
+  Page<Osaaminen> findByUriIn(Collection<String> uri, Pageable page);
 }
