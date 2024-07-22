@@ -37,7 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ToimintoController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class})
-public class ToimintoControllerTest {
+class ToimintoControllerTest {
 
   @Autowired private MockMvc mockMvc;
 

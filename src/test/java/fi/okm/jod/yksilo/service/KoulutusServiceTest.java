@@ -243,9 +243,9 @@ class KoulutusServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldNotAllowEmptyKategoria() {
-    final var kategoriaDto = new KategoriaDto(null, ls("nimi"), null);
+    var kategoriaDto = new KategoriaDto(null, ls("nimi"), null);
 
-    assertThrows(
+    assertThrows( // NOSONAR java:S5778: False positive
         ServiceValidationException.class, () -> service.merge(user, kategoriaDto, Set.of()));
 
     assertThrows(ServiceValidationException.class, () -> service.merge(user, kategoriaDto, null));

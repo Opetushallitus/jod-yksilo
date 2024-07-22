@@ -118,40 +118,28 @@ class ToimintoServiceTest extends AbstractServiceTest {
     simulateCommit();
 
     var dto2 = service.find(user, id2);
+    var toiminto = new ToimintoDto(id, dto2.nimi(), dto2.patevyydet());
 
-    assertThrows(
-        ServiceException.class,
-        () -> {
-          service.update(user, new ToimintoDto(id, dto2.nimi(), dto2.patevyydet()));
-          simulateCommit();
-        });
+    assertThrows(ServiceException.class, () -> service.update(user, toiminto));
+    simulateCommit();
   }
 
   @Test
   void shouldDeleteToiminto() {
-    assertThrows(
-        NotFoundException.class,
-        () -> {
-          var id =
-              service.add(
-                  user,
-                  new ToimintoDto(
-                      null,
-                      ls(Kieli.FI, "nimi"),
-                      Set.of(
-                          new PatevyysDto(
-                              null,
-                              ls(Kieli.FI, "nimi"),
-                              LocalDate.now(),
-                              LocalDate.now(),
-                              Set.of()))));
-          simulateCommit();
+    var id =
+        service.add(
+            user,
+            new ToimintoDto(
+                null,
+                ls(Kieli.FI, "nimi"),
+                Set.of(
+                    new PatevyysDto(
+                        null, ls(Kieli.FI, "nimi"), LocalDate.now(), LocalDate.now(), Set.of()))));
+    simulateCommit();
 
-          service.delete(user, Set.of(id));
-          simulateCommit();
+    service.delete(user, Set.of(id));
+    simulateCommit();
 
-          var result = service.find(user, id);
-          assertNull(result);
-        });
+    assertThrows(NotFoundException.class, () -> service.find(user, id));
   }
 }

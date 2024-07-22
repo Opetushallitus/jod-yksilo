@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import static java.util.Objects.requireNonNull;
+
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
@@ -32,6 +34,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
 
 public final class Mapper {
 
@@ -105,9 +108,8 @@ public final class Mapper {
   }
 
   public static OsaaminenDto mapOsaaminen(Osaaminen entity) {
-    return entity == null
-        ? null
-        : new OsaaminenDto(URI.create(entity.getUri()), entity.getNimi(), entity.getKuvaus());
+    requireNonNull(entity);
+    return new OsaaminenDto(URI.create(entity.getUri()), entity.getNimi(), entity.getKuvaus());
   }
 
   public static YksilonOsaaminenDto mapYksilonOsaaminen(YksilonOsaaminen entity) {
@@ -117,10 +119,8 @@ public final class Mapper {
             entity.getId(), mapOsaaminen(entity.getOsaaminen()), mapOsaamisenLahde(entity));
   }
 
-  private static OsaamisenLahdeDto mapOsaamisenLahde(YksilonOsaaminen entity) {
-    return entity == null
-        ? null
-        : new OsaamisenLahdeDto(entity.getLahdeTyyppi(), entity.getLahde().getId());
+  private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {
+    return new OsaamisenLahdeDto(entity.getLahdeTyyppi(), entity.getLahde().getId());
   }
 
   static <T, U> Function<T, U> cachingMapper(Function<T, U> mapper) {
