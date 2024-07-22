@@ -76,10 +76,9 @@ public class ToimintoService {
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
     entity.setNimi(dto.nimi());
 
-    if (dto.patevyydet() != null) {
-      if (!updater.merge(entity, entity.getPatevyydet(), dto.patevyydet())) {
-        throw new ServiceValidationException("Invalid Patevyys in Update");
-      }
+    if (dto.patevyydet() != null
+        && !updater.merge(entity, entity.getPatevyydet(), dto.patevyydet())) {
+      throw new ServiceValidationException("Invalid Patevyys in Update");
     }
   }
 

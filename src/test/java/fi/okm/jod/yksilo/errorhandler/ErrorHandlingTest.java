@@ -80,7 +80,7 @@ class ErrorHandlingTest {
             .get()
             .uri("/api/csrf")
             .retrieve()
-            .onStatus(HttpStatusCode::is4xxClientError, (_req, _resp) -> {})
+            .onStatus(HttpStatusCode::is4xxClientError, (req, resp) -> {})
             .toEntity(ErrorInfo.class);
 
     assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());

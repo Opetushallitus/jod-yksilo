@@ -73,10 +73,9 @@ public class TyopaikkaService {
     entity.setNimi(dto.nimi());
     tyopaikat.save(entity);
 
-    if (dto.toimenkuvat() != null) {
-      if (!updater.merge(entity, entity.getToimenkuvat(), dto.toimenkuvat())) {
-        throw new ServiceValidationException("Invalid Toimenkuva in Update");
-      }
+    if (dto.toimenkuvat() != null
+        && !updater.merge(entity, entity.getToimenkuvat(), dto.toimenkuvat())) {
+      throw new ServiceValidationException("Invalid Toimenkuva in Update");
     }
   }
 
