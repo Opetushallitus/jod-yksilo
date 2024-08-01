@@ -13,8 +13,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record YksiloCsrfDto(
-    UUID kuva, String etunimet, String sukunimi, @NotNull CsrfTokenDto csrf) {
-  public YksiloCsrfDto(YksiloDto yksilo, String etunimet, String sukunimi, CsrfTokenDto csrf) {
-    this(yksilo.kuva(), etunimet, sukunimi, csrf);
+    UUID kuva, String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf) {
+  public YksiloCsrfDto(YksiloDto yksilo, String etunimi, String sukunimi, CsrfTokenDto csrf) {
+    this(yksilo.kuva(), etunimi, sukunimi, csrf);
   }
 }

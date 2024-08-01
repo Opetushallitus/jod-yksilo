@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import java.io.Serial;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
 
@@ -50,29 +51,24 @@ public final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal 
 
   @JsonIgnore
   public String givenName() {
-    return getFirstAttribute("http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName");
+    return getAttribute(Attribute.GIVEN_NAME)
+        .or(() -> getAttribute(Attribute.FIRST_NAME))
+        .orElse(null);
   }
 
   @JsonIgnore
   public String familyName() {
-    return coalesce(
-        getFirstAttribute("urn:oid:2.5.4.4"),
-        getFirstAttribute("http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"));
+    return getAttribute(Attribute.SN).or(() -> getAttribute(Attribute.FAMILY_NAME)).orElse(null);
+  }
+
+  @JsonIgnore
+  public Optional<String> getAttribute(Attribute attribute) {
+    return Optional.ofNullable(getFirstAttribute(attribute.getUri()));
   }
 
   @Override
   @JsonProperty("registrationId")
   public String getRelyingPartyRegistrationId() {
     return super.getRelyingPartyRegistrationId();
-  }
-
-  @SafeVarargs
-  private static <T> T coalesce(T... values) {
-    for (T value : values) {
-      if (value != null) {
-        return value;
-      }
-    }
-    return null;
   }
 }
