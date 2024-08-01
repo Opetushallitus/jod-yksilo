@@ -105,8 +105,8 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   }
 
   private static Optional<String> getPersonId(
-      Saml2AuthenticatedPrincipal principal, PersonIdentifier attribute) {
-    return Optional.ofNullable(principal.getFirstAttribute(attribute.getName()))
-        .map(value -> attribute.name() + ":" + value);
+      Saml2AuthenticatedPrincipal principal, PersonIdentifier identifier) {
+    return Optional.ofNullable(principal.getFirstAttribute(identifier.getAttribute().getUri()))
+        .map(value -> identifier.name() + ":" + value);
   }
 }

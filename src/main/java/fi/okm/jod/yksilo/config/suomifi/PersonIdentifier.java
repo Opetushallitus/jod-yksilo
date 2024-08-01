@@ -13,12 +13,12 @@ import lombok.Getter;
 
 @Getter
 enum PersonIdentifier {
-  FIN("urn:oid:1.2.246.21"),
-  EID("http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier");
+  FIN(Attribute.NATIONAL_IDENTIFICATION_NUMBER),
+  EID(Attribute.PERSON_IDENTIFIER);
 
-  private final String name;
+  private final Attribute attribute;
 
-  PersonIdentifier(String name) {
-    this.name = name;
+  PersonIdentifier(Attribute attribute) {
+    this.attribute = attribute;
   }
 }

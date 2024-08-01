@@ -7,12 +7,12 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service;
+package fi.okm.jod.yksilo.testutil;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import java.util.UUID;
 
-record TestJodUser(UUID id) implements JodUser {
+public record TestJodUser(UUID id) implements JodUser {
 
   @Override
   public UUID getId() {
@@ -29,7 +29,7 @@ record TestJodUser(UUID id) implements JodUser {
     return "User";
   }
 
-  static JodUser of(String uuid) {
+  public static JodUser of(String uuid) {
     return new TestJodUser(UUID.fromString(uuid));
   }
 }

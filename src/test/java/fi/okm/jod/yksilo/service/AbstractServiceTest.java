@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.testutil.TestJodUser;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

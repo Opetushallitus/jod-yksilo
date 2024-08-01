@@ -28,6 +28,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
@@ -41,7 +42,7 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "jod.authentication", havingValue = "suomifi")
@@ -66,12 +67,8 @@ public class Saml2LoginConfig {
 
     var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/");
     loginSuccessHandler.setRedirectStrategy(redirectStrategy);
-
-    var loginFailureHandler = new LoginFailureHandler(redirectStrategy);
-    var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
-    logoutSuccessHandler.setDefaultTargetUrl("/");
     loginSuccessHandler.setAlwaysUseDefaultTargetUrl(true);
-    logoutSuccessHandler.setRedirectStrategy(redirectStrategy);
+    var logoutHandler = new LogoutHandler(redirectStrategy);
 
     var authProvider = new OpenSaml4AuthenticationProvider();
     authProvider.setResponseAuthenticationConverter(converter);
@@ -87,7 +84,7 @@ public class Saml2LoginConfig {
                 login
                     .loginPage("/login")
                     .successHandler(loginSuccessHandler)
-                    .failureHandler(loginFailureHandler)
+                    .failureHandler(logoutHandler)
                     .authenticationRequestResolver(authenticationRequestResolver)
                     .authenticationManager(new ProviderManager(authProvider)))
         .saml2Logout(
@@ -100,7 +97,7 @@ public class Saml2LoginConfig {
                     request.logoutRequestResolver(logoutRequestResolver);
                   });
             })
-        .logout(logout -> logout.logoutSuccessUrl("/"))
+        .logout(logout -> logout.logoutSuccessHandler(logoutHandler))
         .headers(
             headers ->
                 headers.contentSecurityPolicy(
@@ -154,15 +151,14 @@ public class Saml2LoginConfig {
     return Optional.ofNullable(lang);
   }
 
-  static class LoginFailureHandler implements AuthenticationFailureHandler {
+  static class LogoutHandler implements AuthenticationFailureHandler, LogoutSuccessHandler {
     private final RedirectStrategy redirectStrategy;
 
-    public LoginFailureHandler(RedirectStrategy redirectStrategy) {
+    public LogoutHandler(RedirectStrategy redirectStrategy) {
       this.redirectStrategy = redirectStrategy;
     }
 
-    @Override
-    public void onAuthenticationFailure(
+    void handle(
         HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
         throws IOException {
       if (request.getSession(false) instanceof HttpSession s
@@ -171,6 +167,20 @@ public class Saml2LoginConfig {
         s.invalidate();
       }
       redirectStrategy.sendRedirect(request, response, "/");
+    }
+
+    @Override
+    public void onAuthenticationFailure(
+        HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
+        throws IOException {
+      handle(request, response, exception);
+    }
+
+    @Override
+    public void onLogoutSuccess(
+        HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+        throws IOException {
+      handle(request, response, null);
     }
   }
 }

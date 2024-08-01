@@ -21,6 +21,7 @@ import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
+import fi.okm.jod.yksilo.testutil.TestJodUser;
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
