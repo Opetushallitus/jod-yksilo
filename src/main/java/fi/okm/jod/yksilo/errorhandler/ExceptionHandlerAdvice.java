@@ -93,7 +93,8 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(NotFoundException.class)
-  protected ResponseEntity<Object> handleServiceException(ServiceException ex, WebRequest request) {
+  protected ResponseEntity<Object> handleServiceException(
+      NotFoundException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.RESOURCE_NOT_FOUND, List.of(ex.getMessage()));
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
   }
@@ -115,10 +116,17 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
+  @ExceptionHandler(ServiceException.class)
+  protected ResponseEntity<Object> handleServiceException(ServiceException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.SERVICE_ERROR, List.of(ex.getMessage()));
+    return handleExceptionInternal(
+        ex, info, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+  }
+
   @ExceptionHandler(IllegalArgumentException.class)
   protected ResponseEntity<Object> handleServiceException(
       IllegalArgumentException ex, WebRequest request) {
-    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of(ex.getMessage()));
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 

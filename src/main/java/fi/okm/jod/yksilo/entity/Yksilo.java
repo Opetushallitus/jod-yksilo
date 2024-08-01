@@ -33,7 +33,7 @@ public class Yksilo {
   private UUID id;
 
   @NotNull
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 300)
   private String tunnus;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

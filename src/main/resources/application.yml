@@ -1,8 +1,6 @@
 spring:
   main:
     banner-mode: off
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   threads:
     virtual:
       enabled: true
@@ -27,7 +25,6 @@ spring:
     enabled: false
   session:
     timeout: 30m
-
   sql:
     init:
       mode: always # FIXME: Just for early development without migrations
@@ -35,37 +32,6 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-  security:
-    saml2:
-      relyingparty:
-        registration:
-          jodsuomifi:
-            singlelogout:
-              url: "{baseUrl}/logout/saml2/slo/{registrationId}"
-              response-url: "{baseUrl}/logout/saml2/slo/{registrationId}"
-              binding: post
-            signing:
-              credentials:
-                - private-key-location: "classpath:rp.key"
-                  certificate-location: "classpath:rp.crt"
-            decryption:
-              credentials:
-                - private-key-location: "classpath:rp.key"
-                  certificate-location: "classpath:rp.crt"
-            assertingparty:
-              metadata-uri: "https://static.apro.tunnistus.fi/static/metadata/idp-metadata.xml"
-              singlesignon:
-                binding: "REDIRECT"
-                url: "https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SSO"
-              singlelogout:
-                binding: "REDIRECT"
-                url: "https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO"
-server:
-  error:
-    include-stacktrace: never
-    include-exception: false
-    whitelabel:
-      enabled: false
 
 server:
   error:

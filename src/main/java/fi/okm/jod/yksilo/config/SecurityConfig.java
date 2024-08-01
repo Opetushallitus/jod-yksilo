@@ -9,8 +9,6 @@
 
 package fi.okm.jod.yksilo.config;
 
-import fi.okm.jod.yksilo.domain.MockJodUserImpl;
-import fi.okm.jod.yksilo.repository.YksiloRepository;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,19 +31,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.CacheControlConfig;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.header.HeaderWriter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.util.StringUtils;
 
 /** Spring security filter chain configuration. */
 @Configuration
@@ -64,6 +56,11 @@ public class SecurityConfig {
       throws Exception {
 
     RequestMatcher[] csrfIgnoringRequestMatchers;
+    RequestMatcher notAuthenticated =
+        request ->
+            request.getSession(false) == null
+                || SecurityContextHolder.getContext().getAuthentication() == null;
+
     // for development, to be removed
     // makes it possible to test the API locally using Swagger UI
     if (!env.matchesProfiles("cloud")
@@ -71,7 +68,7 @@ public class SecurityConfig {
             env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
       csrfIgnoringRequestMatchers =
           new RequestMatcher[] {
-            request -> request.getSession(false) == null,
+            notAuthenticated,
             request -> {
               try {
                 if (InetAddress.getByName(request.getRemoteAddr()).isLoopbackAddress()) {
@@ -85,8 +82,7 @@ public class SecurityConfig {
             }
           };
     } else {
-      csrfIgnoringRequestMatchers =
-          new RequestMatcher[] {request -> request.getSession(false) == null};
+      csrfIgnoringRequestMatchers = new RequestMatcher[] {notAuthenticated};
     }
 
     return http.securityMatcher("/api/**")
@@ -137,51 +133,6 @@ public class SecurityConfig {
             },
             AuthorizationFilter.class)
         .build();
-  }
-
-  /** Mock authentication using default form login. */
-  @Bean
-  SecurityFilterChain loginFilterChain(HttpSecurity http) throws Exception {
-    log.warn("WARNING: Using mock authentication.");
-
-    var redirectStrategy = new DefaultRedirectStrategy();
-    redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
-
-    var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/?loginSuccess");
-    loginSuccessHandler.setRedirectStrategy(redirectStrategy);
-
-    var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
-    logoutSuccessHandler.setRedirectStrategy(redirectStrategy);
-
-    return http.securityMatcher("/login", "/logout")
-        .formLogin(login -> login.successHandler(loginSuccessHandler))
-        .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
-        .headers(
-            headers ->
-                headers.contentSecurityPolicy(
-                    csp ->
-                        csp.policyDirectives(
-                            "default-src 'self'; frame-ancestors 'none'; style-src 'self' https://maxcdn.bootstrapcdn.com https://getbootstrap.com;")))
-        .build();
-  }
-
-  @Bean
-  @SuppressWarnings("java:S5804")
-  UserDetailsService mockUserDetailsService(YksiloRepository yksilot) {
-    log.warn("WARNING: Using mock user details service.");
-    return username -> {
-      if (!StringUtils.hasLength(username)
-          || username.length() > 100
-          || !username.strip().equals(username)) {
-        throw new UsernameNotFoundException("Invalid username");
-      }
-      try {
-        var yksilo = yksilot.getByTunnus(username);
-        return new MockJodUserImpl(yksilo.getTunnus(), yksilo.getId());
-      } catch (Exception e) {
-        throw new UsernameNotFoundException("User not found", e);
-      }
-    };
   }
 
   static final class CacheControlHeadersWriter implements HeaderWriter {

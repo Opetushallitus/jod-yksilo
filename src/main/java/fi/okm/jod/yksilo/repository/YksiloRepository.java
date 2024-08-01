@@ -10,12 +10,13 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
-  Yksilo getByTunnus(String tunnus);
-
   Yksilo getReferenceById(UUID id);
+
+  Optional<Yksilo> findByTunnus(String name);
 }

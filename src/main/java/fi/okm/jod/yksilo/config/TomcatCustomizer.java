@@ -47,13 +47,15 @@ class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServletWebSer
   @Override
   public void customize(TomcatServletWebServerFactory factory) {
 
-    if (properties.secureConnector()) {
-      factory.addConnectorCustomizers(
-          connector -> {
+    factory.addConnectorCustomizers(
+        connector -> {
+          if (properties.secureConnector()) {
             connector.setSecure(true);
             connector.setScheme("https");
-          });
-    }
+          }
+          connector.setProxyName(properties.proxyName());
+          connector.setProxyPort(properties.proxyPort());
+        });
 
     factory.addContextCustomizers(
         context -> {
@@ -67,5 +69,5 @@ class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServletWebSer
   }
 
   @ConfigurationProperties("server.tomcat.custom")
-  record CustomTomcatProperties(boolean secureConnector) {}
+  record CustomTomcatProperties(boolean secureConnector, String proxyName, int proxyPort) {}
 }
