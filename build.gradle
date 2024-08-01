@@ -33,7 +33,7 @@ repositories {
 
 ext {
   spotbugsVersion = "4.8.6"
-  set("flyway.version", "10.16.0")
+  set("flyway.version", "10.17.0")
 }
 
 dependencies {
@@ -55,7 +55,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.26.21')
+  implementation platform('software.amazon.awssdk:bom:2.26.27')
   implementation 'software.amazon.awssdk:auth'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -67,7 +67,7 @@ dependencies {
   implementation "org.flywaydb:flyway-database-postgresql"
 
   // Logging in JSON format
-  implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+  implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
   // OpenAPI API description and Swagger UI
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0'
@@ -176,10 +176,8 @@ snyk {
 
 bootJar {
   manifest {
-    attributes(
-        'Implementation-Title': "${rootProject.name}",
-        'Implementation-Version': "${project.version}"
-    )
+    attributes('Implementation-Title': "${rootProject.name}",
+        'Implementation-Version': "${project.version}")
   }
 }
 
@@ -194,11 +192,13 @@ tasks.register('installGitHooks', Copy) {
     include 'pre-*'
   }
   into "${rootProject.rootDir}/.git/hooks"
-  fileMode 0775
+  filePermissions { unix(0775) }
 }
 
 if (System.getenv("CI") == null) {
-  build.dependsOn('installGitHooks')
+  build {
+    dependsOn 'installGitHooks'
+  }
 }
 
 sonar {
@@ -215,10 +215,8 @@ openApi {
   apiDocsUrl = "http://localhost:8080/openapi/openapi.json"
   waitTimeInSeconds = 20
   customBootRun {
-    args = [
-        "--spring.main.lazy-initialization=true",
-        "--logging.level.root=WARN",
-    ]
+    args = ["--spring.main.lazy-initialization=true",
+            "--logging.level.root=WARN",]
   }
 }
 
@@ -226,8 +224,6 @@ tasks.named("dependencyUpdates").configure {
   checkConstraints = true
   checkBuildEnvironmentConstraints = true
   rejectVersionIf {
-    it.candidate.version.containsIgnoreCase("alpha")
-        || it.candidate.version.containsIgnoreCase("beta")
-        || it.candidate.version.matches(".*-M\\d+")
+    it.candidate.version.containsIgnoreCase("alpha") || it.candidate.version.containsIgnoreCase("beta") || it.candidate.version.matches(".*-M\\d+")
   }
 }

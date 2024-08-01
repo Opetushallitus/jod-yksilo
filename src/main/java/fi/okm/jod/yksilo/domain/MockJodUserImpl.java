@@ -80,4 +80,14 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return Set.of(ROLE_USER);
   }
+
+  @Override
+  public String givenName() {
+    return "Mock " + id.hashCode();
+  }
+
+  @Override
+  public String familyName() {
+    return "User";
+  }
 }

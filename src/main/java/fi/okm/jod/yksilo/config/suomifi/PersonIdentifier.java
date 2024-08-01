@@ -7,14 +7,18 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.domain;
+package fi.okm.jod.yksilo.config.suomifi;
 
-import java.util.UUID;
+import lombok.Getter;
 
-public interface JodUser {
-  UUID getId();
+@Getter
+enum PersonIdentifier {
+  FIN("urn:oid:1.2.246.21"),
+  EID("http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier");
 
-  String givenName();
+  private final String name;
 
-  String familyName();
+  PersonIdentifier(String name) {
+    this.name = name;
+  }
 }

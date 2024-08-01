@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticatedPrincipal;
@@ -22,10 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/v1/user")
 @Slf4j
+@Hidden
 public class UserController {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public AuthenticatedPrincipal getAuthenticatedUser(Saml2Authentication authentication) {
-    return ((Saml2AuthenticatedPrincipal) (authentication).getPrincipal());
+    return ((Saml2AuthenticatedPrincipal) authentication.getPrincipal());
   }
 }

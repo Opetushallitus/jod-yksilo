@@ -54,6 +54,8 @@ public class YksiloController {
       @AuthenticationPrincipal JodUser user, @Parameter(hidden = true) CsrfToken csrfToken) {
     return new YksiloCsrfDto(
         yksiloService.findYksilo(user),
+        user.givenName(),
+        user.familyName(),
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()));
   }

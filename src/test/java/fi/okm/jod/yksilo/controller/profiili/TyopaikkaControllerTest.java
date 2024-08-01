@@ -34,7 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(TyopaikkaController.class)
+@WebMvcTest(value = TyopaikkaController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class})
 class TyopaikkaControllerTest {
 

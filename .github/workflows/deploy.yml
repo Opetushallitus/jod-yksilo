@@ -25,15 +25,14 @@ on:
         description: 'Image tag to deploy'
         required: true
 
-concurrency:
-  group: ${{ github.repository_id }}-${{ inputs.environment }}
-
 jobs:
   deploy:
     permissions:
       id-token: write
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,7 +43,19 @@ jobs:
         run: >
           aws ecs describe-task-definition
           --task-definition ${{ vars.JOD_ECS_TASKDEF }}
-          --query taskDefinition > task-definition.json
+          --query taskDefinition > raw-task-definition.json
+
+      - name: Remove ignored properties from task definition
+        run: >
+          jq 'del(.compatibilities,
+          .taskDefinitionArn,
+          .requiresAttributes,
+          .revision,
+          .status,
+          .registeredAt,
+          .deregisteredAt,
+          .registeredBy)'
+          raw-task-definition.json > task-definition.json
 
       - uses: aws-actions/amazon-ecs-render-task-definition@v1
         id: render-task-def

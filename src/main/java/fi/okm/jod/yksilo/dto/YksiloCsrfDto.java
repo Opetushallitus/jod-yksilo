@@ -12,8 +12,9 @@ package fi.okm.jod.yksilo.dto;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record YksiloCsrfDto(UUID kuva, @NotNull CsrfTokenDto csrf) {
-  public YksiloCsrfDto(YksiloDto yksilo, CsrfTokenDto csrf) {
-    this(yksilo.kuva(), csrf);
+public record YksiloCsrfDto(
+    UUID kuva, String etunimet, String sukunimi, @NotNull CsrfTokenDto csrf) {
+  public YksiloCsrfDto(YksiloDto yksilo, String etunimet, String sukunimi, CsrfTokenDto csrf) {
+    this(yksilo.kuva(), etunimet, sukunimi, csrf);
   }
 }

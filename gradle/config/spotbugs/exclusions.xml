@@ -6,6 +6,7 @@
   <Match>
     <!-- Ignored bug patterns -->
     <Bug pattern="
+      BC_VACUOUS_INSTANCEOF,
       EI_EXPOSE_REP,
       EI_EXPOSE_REP2,
       SE_BAD_FIELD,

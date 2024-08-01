@@ -1,9 +1,15 @@
 spring:
+  config:
+    import:
+      - aws-parameterstore:/jod/config/
+      - classpath:/saml2-suomifi.yml
+  cloud:
+    aws:
+      parameterstore:
+        reload:
+          period: 15m
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
-  config:
-    import: "aws-parameterstore:/jod/config/"
-
   sql:
     init:
       data-locations: classpath:data.sql,classpath:data-import.sql

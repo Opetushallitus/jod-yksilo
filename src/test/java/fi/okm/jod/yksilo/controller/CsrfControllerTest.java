@@ -9,8 +9,8 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(CsrfController.class)
+@WebMvcTest(value = CsrfController.class)
 @Import({ErrorInfoFactory.class})
 class CsrfControllerTest {
 
@@ -32,13 +32,13 @@ class CsrfControllerTest {
   @WithMockUser
   void shouldReturnCsrfToken() throws Exception {
     mockMvc
-        .perform(get("/api/csrf"))
+        .perform(get("/api/csrf").with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.token").isNotEmpty());
   }
 
   @Test
   void shouldNotReturnCsrfTokenIfUnauthenticated() throws Exception {
-    mockMvc.perform(post("/api/csrf")).andExpect(jsonPath("$.token").doesNotExist());
+    mockMvc.perform(get("/api/csrf").with(csrf())).andExpect(jsonPath("$.token").doesNotExist());
   }
 }

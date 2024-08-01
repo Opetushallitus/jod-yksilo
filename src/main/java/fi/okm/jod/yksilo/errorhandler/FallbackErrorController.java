@@ -16,6 +16,7 @@ import io.micrometer.tracing.Tracer;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,22 @@ public class FallbackErrorController implements ErrorController {
       }
     }
 
+    if (status.is4xxClientError()
+        && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String uri
+        && (uri.startsWith("/logout") || uri.startsWith("/login"))) {
+      // we need to redirect login/logout failures back to the frontend application
+      log.info(
+          "Login or logout failure {}: {}",
+          status.value(),
+          request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
+
+      return ResponseEntity.status(HttpStatus.SEE_OTHER)
+          .location(URI.create("/"))
+          .body(
+              new ErrorInfo(
+                  ErrorCode.AUTHENTICATION_FAILURE, tracer.currentSpan(), List.of(status.name())));
+    }
+
     if (status.is5xxServerError()) {
       errorCode = ErrorCode.UNSPECIFIED_ERROR;
       log.error("Request failed: {}", kv("status", status.value()), exception);
@@ -65,7 +82,7 @@ public class FallbackErrorController implements ErrorController {
       log.warn(
           "Request failed: {}, {}",
           kv("status", status.value()),
-          kv("reason", exception == null ? "" : exception.toString()));
+          kv("reason", exception == null ? null : exception.toString()));
     }
 
     return ResponseEntity.status(status)

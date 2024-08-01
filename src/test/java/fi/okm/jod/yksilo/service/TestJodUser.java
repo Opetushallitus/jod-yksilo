@@ -19,6 +19,16 @@ record TestJodUser(UUID id) implements JodUser {
     return id();
   }
 
+  @Override
+  public String givenName() {
+    return "Test";
+  }
+
+  @Override
+  public String familyName() {
+    return "User";
+  }
+
   static JodUser of(String uuid) {
     return new TestJodUser(UUID.fromString(uuid));
   }

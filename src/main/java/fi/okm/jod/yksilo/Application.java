@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo;
 
+import fi.okm.jod.yksilo.util.Base64ProtocolResolver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -19,6 +20,10 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class Application {
 
   public static void main(String[] args) {
-    SpringApplication.run(Application.class, args);
+    var app = new SpringApplication(Application.class);
+    // see also https://github.com/spring-projects/spring-boot/issues/41433
+    // makes it possible to inline resources in YAML config
+    app.addInitializers(ctx -> ctx.addProtocolResolver(new Base64ProtocolResolver()));
+    app.run(args);
   }
 }
