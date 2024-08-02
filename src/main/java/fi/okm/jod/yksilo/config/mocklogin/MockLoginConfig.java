@@ -7,10 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config;
+package fi.okm.jod.yksilo.config.mocklogin;
 
 import fi.okm.jod.yksilo.config.suomifi.Saml2LoginConfig;
-import fi.okm.jod.yksilo.domain.MockJodUserImpl;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import java.util.UUID;
@@ -33,7 +32,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class MockLoginConfig {
 
-  /** Mock authentication using default form login. */
+  /** Mock authentication using form login. */
   @Bean
   SecurityFilterChain mockLoginFilterChain(HttpSecurity http) throws Exception {
     log.warn("WARNING: Using mock authentication.");
@@ -47,15 +46,15 @@ public class MockLoginConfig {
     var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
     logoutSuccessHandler.setRedirectStrategy(redirectStrategy);
 
-    return http.securityMatcher("/login", "/logout")
-        .formLogin(login -> login.successHandler(loginSuccessHandler))
+    return http.securityMatcher("/login/**", "/logout/**")
+        .formLogin(login -> login.successHandler(loginSuccessHandler).loginPage("/login"))
         .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
         .headers(
             headers ->
                 headers.contentSecurityPolicy(
                     csp ->
                         csp.policyDirectives(
-                            "default-src 'self'; frame-ancestors 'none'; style-src 'self' https://maxcdn.bootstrapcdn.com https://getbootstrap.com;")))
+                            "default-src 'self'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline';")))
         .build();
   }
 

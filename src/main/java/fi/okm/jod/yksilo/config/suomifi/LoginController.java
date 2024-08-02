@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.suomifi;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,7 @@ import org.springframework.web.util.UriUtils;
 
 @Controller
 @ConditionalOnBean(Saml2LoginConfig.class)
+@Hidden
 class LoginController {
 
   public static final String REDIRECT_URI = "/saml2/authenticate/jodsuomifi";
