@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fi.okm.jod.yksilo.domain.MockJodUserImpl;
+import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
 import fi.okm.jod.yksilo.dto.YksiloDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.YksiloService;

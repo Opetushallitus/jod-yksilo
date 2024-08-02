@@ -7,12 +7,13 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.domain;
+package fi.okm.jod.yksilo.config.mocklogin;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import fi.okm.jod.yksilo.domain.JodUser;
 import java.io.Serial;
 import java.util.Collection;
 import java.util.Set;
@@ -83,7 +84,7 @@ public class MockJodUserImpl implements UserDetails, JodUser {
 
   @Override
   public String givenName() {
-    return "Mock " + id.hashCode();
+    return "Mock" + id.hashCode();
   }
 
   @Override
