@@ -84,7 +84,7 @@ jobs:
           registry: ${{ vars.JOD_ECR }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: docker-build
         with:
           pull: true
@@ -96,13 +96,6 @@ jobs:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-        run: |
-          cat <<EOF >>$GITHUB_STEP_SUMMARY
-          Created image:
-              ${{ steps.docker-meta.outputs.tags }}
-          EOF
 
   deploy-dev:
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
