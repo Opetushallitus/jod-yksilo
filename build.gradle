@@ -19,7 +19,9 @@ group = 'fi.okm.jod'
 version = '0.0.1-SNAPSHOT'
 
 java {
-  sourceCompatibility = '21'
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
 }
 
 compileJava {
@@ -56,7 +58,7 @@ dependencies {
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
   implementation platform('software.amazon.awssdk:bom:2.26.27')
-  implementation 'software.amazon.awssdk:auth'
+  implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
   implementation 'software.amazon.awssdk:cloudwatch'
