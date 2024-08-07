@@ -52,7 +52,7 @@ class YksiloControllerTest {
 
   @BeforeEach
   void setUp() {
-    given(yksiloService.findYksilo(any())).willReturn(new YksiloDto(UUID.randomUUID(), null));
+    given(yksiloService.findYksilo(any())).willReturn(new YksiloDto(UUID.randomUUID()));
   }
 
   @Test
