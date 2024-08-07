@@ -12,4 +12,4 @@ package fi.okm.jod.yksilo.dto;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record YksiloDto(@NotNull UUID id, UUID kuva) {}
+public record YksiloDto(@NotNull UUID id) {}
