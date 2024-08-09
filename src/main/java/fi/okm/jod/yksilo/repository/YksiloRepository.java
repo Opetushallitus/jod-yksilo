@@ -21,4 +21,7 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @Query(value = "SELECT auth.remove_yksilo_id(:id)", nativeQuery = true)
   void removeId(UUID id);
+
+  @Query(value = "SELECT set_config('jod.yksilo_id', :id, true)", nativeQuery = true)
+  void setJodYksiloId(String id);
 }
