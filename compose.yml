@@ -7,11 +7,14 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: yksilo
-      POSTGRES_USER: yksilo
-      POSTGRES_PASSWORD: yksilo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - data:/var/lib/postgresql/data
+      - ./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    labels:
+      org.springframework.boot.jdbc.parameters: 'user=yksilo&password=yksilo'
 volumes:
   data:

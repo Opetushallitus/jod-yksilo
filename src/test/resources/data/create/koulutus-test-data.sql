@@ -8,10 +8,10 @@ VALUES (1, 'urn:osaaminen1'),
        (7, 'urn:osaaminen7');
 
 -- TEST YKSILO DATA
-INSERT INTO yksilo (id, tunnus)
-VALUES ('00000000-0000-0000-0000-000000000001', 'test_user1'),
-       ('00000000-0000-0000-0000-000000000002', 'test_user2'),
-       ('00000000-0000-0000-0000-000000000003', 'test_user3');
+INSERT INTO yksilo (id)
+VALUES ('00000000-0000-0000-0000-000000000001'),
+       ('00000000-0000-0000-0000-000000000002'),
+       ('00000000-0000-0000-0000-000000000003');
 
 -- TEST KOULUTUS DATA FOR test_user1
 insert into koulutus (id, alku_pvm, loppu_pvm, yksilo_id) values ('00000000-0000-0000-0000-000000000001', now()::date, now()::date, '00000000-0000-0000-0000-000000000001');

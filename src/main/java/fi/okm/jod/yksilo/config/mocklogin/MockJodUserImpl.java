@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import fi.okm.jod.yksilo.domain.JodUser;
-import java.io.Serial;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -24,11 +23,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@SuppressWarnings("serial")
 @EqualsAndHashCode(of = "username")
 @JsonDeserialize
 public class MockJodUserImpl implements UserDetails, JodUser {
-
-  @Serial private static final long serialVersionUID = 8118273720670747702L;
 
   private final String username;
   @Getter private final UUID id;

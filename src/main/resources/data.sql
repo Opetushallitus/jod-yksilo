@@ -1,10 +1,8 @@
--- TEST DATA FOR EARLY DEVELOPMENT
-INSERT INTO yksilo (id, tunnus)
-VALUES ('495ae98d-593d-4a0f-8d36-daf5cceafdfd', 'user1'),
-       ('e5ff74e0-5eaa-466d-8989-326536c19763', 'user2'),
-       ('9b110e0c-297f-4b0a-8cf1-0c0a812b760b', 'user3')
-ON CONFLICT DO NOTHING;
+ALTER TABLE yksilo
+  DROP CONSTRAINT IF EXISTS fk_yksilo_id,
+  ADD CONSTRAINT fk_yksilo_id FOREIGN KEY (id) REFERENCES auth.person_id(id);
 
+-- TEST DATA FOR EARLY DEVELOPMENT
 INSERT INTO osaaminen(id, uri)
 VALUES (1, 'urn:osaaminen1'),
        (2, 'urn:osaaminen2'),

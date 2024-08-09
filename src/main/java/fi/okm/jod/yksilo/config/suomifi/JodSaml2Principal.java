@@ -17,23 +17,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import fi.okm.jod.yksilo.domain.JodUser;
-import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
 
-@SuppressWarnings("java:S4544")
+@SuppressWarnings({"java:S4544", "serial"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
+final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
 
-  @Serial private static final long serialVersionUID = -9072052257883734365L;
   private final UUID id;
 
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-  public JodSaml2Principal(
+  JodSaml2Principal(
       @JsonProperty("name") String name,
       @JsonProperty("attributes") Map<String, List<Object>> attributes,
       @JsonProperty("sessionIndexes") List<String> sessionIndexes,
@@ -50,6 +48,7 @@ public final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal 
   }
 
   @JsonIgnore
+  @Override
   public String givenName() {
     return getAttribute(Attribute.GIVEN_NAME)
         .or(() -> getAttribute(Attribute.FIRST_NAME))
@@ -57,6 +56,7 @@ public final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal 
   }
 
   @JsonIgnore
+  @Override
   public String familyName() {
     return getAttribute(Attribute.SN).or(() -> getAttribute(Attribute.FAMILY_NAME)).orElse(null);
   }

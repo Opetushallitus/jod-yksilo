@@ -15,7 +15,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
@@ -28,10 +27,6 @@ public class Yksilo {
   @Id
   @Column(updatable = false, nullable = false)
   private UUID id;
-
-  @NotNull
-  @Column(nullable = false, unique = true, length = 300)
-  private String tunnus;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 10)
@@ -49,9 +44,8 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
-  public Yksilo(UUID uuid, String user) {
+  public Yksilo(UUID uuid) {
     this.id = uuid;
-    this.tunnus = user;
   }
 
   protected Yksilo() {
