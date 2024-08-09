@@ -32,6 +32,7 @@ public class YksiloService {
 
   public void deleteYksilo(JodUser user) {
     yksilot.deleteById(user.getId());
+    yksilot.removeId(user.getId());
   }
 
   public static YksiloDto mapYksilo(Yksilo entity) {

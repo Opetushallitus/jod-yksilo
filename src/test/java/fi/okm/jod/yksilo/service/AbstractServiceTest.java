@@ -38,8 +38,7 @@ public abstract class AbstractServiceTest {
 
   @BeforeEach
   public void setUpUser() {
-    this.user =
-        new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID(), "user")).getId());
+    this.user = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
   }
 
   /** Simulates commit by flushing and clearing the entity manager. */

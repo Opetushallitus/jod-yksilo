@@ -69,11 +69,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
                           .getAuthnContextClassRef()
                           .getURI())));
 
-      var pid =
-          switch (level) {
-            case LOA2, LOA3, TEST -> PersonIdentifier.FIN;
-            case EIDAS_SUBSTANTIAL, EIDAS_HIGH -> PersonIdentifier.EID;
-          };
+      var pid = PersonIdentifier.ofLoa(level);
 
       var userId =
           resolveUser(
@@ -97,11 +93,10 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   private UUID resolveUser(String personId) {
 
     return transactionTemplate.execute(
-        status ->
-            yksilot
-                .findByTunnus(personId)
-                .orElseGet(() -> yksilot.save(new Yksilo(UUID.randomUUID(), personId)))
-                .getId());
+        status -> {
+          var id = yksilot.findIdByTunnus(personId);
+          return yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id))).getId();
+        });
   }
 
   private static Optional<String> getPersonId(

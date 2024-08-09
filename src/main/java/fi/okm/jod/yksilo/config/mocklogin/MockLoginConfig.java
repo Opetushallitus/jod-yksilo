@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.config.mocklogin;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -68,11 +67,9 @@ public class MockLoginConfig {
         throw new UsernameNotFoundException("Invalid username");
       }
       try {
-        var yksilo =
-            yksilot
-                .findByTunnus("MOCK:" + username)
-                .orElseGet(() -> yksilot.save(new Yksilo(UUID.randomUUID(), "MOCK:" + username)));
-        return new MockJodUserImpl(yksilo.getTunnus(), yksilo.getId());
+        var id = yksilot.findIdByTunnus("MOCK:" + username);
+        var yksilo = yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id)));
+        return new MockJodUserImpl(username, yksilo.getId());
       } catch (Exception e) {
         throw new UsernameNotFoundException("Unable to find user", e);
       }

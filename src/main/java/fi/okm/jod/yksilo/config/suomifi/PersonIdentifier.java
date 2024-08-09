@@ -21,4 +21,11 @@ enum PersonIdentifier {
   PersonIdentifier(Attribute attribute) {
     this.attribute = attribute;
   }
+
+  static PersonIdentifier ofLoa(Loa loa) {
+    return switch (loa) {
+      case LOA2, LOA3, TEST -> PersonIdentifier.FIN;
+      case EIDAS_SUBSTANTIAL, EIDAS_HIGH -> PersonIdentifier.EID;
+    };
+  }
 }
