@@ -15,6 +15,7 @@ spring:
           batch_size: 20
         order_inserts: true
         order_updates: true
+
   data:
     redis:
       repositories:
@@ -28,10 +29,15 @@ spring:
   sql:
     init:
       mode: always # FIXME: Just for early development without migrations
+      separator: ";;;"
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  datasource:
+    hikari:
+      data-source-properties:
+        ApplicationName: "Yksilo"
 
 server:
   error:
@@ -59,6 +65,7 @@ logging:
   level:
     fi.okm.jod: DEBUG
     sql: DEBUG
+    #org.hibernate.orm.jdbc.bind: TRACE
     #org.hibernate.orm.jdbc.batch: TRACE
     org:
       springframework:
