@@ -94,7 +94,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
 
     return transactionTemplate.execute(
         status -> {
-          var id = yksilot.findIdByTunnus(personId);
+          var id = yksilot.findIdByHenkiloId(personId);
           return yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id))).getId();
         });
   }

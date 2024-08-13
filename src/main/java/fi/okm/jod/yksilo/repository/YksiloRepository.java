@@ -16,9 +16,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
-  @Query(value = "SELECT auth.generate_yksilo_id(:tunnus)", nativeQuery = true)
-  UUID findIdByTunnus(String tunnus);
+  @Query(value = "SELECT tunnistus.generate_yksilo_id(:henkiloId)", nativeQuery = true)
+  UUID findIdByHenkiloId(String henkiloId);
 
-  @Query(value = "SELECT auth.remove_yksilo_id(:id)", nativeQuery = true)
-  void removeId(UUID id);
+  @Query(value = "SELECT tunnistus.remove_yksilo_id(:yksiloId)", nativeQuery = true)
+  void removeId(UUID yksiloId);
 }

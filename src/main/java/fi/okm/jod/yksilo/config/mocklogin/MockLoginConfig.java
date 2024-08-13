@@ -67,7 +67,7 @@ public class MockLoginConfig {
         throw new UsernameNotFoundException("Invalid username");
       }
       try {
-        var id = yksilot.findIdByTunnus("MOCK:" + username);
+        var id = yksilot.findIdByHenkiloId("MOCK:" + username);
         var yksilo = yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id)));
         return new MockJodUserImpl(username, yksilo.getId());
       } catch (Exception e) {
