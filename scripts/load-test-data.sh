@@ -9,9 +9,14 @@ else
   echo "Skipping data download, missing AWS credentials or DEV_BUCKET"
 fi
 
-docker compose up postgres -d --wait
+STARTED=false
 DB=$(docker compose ps postgres --format '{{.Name}}')
-docker exec "$DB" bash -c 'while ! pg_isready; do sleep 1; done'
+if [[ -z $DB ]]; then
+  docker compose up postgres -d --wait
+  DB=$(docker compose ps postgres --format '{{.Name}}')
+  docker exec "$DB" bash -c 'while ! pg_isready; do sleep 1; done'
+  STARTED=true
+fi
 
 (
   cd ./tmp/data
@@ -27,3 +32,7 @@ docker exec "$DB" bash -c 'while ! pg_isready; do sleep 1; done'
   cat tyomahdollisuus_data.sql\
    | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -1 -U yksilo yksilo
 )
+
+if [[ $STARTED == true ]]; then
+  docker compose stop
+fi

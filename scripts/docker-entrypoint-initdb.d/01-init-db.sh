@@ -9,36 +9,36 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     BEGIN;
     CREATE SCHEMA IF NOT EXISTS yksilo;
     GRANT ALL PRIVILEGES ON SCHEMA yksilo TO yksilo;
-    CREATE ROLE auth;
-    CREATE SCHEMA IF NOT EXISTS auth AUTHORIZATION auth;
-    REVOKE ALL ON SCHEMA auth FROM public;
-    SET LOCAL ROLE auth;
-    CREATE TABLE IF NOT EXISTS person_id (id UUID PRIMARY KEY, person_id VARCHAR(300) NOT NULL UNIQUE);
+    CREATE ROLE tunnistus;
+    CREATE SCHEMA IF NOT EXISTS tunnistus AUTHORIZATION tunnistus;
+    REVOKE ALL ON SCHEMA tunnistus FROM public;
+    SET LOCAL ROLE tunnistus;
+    CREATE TABLE IF NOT EXISTS henkilo(yksilo_id UUID PRIMARY KEY, henkilo_id VARCHAR(300) NOT NULL UNIQUE);
 
-    CREATE OR REPLACE FUNCTION generate_yksilo_id(person_id VARCHAR(300)) RETURNS UUID AS $$
+    CREATE OR REPLACE FUNCTION generate_yksilo_id(henkilo_id VARCHAR(300)) RETURNS UUID AS $$
         WITH new_id AS (
-          INSERT INTO person_id(id, person_id) VALUES (gen_random_uuid(), $1) ON CONFLICT DO NOTHING RETURNING id
+          INSERT INTO henkilo(yksilo_id, henkilo_id) VALUES (gen_random_uuid(), $1) ON CONFLICT DO NOTHING RETURNING yksilo_id
         )
-        SELECT id from new_id
+        SELECT yksilo_id from new_id
         UNION ALL
-        SELECT id FROM person_id WHERE person_id = $1
-        $$ LANGUAGE SQL SECURITY DEFINER SET search_path = auth, pg_temp;
+        SELECT yksilo_id FROM henkilo WHERE henkilo_id = $1
+        $$ LANGUAGE SQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
     REVOKE ALL ON FUNCTION generate_yksilo_id FROM public;
     GRANT EXECUTE ON FUNCTION generate_yksilo_id TO yksilo;
 
-    CREATE OR REPLACE FUNCTION remove_yksilo_id(id UUID) RETURNS UUID AS $$
-            DELETE FROM person_id WHERE id = $1 RETURNING id
-            $$ LANGUAGE SQL SECURITY DEFINER SET search_path = auth, pg_temp;
+    CREATE OR REPLACE FUNCTION remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS $$
+            DELETE FROM henkilo WHERE yksilo_id = $1 RETURNING yksilo_id
+            $$ LANGUAGE SQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
     REVOKE ALL ON FUNCTION generate_yksilo_id FROM public;
     GRANT EXECUTE ON FUNCTION generate_yksilo_id TO yksilo;
 
-    GRANT REFERENCES(id) ON person_id TO yksilo;
-    GRANT USAGE ON SCHEMA auth TO yksilo;
+    GRANT REFERENCES(yksilo_id) ON henkilo TO yksilo;
+    GRANT USAGE ON SCHEMA tunnistus TO yksilo;
 
     -- Workaround for Hibernate ddl-auto
-    ALTER TABLE person_id ENABLE ROW LEVEL SECURITY;
-    CREATE POLICY select_none_policy ON person_id FOR SELECT TO yksilo USING (false);
-    GRANT SELECT(id) ON person_id TO yksilo;
+    ALTER TABLE henkilo ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY select_none_policy ON henkilo FOR SELECT TO yksilo USING (false);
+    GRANT SELECT(yksilo_id) ON henkilo TO yksilo;
 
     RESET ROLE;
     END;

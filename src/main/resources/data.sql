@@ -1,6 +1,6 @@
 ALTER TABLE yksilo
   DROP CONSTRAINT IF EXISTS fk_yksilo_id,
-  ADD CONSTRAINT fk_yksilo_id FOREIGN KEY (id) REFERENCES auth.person_id(id);
+  ADD CONSTRAINT fk_yksilo_id FOREIGN KEY (id) REFERENCES tunnistus.henkilo(yksilo_id);
 
 -- TEST DATA FOR EARLY DEVELOPMENT
 INSERT INTO osaaminen(id, uri)
