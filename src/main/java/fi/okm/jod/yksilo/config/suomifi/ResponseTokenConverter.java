@@ -38,9 +38,12 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   private final TransactionTemplate transactionTemplate;
   private final YksiloRepository yksilot;
   private final Converter<ResponseToken, Saml2Authentication> converter;
+  private final JodAuthenticationProperties authenticationProperties;
 
   public ResponseTokenConverter(
-      YksiloRepository yksilot, PlatformTransactionManager transactionManager) {
+      YksiloRepository yksilot,
+      PlatformTransactionManager transactionManager,
+      JodAuthenticationProperties authenticationProperties) {
     this.converter = OpenSaml4AuthenticationProvider.createDefaultResponseAuthenticationConverter();
     this.yksilot = yksilot;
 
@@ -48,6 +51,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     template.setTimeout(10);
     template.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
     this.transactionTemplate = template;
+    this.authenticationProperties = authenticationProperties;
   }
 
   @Override
@@ -55,21 +59,26 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     if (converter.convert(responseToken) instanceof Saml2Authentication authentication
         && authentication.getPrincipal() instanceof Saml2AuthenticatedPrincipal principal) {
 
+      // https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/59116c3014bbb10001966f70
+      // Tekninen rajapintakuvaus / Tunnistusvastaus / Tunnistustapahtuman vahvuus
       var level =
-          Loa.fromUri(
-              URI.create(
-                  requireNonNull(
-                      responseToken
-                          .getResponse()
-                          .getAssertions()
-                          .getFirst()
-                          .getAuthnStatements()
-                          .getFirst()
-                          .getAuthnContext()
-                          .getAuthnContextClassRef()
-                          .getURI())));
+          URI.create(
+              requireNonNull(
+                  responseToken
+                      .getResponse()
+                      .getAssertions()
+                      .getFirst()
+                      .getAuthnStatements()
+                      .getFirst()
+                      .getAuthnContext()
+                      .getAuthnContextClassRef()
+                      .getURI()));
 
-      var pid = PersonIdentifier.ofLoa(level);
+      var pid = authenticationProperties.getSupportedMethods().get(level);
+
+      if (pid == null) {
+        throw new BadCredentialsException("Unsupported authentication method: " + level);
+      }
 
       var userId =
           resolveUser(

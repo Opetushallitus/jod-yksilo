@@ -45,10 +45,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(name = "jod.authentication", havingValue = "suomifi")
+@ConditionalOnProperty(name = "jod.authentication.provider", havingValue = "suomifi")
 @Slf4j
 public class Saml2LoginConfig {
-
   private final VetumaExtensionBuilder vetumaExtensionBuilder = new VetumaExtensionBuilder();
 
   @Bean
@@ -68,7 +67,7 @@ public class Saml2LoginConfig {
     var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/");
     loginSuccessHandler.setRedirectStrategy(redirectStrategy);
     loginSuccessHandler.setAlwaysUseDefaultTargetUrl(true);
-    var logoutHandler = new LogoutHandler(redirectStrategy);
+    var authenticationEventHandler = new AuthenticationEventHandler(redirectStrategy);
 
     var authProvider = new OpenSaml4AuthenticationProvider();
     authProvider.setResponseAuthenticationConverter(converter);
@@ -84,7 +83,7 @@ public class Saml2LoginConfig {
                 login
                     .loginPage("/login")
                     .successHandler(loginSuccessHandler)
-                    .failureHandler(logoutHandler)
+                    .failureHandler(authenticationEventHandler)
                     .authenticationRequestResolver(authenticationRequestResolver)
                     .authenticationManager(new ProviderManager(authProvider)))
         .saml2Logout(
@@ -97,7 +96,7 @@ public class Saml2LoginConfig {
                     request.logoutRequestResolver(logoutRequestResolver);
                   });
             })
-        .logout(logout -> logout.logoutSuccessHandler(logoutHandler))
+        .logout(logout -> logout.logoutSuccessHandler(authenticationEventHandler))
         .headers(
             headers ->
                 headers.contentSecurityPolicy(
@@ -109,18 +108,29 @@ public class Saml2LoginConfig {
 
   @Bean
   Saml2AuthenticationRequestResolver authenticationRequestResolver(
-      RelyingPartyRegistrationRepository registrations) {
+      RelyingPartyRegistrationRepository registrations, JodAuthenticationProperties properties) {
 
     final var resolver = new OpenSaml4AuthenticationRequestResolver(registrations);
+    final var builder = new AuthnContextBuilder();
 
     resolver.setAuthnRequestCustomizer(
-        authnRequest ->
-            resolveKieli(authnRequest.getRequest())
-                .ifPresent(
-                    kieli ->
-                        authnRequest
-                            .getAuthnRequest()
-                            .setExtensions(vetumaExtensionBuilder.build(kieli))));
+        authnRequest -> {
+          // https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/59116c3014bbb10001966f70
+          // Tekninen rajapintakuvaus / Tunnistuspyyntö
+
+          // Hyväksytyt tunnistusvälineet
+          authnRequest
+              .getAuthnRequest()
+              .setRequestedAuthnContext(builder.build(properties.getSupportedMethods().keySet()));
+
+          // Käyttöliittymän kieli
+          resolveKieli(authnRequest.getRequest())
+              .ifPresent(
+                  kieli ->
+                      authnRequest
+                          .getAuthnRequest()
+                          .setExtensions(vetumaExtensionBuilder.build(kieli)));
+        });
 
     return resolver;
   }
@@ -151,10 +161,11 @@ public class Saml2LoginConfig {
     return Optional.ofNullable(lang);
   }
 
-  static class LogoutHandler implements AuthenticationFailureHandler, LogoutSuccessHandler {
+  static class AuthenticationEventHandler
+      implements AuthenticationFailureHandler, LogoutSuccessHandler {
     private final RedirectStrategy redirectStrategy;
 
-    public LogoutHandler(RedirectStrategy redirectStrategy) {
+    public AuthenticationEventHandler(RedirectStrategy redirectStrategy) {
       this.redirectStrategy = redirectStrategy;
     }
 
@@ -165,6 +176,9 @@ public class Saml2LoginConfig {
           && SecurityContextHolder.getContext().getAuthentication() == null) {
         // clear the temporary session used for SAML logout
         s.invalidate();
+      }
+      if (exception != null) {
+        log.warn("Authentication failure: {}", exception.getMessage());
       }
       redirectStrategy.sendRedirect(request, response, "/");
     }

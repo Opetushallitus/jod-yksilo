@@ -26,7 +26,10 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
 import org.springframework.util.StringUtils;
 
 @Configuration
-@ConditionalOnProperty(name = "jod.authentication", havingValue = "mock", matchIfMissing = true)
+@ConditionalOnProperty(
+    name = "jod.authentication.provider",
+    havingValue = "mock",
+    matchIfMissing = true)
 @Slf4j
 public class MockLoginConfig {
 
