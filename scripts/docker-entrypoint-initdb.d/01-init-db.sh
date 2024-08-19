@@ -29,8 +29,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     CREATE OR REPLACE FUNCTION remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS $$
             DELETE FROM henkilo WHERE yksilo_id = $1 RETURNING yksilo_id
             $$ LANGUAGE SQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
-    REVOKE ALL ON FUNCTION generate_yksilo_id FROM public;
-    GRANT EXECUTE ON FUNCTION generate_yksilo_id TO yksilo;
+    REVOKE ALL ON FUNCTION remove_yksilo_id FROM public;
+    GRANT EXECUTE ON FUNCTION remove_yksilo_id TO yksilo;
 
     GRANT REFERENCES(yksilo_id) ON henkilo TO yksilo;
     GRANT USAGE ON SCHEMA tunnistus TO yksilo;
