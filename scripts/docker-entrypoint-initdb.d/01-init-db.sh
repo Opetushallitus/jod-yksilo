@@ -16,13 +16,15 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     CREATE TABLE IF NOT EXISTS henkilo(yksilo_id UUID PRIMARY KEY, henkilo_id VARCHAR(300) NOT NULL UNIQUE);
 
     CREATE OR REPLACE FUNCTION generate_yksilo_id(henkilo_id VARCHAR(300)) RETURNS UUID AS $$
-        WITH new_id AS (
-          INSERT INTO henkilo(yksilo_id, henkilo_id) VALUES (gen_random_uuid(), $1) ON CONFLICT DO NOTHING RETURNING yksilo_id
-        )
-        SELECT yksilo_id from new_id
-        UNION ALL
-        SELECT yksilo_id FROM henkilo WHERE henkilo_id = $1
-        $$ LANGUAGE SQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
+    DECLARE
+      id UUID;
+    BEGIN
+      INSERT INTO henkilo(yksilo_id, henkilo_id) VALUES (gen_random_uuid(), $1) ON CONFLICT DO NOTHING RETURNING yksilo_id INTO id;
+      IF id IS NULL THEN
+        SELECT h.yksilo_id FROM henkilo h WHERE h.henkilo_id = $1 INTO id;
+      END IF;
+      RETURN id;
+    END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
     REVOKE ALL ON FUNCTION generate_yksilo_id FROM public;
     GRANT EXECUTE ON FUNCTION generate_yksilo_id TO yksilo;
 
