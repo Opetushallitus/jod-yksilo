@@ -14,18 +14,11 @@ import lombok.Getter;
 @Getter
 enum PersonIdentifier {
   FIN(Attribute.NATIONAL_IDENTIFICATION_NUMBER),
-  EID(Attribute.PERSON_IDENTIFIER);
+  EIDAS(Attribute.PERSON_IDENTIFIER);
 
   private final Attribute attribute;
 
   PersonIdentifier(Attribute attribute) {
     this.attribute = attribute;
-  }
-
-  static PersonIdentifier ofLoa(Loa loa) {
-    return switch (loa) {
-      case LOA2, LOA3, TEST -> PersonIdentifier.FIN;
-      case EIDAS_SUBSTANTIAL, EIDAS_HIGH -> PersonIdentifier.EID;
-    };
   }
 }
