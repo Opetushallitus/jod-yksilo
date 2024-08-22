@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.service;
 
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.ArvoDto;
 import fi.okm.jod.yksilo.dto.JakaumaDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
@@ -42,6 +43,13 @@ public class TyomahdollisuusService {
             PageRequest.of(
                 pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tyomahdollisuus_.ID)))
         .map(TyomahdollisuusService::map);
+  }
+
+  /** Temporary solution until ML model returns ID */
+  public List<TyomahdollisuusDto> findByName(Iterable<String> name) {
+    return tyomahdollisuusRepository.findByOtsikkoIn(name, Kieli.FI).stream()
+        .map(TyomahdollisuusService::map)
+        .collect(Collectors.toList());
   }
 
   public TyomahdollisuusFullDto findById(UUID id) {

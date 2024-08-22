@@ -214,11 +214,17 @@ sonar {
 }
 
 openApi {
-  apiDocsUrl = "http://localhost:8080/openapi/openapi.json"
+  def port = new ServerSocket(0).withCloseable { socket -> socket.getLocalPort() }
+  apiDocsUrl = "http://localhost:${port}/openapi/openapi.json"
   waitTimeInSeconds = 20
   customBootRun {
     args = ["--spring.main.lazy-initialization=true",
-            "--logging.level.root=WARN",]
+            "--server.port=${port}",
+            "--logging.level.root=WARN",
+            "--logging.level.sql=WARN",
+            "--logging.level.fi.okm.jod=INFO",
+            "--spring.docker.compose.file=${projectDir}/compose.yml",
+    ]
   }
 }
 

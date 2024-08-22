@@ -16,9 +16,12 @@ import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +47,9 @@ public class TyomahdollisuusController {
   }
 
   @GetMapping("/{id}")
-  public TyomahdollisuusFullDto findById(@PathVariable UUID id) {
-    return tyomahdollisuusService.findById(id);
+  public ResponseEntity<TyomahdollisuusFullDto> findById(@PathVariable UUID id) {
+    return ResponseEntity.ok()
+        .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePrivate())
+        .body(tyomahdollisuusService.findById(id));
   }
 }

@@ -15,9 +15,9 @@ INSERT INTO osaaminen_kaannos (osaaminen_id, kaannos_key,  kuvaus, nimi) SELECT 
 -- Tyomahdollisuus (generated using ML)
 TRUNCATE jakauma CASCADE;
 TRUNCATE tyomahdollisuus CASCADE;
-
 INSERT INTO tyomahdollisuus (id) SELECT id FROM tyomahdollisuus_data.tyomahdollisuus;
 
+DROP INDEX IF EXISTS ix_tyomahdollisuus_kaannos_otsikko;
 INSERT INTO tyomahdollisuus_kaannos (tyomahdollisuus_id, kaannos_key, otsikko, tiivistelma, kuvaus)
 SELECT tyomahdollisuus_id, kaannos_key, otsikko, tiivistelma, kuvaus
 FROM tyomahdollisuus_data.tyomahdollisuus_kaannos;
@@ -29,3 +29,7 @@ FROM tyomahdollisuus_data.jakauma;
 INSERT INTO jakauma_arvot(jakauma_id, arvo, osuus)
 SELECT jakauma_id, arvo, osuus
 FROM tyomahdollisuus_data.jakauma_arvot;
+
+-- temporary solution
+CREATE INDEX ix_tyomahdollisuus_kaannos_otsikko
+  ON tyomahdollisuus_kaannos(otsikko) WHERE kaannos_key = 'FI';
