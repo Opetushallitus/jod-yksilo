@@ -12,15 +12,19 @@ package fi.okm.jod.yksilo.service;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
+import jakarta.transaction.Transactional;
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OsaaminenService {
   private final OsaaminenRepository osaamiset;
 
@@ -37,5 +41,12 @@ public class OsaaminenService {
             .findByUriIn(
                 uri.stream().map(URI::toString).toList(), PageRequest.of(sivu, koko, Sort.by("id")))
             .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus())));
+  }
+
+  public List<OsaaminenDto> findBy(Set<URI> uri) {
+    return osaamiset
+        .findByUriIn(uri.stream().map(URI::toString).toList(), Pageable.unpaged())
+        .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
+        .toList();
   }
 }

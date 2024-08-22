@@ -43,7 +43,7 @@ public class OsaamisetEhdotusService {
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
       @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
-    log.info("Creating OsaamisetEhdotusController, baseUrl: {}", baseUrl);
+    log.info("Creating OsaamisetEhdotusService, baseUrl: {}", baseUrl);
 
     this.osaamiset = osaamiset;
 

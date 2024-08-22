@@ -16,8 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import java.net.URI;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,19 +29,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/osaamiset")
 @RequiredArgsConstructor
 @Tag(name = "osaamiset", description = "Osaamisten (ESCO) listaus")
-@Transactional
 class OsaaminenController {
   private final OsaaminenService osaamiset;
 
   @GetMapping
-  SivuDto<OsaaminenDto> find(
+  ResponseEntity<SivuDto<OsaaminenDto>> find(
       @RequestParam(required = false, defaultValue = "0") int sivu,
       @RequestParam(required = false, defaultValue = "10") @Max(1000) int koko,
       @RequestParam(required = false) Set<URI> uri) {
     if (uri == null) {
-      return osaamiset.findAll(sivu, koko);
+      return ResponseEntity.ok(osaamiset.findAll(sivu, koko));
     } else {
-      return osaamiset.findBy(sivu, koko, uri);
+      return ResponseEntity.ok()
+          .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS).cachePrivate())
+          .body(osaamiset.findBy(sivu, koko, uri));
     }
   }
 }
