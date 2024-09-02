@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.JOD_AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ secrets.JOD_AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
 
       - name: Download task definition
@@ -69,13 +69,13 @@ jobs:
         id: ecs-deploy
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: ${{ vars.JOD_ECS_SERVICE }}
-          cluster: ${{ vars.JOD_ECS_CLUSTER }}
+          service: ${{ secrets.JOD_ECS_SERVICE }}
+          cluster: ${{ secrets.JOD_ECS_CLUSTER }}
           wait-for-service-stability: true
 
       - name: Ensure that deploy worked
         run: |
-          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ vars.JOD_ECS_CLUSTER }} --services ${{ vars.JOD_ECS_SERVICE }} --query services[0].deployments[0].taskDefinition --output text)
+          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ secrets.JOD_ECS_CLUSTER }} --services ${{ secrets.JOD_ECS_SERVICE }} --query services[0].deployments[0].taskDefinition --output text)
           NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
           if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
             echo "Deployment was rolled back"
