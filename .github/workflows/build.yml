@@ -52,7 +52,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     outputs:
-      tags: ${{ steps.docker-meta.outputs.tags }}
+      tag: ${{ steps.short-tag.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +76,12 @@ jobs:
           images: "${{ secrets.JOD_ECR }}/oph/jod-yksilo"
           tags: |
             type=sha
+
+      - name: Output short tag
+        id: short-tag
+        run: |
+          echo "Short tag: ${DOCKER_METADATA_OUTPUT_TAGS##*:}"
+          echo "tag=${DOCKER_METADATA_OUTPUT_TAGS##*:}" >> $GITHUB_OUTPUT
 
       - name: Login to ECR
         id: ecr-login
@@ -106,7 +112,7 @@ jobs:
     secrets: inherit
     with:
       environment: dev
-      tag: ${{ needs.package.outputs.tags }}
+      tag: ${{ needs.package.outputs.tag }}
 
   deploy-test:
     if: github.ref == 'refs/heads/main'
@@ -119,4 +125,4 @@ jobs:
     secrets: inherit
     with:
       environment: test
-      tag: ${{ needs.package.outputs.tags }}
+      tag: ${{ needs.package.outputs.tag }}
