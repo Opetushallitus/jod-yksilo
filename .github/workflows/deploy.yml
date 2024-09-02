@@ -62,10 +62,10 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: ${{ vars.JOD_ECS_APP_CONTAINER }}
-          image: ${{ inputs.tag }}
+          image: ${{ secrets.JOD_ECR }}/oph/jod-yksilo:${{ inputs.tag }}
 
       - name: Deploy ECS Service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         id: ecs-deploy
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
