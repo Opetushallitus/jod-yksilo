@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.JakaumaTyyppi;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -27,7 +28,9 @@ import org.hibernate.annotations.Immutable;
 
 @Entity
 @Immutable
-@Table(indexes = {@Index(columnList = "tyomahdollisuus_id, tyyppi", unique = true)})
+@Table(
+    schema = "tyomahdollisuus_data",
+    indexes = {@Index(columnList = "tyomahdollisuus_id, tyyppi", unique = true)})
 public class Jakauma {
   @Id private long id;
 
@@ -44,8 +47,10 @@ public class Jakauma {
   @Getter
   @ElementCollection
   @BatchSize(size = 100)
+  @CollectionTable(schema = "tyomahdollisuus_data")
   private List<Arvo> arvot;
 
   @Embeddable
+  @Table(schema = "tyomahdollisuus_data")
   public record Arvo(String arvo, double osuus) {}
 }
