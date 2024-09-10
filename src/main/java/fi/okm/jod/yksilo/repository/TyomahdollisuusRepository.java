@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
+import fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,8 @@ public interface TyomahdollisuusRepository extends JpaRepository<Tyomahdollisuus
   @Query(
       "SELECT t FROM Tyomahdollisuus t JOIN t.kaannos k WHERE k.otsikko IN :name AND KEY(k) = :kieli")
   List<Tyomahdollisuus> findByOtsikkoIn(Iterable<String> name, Kieli kieli);
+
+  @Query(
+      "SELECT new fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata(t.id, t.mahdollisuusId, k.otsikko) FROM Tyomahdollisuus t JOIN t.kaannos k where KEY(k) = :kieli")
+  List<TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata(Kieli kieli);
 }

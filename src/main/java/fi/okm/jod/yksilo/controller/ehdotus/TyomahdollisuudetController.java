@@ -23,8 +23,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +66,8 @@ class TyomahdollisuudetController {
   @Timed
   public List<EhdotusDto> createEhdotus(@RequestBody @Valid LuoEhdotusDto ehdotus) {
 
+    var tyomahdollisuusMetaData = tyomahdollisuusService.fetchAllTyomahdollisuusMetadata();
+
     log.info("Creating a suggestion for tyomahdollisuudet");
     // temporarily using names instead of IDs
 
@@ -69,13 +76,19 @@ class TyomahdollisuudetController {
             ? List.<OsaaminenDto>of()
             : osaaminenService.findBy(ehdotus.osaamiset);
 
-    var kiinostukset =
+    var kiinnostukset =
         ehdotus.kiinnostukset() == null
             ? List.<OsaaminenDto>of()
             : osaaminenService.findBy(ehdotus.kiinnostukset);
 
-    if (osaamiset.isEmpty() && kiinostukset.isEmpty()) {
-      return List.of();
+    if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
+      // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
+      // metadata
+      var emptyMetadata =
+          new EhdotusMetadata(OptionalDouble.empty(), Optional.empty(), OptionalInt.empty());
+      return tyomahdollisuusMetaData.keySet().stream()
+          .map(key -> new EhdotusDto(key, emptyMetadata))
+          .toList();
     }
 
     var request =
@@ -83,20 +96,40 @@ class TyomahdollisuudetController {
             new Data(
                 ehdotus.osaamisPainotus,
                 osaamiset.stream().map(o -> o.nimi().get(Kieli.FI)).toList(),
-                ehdotus.kiinostusPainotus,
-                kiinostukset.stream().map(o -> o.nimi().get(Kieli.FI)).toList()));
+                ehdotus.kiinnostusPainotus,
+                kiinnostukset.stream().map(o -> o.nimi().get(Kieli.FI)).toList()));
 
     var result =
         inferenceService.infer(endpoint, request, Response.class).stream()
             .collect(Collectors.toMap(Suggestion::name, Suggestion::score, Double::max));
 
-    return tyomahdollisuusService.findByName(result.keySet()).stream()
+    // TODO: Change to use ID list when ML solution starts returning IDs
+    return tyomahdollisuusMetaData.keySet().stream()
         .map(
-            tyomahdollisuusDto ->
+            key ->
                 new EhdotusDto(
-                    tyomahdollisuusDto, result.get(tyomahdollisuusDto.otsikko().get(Kieli.FI))))
-        .sorted((a, b) -> Double.compare(b.osuvuus(), a.osuvuus()))
+                    key,
+                    new EhdotusMetadata(
+                        OptionalDouble.of(result.get(tyomahdollisuusMetaData.get(key).otsikko())),
+                        Optional.empty(),
+                        OptionalInt.empty())))
+        .sorted(Comparator.comparing(e -> e.ehdotusMetadata.pisteet.orElse(0d)))
         .toList();
+  }
+
+  /**
+   * These trend values will become more precise as the definition becomes more precise
+   *
+   * <h2>constant:</h2>
+   *
+   * <ul>
+   *   <li>{@link #NOUSEVA} - The trend of this view is rising.
+   *   <li>{@link #LASKEVA} - the trend in this view is down.
+   * </ul>
+   */
+  public enum Trendi {
+    NOUSEVA,
+    LASKEVA
   }
 
   public record Request(Data data) {
@@ -107,12 +140,48 @@ class TyomahdollisuudetController {
         List<String> kiinnostukset) {}
   }
 
-  public record EhdotusDto(TyomahdollisuusDto tyomahdollisuus, double osuvuus) {}
+  /**
+   * This record describes metadata related to the proposal, based on which the proposals can be
+   * sorted or filtered
+   *
+   * @param pisteet The points indicate the suitability of this proposal with a value of 1.0 ... 0,
+   *     where 1 is 100% suitability.
+   * @param trendi The trend tells about the general development trend of the information attached
+   *     to the proposal (optional).
+   * @param tyollisyysNakyma The employment view shows how, according to the statistics, the
+   *     opportunity associated with the proposal has been employed.
+   */
+  public record EhdotusMetadata(
+      OptionalDouble pisteet,
+      Optional<Trendi> trendi,
 
+      /** Value from 0 to */
+      OptionalInt tyollisyysNakyma) {}
+
+  /**
+   * This record models a proposal by including a reference to an opportunity that contains more
+   * detailed information about the opportunity. For example: {@link TyomahdollisuusDto}
+   *
+   * @param mahdollisuusId Opportunity ID
+   * @param ehdotusMetadata Proposal metadata
+   */
+  public record EhdotusDto(UUID mahdollisuusId, EhdotusMetadata ehdotusMetadata) {}
+
+  /**
+   * This record models the create ehdotus request where
+   *
+   * @param osaamisPainotus This is the emphasis of osaamiset (skills related to know how).
+   * @param osaamiset This is the list of skills ESCO URIs which are considered as skills of the
+   *     customer related to know how.
+   * @param kiinnostusPainotus is the emphasis of kiinnostus (skills related to personal fields of
+   *     interests).
+   * @param kiinnostukset This is the list of skills ESCO URIs which are considered as skills of the
+   *     customer related to kiinnostus.
+   */
   public record LuoEhdotusDto(
       double osaamisPainotus,
       @Size(max = 1000) Set<@Valid URI> osaamiset,
-      double kiinostusPainotus,
+      double kiinnostusPainotus,
       @Size(max = 1000) Set<@Valid URI> kiinnostukset) {}
 
   @SuppressWarnings("serial")
