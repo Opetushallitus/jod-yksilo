@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toiminto;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -26,6 +27,8 @@ public interface PatevyysRepository
   default Optional<Patevyys> findBy(JodUser user, UUID toimintoId, UUID id) {
     return findByToimintoYksiloIdAndToimintoIdAndId(user.getId(), toimintoId, id);
   }
+
+  List<Patevyys> findByToimintoYksiloIdAndToimintoId(UUID yksiloId, UUID toimintoId);
 
   @EntityGraph(attributePaths = {"toiminto", "toiminto.yksilo"})
   Optional<Patevyys> findByToimintoYksiloIdAndToimintoIdAndId(

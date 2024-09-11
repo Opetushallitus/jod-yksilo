@@ -80,7 +80,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
 
     simulateCommit();
 
-    var tyopaikka = service.find(user, id);
+    var tyopaikka = service.get(user, id);
     var toimenkuvaDtos = tyopaikka.toimenkuvat().toArray(new ToimenkuvaDto[0]);
 
     entityManager.clear();
@@ -107,7 +107,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                     Set.of(URI.create("urn:osaaminen1")))));
     service.update(user, updatedTyopaikka);
     entityManager.flush();
-    updatedTyopaikka = service.find(user, id);
+    updatedTyopaikka = service.get(user, id);
 
     assertEquals(2, updatedTyopaikka.toimenkuvat().size());
     assertTrue(

@@ -47,7 +47,7 @@ public class ToimintoService {
     return toiminnot.findByYksiloId(user.getId()).stream().map(Mapper::mapToiminto).toList();
   }
 
-  public ToimintoDto find(JodUser user, UUID id) {
+  public ToimintoDto get(JodUser user, UUID id) {
     return toiminnot
         .findByYksiloIdAndId(user.getId(), id)
         .map(Mapper::mapToiminto)

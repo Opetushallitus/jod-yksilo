@@ -47,7 +47,7 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldGetAllToiminnot() throws Exception {
+  void shouldFindToiminnot() throws Exception {
     mockMvc.perform(get("/api/profiili/vapaa-ajan-toiminnot")).andExpect(status().isOk());
   }
 

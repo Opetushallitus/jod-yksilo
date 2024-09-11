@@ -72,6 +72,19 @@ public class YksilonOsaaminenService {
     return add(lahde, dto.osaamiset()).stream().map(YksilonOsaaminen::getId).toList();
   }
 
+  public YksilonOsaaminenDto get(JodUser user, UUID id) {
+    return repository
+        .findByYksiloIdAndId(user.getId(), id)
+        .map(Mapper::mapYksilonOsaaminen)
+        .orElseThrow(() -> new NotFoundException("Not found"));
+  }
+
+  public void delete(JodUser user, Set<UUID> ids) {
+    if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
+      throw new NotFoundException("Not found");
+    }
+  }
+
   List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
     var osaamiset = osaamisetRepository.findByUriIn(ids.stream().map(Object::toString).toList());
     if (osaamiset.size() != ids.size()) {
@@ -107,19 +120,6 @@ public class YksilonOsaaminenService {
         .addAll(
             repository.saveAll(
                 osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
-  }
-
-  public YksilonOsaaminenDto get(JodUser user, UUID id) {
-    return repository
-        .findByYksiloIdAndId(user.getId(), id)
-        .map(Mapper::mapYksilonOsaaminen)
-        .orElseThrow(() -> new NotFoundException("Not found"));
-  }
-
-  public void delete(JodUser user, Set<UUID> ids) {
-    if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
-      throw new NotFoundException("Not found");
-    }
   }
 
   void deleteAll(Set<YksilonOsaaminen> osaamiset) {
