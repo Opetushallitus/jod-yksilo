@@ -50,12 +50,12 @@ class ToimintoServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldFindToimintoById() {
+  void shouldGetToimintoById() {
     assertDoesNotThrow(
         () -> {
           var id = service.add(user, new ToimintoDto(null, ls(Kieli.FI, "nimi"), null));
           entityManager.flush();
-          var result = service.find(user, id);
+          var result = service.get(user, id);
           assertNotNull(result);
           assertEquals(id, result.id());
           assertEquals(ls(Kieli.FI, "nimi"), result.nimi());
@@ -87,7 +87,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
 
           simulateCommit();
 
-          var result = service.find(user, id);
+          var result = service.get(user, id);
           assertNotNull(result);
           assertEquals(updatedNimi, result.nimi());
           assertEquals(0, result.patevyydet().size());
@@ -117,7 +117,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
 
     simulateCommit();
 
-    var dto2 = service.find(user, id2);
+    var dto2 = service.get(user, id2);
     var toiminto = new ToimintoDto(id, dto2.nimi(), dto2.patevyydet());
 
     assertThrows(ServiceException.class, () -> service.update(user, toiminto));
@@ -140,6 +140,6 @@ class ToimintoServiceTest extends AbstractServiceTest {
     service.delete(user, Set.of(id));
     simulateCommit();
 
-    assertThrows(NotFoundException.class, () -> service.find(user, id));
+    assertThrows(NotFoundException.class, () -> service.get(user, id));
   }
 }

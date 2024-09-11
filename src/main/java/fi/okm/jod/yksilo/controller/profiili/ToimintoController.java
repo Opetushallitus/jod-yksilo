@@ -47,24 +47,14 @@ public class ToimintoController {
   private final ToimintoService service;
 
   @GetMapping
-  @Operation(
-      summary = "Get all vapaa-ajan toiminnot of the user",
-      description =
-          """
-              This endpoint can be used to get all vapaa-ajan toiminnot of the user.
-              """)
-  List<ToimintoDto> getAll(@AuthenticationPrincipal JodUser user) {
+  @Operation(summary = "Get all vapaa-ajan toiminnot of the user")
+  List<ToimintoDto> findAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
   }
 
   @PostMapping()
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(
-      summary = "Adds a new vapaa-ajan toiminto",
-      description =
-          """
-              This endpoint can be used to add a new vapaa-ajan toiminto.
-              """)
+  @Operation(summary = "Adds a new vapaa-ajan toiminto")
   ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody() ToimintoDto dto, @AuthenticationPrincipal JodUser user) {
     var id = service.add(user, dto);
@@ -74,24 +64,14 @@ public class ToimintoController {
   }
 
   @GetMapping("/{id}")
-  @Operation(
-      summary = "Get vapaa-ajan toiminto by id",
-      description =
-          """
-              This endpoint can be used to get vapaa-ajan toiminto by id.
-              """)
+  @Operation(summary = "Get vapaa-ajan toiminto by id")
   ToimintoDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    return service.find(user, id);
+    return service.get(user, id);
   }
 
   @PutMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(
-      summary = "Updates the vapaa-ajan toiminto by id",
-      description =
-          """
-              This endpoint can be used to update vapaa-ajan toiminto.
-              """)
+  @Operation(summary = "Updates the vapaa-ajan toiminto by id")
   void update(
       @PathVariable UUID id,
       @Valid @RequestBody ToimintoDto dto,
@@ -105,12 +85,7 @@ public class ToimintoController {
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(
-      summary = "Delete the vapaa-ajan toiminto by id",
-      description =
-          """
-              This endpoint can be used to delete the vapaa-ajan toiminto by id.
-              """)
+  @Operation(summary = "Delete the vapaa-ajan toiminto by id")
   void delete(
       @RequestParam @NotEmpty @Size(max = 1000) Set<UUID> ids,
       @AuthenticationPrincipal JodUser user) {

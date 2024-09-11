@@ -18,6 +18,7 @@ import fi.okm.jod.yksilo.repository.ToimintoRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,12 @@ public class PatevyysService {
   private final ToimintoRepository toiminnot;
   private final PatevyysRepository patevyydet;
   private final YksilonOsaaminenService osaamiset;
+
+  public List<PatevyysDto> findAll(JodUser user, UUID toimintoId) {
+    return patevyydet.findByToimintoYksiloIdAndToimintoId(user.getId(), toimintoId).stream()
+        .map(Mapper::mapPatevyys)
+        .toList();
+  }
 
   public UUID add(JodUser user, UUID toimintoId, PatevyysDto dto) {
     var toiminto =
@@ -44,21 +51,35 @@ public class PatevyysService {
     return add(toiminto, dto).getId();
   }
 
+  public PatevyysDto get(JodUser user, UUID id, UUID patevyysId) {
+    return patevyydet
+        .findBy(user, id, patevyysId)
+        .map(Mapper::mapPatevyys)
+        .orElseThrow(PatevyysService::notFound);
+  }
+
+  public void update(JodUser user, UUID toimintoId, PatevyysDto dto) {
+    var entity =
+        patevyydet.findBy(user, toimintoId, dto.id()).orElseThrow(PatevyysService::notFound);
+    update(entity, dto);
+  }
+
+  public void delete(JodUser user, UUID toimintoId, UUID patevyysId) {
+    var entity =
+        patevyydet.findBy(user, toimintoId, patevyysId).orElseThrow(PatevyysService::notFound);
+    delete(entity);
+  }
+
   Patevyys add(Toiminto toiminto, PatevyysDto dto) {
     var entity = new Patevyys(toiminto);
     entity.setNimi(dto.nimi());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
-    var toimenkuva = patevyydet.save(entity);
+    var patevyys = patevyydet.save(entity);
     if (dto.osaamiset() != null) {
-      osaamiset.add(toimenkuva, dto.osaamiset());
+      osaamiset.add(patevyys, dto.osaamiset());
     }
-    return toimenkuva;
-  }
-
-  public void update(JodUser user, UUID toiminto, PatevyysDto dto) {
-    var entity = patevyydet.findBy(user, toiminto, dto.id()).orElseThrow(PatevyysService::notFound);
-    update(entity, dto);
+    return patevyys;
   }
 
   void update(Patevyys entity, PatevyysDto dto) {

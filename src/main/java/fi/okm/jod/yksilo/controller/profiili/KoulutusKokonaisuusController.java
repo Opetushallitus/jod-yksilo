@@ -76,10 +76,16 @@ class KoulutusKokonaisuusController {
   @DeleteMapping("/koulutukset")
   @Operation(
       summary = "Deletes one or more Koulutus by ID",
-      description = "Possible resulting empty Kategoria are alse removed.")
+      description = "Possible resulting empty Kategoria are also removed.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void deleteKoulutukset(@RequestParam Set<UUID> ids, @AuthenticationPrincipal JodUser user) {
     service.deleteKoulutukset(user, ids);
+  }
+
+  @GetMapping("/koulutukset/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  KoulutusDto getKoulutus(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    return service.getKoulutus(user, id);
   }
 
   @PutMapping(path = "/koulutukset/{id}")
@@ -92,12 +98,6 @@ class KoulutusKokonaisuusController {
       throw new IllegalArgumentException("Invalid identifier");
     }
     service.update(user, dto);
-  }
-
-  @GetMapping("/koulutukset/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  KoulutusDto getKoulutus(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    return service.getKoulutus(user, id);
   }
 
   @DeleteMapping("/koulutukset/{id}")

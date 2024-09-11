@@ -42,13 +42,6 @@ public class ToimenkuvaService {
         .toList();
   }
 
-  public ToimenkuvaDto get(JodUser user, UUID tyopaikkaId, UUID id) {
-    return toimenkuvat
-        .findBy(user, tyopaikkaId, id)
-        .map(Mapper::mapToimenkuva)
-        .orElseThrow(ToimenkuvaService::notFound);
-  }
-
   public UUID add(JodUser user, UUID tyopaikkaId, ToimenkuvaDto dto) {
     var tyopaikka =
         tyopaikat
@@ -60,6 +53,25 @@ public class ToimenkuvaService {
     }
 
     return add(tyopaikka, dto).getId();
+  }
+
+  public ToimenkuvaDto get(JodUser user, UUID tyopaikkaId, UUID id) {
+    return toimenkuvat
+        .findBy(user, tyopaikkaId, id)
+        .map(Mapper::mapToimenkuva)
+        .orElseThrow(ToimenkuvaService::notFound);
+  }
+
+  public void update(JodUser user, UUID tyopaikka, ToimenkuvaDto dto) {
+    var entity =
+        toimenkuvat.findBy(user, tyopaikka, dto.id()).orElseThrow(ToimenkuvaService::notFound);
+    update(entity, dto);
+  }
+
+  public void delete(JodUser user, UUID tyopaikka, UUID id) {
+    var toimenkuva =
+        toimenkuvat.findBy(user, tyopaikka, id).orElseThrow(ToimenkuvaService::notFound);
+    delete(toimenkuva);
   }
 
   Toimenkuva add(Tyopaikka tyopaikka, ToimenkuvaDto dto) {
@@ -75,12 +87,6 @@ public class ToimenkuvaService {
     return toimenkuva;
   }
 
-  public void update(JodUser user, UUID tyopaikka, ToimenkuvaDto dto) {
-    var entity =
-        toimenkuvat.findBy(user, tyopaikka, dto.id()).orElseThrow(ToimenkuvaService::notFound);
-    update(entity, dto);
-  }
-
   void update(Toimenkuva entity, ToimenkuvaDto dto) {
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
@@ -90,12 +96,6 @@ public class ToimenkuvaService {
     if (dto.osaamiset() != null) {
       osaamiset.update(entity, dto.osaamiset());
     }
-  }
-
-  public void delete(JodUser user, UUID tyopaikka, UUID id) {
-    var toimenkuva =
-        toimenkuvat.findBy(user, tyopaikka, id).orElseThrow(ToimenkuvaService::notFound);
-    delete(toimenkuva);
   }
 
   void delete(Toimenkuva toimenkuva) {

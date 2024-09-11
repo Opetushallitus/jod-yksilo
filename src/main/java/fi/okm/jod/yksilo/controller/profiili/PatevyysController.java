@@ -11,9 +11,9 @@ package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
-import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
+import fi.okm.jod.yksilo.service.profiili.PatevyysService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,48 +35,58 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/profiili/tyopaikat")
+@RequestMapping("/api/profiili/vapaa-ajan-toiminnot/{id}/patevyydet")
 @RequiredArgsConstructor
 @Tag(name = "profiili")
-class TyopaikkaController {
-  private final TyopaikkaService service;
+class PatevyysController {
+  private final PatevyysService service;
 
   @GetMapping
-  List<TyopaikkaDto> findAll(@AuthenticationPrincipal JodUser user) {
-    return service.findAll(user);
+  List<PatevyysDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   ResponseEntity<IdDto<UUID>> add(
-      @Validated(Add.class) @RequestBody TyopaikkaDto dto, @AuthenticationPrincipal JodUser user) {
-    var id = service.add(user, dto);
+      @PathVariable UUID id,
+      @Validated({Add.class}) @RequestBody PatevyysDto dto,
+      @AuthenticationPrincipal JodUser user) {
+
+    var patevyysId = service.add(user, id, dto);
     var location =
-        ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri();
-    return ResponseEntity.created(location).body(new IdDto<>(id));
+        ServletUriComponentsBuilder.fromCurrentRequest()
+            .host(null)
+            .path("/{patevyysId}")
+            .buildAndExpand(patevyysId)
+            .toUri();
+    return ResponseEntity.created(location).body(new IdDto<>(patevyysId));
   }
 
-  @GetMapping("/{id}")
-  TyopaikkaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    return service.get(user, id);
+  @GetMapping("/{patevyysId}")
+  PatevyysDto get(
+      @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
+    return service.get(user, id, patevyysId);
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/{patevyysId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
-      @Valid @RequestBody TyopaikkaDto dto,
+      @PathVariable UUID patevyysId,
+      @Valid @RequestBody PatevyysDto dto,
       @AuthenticationPrincipal JodUser user) {
 
-    if (dto.id() == null || !id.equals(dto.id())) {
+    if (dto.id() == null || !patevyysId.equals(dto.id())) {
       throw new IllegalArgumentException("Invalid identifier");
     }
-    service.update(user, dto);
+    service.update(user, id, dto);
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/{patevyysId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, id);
+  void delete(
+      @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
+    service.delete(user, id, patevyysId);
   }
 }

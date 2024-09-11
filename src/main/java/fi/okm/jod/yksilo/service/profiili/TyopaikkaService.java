@@ -49,7 +49,7 @@ public class TyopaikkaService {
     return tyopaikat.findByYksiloId(user.getId()).stream().map(Mapper::mapTyopaikka).toList();
   }
 
-  public TyopaikkaDto find(JodUser user, UUID id) {
+  public TyopaikkaDto get(JodUser user, UUID id) {
     return tyopaikat
         .findByYksiloIdAndId(user.getId(), id)
         .map(Mapper::mapTyopaikka)
