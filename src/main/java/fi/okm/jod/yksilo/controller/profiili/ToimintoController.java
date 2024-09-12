@@ -42,7 +42,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/vapaa-ajan-toiminnot")
 @RequiredArgsConstructor
-@Tag(name = "profiili")
+@Tag(name = "profiili/vapaa-ajan-toiminnot")
 public class ToimintoController {
   private final ToimintoService service;
 

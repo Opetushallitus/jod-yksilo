@@ -15,6 +15,7 @@ import static java.util.Objects.requireNonNull;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -27,9 +28,12 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
@@ -38,7 +42,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(indexes = {@Index(columnList = "yksilo_id")})
-public class KoulutusKategoria {
+public class KoulutusKokonaisuus {
   @Id @GeneratedValue @Getter UUID id;
 
   @Getter
@@ -52,11 +56,20 @@ public class KoulutusKategoria {
   @BatchSize(size = 10)
   private Map<Kieli, Kaannos> kaannos;
 
-  protected KoulutusKategoria() {
+  @OneToMany(
+      mappedBy = "kokonaisuus",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @BatchSize(size = 20)
+  @Getter
+  private List<Koulutus> koulutukset = new ArrayList<>();
+
+  protected KoulutusKokonaisuus() {
     // For JPA
   }
 
-  public KoulutusKategoria(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
+  public KoulutusKokonaisuus(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
     this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);

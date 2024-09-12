@@ -37,7 +37,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/vapaa-ajan-toiminnot/{id}/patevyydet")
 @RequiredArgsConstructor
-@Tag(name = "profiili")
+@Tag(name = "profiili/vapaa-ajan-toiminnot")
 class PatevyysController {
   private final PatevyysService service;
 

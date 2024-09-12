@@ -1,7 +1,7 @@
 -- Imports data that is assumed to be pre-loaded into the database
 -- This is a temporary solution until database migrations are implemented
 
--- Osaaminen (ESCO 1.2)
+-- Osaaminen (ESCO 1.1.2)
 TRUNCATE osaaminen CASCADE;
 
 CREATE SEQUENCE IF NOT EXISTS osaaminen_seq;

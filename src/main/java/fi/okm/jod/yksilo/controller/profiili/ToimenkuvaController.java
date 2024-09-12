@@ -37,7 +37,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/tyopaikat/{id}/toimenkuvat")
 @RequiredArgsConstructor
-@Tag(name = "profiili")
+@Tag(name = "profiili/tyopaikat")
 class ToimenkuvaController {
   private final ToimenkuvaService service;
 

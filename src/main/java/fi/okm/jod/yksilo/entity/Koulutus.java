@@ -25,12 +25,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.EnumMap;
@@ -45,7 +42,6 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-@Table(indexes = {@Index(columnList = "yksilo_id")})
 @Access(AccessType.FIELD)
 public non-sealed class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
@@ -53,14 +49,9 @@ public non-sealed class Koulutus implements OsaamisenLahde {
   @Setter private LocalDate alkuPvm;
   @Setter private LocalDate loppuPvm;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(updatable = false, nullable = false)
-  @NotNull
-  private Yksilo yksilo;
-
   @ManyToOne(fetch = FetchType.LAZY)
   @Setter
-  private KoulutusKategoria kategoria;
+  private KoulutusKokonaisuus kokonaisuus;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
@@ -75,8 +66,8 @@ public non-sealed class Koulutus implements OsaamisenLahde {
     // For JPA
   }
 
-  public Koulutus(Yksilo yksilo) {
-    this.yksilo = requireNonNull(yksilo);
+  public Koulutus(KoulutusKokonaisuus kokonaisuus) {
+    this.kokonaisuus = requireNonNull(kokonaisuus);
     this.kaannos = new EnumMap<>(Kieli.class);
     this.osaamiset = new HashSet<>();
   }
@@ -99,9 +90,7 @@ public non-sealed class Koulutus implements OsaamisenLahde {
 
   @NotNull
   public Yksilo getYksilo() {
-    // workaround to suppress Hibernate compile-time tooling 6.5.2.Final
-    // warning: member 'getYksilo' of 'Koulutus' is not annotated '@ManyToOne'
-    return yksilo;
+    return kokonaisuus.getYksilo();
   }
 
   @Embeddable

@@ -14,47 +14,30 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.KOULUTUS;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.KoulutusKategoria;
-import fi.okm.jod.yksilo.entity.Yksilo;
-import java.util.Collection;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 
 public interface KoulutusRepository
     extends JpaRepository<Koulutus, UUID>, OsaamisenLahdeRepository<Koulutus> {
 
-  Optional<Koulutus> findByYksiloIdAndId(UUID yksiloId, UUID id);
+  long countByKokonaisuus(KoulutusKokonaisuus kokonaisuus);
 
-  List<Koulutus> findByYksiloAndIdIn(Yksilo yksilo, Collection<UUID> id);
-
-  @EntityGraph(attributePaths = {"kategoria", "kaannos"})
-  List<Koulutus> findByYksilo(Yksilo yksilo, Sort sort);
+  Optional<Koulutus> findByKokonaisuusYksiloIdAndId(UUID yksiloId, UUID id);
 
   @EntityGraph(attributePaths = {"kategoria", "kaannos"})
-  List<Koulutus> findByYksiloAndKategoriaId(Yksilo yksilo, @Nullable UUID kategoriaId, Sort sort);
+  List<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusId(UUID yksiloId, UUID kokonaisuusId);
 
   @Override
   default Optional<Koulutus> findBy(JodUser user, OsaamisenLahdeDto lahde) {
     return lahde.tyyppi() == KOULUTUS
-        ? findByYksiloIdAndId(user.getId(), lahde.id())
+        ? findByKokonaisuusYksiloIdAndId(user.getId(), lahde.id())
         : Optional.empty();
   }
 
-  @Modifying
-  @Query("DELETE FROM YksilonOsaaminen o WHERE o.koulutus.id in :koulutusIds")
-  void deleteOsaamiset(Collection<UUID> koulutusIds);
-
-  @Query(
-      "SELECT k FROM Koulutus k WHERE ((:kategoria IS NULL AND k.kategoria IS NULL) OR k.kategoria = :kategoria) AND k.id NOT IN :ids")
-  List<Koulutus> findByKategoriaAndIdNotIn(
-      @Nullable KoulutusKategoria kategoria, Collection<UUID> ids);
-
-  int countByYksilo(Yksilo yksilo);
+  Optional<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(
+      UUID id, UUID tyopaikkaId, UUID id1);
 }

@@ -12,8 +12,8 @@ package fi.okm.jod.yksilo.service.profiili;
 import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.dto.profiili.KategoriaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
@@ -21,7 +21,7 @@ import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.KoulutusKategoria;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
@@ -101,10 +101,13 @@ public final class Mapper {
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
-  public static KategoriaDto mapKategoria(KoulutusKategoria entity) {
+  public static KoulutusKokonaisuusDto mapKoulutusKokonaisuus(KoulutusKokonaisuus entity) {
     return entity == null
         ? null
-        : new KategoriaDto(entity.getId(), entity.getNimi(), entity.getKuvaus());
+        : new KoulutusKokonaisuusDto(
+            entity.getId(),
+            entity.getNimi(),
+            entity.getKoulutukset().stream().map(Mapper::mapKoulutus).collect(Collectors.toSet()));
   }
 
   public static OsaaminenDto mapOsaaminen(Osaaminen entity) {

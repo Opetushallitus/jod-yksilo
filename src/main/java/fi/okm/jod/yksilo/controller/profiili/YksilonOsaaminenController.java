@@ -40,7 +40,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/profiili/osaamiset")
 @RequiredArgsConstructor
-@Tag(name = "profiili", description = "Yksilön profiilin hallinta")
+@Tag(name = "profiili/osaamiset", description = "Yksilön profiilin hallinta")
 class YksilonOsaaminenController {
   private final YksilonOsaaminenService service;
 

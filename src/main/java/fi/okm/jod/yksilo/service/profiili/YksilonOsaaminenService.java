@@ -90,7 +90,10 @@ public class YksilonOsaaminenService {
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
-    return repository.saveAll(osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList());
+    var entities =
+        repository.saveAll(osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList());
+    lahde.getOsaamiset().addAll(entities);
+    return entities;
   }
 
   void update(OsaamisenLahde lahde, Set<URI> ids) {
