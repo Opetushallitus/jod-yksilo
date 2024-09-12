@@ -7,7 +7,7 @@ plugins {
 
   id 'checkstyle'
   id "com.diffplug.spotless" version "6.25.0"
-  id "com.github.spotbugs" version "6.0.21"
+  id "com.github.spotbugs" version "6.0.22"
   id "org.sonarqube" version "5.1.0.4882"
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
@@ -58,7 +58,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.27.17')
+  implementation platform('software.amazon.awssdk:bom:2.27.24')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -220,14 +220,19 @@ sonar {
 openApi {
   def port = new ServerSocket(0).withCloseable { socket -> socket.getLocalPort() }
   apiDocsUrl = "http://localhost:${port}/openapi/openapi.json"
-  waitTimeInSeconds = 20
+  waitTimeInSeconds = 30
   customBootRun {
+    environment = [
+        COMPOSE_PROJECT_NAME: "jod-yksilo-openapi"
+    ]
     args = ["--spring.main.lazy-initialization=true",
             "--server.port=${port}",
-            "--logging.level.root=WARN",
-            "--logging.level.sql=WARN",
-            "--logging.level.fi.okm.jod=INFO",
-            "--spring.docker.compose.file=${projectDir}/compose.yml",
+            "--logging.level.root=ERROR",
+            "--logging.level.sql=OFF",
+            "--logging.level.fi.okm.jod=ERROR",
+            "--spring.config.additional-location=${projectDir}/src/test/resources/application-default.yml",
+            "--spring.docker.compose.file=${projectDir}/compose-test.yml",
+            "--spring.docker.compose.stop.command=down",
     ]
   }
 }

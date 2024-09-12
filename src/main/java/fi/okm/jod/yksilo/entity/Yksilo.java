@@ -36,10 +36,7 @@ public class Yksilo {
   private Set<Tyopaikka> tyopaikat;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  private Set<KoulutusKategoria> kategoriat;
-
-  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  private Set<Koulutus> koulutukset;
+  private Set<KoulutusKokonaisuus> koulutusKokonaisuudet;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
