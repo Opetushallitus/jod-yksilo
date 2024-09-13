@@ -219,6 +219,7 @@ sonar {
 
 openApi {
   def port = new ServerSocket(0).withCloseable { socket -> socket.getLocalPort() }
+  outputDir = file("${projectDir}/build/openapi")
   apiDocsUrl = "http://localhost:${port}/openapi/openapi.json"
   waitTimeInSeconds = 30
   customBootRun {

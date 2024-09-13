@@ -3,7 +3,8 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - target: 6379
+        host_ip: 127.0.0.1
     volumes:
       - ./scripts/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -15,7 +16,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - target: 5432
+        host_ip: 127.0.0.1
     volumes:
       - ./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     labels:
