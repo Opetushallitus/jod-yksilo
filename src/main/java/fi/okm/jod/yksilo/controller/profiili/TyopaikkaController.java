@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.controller.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.TyopaikkaUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,11 +44,13 @@ class TyopaikkaController {
   private final TyopaikkaService service;
 
   @GetMapping
+  @Operation(summary = "Gets all tyopaikat of the user")
   List<TyopaikkaDto> findAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
   }
 
   @PostMapping
+  @Operation(summary = "Adds a new tyopaikka (and optionally toimenkuvat)")
   @ResponseStatus(HttpStatus.CREATED)
   ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody TyopaikkaDto dto, @AuthenticationPrincipal JodUser user) {
@@ -57,15 +61,17 @@ class TyopaikkaController {
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Gets a tyopaikka")
   TyopaikkaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id);
   }
 
   @PutMapping("/{id}")
+  @Operation(summary = "Updates a tyopaikka (shallow update)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
-      @Valid @RequestBody TyopaikkaDto dto,
+      @Valid @RequestBody TyopaikkaUpdateDto dto,
       @AuthenticationPrincipal JodUser user) {
 
     if (dto.id() == null || !id.equals(dto.id())) {
@@ -75,6 +81,7 @@ class TyopaikkaController {
   }
 
   @DeleteMapping("/{id}")
+  @Operation(summary = "Deletes a tyopaikka")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);

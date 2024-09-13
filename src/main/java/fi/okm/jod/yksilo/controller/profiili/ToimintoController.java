@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.controller.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +55,7 @@ public class ToimintoController {
 
   @PostMapping()
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Adds a new vapaa-ajan toiminto")
+  @Operation(summary = "Adds a new vapaa-ajan toiminto (and optionally patevyydet)")
   ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody() ToimintoDto dto, @AuthenticationPrincipal JodUser user) {
     var id = service.add(user, dto);
@@ -64,17 +65,17 @@ public class ToimintoController {
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get vapaa-ajan toiminto by id")
+  @Operation(summary = "Get the vapaa-ajan toiminto (including patevyydet)")
   ToimintoDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id);
   }
 
   @PutMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Updates the vapaa-ajan toiminto by id")
+  @Operation(summary = "Updates the vapaa-ajan toiminto (shallow update)")
   void update(
       @PathVariable UUID id,
-      @Valid @RequestBody ToimintoDto dto,
+      @Valid @RequestBody ToimintoUpdateDto dto,
       @AuthenticationPrincipal JodUser user) {
 
     if (dto.id() == null || !id.equals(dto.id())) {
@@ -85,7 +86,7 @@ public class ToimintoController {
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Delete the vapaa-ajan toiminto by id")
+  @Operation(summary = "Delete the vapaa-ajan toiminto (including all patevyydet)")
   void delete(
       @RequestParam @NotEmpty @Size(max = 1000) Set<UUID> ids,
       @AuthenticationPrincipal JodUser user) {

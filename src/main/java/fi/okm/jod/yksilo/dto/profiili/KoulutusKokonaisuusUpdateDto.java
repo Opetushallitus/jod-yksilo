@@ -11,17 +11,12 @@ package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.validation.Limits;
 import fi.okm.jod.yksilo.validation.PrintableString;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
-import java.util.Set;
 import java.util.UUID;
 
-public record ToimintoDto(
+public record KoulutusKokonaisuusUpdateDto(
     @Null(groups = Add.class) UUID id,
-    @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = Limits.PATEVYYS_PER_TOIMINTO) Set<@Valid @NotNull PatevyysDto> patevyydet) {}
+    @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi) {}

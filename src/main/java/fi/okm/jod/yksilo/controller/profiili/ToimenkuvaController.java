@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,11 +43,13 @@ class ToimenkuvaController {
   private final ToimenkuvaService service;
 
   @GetMapping
+  @Operation(summary = "Gets all toimenkuvat of the tyopaikka")
   List<ToimenkuvaDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
+  @Operation(summary = "Adds a new toimenkuva to the tyopaikka")
   @ResponseStatus(HttpStatus.CREATED)
   ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
@@ -64,6 +67,7 @@ class ToimenkuvaController {
   }
 
   @GetMapping("/{toimenkuvaId}")
+  @Operation(summary = "Gets a toimenkuva of the tyopaikka")
   ToimenkuvaDto get(
       @PathVariable UUID id,
       @PathVariable UUID toimenkuvaId,
@@ -72,6 +76,7 @@ class ToimenkuvaController {
   }
 
   @PutMapping("/{toimenkuvaId}")
+  @Operation(summary = "Updates a toimenkuva of the tyopaikka")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
@@ -86,6 +91,7 @@ class ToimenkuvaController {
   }
 
   @DeleteMapping("/{toimenkuvaId}")
+  @Operation(summary = "Deletes a toimenkuva of the tyopaikka")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id,

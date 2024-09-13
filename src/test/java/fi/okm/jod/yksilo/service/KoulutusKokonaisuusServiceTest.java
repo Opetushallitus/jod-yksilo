@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
@@ -44,7 +45,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new KoulutusKokonaisuusDto(id, updatedNimi, null));
+          service.update(user, new KoulutusKokonaisuusUpdateDto(id, updatedNimi));
 
           simulateCommit();
 
@@ -52,70 +53,6 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
           assertEquals(1, result.size());
           assertEquals(updatedNimi, result.getFirst().nimi());
         });
-  }
-
-  @Test
-  void shouldAddUpdateAndRemoveKoulutusOnUpdate() {
-    var id =
-        service.add(
-            user,
-            new KoulutusKokonaisuusDto(
-                null,
-                ls(Kieli.FI, "nimi"),
-                Set.of(
-                    new KoulutusDto(
-                        null,
-                        ls(Kieli.FI, "nimi1"),
-                        ls(Kieli.FI, "kuvaus"),
-                        LocalDate.now(),
-                        null,
-                        Set.of(URI.create("urn:osaaminen1"))),
-                    new KoulutusDto(
-                        null,
-                        ls(Kieli.FI, "nimi2"),
-                        ls(Kieli.FI, "kuvaus"),
-                        LocalDate.now(),
-                        null,
-                        Set.of(URI.create("urn:osaaminen1"))))));
-
-    simulateCommit();
-
-    var kokonaisuuus = service.get(user, id);
-    var koulutusDtos = kokonaisuuus.koulutukset().toArray(new KoulutusDto[0]);
-
-    entityManager.clear();
-
-    var updatedKoulutusKokonaisuus =
-        new KoulutusKokonaisuusDto(
-            kokonaisuuus.id(),
-            kokonaisuuus.nimi(),
-            Set.of(
-                koulutusDtos[0],
-                new KoulutusDto(
-                    koulutusDtos[0].id(),
-                    ls(Kieli.FI, "nimi 3"),
-                    ls(Kieli.FI, "kuvaus 3"),
-                    LocalDate.now(),
-                    null,
-                    Set.of(URI.create("urn:osaaminen1"))),
-                new KoulutusDto(
-                    null,
-                    ls(Kieli.FI, "nimi 4"),
-                    ls(Kieli.FI, "kuvaus 4"),
-                    LocalDate.now(),
-                    null,
-                    Set.of(URI.create("urn:osaaminen1")))));
-    service.update(user, updatedKoulutusKokonaisuus);
-    entityManager.flush();
-    updatedKoulutusKokonaisuus = service.get(user, id);
-
-    assertEquals(2, updatedKoulutusKokonaisuus.koulutukset().size());
-    assertTrue(
-        updatedKoulutusKokonaisuus.koulutukset().stream()
-            .anyMatch(t -> t.id().equals(koulutusDtos[0].id())));
-    assertTrue(
-        updatedKoulutusKokonaisuus.koulutukset().stream()
-            .noneMatch(t -> t.id().equals(koulutusDtos[1].id())));
   }
 
   @Test

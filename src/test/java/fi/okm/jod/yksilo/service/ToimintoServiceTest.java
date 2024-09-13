@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoUpdateDto;
 import fi.okm.jod.yksilo.service.profiili.PatevyysService;
 import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
@@ -39,7 +40,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new ToimintoDto(id, updatedNimi, null));
+          service.update(user, new ToimintoUpdateDto(id, updatedNimi));
 
           simulateCommit();
 
@@ -60,68 +61,6 @@ class ToimintoServiceTest extends AbstractServiceTest {
           assertEquals(id, result.id());
           assertEquals(ls(Kieli.FI, "nimi"), result.nimi());
         });
-  }
-
-  @Test
-  void shouldUpdateToiminto() {
-    assertDoesNotThrow(
-        () -> {
-          var id =
-              service.add(
-                  user,
-                  new ToimintoDto(
-                      null,
-                      ls(Kieli.FI, "nimi"),
-                      Set.of(
-                          new PatevyysDto(
-                              null,
-                              ls(Kieli.FI, "nimi"),
-                              LocalDate.now(),
-                              LocalDate.now(),
-                              Set.of()))));
-
-          simulateCommit();
-
-          var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new ToimintoDto(id, updatedNimi, Set.of()));
-
-          simulateCommit();
-
-          var result = service.get(user, id);
-          assertNotNull(result);
-          assertEquals(updatedNimi, result.nimi());
-          assertEquals(0, result.patevyydet().size());
-        });
-  }
-
-  @Test
-  void shouldNotUpdateUnrelatedPatevyys() {
-    var id =
-        service.add(
-            user,
-            new ToimintoDto(
-                null,
-                ls(Kieli.FI, "nimi"),
-                Set.of(
-                    new PatevyysDto(
-                        null, ls(Kieli.FI, "nimi"), LocalDate.now(), LocalDate.now(), Set.of()))));
-    var id2 =
-        service.add(
-            user,
-            new ToimintoDto(
-                null,
-                ls(Kieli.FI, "nimi"),
-                Set.of(
-                    new PatevyysDto(
-                        null, ls(Kieli.FI, "nimi"), LocalDate.now(), LocalDate.now(), Set.of()))));
-
-    simulateCommit();
-
-    var dto2 = service.get(user, id2);
-    var toiminto = new ToimintoDto(id, dto2.nimi(), dto2.patevyydet());
-
-    assertThrows(ServiceException.class, () -> service.update(user, toiminto));
-    simulateCommit();
   }
 
   @Test

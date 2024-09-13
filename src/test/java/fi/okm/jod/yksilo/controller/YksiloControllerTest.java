@@ -17,9 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
-import fi.okm.jod.yksilo.dto.YksiloDto;
+import fi.okm.jod.yksilo.controller.profiili.YksiloController;
+import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
-import fi.okm.jod.yksilo.service.YksiloService;
+import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
