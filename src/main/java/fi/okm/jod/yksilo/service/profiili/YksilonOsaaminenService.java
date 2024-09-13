@@ -13,7 +13,6 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
-import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
 import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
@@ -61,15 +60,6 @@ public class YksilonOsaaminenService {
             YksilonOsaaminen_.KOULUTUS,
             YksilonOsaaminen_.ID);
     return Mapper.mapYksilonOsaaminen(repository.findAllBy(user.getId(), tyyppi, sort));
-  }
-
-  public List<UUID> add(JodUser user, YksilonOsaaminenLisaysDto dto) {
-    var lahde =
-        lahteet.stream()
-            .flatMap(s -> s.findBy(user, dto.lahde()).stream())
-            .findFirst()
-            .orElseThrow(() -> new ServiceValidationException("Unknown OsaamisenLahde"));
-    return add(lahde, dto.osaamiset()).stream().map(YksilonOsaaminen::getId).toList();
   }
 
   public YksilonOsaaminenDto get(JodUser user, UUID id) {

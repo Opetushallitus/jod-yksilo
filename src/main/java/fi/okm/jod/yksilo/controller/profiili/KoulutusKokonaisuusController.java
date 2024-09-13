@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.controller.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,12 +44,14 @@ class KoulutusKokonaisuusController {
   private final KoulutusKokonaisuusService service;
 
   @GetMapping
+  @Operation(summary = "Get all koulutuskokonaisuudet of the user")
   List<KoulutusKokonaisuusDto> getAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Adds a new koulutuskokonaisuus, and optionally associated koulutukset")
   ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody KoulutusKokonaisuusDto dto,
       @AuthenticationPrincipal JodUser user) {
@@ -58,15 +62,17 @@ class KoulutusKokonaisuusController {
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Gets a koulutuskokonaisuus")
   KoulutusKokonaisuusDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id);
   }
 
   @PutMapping("/{id}")
+  @Operation(summary = "Updates a koulutuskokonaisuus (shallow update)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
-      @Valid @RequestBody KoulutusKokonaisuusDto dto,
+      @Valid @RequestBody KoulutusKokonaisuusUpdateDto dto,
       @AuthenticationPrincipal JodUser user) {
 
     if (dto.id() == null || !id.equals(dto.id())) {
@@ -76,6 +82,7 @@ class KoulutusKokonaisuusController {
   }
 
   @DeleteMapping("/{id}")
+  @Operation(summary = "Deletes a koulutuskokonaisuus (including koulutukset)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);

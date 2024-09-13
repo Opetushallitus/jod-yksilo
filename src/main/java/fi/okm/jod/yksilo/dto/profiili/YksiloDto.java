@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.profiili;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;

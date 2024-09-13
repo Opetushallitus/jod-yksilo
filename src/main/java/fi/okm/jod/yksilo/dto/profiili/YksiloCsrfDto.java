@@ -7,12 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.profiili;
 
+import fi.okm.jod.yksilo.dto.CsrfTokenDto;
 import jakarta.validation.constraints.NotNull;
 
-public record YksiloCsrfDto(String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf) {
-  public YksiloCsrfDto(YksiloDto yksilo, String etunimi, String sukunimi, CsrfTokenDto csrf) {
-    this(etunimi, sukunimi, csrf);
-  }
-}
+public record YksiloCsrfDto(String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf) {}

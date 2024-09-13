@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,12 +43,14 @@ class KoulutusController {
   private final KoulutusService service;
 
   @GetMapping
+  @Operation(summary = "Gets all koulutukset of the koulutuskokonaisuus")
   List<KoulutusDto> getAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Adds a new koulutus to the koulutuskokonaisuus")
   ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
       @Validated({Add.class}) @RequestBody KoulutusDto dto,
@@ -64,12 +67,14 @@ class KoulutusController {
   }
 
   @GetMapping("/{koulutusId}")
+  @Operation(summary = "Gets a koulutus of the koulutuskokonaisuus")
   KoulutusDto get(
       @PathVariable UUID id, @PathVariable UUID koulutusId, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id, koulutusId);
   }
 
   @PutMapping("/{koulutusId}")
+  @Operation(summary = "Updates a koulutus of the koulutuskokonaisuus")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
@@ -84,6 +89,7 @@ class KoulutusController {
   }
 
   @DeleteMapping("/{koulutusId}")
+  @Operation(summary = "Deletes a koulutus of the koulutuskokonaisuus")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id, @PathVariable UUID koulutusId, @AuthenticationPrincipal JodUser user) {

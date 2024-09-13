@@ -16,7 +16,6 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -69,29 +68,18 @@ public class KoulutusKokonaisuus {
     // For JPA
   }
 
-  public KoulutusKokonaisuus(Yksilo yksilo, LocalizedString nimi, LocalizedString kuvaus) {
+  public KoulutusKokonaisuus(Yksilo yksilo, LocalizedString nimi) {
     this.yksilo = requireNonNull(yksilo);
     this.kaannos = new EnumMap<>(Kieli.class);
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
-    if (kuvaus != null) {
-      merge(nimi, kaannos, Kaannos::new, Kaannos::setKuvaus);
-    }
   }
 
   public LocalizedString getNimi() {
     return LocalizedString.of(kaannos, Kaannos::getNimi);
   }
 
-  public LocalizedString getKuvaus() {
-    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
-  }
-
   public void setNimi(LocalizedString nimi) {
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
-  }
-
-  public void setKuvaus(LocalizedString kuvaus) {
-    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   @Embeddable
@@ -101,11 +89,8 @@ public class KoulutusKokonaisuus {
     @Basic(optional = false)
     String nimi;
 
-    @Column(columnDefinition = "TEXT")
-    String kuvaus;
-
     public boolean isEmpty() {
-      return nimi == null && kuvaus == null;
+      return nimi == null;
     }
   }
 }

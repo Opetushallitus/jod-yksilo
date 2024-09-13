@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import fi.okm.jod.yksilo.domain.Identifiable;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.Limits;
@@ -25,5 +24,4 @@ import java.util.UUID;
 public record TyopaikkaDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = Limits.TOIMENKUVA_PER_TYOPAIKKA) Set<@Valid @NotNull ToimenkuvaDto> toimenkuvat)
-    implements Identifiable {}
+    @Size(max = Limits.TOIMENKUVA_PER_TYOPAIKKA) Set<@Valid @NotNull ToimenkuvaDto> toimenkuvat) {}

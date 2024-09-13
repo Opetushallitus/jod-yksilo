@@ -13,14 +13,12 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
-import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenLisaysDto;
+import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
-import java.net.URI;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,23 +42,17 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
 
     var toimenkuva = new Toimenkuva(tyopaikka);
     toimenkuva.setNimi(ls("Toimenkuva"));
-    this.toimenkuvaId = entityManager.persist(toimenkuva).getId();
+    toimenkuva = entityManager.persist(toimenkuva);
+    this.toimenkuvaId = toimenkuva.getId();
+
+    entityManager.persist(
+        new YksilonOsaaminen(toimenkuva, entityManager.find(Osaaminen.class, 1L)));
+    simulateCommit();
   }
 
   @Test
-  void shouldAddYksilonOsaaminen() {
-    assertDoesNotThrow(
-        () -> {
-          service.add(
-              user,
-              new YksilonOsaaminenLisaysDto(
-                  Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-                  new OsaamisenLahdeDto(OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId)));
-
-          entityManager.flush();
-          entityManager.clear();
-        });
+  void shouldFindYksilonOsaaminen() {
     var result = service.findAll(user, OsaamisenLahdeTyyppi.TOIMENKUVA, this.toimenkuvaId);
-    assertEquals(2, result.size());
+    assertEquals(1, result.size());
   }
 }

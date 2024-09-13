@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import fi.okm.jod.yksilo.domain.Identifiable;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.Limits;
@@ -25,5 +24,4 @@ import java.util.UUID;
 public record KoulutusKokonaisuusDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = Limits.KOULUTUS_PER_KOKONAISUUS) Set<@Valid @NotNull KoulutusDto> koulutukset)
-    implements Identifiable {}
+    @Size(max = Limits.KOULUTUS_PER_KOKONAISUUS) Set<@Valid @NotNull KoulutusDto> koulutukset) {}

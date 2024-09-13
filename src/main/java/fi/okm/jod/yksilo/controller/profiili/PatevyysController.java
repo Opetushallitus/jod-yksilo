@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,12 +43,14 @@ class PatevyysController {
   private final PatevyysService service;
 
   @GetMapping
+  @Operation(summary = "Gets all patevyydet of the vapaa-ajan toiminto")
   List<PatevyysDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Adds a new patevyys to the vapaa-ajan toiminto")
   ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
       @Validated({Add.class}) @RequestBody PatevyysDto dto,
@@ -64,12 +67,14 @@ class PatevyysController {
   }
 
   @GetMapping("/{patevyysId}")
+  @Operation(summary = "Gets a patevyys of the vapaa-ajan toiminto")
   PatevyysDto get(
       @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id, patevyysId);
   }
 
   @PutMapping("/{patevyysId}")
+  @Operation(summary = "Updates a patevyys of the vapaa-ajan toiminto (including osaamiset)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
@@ -84,6 +89,7 @@ class PatevyysController {
   }
 
   @DeleteMapping("/{patevyysId}")
+  @Operation(summary = "Deletes a patevyys of the vapaa-ajan toiminto (including all osaamiset)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {

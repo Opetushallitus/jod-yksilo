@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.dto.profiili.TyopaikkaUpdateDto;
 import fi.okm.jod.yksilo.repository.ToimenkuvaRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
@@ -44,7 +45,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new TyopaikkaDto(id, updatedNimi, null));
+          service.update(user, new TyopaikkaUpdateDto(id, updatedNimi));
 
           simulateCommit();
 
@@ -52,70 +53,6 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
           assertEquals(1, result.size());
           assertEquals(updatedNimi, result.getFirst().nimi());
         });
-  }
-
-  @Test
-  void shouldAddUpdateAndRemoveToimenkuvaOnUpdate() {
-    var id =
-        service.add(
-            user,
-            new TyopaikkaDto(
-                null,
-                ls(Kieli.FI, "nimi"),
-                Set.of(
-                    new ToimenkuvaDto(
-                        null,
-                        ls(Kieli.FI, "nimi1"),
-                        ls(Kieli.FI, "kuvaus"),
-                        LocalDate.now(),
-                        null,
-                        Set.of(URI.create("urn:osaaminen1"))),
-                    new ToimenkuvaDto(
-                        null,
-                        ls(Kieli.FI, "nimi2"),
-                        ls(Kieli.FI, "kuvaus"),
-                        LocalDate.now(),
-                        null,
-                        Set.of(URI.create("urn:osaaminen1"))))));
-
-    simulateCommit();
-
-    var tyopaikka = service.get(user, id);
-    var toimenkuvaDtos = tyopaikka.toimenkuvat().toArray(new ToimenkuvaDto[0]);
-
-    entityManager.clear();
-
-    var updatedTyopaikka =
-        new TyopaikkaDto(
-            tyopaikka.id(),
-            tyopaikka.nimi(),
-            Set.of(
-                toimenkuvaDtos[0],
-                new ToimenkuvaDto(
-                    toimenkuvaDtos[0].id(),
-                    ls(Kieli.FI, "nimi 3"),
-                    ls(Kieli.FI, "kuvaus 3"),
-                    LocalDate.now(),
-                    null,
-                    Set.of(URI.create("urn:osaaminen1"))),
-                new ToimenkuvaDto(
-                    null,
-                    ls(Kieli.FI, "nimi 4"),
-                    ls(Kieli.FI, "kuvaus 4"),
-                    LocalDate.now(),
-                    null,
-                    Set.of(URI.create("urn:osaaminen1")))));
-    service.update(user, updatedTyopaikka);
-    entityManager.flush();
-    updatedTyopaikka = service.get(user, id);
-
-    assertEquals(2, updatedTyopaikka.toimenkuvat().size());
-    assertTrue(
-        updatedTyopaikka.toimenkuvat().stream()
-            .anyMatch(t -> t.id().equals(toimenkuvaDtos[0].id())));
-    assertTrue(
-        updatedTyopaikka.toimenkuvat().stream()
-            .noneMatch(t -> t.id().equals(toimenkuvaDtos[1].id())));
   }
 
   @Test

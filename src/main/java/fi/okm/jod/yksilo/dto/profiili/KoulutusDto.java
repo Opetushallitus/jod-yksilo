@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import fi.okm.jod.yksilo.domain.Identifiable;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.PrintableString;
@@ -29,4 +28,4 @@ public record KoulutusDto(
     @NotNull LocalDate alkuPvm,
     LocalDate loppuPvm,
     Set<@NotNull URI> osaamiset)
-    implements ValidInterval, Identifiable {}
+    implements ValidInterval {}
