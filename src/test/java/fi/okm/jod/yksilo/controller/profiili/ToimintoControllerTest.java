@@ -61,7 +61,8 @@ class ToimintoControllerTest {
             Set.of(
                 new PatevyysDto(
                     null,
-                    ls("Toimenkuva"),
+                    ls("Patevyys"),
+                    ls("Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),
                     null)));
@@ -85,7 +86,8 @@ class ToimintoControllerTest {
             Set.of(
                 new PatevyysDto(
                     null,
-                    ls("Toimenkuva"),
+                    ls("Patevyys"),
+                    ls("Kuvaus"),
                     LocalDate.of(2024, 5, 1),
                     LocalDate.of(2023, 5, 1),
                     null)));
@@ -118,7 +120,8 @@ class ToimintoControllerTest {
             Set.of(
                 new PatevyysDto(
                     null,
-                    ls("Updated Toimenkuva"),
+                    ls("Updated Patevyys"),
+                    ls("Updated Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),
                     null)));
@@ -142,7 +145,8 @@ class ToimintoControllerTest {
             Set.of(
                 new PatevyysDto(
                     null,
-                    ls("Updated Toimenkuva"),
+                    ls("Updated Patevyys"),
+                    ls("Updated Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),
                     null)));
@@ -158,14 +162,11 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldDeleteToiminnot() throws Exception {
-    Set<UUID> ids = Set.of(UUID.randomUUID(), UUID.randomUUID());
+  void shouldDeleteToiminto() throws Exception {
+    UUID id = UUID.randomUUID();
 
     mockMvc
-        .perform(
-            delete("/api/profiili/vapaa-ajan-toiminnot")
-                .with(csrf())
-                .param("ids", ids.stream().map(UUID::toString).toArray(String[]::new)))
+        .perform(delete("/api/profiili/vapaa-ajan-toiminnot/{id}", id).with(csrf()))
         .andExpect(status().isNoContent());
   }
 }

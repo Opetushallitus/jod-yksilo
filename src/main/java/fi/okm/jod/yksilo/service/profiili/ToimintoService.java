@@ -19,7 +19,6 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,30 +49,31 @@ public class ToimintoService {
     if (toiminnot.countByYksilo(yksilo) >= Limits.TOIMINTO) {
       throw new ServiceValidationException("Too many Toiminto");
     }
-    var entity = toiminnot.save(new Toiminto(yksilot.getReferenceById(user.getId()), dto.nimi()));
+    var toiminto = toiminnot.save(new Toiminto(yksilot.getReferenceById(user.getId()), dto.nimi()));
     if (dto.patevyydet() != null) {
       for (var patevyys : dto.patevyydet()) {
-        entity.getPatevyydet().add(patevyysService.add(entity, patevyys));
+        toiminto.getPatevyydet().add(patevyysService.add(toiminto, patevyys));
       }
     }
-    return entity.getId();
+    return toiminto.getId();
   }
 
   public void update(JodUser user, ToimintoUpdateDto dto) {
-    var entity =
+    var toiminto =
         toiminnot
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
-    entity.setNimi(dto.nimi());
+    toiminto.setNimi(dto.nimi());
   }
 
-  public void delete(JodUser user, Set<UUID> ids) {
-    this.toiminnot.findByYksiloIdAndIdIn(user.getId(), ids).stream()
-        .map(Toiminto::getPatevyydet)
-        .flatMap(List::stream)
-        .forEach(patevyysService::delete);
-    if (this.toiminnot.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
-      throw new NotFoundException("Not found");
+  public void delete(JodUser user, UUID id) {
+    var toiminto =
+        toiminnot
+            .findByYksiloIdAndId(user.getId(), id)
+            .orElseThrow(() -> new NotFoundException("Toiminto not found"));
+    for (var patevyys : toiminto.getPatevyydet()) {
+      patevyysService.delete(patevyys);
     }
+    toiminnot.delete(toiminto);
   }
 }

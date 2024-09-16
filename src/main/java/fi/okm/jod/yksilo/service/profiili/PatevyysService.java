@@ -73,6 +73,7 @@ public class PatevyysService {
   Patevyys add(Toiminto toiminto, PatevyysDto dto) {
     var entity = new Patevyys(toiminto);
     entity.setNimi(dto.nimi());
+    entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
     var patevyys = patevyydet.save(entity);
@@ -84,6 +85,7 @@ public class PatevyysService {
 
   void update(Patevyys entity, PatevyysDto dto) {
     entity.setNimi(dto.nimi());
+    entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
     patevyydet.save(entity);

@@ -77,8 +77,16 @@ public non-sealed class Patevyys implements OsaamisenLahde {
     return LocalizedString.of(kaannos, Kaannos::getNimi);
   }
 
+  public LocalizedString getKuvaus() {
+    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
+  }
+
   public void setNimi(LocalizedString nimi) {
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
+  }
+
+  public void setKuvaus(LocalizedString kuvaus) {
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   public Yksilo getYksilo() {
@@ -90,6 +98,8 @@ public non-sealed class Patevyys implements OsaamisenLahde {
   static class Kaannos implements Translation {
     @Basic(optional = false)
     String nimi;
+
+    String kuvaus;
 
     public boolean isEmpty() {
       return nimi == null;
