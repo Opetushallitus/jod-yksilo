@@ -26,13 +26,11 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.lang.NonNull;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 
 @Configuration(proxyBeanMethods = false)
-@EnableRedisHttpSession
 public class SessionConfig implements BeanClassLoaderAware {
 
   @Value("${spring.data.redis.cache-name:}")

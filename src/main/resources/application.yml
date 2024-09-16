@@ -28,6 +28,8 @@ spring:
     enabled: false
   session:
     timeout: 30m
+    redis:
+      repository-type: default
   sql:
     init:
       mode: always # FIXME: Just for early development without migrations
