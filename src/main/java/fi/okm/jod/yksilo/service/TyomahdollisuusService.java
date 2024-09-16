@@ -18,12 +18,16 @@ import fi.okm.jod.yksilo.entity.Jakauma;
 import fi.okm.jod.yksilo.entity.Jakauma.Arvo;
 import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.Tyomahdollisuus_;
+import fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,28 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
-
-  public Page<TyomahdollisuusDto> findAll(Pageable pageable) {
-    return tyomahdollisuusRepository
-        .findAll(
-            PageRequest.of(
-                pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tyomahdollisuus_.ID)))
-        .map(TyomahdollisuusService::map);
-  }
-
-  /** Temporary solution until ML model returns ID */
-  public List<TyomahdollisuusDto> findByName(Iterable<String> name) {
-    return tyomahdollisuusRepository.findByOtsikkoIn(name, Kieli.FI).stream()
-        .map(TyomahdollisuusService::map)
-        .collect(Collectors.toList());
-  }
-
-  public TyomahdollisuusFullDto findById(UUID id) {
-    return mapFull(
-        tyomahdollisuusRepository
-            .findById(id)
-            .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus")));
-  }
 
   static TyomahdollisuusDto map(Tyomahdollisuus entity) {
     return entity == null
@@ -86,5 +68,46 @@ public class TyomahdollisuusService {
 
   private static List<ArvoDto> mapArvot(List<Arvo> arvot) {
     return arvot.stream().map(a -> new ArvoDto(a.arvo(), a.osuus())).toList();
+  }
+
+  @Cacheable("tyomahdollisuusMetadata")
+  public Map<UUID, TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata() {
+    // Remove Kieli when UUID mapping possible
+    return tyomahdollisuusRepository.fetchAllTyomahdollisuusMetadata(Kieli.FI).stream()
+        .collect(
+            Collectors.toMap(
+                TyomahdollisuusMetadata::id,
+                Function.identity(),
+                (existing, replacement) -> existing // Handle duplicates
+                ));
+  }
+
+  public Page<TyomahdollisuusDto> findAll(Pageable pageable) {
+    return tyomahdollisuusRepository
+        .findAll(
+            PageRequest.of(
+                pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tyomahdollisuus_.ID)))
+        .map(TyomahdollisuusService::map);
+  }
+
+  public Page<TyomahdollisuusDto> findAll(Pageable pageable, List<UUID> ids) {
+    return tyomahdollisuusRepository
+        .findAll(
+            PageRequest.of(
+                pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tyomahdollisuus_.ID)))
+        .map(TyomahdollisuusService::map);
+  }
+
+  public TyomahdollisuusFullDto findById(UUID id) {
+    return mapFull(
+        tyomahdollisuusRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus")));
+  }
+
+  public List<TyomahdollisuusDto> findByIds(Set<UUID> uuidSet) {
+    return tyomahdollisuusRepository.findAllById(uuidSet).stream()
+        .map(TyomahdollisuusService::map)
+        .toList();
   }
 }

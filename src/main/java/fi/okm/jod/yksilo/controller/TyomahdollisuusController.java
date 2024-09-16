@@ -15,9 +15,11 @@ import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.CacheControl;
@@ -31,22 +33,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/tyomahdollisuudet")
 @RequiredArgsConstructor
-@Tag(name = "tyomahdollisuudet", description = "Työmahdollisuuksien listaus")
+@Tag(name = "tyomahdollisuudet", description = "Työmahdollisuus listing")
 public class TyomahdollisuusController {
   private final TyomahdollisuusService tyomahdollisuusService;
 
   @GetMapping
   @Operation(
-      summary = "Hae työmahdollisuudet",
-      description = "Palauttaa työpaikkailmoitukset JSON-muodossa.")
+      summary = "Get all työmahdollisuudet paged of by page and size or set of ids",
+      description = "Returns all työmahdollisuudet basic information in JSON-format.")
   public SivuDto<TyomahdollisuusDto> findAll(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
-      @RequestParam(required = false, defaultValue = "10") Integer koko) {
-    Pageable pageable = PageRequest.of(sivu, koko);
-    return new SivuDto<>(tyomahdollisuusService.findAll(pageable));
+      @RequestParam(required = false, defaultValue = "10") Integer koko,
+      @RequestParam(required = false) Set<UUID> id) {
+    if (id == null) {
+      Pageable pageable = PageRequest.of(sivu, koko);
+      return new SivuDto<>(tyomahdollisuusService.findAll(pageable));
+    }
+
+    // Return paged also when requested by IDs
+    return new SivuDto<>(new PageImpl<TyomahdollisuusDto>(tyomahdollisuusService.findByIds(id)));
   }
 
   @GetMapping("/{id}")
+  @Operation(
+      summary = "Get full information content of single työmahdollisuus",
+      description = "Returns one työmahdollisuus full content by id")
   public ResponseEntity<TyomahdollisuusFullDto> findById(@PathVariable UUID id) {
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePrivate())
