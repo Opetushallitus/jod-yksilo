@@ -16,8 +16,14 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.run/
+!**/src/**/.run/
 
 ### VS Code ###
 .vscode/
 
 /snyk
+/tmp
+
+application*.yml
+!**/src/**/application*.yml

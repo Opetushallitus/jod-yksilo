@@ -1,12 +1,15 @@
 #!/bin/bash
 set -e -o pipefail
 
-mkdir -p ./tmp/data
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
+  mkdir -p ./tmp/data
+  mkdir -p ./.run
+  aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
+  aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
   aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/" ./tmp/data/ --exclude "*" --include "*.sql"
   aws s3 sync "s3://${DEV_BUCKET}/tyomahdollisuudet/" ./tmp/data/ --exclude "*" --include "*.sql"
 else
-  echo "Skipping data download, missing AWS credentials or DEV_BUCKET"
+  echo "WARN: Skipping data and configuration download, missing AWS credentials or DEV_BUCKET" >&2
 fi
 
 STARTED=false
