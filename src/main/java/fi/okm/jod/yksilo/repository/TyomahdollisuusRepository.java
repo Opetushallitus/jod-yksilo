@@ -24,6 +24,6 @@ public interface TyomahdollisuusRepository extends JpaRepository<Tyomahdollisuus
   List<Tyomahdollisuus> findByOtsikkoIn(Iterable<String> name, Kieli kieli);
 
   @Query(
-      "SELECT new fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata(t.id, t.mahdollisuusId, k.otsikko) FROM Tyomahdollisuus t JOIN t.kaannos k where KEY(k) = :kieli")
-  List<TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata(Kieli kieli);
+      "SELECT new fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata(t.id, t.mahdollisuusId) FROM Tyomahdollisuus t")
+  List<TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata();
 }

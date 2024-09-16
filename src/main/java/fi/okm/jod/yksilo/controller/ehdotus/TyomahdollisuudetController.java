@@ -69,7 +69,6 @@ class TyomahdollisuudetController {
     var tyomahdollisuusMetaData = tyomahdollisuusService.fetchAllTyomahdollisuusMetadata();
 
     log.info("Creating a suggestion for tyomahdollisuudet");
-    // temporarily using names instead of IDs
 
     var osaamiset =
         ehdotus.osaamiset() == null
@@ -101,16 +100,16 @@ class TyomahdollisuudetController {
 
     var result =
         inferenceService.infer(endpoint, request, Response.class).stream()
-            .collect(Collectors.toMap(Suggestion::name, Suggestion::score, Double::max));
+            .collect(Collectors.toMap(Suggestion::id, Suggestion::score, Double::max));
 
-    // TODO: Change to use ID list when ML solution starts returning IDs
     return tyomahdollisuusMetaData.keySet().stream()
         .map(
             key ->
                 new EhdotusDto(
                     key,
                     new EhdotusMetadata(
-                        OptionalDouble.of(result.get(tyomahdollisuusMetaData.get(key).otsikko())),
+                        OptionalDouble.of(
+                            result.get(tyomahdollisuusMetaData.get(key).externalId())),
                         Optional.empty(),
                         OptionalInt.empty())))
         .sorted(Comparator.comparing(e -> e.ehdotusMetadata.pisteet.orElse(0d)))
@@ -186,6 +185,6 @@ class TyomahdollisuudetController {
 
   @SuppressWarnings("serial")
   static class Response extends ArrayList<Suggestion> {
-    record Suggestion(String name, double score) {}
+    record Suggestion(UUID id, String name, double score) {}
   }
 }

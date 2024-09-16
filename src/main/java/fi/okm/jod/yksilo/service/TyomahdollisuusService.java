@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.service;
 
-import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.ArvoDto;
 import fi.okm.jod.yksilo.dto.JakaumaDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
@@ -72,8 +71,7 @@ public class TyomahdollisuusService {
 
   @Cacheable("tyomahdollisuusMetadata")
   public Map<UUID, TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata() {
-    // Remove Kieli when UUID mapping possible
-    return tyomahdollisuusRepository.fetchAllTyomahdollisuusMetadata(Kieli.FI).stream()
+    return tyomahdollisuusRepository.fetchAllTyomahdollisuusMetadata().stream()
         .collect(
             Collectors.toMap(
                 TyomahdollisuusMetadata::id,

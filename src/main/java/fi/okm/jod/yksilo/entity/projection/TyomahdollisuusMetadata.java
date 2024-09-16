@@ -11,5 +11,4 @@ package fi.okm.jod.yksilo.entity.projection;
 
 import java.util.UUID;
 
-// TODO: Change externalId to UUID when clustering id is changed
-public record TyomahdollisuusMetadata(UUID id, String externalId, String otsikko) {}
+public record TyomahdollisuusMetadata(UUID id, UUID externalId) {}

@@ -37,9 +37,8 @@ import org.hibernate.annotations.Immutable;
 public class Tyomahdollisuus {
   @Id private UUID id;
 
-  // TODO: change to UUID when ehdotus engine provides id in UUID format.
   @Column(name = "json_id")
-  private String mahdollisuusId;
+  private UUID mahdollisuusId;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
