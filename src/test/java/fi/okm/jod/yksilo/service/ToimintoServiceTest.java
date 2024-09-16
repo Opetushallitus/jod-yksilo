@@ -73,10 +73,15 @@ class ToimintoServiceTest extends AbstractServiceTest {
                 ls(Kieli.FI, "nimi"),
                 Set.of(
                     new PatevyysDto(
-                        null, ls(Kieli.FI, "nimi"), LocalDate.now(), LocalDate.now(), Set.of()))));
+                        null,
+                        ls(Kieli.FI, "nimi"),
+                        ls("Kuvaus"),
+                        LocalDate.now(),
+                        LocalDate.now(),
+                        Set.of()))));
     simulateCommit();
 
-    service.delete(user, Set.of(id));
+    service.delete(user, id);
     simulateCommit();
 
     assertThrows(NotFoundException.class, () -> service.get(user, id));

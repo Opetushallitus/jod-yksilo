@@ -18,10 +18,7 @@ import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,7 +32,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -84,12 +80,10 @@ public class ToimintoController {
     service.update(user, dto);
   }
 
-  @DeleteMapping
+  @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @Operation(summary = "Delete the vapaa-ajan toiminto (including all patevyydet)")
-  void delete(
-      @RequestParam @NotEmpty @Size(max = 1000) Set<UUID> ids,
-      @AuthenticationPrincipal JodUser user) {
-    service.delete(user, ids);
+  void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+    service.delete(user, id);
   }
 }

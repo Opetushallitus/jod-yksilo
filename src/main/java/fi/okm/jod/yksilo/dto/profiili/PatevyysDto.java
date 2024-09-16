@@ -24,6 +24,7 @@ import java.util.UUID;
 public record PatevyysDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
+    @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     @NotNull LocalDate alkuPvm,
     LocalDate loppuPvm,
     Set<@NotNull URI> osaamiset)

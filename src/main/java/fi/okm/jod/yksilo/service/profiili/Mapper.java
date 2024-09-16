@@ -94,6 +94,7 @@ public final class Mapper {
         : new PatevyysDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getKuvaus(),
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()
