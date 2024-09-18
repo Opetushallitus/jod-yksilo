@@ -9,12 +9,12 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
-import fi.okm.jod.yksilo.dto.NormalizedString;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.service.ehdotus.OsaamisetEhdotusService;
 import fi.okm.jod.yksilo.service.ehdotus.OsaamisetEhdotusService.Ehdotus;
+import fi.okm.jod.yksilo.validation.PrintableString;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -38,9 +38,11 @@ class OsaamisetEhdotusController {
 
   @PostMapping
   @Timed
-  public ResponseEntity<List<Ehdotus>> createEhdotus(@RequestBody @Valid Taidot taidot) {
-    return ResponseEntity.ok(service.createEhdotus(taidot.kuvaus().value()));
+  public ResponseEntity<List<Ehdotus>> createEhdotus(
+      @RequestBody @NotNull @Size(min = 2, max = 10_000) @PrintableString LocalizedString kuvaus) {
+    if (kuvaus.asMap().keySet().size() > 1) {
+      throw new IllegalArgumentException("Ambiguous request, only one language version allowed");
+    }
+    return ResponseEntity.ok(service.createEhdotus(kuvaus));
   }
-
-  public record Taidot(@NotNull @Size(min = 3, max = 10_000) NormalizedString kuvaus) {}
 }

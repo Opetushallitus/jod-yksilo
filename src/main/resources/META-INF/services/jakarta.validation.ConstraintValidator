@@ -1,3 +1,2 @@
-fi.okm.jod.yksilo.validation.NormalizedStringSizeValidator
 fi.okm.jod.yksilo.validation.LocalizedStringSizeValidator
 fi.okm.jod.yksilo.validation.NotEmptyLocalizedStringValidator
