@@ -34,7 +34,7 @@ public class Osaaminen {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 100)
+  @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
   @Embeddable

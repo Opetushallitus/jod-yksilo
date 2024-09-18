@@ -9,13 +9,14 @@
 
 package fi.okm.jod.yksilo.service.ehdotus;
 
-import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.repository.OsaaminenRepository;
+import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ServiceException;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.ClientHttpRequestFactories;
@@ -36,10 +37,10 @@ public class OsaamisetEhdotusService {
   public static final int MAX_NUMBER_OF_SKILLS = 37;
   public static final int MAX_NUMBER_OF_OCCUPATIONS = 1;
   private final RestClient restClient;
-  private final OsaaminenRepository osaamiset;
+  private final OsaaminenService osaamiset;
 
   public OsaamisetEhdotusService(
-      OsaaminenRepository osaamiset,
+      OsaaminenService osaamiset,
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
       @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
@@ -71,18 +72,24 @@ public class OsaamisetEhdotusService {
     // can be a security risk. RestClient also does not bound the response size in any way.
   }
 
-  public List<Ehdotus> createEhdotus(String kuvaus) {
+  public List<Ehdotus> createEhdotus(LocalizedString kuvaus) {
 
-    record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations) {}
+    record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations, Kieli language) {}
     record Skill(URI uri, String label, URI skillType, double score) {}
     record Result(List<Skill> skills) {}
 
     log.info("Creating a suggestion for osaamiset");
     try {
+      var entry = kuvaus.asMap().entrySet().iterator().next();
       var result =
           restClient
               .post()
-              .body(new Input(kuvaus, MAX_NUMBER_OF_SKILLS, MAX_NUMBER_OF_OCCUPATIONS))
+              .body(
+                  new Input(
+                      entry.getValue(),
+                      MAX_NUMBER_OF_SKILLS,
+                      MAX_NUMBER_OF_OCCUPATIONS,
+                      entry.getKey()))
               .retrieve()
               .body(Result.class);
 
@@ -90,16 +97,18 @@ public class OsaamisetEhdotusService {
         return List.of();
       }
 
-      var map =
-          osaamiset
-              .findByUriIn(result.skills().stream().map(s -> s.uri().toString()).toList())
-              .stream()
-              .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
-              .collect(Collectors.toMap(OsaaminenDto::uri, it -> it));
+      var escoIdentifiers = osaamiset.getAll().keySet();
 
       return result.skills().stream()
-          .filter(s -> map.containsKey(s.uri()))
-          .map(s -> new Ehdotus(s.uri(), s.label(), s.skillType(), s.score()))
+          .filter(
+              s -> {
+                var exists = escoIdentifiers.contains(s.uri());
+                if (!exists && log.isDebugEnabled()) {
+                  log.debug("Unknown ESCO skill: {}", s.uri());
+                }
+                return exists;
+              })
+          .map(s -> new Ehdotus(s.uri, s.score()))
           .toList();
 
     } catch (RestClientException e) {
@@ -108,5 +117,5 @@ public class OsaamisetEhdotusService {
     }
   }
 
-  public record Ehdotus(URI id, String nimi, URI tyyppi, double osuvuus) {}
+  public record Ehdotus(@NotNull URI uri, @NotNull double osuvuus) {}
 }
