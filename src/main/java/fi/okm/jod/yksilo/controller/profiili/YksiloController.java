@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/profiili/yksilo", "/api/yksilo"})
-@Tag(name = "yksilo", description = "Yksilö profile operations; Note: /api/yksilo is deprecated")
+@RequestMapping("/api/profiili/yksilo")
+@Tag(name = "profiili/yksilo")
 @RequiredArgsConstructor
 public class YksiloController {
   private final YksiloService yksiloService;

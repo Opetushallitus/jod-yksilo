@@ -7,22 +7,17 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller;
+package fi.okm.jod.yksilo.controller.profiili;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
-import fi.okm.jod.yksilo.controller.profiili.YksiloController;
-import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -51,16 +46,11 @@ class YksiloControllerTest {
     }
   }
 
-  @BeforeEach
-  void setUp() {
-    given(yksiloService.findYksilo(any())).willReturn(new YksiloDto(UUID.randomUUID()));
-  }
-
   @Test
   @WithUserDetails("test")
   void shouldReturnUserInformation() throws Exception {
     mockMvc
-        .perform(get("/api/yksilo").with(csrf()))
+        .perform(get("/api/profiili/yksilo").with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.etunimi").isNotEmpty())
         .andExpect(jsonPath("$.csrf.token").isNotEmpty());
@@ -69,7 +59,7 @@ class YksiloControllerTest {
   @Test
   void shouldNotReturnCsrfTokenIfUnauthenticated() throws Exception {
     mockMvc
-        .perform(get("/api/yksilo").with(csrf()))
+        .perform(get("/api/profiili/yksilo").with(csrf()))
         .andExpect(jsonPath("$.csrf.token").doesNotExist());
   }
 }
