@@ -43,6 +43,8 @@ spring:
       spec: initialCapacity=100,maximumSize=500,expireAfterWrite=600s
 
 server:
+  compression:
+    enabled: true
   error:
     whitelabel:
       enabled: false

@@ -15,7 +15,6 @@ import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -25,15 +24,12 @@ import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitializat
 import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 @DependsOnDatabaseInitialization
 public class OsaaminenService {
   private static final Object SINGLETON_KEY = new Object();
-  private final OsaaminenRepository osaamiset;
   private final LoadingCache<Object, Map<URI, OsaaminenDto>> cache;
 
   public OsaaminenService(OsaaminenRepository osaamiset) {
-    this.osaamiset = osaamiset;
     this.cache =
         Caffeine.newBuilder()
             .initialCapacity(1)
