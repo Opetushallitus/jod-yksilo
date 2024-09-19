@@ -51,7 +51,7 @@ public class TyomahdollisuusController {
     }
 
     // Return paged also when requested by IDs
-    return new SivuDto<>(new PageImpl<TyomahdollisuusDto>(tyomahdollisuusService.findByIds(id)));
+    return new SivuDto<>(new PageImpl<>(tyomahdollisuusService.findByIds(id)));
   }
 
   @GetMapping("/{id}")

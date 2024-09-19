@@ -88,14 +88,6 @@ public class TyomahdollisuusService {
         .map(TyomahdollisuusService::map);
   }
 
-  public Page<TyomahdollisuusDto> findAll(Pageable pageable, List<UUID> ids) {
-    return tyomahdollisuusRepository
-        .findAll(
-            PageRequest.of(
-                pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tyomahdollisuus_.ID)))
-        .map(TyomahdollisuusService::map);
-  }
-
   public TyomahdollisuusFullDto findById(UUID id) {
     return mapFull(
         tyomahdollisuusRepository

@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import jakarta.transaction.Transactional;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
@@ -36,7 +36,7 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
   Page<Osaaminen> findByUriIn(Collection<String> uri, Pageable page);
 
-  @Transactional
+  @Transactional(readOnly = true)
   default SequencedMap<URI, OsaaminenDto> loadAll() {
     final var map =
         findAll(Sort.by("id"))
