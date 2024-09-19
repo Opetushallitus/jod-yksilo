@@ -1,2 +1,4 @@
 #!/bin/bash
-./gradlew --console=plain --offline --quiet build
+set -e
+git log -1 --pretty=%B | grep -qP '^OPHJOD-\d+' || { echo "Commit message must start with OPHJOD-<issue number>" && exit 1; }
+./gradlew --console=plain --offline --quiet check
