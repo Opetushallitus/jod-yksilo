@@ -34,8 +34,6 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
   List<Osaaminen> findByUriIn(Collection<String> uri);
 
-  Page<Osaaminen> findByUriIn(Collection<String> uri, Pageable page);
-
   @Transactional(readOnly = true)
   default SequencedMap<URI, OsaaminenDto> loadAll() {
     final var map =
@@ -43,7 +41,10 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
             .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
             .collect(
                 Collectors.toMap(
-                    OsaaminenDto::uri, Function.identity(), (a, b) -> a, LinkedHashMap::new));
+                    OsaaminenDto::uri,
+                    Function.identity(),
+                    (existing, replacement) -> existing,
+                    LinkedHashMap::new));
     return Collections.unmodifiableSequencedMap(map);
   }
 }
