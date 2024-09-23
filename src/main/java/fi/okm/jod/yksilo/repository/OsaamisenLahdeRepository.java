@@ -10,8 +10,8 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
-import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import java.util.Optional;
 import org.springframework.data.repository.NoRepositoryBean;
 

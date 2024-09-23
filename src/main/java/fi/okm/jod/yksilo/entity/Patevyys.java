@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import jakarta.persistence.Basic;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -43,7 +44,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "toiminto_id")})
-public non-sealed class Patevyys implements OsaamisenLahde {
+public class Patevyys implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;

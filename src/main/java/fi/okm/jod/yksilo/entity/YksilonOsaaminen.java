@@ -11,6 +11,8 @@ package fi.okm.jod.yksilo.entity;
 
 import static java.util.Objects.requireNonNull;
 
+import fi.okm.jod.yksilo.domain.MuuOsaaminen;
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -33,7 +36,7 @@ import lombok.Getter;
       @Index(columnList = "yksilo_id,lahde"),
       @Index(columnList = "koulutus_id"),
       @Index(columnList = "toimenkuva_id"),
-      @Index(columnList = "patevyys_id"),
+      @Index(columnList = "patevyys_id")
     })
 public class YksilonOsaaminen {
   @Getter @Id @GeneratedValue private UUID id;
@@ -84,15 +87,19 @@ public class YksilonOsaaminen {
         this.lahde = OsaamisenLahdeTyyppi.PATEVYYS;
         this.patevyys = p;
       }
+      case MuuOsaaminen ignored -> this.lahde = OsaamisenLahdeTyyppi.MUU_OSAAMINEN;
+      default -> throw new IllegalStateException("Unexpected value: " + lahde);
     }
   }
 
-  public OsaamisenLahde getLahde() {
-    return switch (this.lahde) {
-      case KOULUTUS -> this.koulutus;
-      case TOIMENKUVA -> this.toimenkuva;
-      case PATEVYYS -> this.patevyys;
-    };
+  public Optional<OsaamisenLahde> getLahde() {
+    return Optional.ofNullable(
+        switch (this.lahde) {
+          case KOULUTUS -> this.koulutus;
+          case TOIMENKUVA -> this.toimenkuva;
+          case PATEVYYS -> this.patevyys;
+          case MUU_OSAAMINEN -> null;
+        });
   }
 
   public OsaamisenLahdeTyyppi getLahdeTyyppi() {

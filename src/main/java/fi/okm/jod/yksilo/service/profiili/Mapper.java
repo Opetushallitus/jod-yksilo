@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import static java.util.Objects.requireNonNull;
 
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
@@ -124,7 +125,8 @@ public final class Mapper {
   }
 
   private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {
-    return new OsaamisenLahdeDto(entity.getLahdeTyyppi(), entity.getLahde().getId());
+    return new OsaamisenLahdeDto(
+        entity.getLahdeTyyppi(), entity.getLahde().map(OsaamisenLahde::getId));
   }
 
   static <T, U> Function<T, U> cachingMapper(Function<T, U> mapper) {

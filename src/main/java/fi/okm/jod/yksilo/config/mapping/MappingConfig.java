@@ -26,7 +26,7 @@ public class MappingConfig {
             .featuresToEnable(
                 SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
                 MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .serializationInclusion(JsonInclude.Include.NON_ABSENT)
             .mixIn(LocalizedString.class, LocalizedStringMixin.class);
   }
 }

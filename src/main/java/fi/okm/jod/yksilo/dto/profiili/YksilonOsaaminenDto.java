@@ -10,8 +10,12 @@
 package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
+import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import java.util.UUID;
 
 public record YksilonOsaaminenDto(
-    @NotNull UUID id, @NotNull OsaaminenDto osaaminen, @NotNull OsaamisenLahdeDto lahde) {}
+    @Null(groups = Add.class) UUID id,
+    @NotNull OsaaminenDto osaaminen,
+    @NotNull OsaamisenLahdeDto lahde) {}
