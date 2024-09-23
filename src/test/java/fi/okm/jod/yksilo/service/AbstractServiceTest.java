@@ -31,7 +31,9 @@ public abstract class AbstractServiceTest {
 
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgreSQLContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+          .withEnv("LANG", "en_US.UTF-8")
+          .withEnv("LC_ALL", "en_US.UTF-8");
 
   @Autowired protected TestEntityManager entityManager;
   protected TestJodUser user;

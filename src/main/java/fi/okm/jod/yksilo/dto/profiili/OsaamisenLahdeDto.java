@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import jakarta.validation.constraints.NotNull;
+import java.util.Optional;
 import java.util.UUID;
 
-public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {}
+public record OsaamisenLahdeDto(@NotNull OsaamisenLahdeTyyppi tyyppi, Optional<UUID> id) {}

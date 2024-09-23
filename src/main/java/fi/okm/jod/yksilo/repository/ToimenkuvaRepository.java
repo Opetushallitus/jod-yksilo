@@ -37,7 +37,7 @@ public interface ToimenkuvaRepository
   @Override
   default Optional<Toimenkuva> findBy(JodUser user, OsaamisenLahdeDto lahde) {
     return lahde.tyyppi() == TOIMENKUVA
-        ? findByTyopaikkaYksiloIdAndId(user.getId(), lahde.id())
+        ? lahde.id().flatMap(lahdeId -> findByTyopaikkaYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
 

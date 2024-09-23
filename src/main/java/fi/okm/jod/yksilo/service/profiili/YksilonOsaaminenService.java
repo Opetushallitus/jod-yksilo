@@ -10,10 +10,10 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
-import fi.okm.jod.yksilo.entity.OsaamisenLahde;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
@@ -24,6 +24,7 @@ import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class YksilonOsaaminenService {
 
     if (tyyppi != null && id != null) {
       return lahteet.stream()
-          .flatMap(s -> s.findBy(user, new OsaamisenLahdeDto(tyyppi, id)).stream())
+          .flatMap(s -> s.findBy(user, new OsaamisenLahdeDto(tyyppi, Optional.of(id))).stream())
           .findFirst()
           .map(l -> Mapper.mapYksilonOsaaminen(l.getOsaamiset()))
           .orElse(List.of());

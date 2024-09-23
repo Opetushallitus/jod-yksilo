@@ -40,7 +40,7 @@ public interface PatevyysRepository
   @Override
   default Optional<Patevyys> findBy(JodUser user, OsaamisenLahdeDto lahde) {
     return lahde.tyyppi() == PATEVYYS
-        ? findByToimintoYksiloIdAndId(user.getId(), lahde.id())
+        ? lahde.id().flatMap(lahdeId -> findByToimintoYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
 

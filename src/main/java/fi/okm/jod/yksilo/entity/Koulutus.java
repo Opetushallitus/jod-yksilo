@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Basic;
@@ -43,7 +44,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 @Access(AccessType.FIELD)
-public non-sealed class Koulutus implements OsaamisenLahde {
+public class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;

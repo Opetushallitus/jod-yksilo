@@ -31,8 +31,8 @@ public interface KoulutusRepository
 
   @Override
   default Optional<Koulutus> findBy(JodUser user, OsaamisenLahdeDto lahde) {
-    return lahde.tyyppi() == KOULUTUS
-        ? findByKokonaisuusYksiloIdAndId(user.getId(), lahde.id())
+    return lahde.tyyppi() == KOULUTUS && lahde.id().isPresent()
+        ? lahde.id().flatMap(lahdeId -> findByKokonaisuusYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
 

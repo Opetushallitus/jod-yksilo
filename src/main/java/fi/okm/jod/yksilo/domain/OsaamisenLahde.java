@@ -7,25 +7,18 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.entity;
+package fi.okm.jod.yksilo.domain;
 
-import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.util.Set;
 import java.util.UUID;
 
-public sealed interface OsaamisenLahde permits Toimenkuva, Koulutus, Patevyys {
+public interface OsaamisenLahde {
 
   UUID getId();
 
   Yksilo getYksilo();
 
   Set<YksilonOsaaminen> getOsaamiset();
-
-  default OsaamisenLahdeTyyppi getTyyppi() {
-    return switch (this) {
-      case Toimenkuva ignored -> OsaamisenLahdeTyyppi.TOIMENKUVA;
-      case Koulutus ignored -> OsaamisenLahdeTyyppi.KOULUTUS;
-      case Patevyys ignored -> OsaamisenLahdeTyyppi.PATEVYYS;
-    };
-  }
 }
