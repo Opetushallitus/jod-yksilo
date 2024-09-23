@@ -34,7 +34,7 @@ public abstract class AbstractServiceTest {
       new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
 
   @Autowired protected TestEntityManager entityManager;
-  TestJodUser user;
+  protected TestJodUser user;
 
   @BeforeEach
   public void setUpUser() {
