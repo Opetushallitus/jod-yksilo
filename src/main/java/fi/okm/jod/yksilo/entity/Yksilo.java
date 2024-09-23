@@ -15,6 +15,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
@@ -41,11 +43,19 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
+  @OneToMany(fetch = FetchType.LAZY)
+  private Set<Osaaminen> osaamisKiinnostukset = new HashSet<>();
+
   public Yksilo(UUID uuid) {
     this.id = uuid;
   }
 
   protected Yksilo() {
     // For JPA
+  }
+
+  public void setOsaamisKiinnostukset(Collection<Osaaminen> entities) {
+    osaamisKiinnostukset.clear();
+    osaamisKiinnostukset.addAll(entities);
   }
 }

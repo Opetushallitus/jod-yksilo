@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,7 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @Query(value = "SELECT tunnistus.remove_yksilo_id(:yksiloId)", nativeQuery = true)
   void removeId(UUID yksiloId);
+
+  @Query(value = "SELECT k.uri FROM Yksilo y JOIN y.osaamisKiinnostukset k WHERE y = :yksilo")
+  Set<String> findOsaamisKiinnostukset(Yksilo yksilo);
 }
