@@ -11,6 +11,8 @@ package fi.okm.jod.yksilo.config.suomifi;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import fi.okm.jod.yksilo.config.LoginSuccessHandler;
+import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,7 +43,6 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration(proxyBeanMethods = false)
@@ -64,9 +65,7 @@ public class Saml2LoginConfig {
     var redirectStrategy = new DefaultRedirectStrategy();
     redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
 
-    var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/");
-    loginSuccessHandler.setRedirectStrategy(redirectStrategy);
-    loginSuccessHandler.setAlwaysUseDefaultTargetUrl(true);
+    var loginSuccessHandler = new LoginSuccessHandler(redirectStrategy);
     var authenticationEventHandler = new AuthenticationEventHandler(redirectStrategy);
 
     var authProvider = new OpenSaml4AuthenticationProvider();
@@ -151,14 +150,17 @@ public class Saml2LoginConfig {
   }
 
   static Optional<Kieli> resolveKieli(HttpServletRequest req) {
-    var lang =
-        switch (req.getParameter("lang")) {
-          case null -> null;
-          case "fi" -> Kieli.FI;
-          case "sv" -> Kieli.SV;
-          default -> Kieli.EN;
-        };
-    return Optional.ofNullable(lang);
+
+    if (req.getSession(false) instanceof HttpSession session) {
+      return Optional.ofNullable(
+          switch (session.getAttribute(SessionLoginAttribute.LANG.getKey())) {
+            case null -> null;
+            case String s when s.equals("fi") -> Kieli.FI;
+            case String s when s.equals("sv") -> Kieli.SV;
+            default -> Kieli.EN;
+          });
+    }
+    return Optional.empty();
   }
 
   static class AuthenticationEventHandler
@@ -177,10 +179,12 @@ public class Saml2LoginConfig {
         // clear the temporary session used for SAML logout
         s.invalidate();
       }
+      var queryParam = "";
       if (exception != null) {
+        queryParam = "?error=AUTHENTICATION_FAILURE";
         log.warn("Authentication failure: {}", exception.getMessage());
       }
-      redirectStrategy.sendRedirect(request, response, "/");
+      redirectStrategy.sendRedirect(request, response, "/" + queryParam);
     }
 
     @Override

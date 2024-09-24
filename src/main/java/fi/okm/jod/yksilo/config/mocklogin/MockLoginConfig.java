@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.mocklogin;
 
+import fi.okm.jod.yksilo.config.LoginSuccessHandler;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.util.StringUtils;
 
@@ -41,8 +41,7 @@ public class MockLoginConfig {
     var redirectStrategy = new DefaultRedirectStrategy();
     redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
 
-    var loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler("/?loginSuccess");
-    loginSuccessHandler.setRedirectStrategy(redirectStrategy);
+    var loginSuccessHandler = new LoginSuccessHandler(redirectStrategy);
 
     var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
     logoutSuccessHandler.setRedirectStrategy(redirectStrategy);

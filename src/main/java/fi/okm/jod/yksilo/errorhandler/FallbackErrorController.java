@@ -69,7 +69,7 @@ public class FallbackErrorController implements ErrorController {
           request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
 
       return ResponseEntity.status(HttpStatus.SEE_OTHER)
-          .location(URI.create("/"))
+          .location(URI.create("/?error=AUTHENTICATION_FAILURE"))
           .body(
               new ErrorInfo(
                   ErrorCode.AUTHENTICATION_FAILURE, tracer.currentSpan(), List.of(status.name())));
