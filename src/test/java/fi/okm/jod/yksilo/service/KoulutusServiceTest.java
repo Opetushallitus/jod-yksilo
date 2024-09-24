@@ -112,7 +112,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldDeleteEmptyKoulutus() {
+  void shouldDeleteEmptyKoulutusKokonaisuus() {
     var id =
         service.add(
             user,
@@ -131,7 +131,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldKeepNotEmptyKoulutus() {
+  void shouldKeepNotEmptyKoulutusKokonaisuus() {
     service.add(
         user,
         kokonaisuusId,

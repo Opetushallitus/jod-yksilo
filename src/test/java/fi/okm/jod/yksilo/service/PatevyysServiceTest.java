@@ -112,7 +112,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldDeleteEmptyPatevyys() {
+  void shouldDeleteEmptyToiminto() {
     var id =
         service.add(
             user,
@@ -131,7 +131,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldKeepNotEmptyPatevyys() {
+  void shouldKeepNotEmptyToiminto() {
     service.add(
         user,
         toimintoId,
