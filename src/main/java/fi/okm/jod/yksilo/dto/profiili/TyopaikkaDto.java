@@ -24,4 +24,5 @@ import java.util.UUID;
 public record TyopaikkaDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(max = Limits.TOIMENKUVA_PER_TYOPAIKKA) Set<@Valid @NotNull ToimenkuvaDto> toimenkuvat) {}
+    @Size(min = 1, max = Limits.TOIMENKUVA_PER_TYOPAIKKA)
+        Set<@Valid @NotNull ToimenkuvaDto> toimenkuvat) {}

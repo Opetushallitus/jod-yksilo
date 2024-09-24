@@ -18,7 +18,6 @@ import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface KoulutusRepository
@@ -28,7 +27,6 @@ public interface KoulutusRepository
 
   Optional<Koulutus> findByKokonaisuusYksiloIdAndId(UUID yksiloId, UUID id);
 
-  @EntityGraph(attributePaths = {"kategoria", "kaannos"})
   List<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusId(UUID yksiloId, UUID kokonaisuusId);
 
   @Override

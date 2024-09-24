@@ -89,7 +89,9 @@ class KoulutusController {
   }
 
   @DeleteMapping("/{koulutusId}")
-  @Operation(summary = "Deletes a koulutus of the koulutuskokonaisuus")
+  @Operation(
+      summary =
+          "Deletes a koulutus of the koulutuskokonaisuus. If the kokonaisuus becomes empty, it will be deleted.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id, @PathVariable UUID koulutusId, @AuthenticationPrincipal JodUser user) {

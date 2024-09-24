@@ -74,6 +74,7 @@ public class KoulutusService {
             .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), kokonaisuusId, id)
             .orElseThrow(KoulutusService::notFound);
     delete(koulutus);
+    kokonaisuudet.deleteEmpty(user.getId(), kokonaisuusId);
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {

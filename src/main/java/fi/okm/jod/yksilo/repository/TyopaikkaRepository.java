@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface TyopaikkaRepository extends JpaRepository<Tyopaikka, UUID> {
 
@@ -23,4 +25,9 @@ public interface TyopaikkaRepository extends JpaRepository<Tyopaikka, UUID> {
   List<Tyopaikka> findByYksiloId(UUID yksiloId);
 
   long countByYksilo(Yksilo yksilo);
+
+  @Modifying(flushAutomatically = true)
+  @Query(
+      "DELETE FROM Tyopaikka t WHERE t.id = :id AND t.yksilo.id = :yksiloId AND t.toimenkuvat IS EMPTY")
+  void deleteEmpty(UUID yksiloId, UUID id);
 }
