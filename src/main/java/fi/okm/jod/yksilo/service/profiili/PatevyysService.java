@@ -68,6 +68,7 @@ public class PatevyysService {
     var entity =
         patevyydet.findBy(user, toimintoId, patevyysId).orElseThrow(PatevyysService::notFound);
     delete(entity);
+    toiminnot.deleteEmpty(user.getId(), toimintoId);
   }
 
   Patevyys add(Toiminto toiminto, PatevyysDto dto) {

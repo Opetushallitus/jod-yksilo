@@ -68,10 +68,11 @@ public class ToimenkuvaService {
     update(entity, dto);
   }
 
-  public void delete(JodUser user, UUID tyopaikka, UUID id) {
+  public void delete(JodUser user, UUID tyopaikkaId, UUID id) {
     var toimenkuva =
-        toimenkuvat.findBy(user, tyopaikka, id).orElseThrow(ToimenkuvaService::notFound);
+        toimenkuvat.findBy(user, tyopaikkaId, id).orElseThrow(ToimenkuvaService::notFound);
     delete(toimenkuva);
+    tyopaikat.deleteEmpty(user.getId(), tyopaikkaId);
   }
 
   Toimenkuva add(Tyopaikka tyopaikka, ToimenkuvaDto dto) {

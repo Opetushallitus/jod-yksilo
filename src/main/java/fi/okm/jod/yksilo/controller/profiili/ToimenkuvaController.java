@@ -91,7 +91,9 @@ class ToimenkuvaController {
   }
 
   @DeleteMapping("/{toimenkuvaId}")
-  @Operation(summary = "Deletes a toimenkuva of the tyopaikka")
+  @Operation(
+      summary =
+          "Deletes a toimenkuva of the tyopaikka. If the tyopaikka becomes empty, it will also be deleted.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id,

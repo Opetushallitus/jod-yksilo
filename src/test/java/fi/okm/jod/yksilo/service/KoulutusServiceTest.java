@@ -14,10 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
-import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
+import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
 import java.time.LocalDate;
@@ -31,30 +31,30 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
-@Import({ToimenkuvaService.class, YksilonOsaaminenService.class})
-class ToimenkuvaServiceTest extends AbstractServiceTest {
+@Import({KoulutusService.class, YksilonOsaaminenService.class})
+class KoulutusServiceTest extends AbstractServiceTest {
 
-  @Autowired ToimenkuvaService service;
-  private UUID tyopaikkaId;
+  @Autowired KoulutusService service;
+  private UUID kokonaisuusId;
 
   @BeforeEach
   public void setUp() {
-    var tyopaikka =
-        new Tyopaikka(
+    var kokonaisuus =
+        new KoulutusKokonaisuus(
             entityManager.find(Yksilo.class, user.getId()),
             new LocalizedString(Map.of(Kieli.FI, "Testi")));
-    this.tyopaikkaId = entityManager.persist(tyopaikka).getId();
+    this.kokonaisuusId = entityManager.persist(kokonaisuus).getId();
     entityManager.flush();
   }
 
   @Test
-  void shouldAddToimenkuva() {
+  void shouldAddKoulutus() {
     assertDoesNotThrow(
         () -> {
           service.add(
               user,
-              tyopaikkaId,
-              new ToimenkuvaDto(
+              kokonaisuusId,
+              new KoulutusDto(
                   null,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                   null,
@@ -64,20 +64,20 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          var result = service.findAll(user, tyopaikkaId);
+          var result = service.findAll(user, kokonaisuusId);
           assertEquals(1, result.size());
         });
   }
 
   @Test
-  void shouldUpdateToimenkuva() {
+  void shouldUpdateKoulutus() {
     assertDoesNotThrow(
         () -> {
           var id =
               service.add(
                   user,
-                  tyopaikkaId,
-                  new ToimenkuvaDto(
+                  kokonaisuusId,
+                  new KoulutusDto(
                       null,
                       ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                       null,
@@ -95,8 +95,8 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
                   URI.create("urn:osaaminen4"));
           service.update(
               user,
-              tyopaikkaId,
-              new ToimenkuvaDto(
+              kokonaisuusId,
+              new KoulutusDto(
                   id,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                   null,
@@ -106,18 +106,18 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          var result = service.get(user, tyopaikkaId, id);
+          var result = service.get(user, kokonaisuusId, id);
           assertEquals(updated, result.osaamiset());
         });
   }
 
   @Test
-  void shouldDeleteEmptyTyopaikka() {
+  void shouldDeleteEmptyKoulutus() {
     var id =
         service.add(
             user,
-            tyopaikkaId,
-            new ToimenkuvaDto(
+            kokonaisuusId,
+            new KoulutusDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                 null,
@@ -125,17 +125,17 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
                 null,
                 Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
     simulateCommit();
-    service.delete(user, tyopaikkaId, id);
+    service.delete(user, kokonaisuusId, id);
     simulateCommit();
-    assertNull(entityManager.find(Tyopaikka.class, tyopaikkaId));
+    assertNull(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
   }
 
   @Test
-  void shouldKeepNotEmptyTyopaikka() {
+  void shouldKeepNotEmptyKoulutus() {
     service.add(
         user,
-        tyopaikkaId,
-        new ToimenkuvaDto(
+        kokonaisuusId,
+        new KoulutusDto(
             null,
             ls(Kieli.FI, "nimi1", Kieli.SV, "namn"),
             null,
@@ -146,8 +146,8 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
     var id =
         service.add(
             user,
-            tyopaikkaId,
-            new ToimenkuvaDto(
+            kokonaisuusId,
+            new KoulutusDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                 null,
@@ -155,8 +155,8 @@ class ToimenkuvaServiceTest extends AbstractServiceTest {
                 null,
                 Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
     simulateCommit();
-    service.delete(user, tyopaikkaId, id);
+    service.delete(user, kokonaisuusId, id);
     simulateCommit();
-    assertNotNull(entityManager.find(Tyopaikka.class, tyopaikkaId));
+    assertNotNull(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
   }
 }

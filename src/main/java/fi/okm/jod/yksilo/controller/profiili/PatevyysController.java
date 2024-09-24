@@ -89,7 +89,10 @@ class PatevyysController {
   }
 
   @DeleteMapping("/{patevyysId}")
-  @Operation(summary = "Deletes a patevyys of the vapaa-ajan toiminto (including all osaamiset)")
+  @Operation(
+      summary =
+          "Deletes a patevyys of the vapaa-ajan toiminto (including all osaamiset)."
+              + " If the toiminto becomes empty, it will also be deleted.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
