@@ -9,11 +9,16 @@
 
 package fi.okm.jod.yksilo.config.mocklogin;
 
+import static fi.okm.jod.yksilo.config.SessionLoginAttribute.CALLBACK;
+
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -23,7 +28,13 @@ class MockLoginController {
 
   @GetMapping(value = "/login", produces = "text/html")
   @ResponseBody
-  public String login(CsrfToken csrf) {
+  public String login(
+      @RequestParam(required = false) URI returnUri, CsrfToken csrf, HttpServletRequest request) {
+
+    if (returnUri != null && returnUri.getPath() != null) {
+      request.getSession().setAttribute(CALLBACK.getKey(), returnUri.getPath());
+    }
+
     return """
         <!DOCTYPE html>
         <html lang="en">
