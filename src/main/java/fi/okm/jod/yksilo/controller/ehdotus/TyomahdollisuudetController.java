@@ -112,7 +112,9 @@ class TyomahdollisuudetController {
                             result.get(tyomahdollisuusMetaData.get(key).externalId())),
                         Optional.empty(),
                         OptionalInt.empty())))
-        .sorted(Comparator.comparing(e -> e.ehdotusMetadata.pisteet.orElse(0d)))
+        .sorted(
+            Comparator.comparingDouble((EhdotusDto e) -> e.ehdotusMetadata.pisteet.orElse(0d))
+                .reversed())
         .toList();
   }
 
