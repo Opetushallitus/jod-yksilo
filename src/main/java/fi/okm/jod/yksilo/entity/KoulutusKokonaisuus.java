@@ -52,7 +52,7 @@ public class KoulutusKokonaisuus {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 10)
+  @BatchSize(size = 100)
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(
@@ -60,7 +60,7 @@ public class KoulutusKokonaisuus {
       fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  @BatchSize(size = 20)
+  @BatchSize(size = 100)
   @Getter
   private List<Koulutus> koulutukset = new ArrayList<>();
 

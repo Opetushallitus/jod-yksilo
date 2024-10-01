@@ -51,12 +51,12 @@ public class Toiminto {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 20)
+  @BatchSize(size = 100)
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(mappedBy = "toiminto", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 20)
+  @BatchSize(size = 100)
   private List<Patevyys> patevyydet = new ArrayList<>();
 
   protected Toiminto() {

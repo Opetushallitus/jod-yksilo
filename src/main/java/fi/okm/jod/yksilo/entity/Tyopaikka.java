@@ -30,15 +30,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -47,9 +44,6 @@ import org.hibernate.annotations.BatchSize;
 public class Tyopaikka {
   @GeneratedValue @Id private UUID id;
 
-  @Setter private LocalDate alkuPvm;
-  @Setter private LocalDate loppuPvm;
-
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
@@ -57,7 +51,7 @@ public class Tyopaikka {
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 20)
+  @BatchSize(size = 100)
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
@@ -67,7 +61,7 @@ public class Tyopaikka {
       fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  @BatchSize(size = 20)
+  @BatchSize(size = 100)
   private List<Toimenkuva> toimenkuvat = new ArrayList<>();
 
   protected Tyopaikka() {
@@ -88,10 +82,6 @@ public class Tyopaikka {
   public void setNimi(LocalizedString nimi) {
     kaannos.keySet().retainAll(nimi.asMap().keySet());
     nimi.asMap().forEach((key, value) -> kaannos.put(key, new Kaannos(value)));
-  }
-
-  public Optional<Toimenkuva> getToimenkuva(UUID id) {
-    return toimenkuvat.stream().filter(t -> t.getId().equals(id)).findFirst();
   }
 
   @Embeddable
