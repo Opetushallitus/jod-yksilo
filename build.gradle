@@ -11,8 +11,8 @@ plugins {
   id "org.sonarqube" version "5.1.0.4882"
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
-  id "io.snyk.gradle.plugin.snykplugin" version "0.6.1"
   id "com.github.ben-manes.versions" version "0.51.0"
+  id 'org.cyclonedx.bom' version '1.10.0'
 }
 
 group = 'fi.okm.jod'
@@ -36,6 +36,18 @@ repositories {
 ext {
   spotbugsVersion = "4.8.6"
   set("flyway.version", "10.18.0")
+}
+
+configurations {
+  compileClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
+  runtimeClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
+  annotationProcessor {
+    resolutionStrategy.activateDependencyLocking()
+  }
 }
 
 dependencies {
@@ -74,6 +86,11 @@ dependencies {
 
   // Caffeine cache implementation
   implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+
+  //override OpenSAML dependencies
+  implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+  implementation 'org.bouncycastle:bcutil-jdk18on:1.78.1'
+  implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
 
   // OpenAPI API description and Swagger UI
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0'
@@ -176,11 +193,6 @@ spotbugsMain {
 
 spotbugsTest.enabled = false
 
-snyk {
-  autoDownload = true
-  autoUpdate = true
-}
-
 bootJar {
   manifest {
     attributes('Implementation-Title': "${rootProject.name}",
@@ -245,4 +257,8 @@ tasks.named("dependencyUpdates").configure {
   rejectVersionIf {
     it.candidate.version.containsIgnoreCase("alpha") || it.candidate.version.containsIgnoreCase("beta") || it.candidate.version.matches(".*-M\\d+")
   }
+}
+
+cyclonedxBom {
+  includeConfigs = ["runtimeClasspath"]
 }
