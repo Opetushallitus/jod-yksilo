@@ -46,6 +46,9 @@ public class Yksilo {
   @OneToMany(fetch = FetchType.LAZY)
   private Set<Osaaminen> osaamisKiinnostukset = new HashSet<>();
 
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  private Set<YksilonSuosikki> suosikit;
+
   public Yksilo(UUID uuid) {
     this.id = uuid;
   }
