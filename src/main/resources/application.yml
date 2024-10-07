@@ -10,6 +10,9 @@ spring:
     open-in-view: false
     defer-datasource-initialization: true # FIXME: Just for early development without migrations
     properties:
+      javax:
+        persistence:
+          create-database-schemas: true
       hibernate:
         jdbc:
           batch_size: 20

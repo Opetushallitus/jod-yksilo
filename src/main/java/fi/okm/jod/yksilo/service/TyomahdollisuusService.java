@@ -9,15 +9,13 @@
 
 package fi.okm.jod.yksilo.service;
 
-import fi.okm.jod.yksilo.dto.ArvoDto;
-import fi.okm.jod.yksilo.dto.JakaumaDto;
+import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
+
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
-import fi.okm.jod.yksilo.entity.Jakauma;
-import fi.okm.jod.yksilo.entity.Jakauma.Arvo;
-import fi.okm.jod.yksilo.entity.Tyomahdollisuus;
-import fi.okm.jod.yksilo.entity.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import java.util.List;
 import java.util.Map;
@@ -35,39 +33,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
-
-  static TyomahdollisuusDto map(Tyomahdollisuus entity) {
-    return entity == null
-        ? null
-        : new TyomahdollisuusDto(
-            entity.getId(), entity.getOtsikko(), entity.getTiivistelma(), entity.getKuvaus());
-  }
-
-  static TyomahdollisuusFullDto mapFull(Tyomahdollisuus entity) {
-    return entity == null
-        ? null
-        : new TyomahdollisuusFullDto(
-            entity.getId(),
-            entity.getOtsikko(),
-            entity.getTiivistelma(),
-            entity.getKuvaus(),
-            entity.getJakaumat().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
-  }
-
-  private static JakaumaDto mapJakauma(Jakauma jakauma) {
-    return jakauma == null
-        ? null
-        : new JakaumaDto(jakauma.getMaara(), jakauma.getTyhjia(), mapArvot(jakauma.getArvot()));
-  }
-
-  private static List<ArvoDto> mapArvot(List<Arvo> arvot) {
-    return arvot.stream().map(a -> new ArvoDto(a.arvo(), a.osuus())).toList();
-  }
 
   @Cacheable("tyomahdollisuusMetadata")
   public Map<UUID, TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata() {
@@ -88,16 +57,35 @@ public class TyomahdollisuusService {
         .map(TyomahdollisuusService::map);
   }
 
-  public TyomahdollisuusFullDto findById(UUID id) {
+  public List<TyomahdollisuusDto> findByIds(Set<UUID> uuidSet) {
+    return tyomahdollisuusRepository.findAllById(uuidSet).stream()
+        .map(TyomahdollisuusService::map)
+        .toList();
+  }
+
+  public TyomahdollisuusFullDto get(UUID id) {
     return mapFull(
         tyomahdollisuusRepository
             .findById(id)
             .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus")));
   }
 
-  public List<TyomahdollisuusDto> findByIds(Set<UUID> uuidSet) {
-    return tyomahdollisuusRepository.findAllById(uuidSet).stream()
-        .map(TyomahdollisuusService::map)
-        .toList();
+  private static TyomahdollisuusDto map(Tyomahdollisuus entity) {
+    return entity == null
+        ? null
+        : new TyomahdollisuusDto(
+            entity.getId(), entity.getOtsikko(), entity.getTiivistelma(), entity.getKuvaus());
+  }
+
+  private static TyomahdollisuusFullDto mapFull(Tyomahdollisuus entity) {
+    return entity == null
+        ? null
+        : new TyomahdollisuusFullDto(
+            entity.getId(),
+            entity.getOtsikko(),
+            entity.getTiivistelma(),
+            entity.getKuvaus(),
+            entity.getJakaumat().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
   }
 }

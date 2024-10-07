@@ -9,10 +9,10 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import fi.okm.jod.yksilo.dto.KoulutusmahdollisuusDto;
+import fi.okm.jod.yksilo.dto.KoulutusmahdollisuusFullDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
-import fi.okm.jod.yksilo.service.TyomahdollisuusService;
+import fi.okm.jod.yksilo.service.KoulutusmahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Set;
@@ -31,36 +31,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/tyomahdollisuudet")
+@RequestMapping("/api/koulutusmahdollisuudet")
 @RequiredArgsConstructor
-@Tag(name = "tyomahdollisuudet", description = "Työmahdollisuus listing")
-public class TyomahdollisuusController {
-  private final TyomahdollisuusService tyomahdollisuusService;
+@Tag(name = "koulutusmahdollisuudet")
+public class KoulutusmahdollisuusController {
+  private final KoulutusmahdollisuusService koulutusmahdollisuusService;
 
   @GetMapping
-  @Operation(
-      summary = "Get all työmahdollisuudet paged of by page and size or set of ids",
-      description = "Returns all työmahdollisuudet basic information in JSON-format.")
-  public SivuDto<TyomahdollisuusDto> findAll(
+  public SivuDto<KoulutusmahdollisuusDto> findAll(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko,
       @RequestParam(required = false) Set<UUID> id) {
     if (id == null) {
       Pageable pageable = PageRequest.of(sivu, koko);
-      return new SivuDto<>(tyomahdollisuusService.findAll(pageable));
+      return new SivuDto<>(koulutusmahdollisuusService.findAll(pageable));
     }
 
     // Return paged also when requested by IDs
-    return new SivuDto<>(new PageImpl<>(tyomahdollisuusService.findByIds(id)));
+    return new SivuDto<>(new PageImpl<>(koulutusmahdollisuusService.findByIds(id)));
   }
 
   @GetMapping("/{id}")
-  @Operation(
-      summary = "Get full information content of single työmahdollisuus",
-      description = "Returns one työmahdollisuus full content by id")
-  public ResponseEntity<TyomahdollisuusFullDto> findById(@PathVariable UUID id) {
+  @Operation(summary = "Get full information content of a koulutusmahdollisuus")
+  public ResponseEntity<KoulutusmahdollisuusFullDto> findById(@PathVariable UUID id) {
     return ResponseEntity.ok()
-        .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePrivate())
-        .body(tyomahdollisuusService.get(id));
+        .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePrivate())
+        .body(koulutusmahdollisuusService.get(id));
   }
 }

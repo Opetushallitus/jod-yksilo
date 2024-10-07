@@ -11,24 +11,13 @@ package fi.okm.jod.yksilo.domain;
 
 import com.google.common.base.CaseFormat;
 
-public enum JakaumaTyyppi {
-  AMMATTI,
+public enum KoulutusmahdollisuusJakaumaTyyppi {
   OSAAMINEN,
-  AJOKORTTI,
-  KIELITAITO,
-  KORTIT_JA_LUVAT,
-  KOULUTUSASTE,
-  RIKOSREKISTERIOTE,
-  MATKUSTUSVAATIMUS,
-  PALKAN_PERUSTE,
-  PALVELUSSUHDE,
-  TYOAIKA,
-  TYON_JATKUVUUS,
-  KUNTA,
-  MAAKUNTA,
-  MAA,
-  SIJAINTI_JOUSTAVA,
-  TYOKIELI;
+  KOULUTUSALA,
+  MAKSULLISUUS,
+  OPETUSTAPA,
+  AIKA,
+  KUNTA;
 
   private final String propertyName;
 
@@ -37,7 +26,7 @@ public enum JakaumaTyyppi {
     return propertyName;
   }
 
-  JakaumaTyyppi() {
+  KoulutusmahdollisuusJakaumaTyyppi() {
     this.propertyName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
   }
 }
