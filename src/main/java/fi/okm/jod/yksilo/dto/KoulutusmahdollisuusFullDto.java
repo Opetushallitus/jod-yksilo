@@ -9,19 +9,24 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-public record TyomahdollisuusFullDto(
+public record KoulutusmahdollisuusFullDto(
     @NotNull UUID id,
+    @NotNull KoulutusmahdollisuusTyyppi tyyppi,
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
+    KestoJakaumaDto kesto,
+    Set<KoulutusViiteDto> koulutukset,
     @Schema(
-            propertyNames = TyomahdollisuusJakaumaTyyppi.class,
+            propertyNames = KoulutusmahdollisuusJakaumaTyyppi.class,
             additionalPropertiesSchema = JakaumaDto.class)
-        Map<TyomahdollisuusJakaumaTyyppi, JakaumaDto> jakaumat) {}
+        Map<KoulutusmahdollisuusJakaumaTyyppi, JakaumaDto> jakaumat) {}

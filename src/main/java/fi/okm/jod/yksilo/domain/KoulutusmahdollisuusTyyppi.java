@@ -7,21 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.entity;
+package fi.okm.jod.yksilo.domain;
 
-import jakarta.persistence.Embeddable;
-import java.util.List;
-
-public interface Jakauma<T extends Enum<T>> {
-
-  T getTyyppi();
-
-  int getMaara();
-
-  int getTyhjia();
-
-  List<Arvo> getArvot();
-
-  @Embeddable
-  record Arvo(String arvo, double osuus) {}
+public enum KoulutusmahdollisuusTyyppi {
+  TUTKINTO,
+  EI_TUTKINTO,
 }

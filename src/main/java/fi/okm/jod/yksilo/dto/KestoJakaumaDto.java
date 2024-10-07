@@ -7,21 +7,9 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.entity;
+package fi.okm.jod.yksilo.dto;
 
-import jakarta.persistence.Embeddable;
-import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
-public interface Jakauma<T extends Enum<T>> {
-
-  T getTyyppi();
-
-  int getMaara();
-
-  int getTyhjia();
-
-  List<Arvo> getArvot();
-
-  @Embeddable
-  record Arvo(String arvo, double osuus) {}
-}
+public record KestoJakaumaDto(
+    @NotNull double minimi, @NotNull double mediaani, @NotNull double maksimi) {}

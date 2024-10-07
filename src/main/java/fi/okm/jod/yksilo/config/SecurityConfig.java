@@ -98,7 +98,10 @@ public class SecurityConfig {
             authorize ->
                 authorize
                     .requestMatchers(
-                        "/api/ehdotus/**", "/api/osaamiset", "/api/tyomahdollisuudet/**")
+                        "/api/ehdotus/**",
+                        "/api/osaamiset",
+                        "/api/tyomahdollisuudet/**",
+                        "/api/koulutusmahdollisuudet/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
