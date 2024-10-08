@@ -19,6 +19,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -48,6 +49,9 @@ public class TyomahdollisuusJakauma implements Jakauma<TyomahdollisuusJakaumaTyy
   @Getter
   @ElementCollection
   @BatchSize(size = 100)
-  @CollectionTable(schema = "tyomahdollisuus_data", name = "jakauma_arvot")
+  @CollectionTable(
+      schema = "tyomahdollisuus_data",
+      name = "jakauma_arvot",
+      joinColumns = @JoinColumn(name = "jakauma_id"))
   private List<Arvo> arvot;
 }
