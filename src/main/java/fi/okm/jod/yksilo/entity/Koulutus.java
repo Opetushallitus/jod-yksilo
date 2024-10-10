@@ -100,7 +100,7 @@ public class Koulutus implements OsaamisenLahde {
     @Basic(optional = false)
     String nimi;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = Integer.MAX_VALUE)
     String kuvaus;
 
     public boolean isEmpty() {

@@ -16,6 +16,8 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
 import java.util.Map;
@@ -27,7 +29,9 @@ import org.hibernate.annotations.Immutable;
 @Getter
 @Immutable
 public class Osaaminen {
-  @Id private Long id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  private Long id;
 
   @Column(unique = true, nullable = false)
   private String uri;
@@ -39,8 +43,8 @@ public class Osaaminen {
 
   @Embeddable
   public record Kaannos(
-      @Column(columnDefinition = "TEXT") String nimi,
-      @Column(columnDefinition = "TEXT") String kuvaus) {}
+      @Column(length = Integer.MAX_VALUE) String nimi,
+      @Column(length = Integer.MAX_VALUE) String kuvaus) {}
 
   public LocalizedString getNimi() {
     return LocalizedString.of(kaannos, Kaannos::nimi);

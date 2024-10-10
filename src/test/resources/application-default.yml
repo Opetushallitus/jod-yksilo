@@ -2,17 +2,7 @@ logging:
   level:
     root: INFO
     fi.okm.jod: DEBUG
-
 spring:
-  jpa:
-    properties:
-      jakarta:
-        persistence:
-          create-database-schemas: true
-      hibernate:
-        hbm2ddl:
-          # in tests, create all tables
-          schema_filter_provider: org.hibernate.tool.schema.internal.DefaultSchemaFilterProvider
   sql:
     init:
       mode: never

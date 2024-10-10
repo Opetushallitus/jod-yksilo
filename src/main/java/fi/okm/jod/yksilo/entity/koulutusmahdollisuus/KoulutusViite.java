@@ -12,13 +12,14 @@ package fi.okm.jod.yksilo.entity.koulutusmahdollisuus;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Basic;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
@@ -32,12 +33,12 @@ import org.hibernate.annotations.Immutable;
 @Entity
 @Immutable
 @Getter
-@Table(
-    schema = "koulutusmahdollisuus_data",
-    indexes = {@Index(columnList = "koulutusmahdollisuus_id, oid", unique = true)})
+@Table(indexes = {@Index(columnList = "koulutusmahdollisuus_id, oid", unique = true)})
 public class KoulutusViite {
 
-  @Id private long id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  private long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Koulutusmahdollisuus koulutusmahdollisuus;
@@ -48,7 +49,6 @@ public class KoulutusViite {
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
-  @CollectionTable(schema = "koulutusmahdollisuus_data")
   private Map<Kieli, Kaannos> kaannos;
 
   public LocalizedString getNimi() {
@@ -56,5 +56,5 @@ public class KoulutusViite {
   }
 
   @Embeddable
-  public record Kaannos(@Column(columnDefinition = "TEXT") @Basic(optional = false) String nimi) {}
+  public record Kaannos(@Column(length = Integer.MAX_VALUE) @Basic(optional = false) String nimi) {}
 }
