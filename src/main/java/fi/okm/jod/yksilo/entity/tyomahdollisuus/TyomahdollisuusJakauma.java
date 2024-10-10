@@ -11,15 +11,15 @@ package fi.okm.jod.yksilo.entity.tyomahdollisuus;
 
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.Jakauma;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -29,29 +29,23 @@ import org.hibernate.annotations.Immutable;
 
 @Entity
 @Immutable
-@Table(
-    name = "jakauma",
-    schema = "tyomahdollisuus_data",
-    indexes = {@Index(columnList = "tyomahdollisuus_id, tyyppi", unique = true)})
+@Getter
+@Table(indexes = {@Index(columnList = "tyomahdollisuus_id, tyyppi", unique = true)})
 public class TyomahdollisuusJakauma implements Jakauma<TyomahdollisuusJakaumaTyyppi> {
-  @Id private long id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  private long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Tyomahdollisuus tyomahdollisuus;
 
-  @Getter
   @Enumerated(EnumType.STRING)
   private TyomahdollisuusJakaumaTyyppi tyyppi;
 
-  @Getter private int maara;
-  @Getter private int tyhjia;
+  private int maara;
+  private int tyhjia;
 
-  @Getter
   @ElementCollection
   @BatchSize(size = 100)
-  @CollectionTable(
-      schema = "tyomahdollisuus_data",
-      name = "jakauma_arvot",
-      joinColumns = @JoinColumn(name = "jakauma_id"))
   private List<Arvo> arvot;
 }

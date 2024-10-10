@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -27,7 +26,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,7 +36,6 @@ import org.hibernate.annotations.Immutable;
 @Entity
 @Getter
 @Immutable
-@Table(schema = "koulutusmahdollisuus_data")
 public class Koulutusmahdollisuus {
   @Id private UUID id;
 
@@ -48,7 +45,6 @@ public class Koulutusmahdollisuus {
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
-  @CollectionTable(schema = "koulutusmahdollisuus_data")
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(mappedBy = "koulutusmahdollisuus", fetch = FetchType.LAZY)
@@ -84,7 +80,7 @@ public class Koulutusmahdollisuus {
 
   @Embeddable
   public record Kaannos(
-      @Column(columnDefinition = "TEXT") String otsikko,
-      @Column(columnDefinition = "TEXT") String tiivistelma,
-      @Column(columnDefinition = "TEXT") String kuvaus) {}
+      @Column(length = Integer.MAX_VALUE) String otsikko,
+      @Column(length = Integer.MAX_VALUE) String tiivistelma,
+      @Column(length = Integer.MAX_VALUE) String kuvaus) {}
 }

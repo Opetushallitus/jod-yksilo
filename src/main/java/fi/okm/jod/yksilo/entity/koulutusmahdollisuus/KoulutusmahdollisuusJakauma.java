@@ -11,12 +11,13 @@ package fi.okm.jod.yksilo.entity.koulutusmahdollisuus;
 
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.Jakauma;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
@@ -28,25 +29,23 @@ import org.hibernate.annotations.Immutable;
 
 @Entity
 @Immutable
-@Table(
-    schema = "koulutusmahdollisuus_data",
-    indexes = {@Index(columnList = "koulutusmahdollisuus_id, tyyppi", unique = true)})
+@Getter
+@Table(indexes = {@Index(columnList = "koulutusmahdollisuus_id, tyyppi", unique = true)})
 public class KoulutusmahdollisuusJakauma implements Jakauma<KoulutusmahdollisuusJakaumaTyyppi> {
-  @Id private long id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  private long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Koulutusmahdollisuus koulutusmahdollisuus;
 
-  @Getter
   @Enumerated(EnumType.STRING)
   private KoulutusmahdollisuusJakaumaTyyppi tyyppi;
 
-  @Getter private int maara;
-  @Getter private int tyhjia;
+  private int maara;
+  private int tyhjia;
 
-  @Getter
   @ElementCollection
   @BatchSize(size = 100)
-  @CollectionTable(schema = "koulutusmahdollisuus_data")
   private List<Jakauma.Arvo> arvot;
 }

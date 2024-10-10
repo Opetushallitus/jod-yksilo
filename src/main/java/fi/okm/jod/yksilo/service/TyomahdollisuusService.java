@@ -13,7 +13,6 @@ import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
-import fi.okm.jod.yksilo.entity.projection.TyomahdollisuusMetadata;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -39,14 +37,8 @@ public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
 
   @Cacheable("tyomahdollisuusMetadata")
-  public Map<UUID, TyomahdollisuusMetadata> fetchAllTyomahdollisuusMetadata() {
-    return tyomahdollisuusRepository.fetchAllTyomahdollisuusMetadata().stream()
-        .collect(
-            Collectors.toMap(
-                TyomahdollisuusMetadata::id,
-                Function.identity(),
-                (existing, replacement) -> existing // Handle duplicates
-                ));
+  public Set<UUID> fetchAllIds() {
+    return tyomahdollisuusRepository.fetchAllIds();
   }
 
   public Page<TyomahdollisuusDto> findAll(Pageable pageable) {

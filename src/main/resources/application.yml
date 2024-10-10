@@ -10,17 +10,11 @@ spring:
     open-in-view: false
     defer-datasource-initialization: true # FIXME: Just for early development without migrations
     properties:
-      javax:
-        persistence:
-          create-database-schemas: true
       hibernate:
         jdbc:
           batch_size: 20
         order_inserts: true
         order_updates: true
-        # For development without migrations
-        hbm2ddl:
-          schema_filter_provider: fi.okm.jod.yksilo.config.datasource.HibernateSchemaFilterProvider
   data:
     redis:
       repositories:
@@ -35,11 +29,8 @@ spring:
       repository-type: default
   sql:
     init:
-      mode: always # FIXME: Just for early development without migrations
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      mode: always # FIXME: Just for early development without migration
+      separator: ";;;"
   cache:
     type: caffeine
     caffeine:

@@ -66,7 +66,7 @@ class TyomahdollisuudetController {
   @Timed
   public List<EhdotusDto> createEhdotus(@RequestBody @Valid LuoEhdotusDto ehdotus) {
 
-    var tyomahdollisuusMetaData = tyomahdollisuusService.fetchAllTyomahdollisuusMetadata();
+    var tyomahdollisuusIds = tyomahdollisuusService.fetchAllIds();
 
     log.info("Creating a suggestion for tyomahdollisuudet");
 
@@ -85,9 +85,7 @@ class TyomahdollisuudetController {
       // metadata
       var emptyMetadata =
           new EhdotusMetadata(OptionalDouble.empty(), Optional.empty(), OptionalInt.empty());
-      return tyomahdollisuusMetaData.keySet().stream()
-          .map(key -> new EhdotusDto(key, emptyMetadata))
-          .toList();
+      return tyomahdollisuusIds.stream().map(key -> new EhdotusDto(key, emptyMetadata)).toList();
     }
 
     var request =
@@ -102,16 +100,13 @@ class TyomahdollisuudetController {
         inferenceService.infer(endpoint, request, Response.class).stream()
             .collect(Collectors.toMap(Suggestion::id, Suggestion::score, Double::max));
 
-    return tyomahdollisuusMetaData.keySet().stream()
+    return tyomahdollisuusIds.stream()
         .map(
             key ->
                 new EhdotusDto(
                     key,
                     new EhdotusMetadata(
-                        OptionalDouble.of(
-                            result.get(tyomahdollisuusMetaData.get(key).externalId())),
-                        Optional.empty(),
-                        OptionalInt.empty())))
+                        OptionalDouble.of(result.get(key)), Optional.empty(), OptionalInt.empty())))
         .sorted(
             Comparator.comparingDouble((EhdotusDto e) -> e.ehdotusMetadata.pisteet.orElse(0d))
                 .reversed())

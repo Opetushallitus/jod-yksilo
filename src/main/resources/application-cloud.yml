@@ -10,10 +10,6 @@ spring:
           period: 15m
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
-  sql:
-    init:
-      data-locations: classpath:data.sql,classpath:data-import.sql
-
 server:
   forward-headers-strategy: none
   shutdown: graceful

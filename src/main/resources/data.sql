@@ -1,3 +1,19 @@
-ALTER TABLE yksilo
-  DROP CONSTRAINT IF EXISTS fk_yksilo_id,
-  ADD CONSTRAINT fk_yksilo_id FOREIGN KEY (id) REFERENCES tunnistus.henkilo(yksilo_id);
+DO
+$$
+  BEGIN
+
+    IF NOT exists(SELECT 1 from osaaminen) THEN
+      CALL esco_data.import();
+    END IF;
+
+    IF NOT exists(SELECT 1 FROM tyomahdollisuus) THEN
+      CALL tyomahdollisuus_data.import();
+    END IF;
+
+    IF NOT exists(SELECT 1 FROM koulutusmahdollisuus) THEN
+      CALL koulutusmahdollisuus_data.import();
+    END IF;
+
+  END
+$$
+;;;

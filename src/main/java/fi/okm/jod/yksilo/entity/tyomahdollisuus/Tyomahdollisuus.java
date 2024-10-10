@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.entity.tyomahdollisuus;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -23,7 +22,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
@@ -33,17 +31,12 @@ import org.hibernate.annotations.Immutable;
 @Entity
 @Getter
 @Immutable
-@Table(schema = "tyomahdollisuus_data")
 public class Tyomahdollisuus {
   @Id private UUID id;
-
-  @Column(name = "json_id")
-  private UUID mahdollisuusId;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
-  @CollectionTable(schema = "tyomahdollisuus_data")
   private Map<Kieli, Kaannos> kaannos;
 
   @OneToMany(mappedBy = "tyomahdollisuus", fetch = FetchType.LAZY)
@@ -54,9 +47,9 @@ public class Tyomahdollisuus {
 
   @Embeddable
   public record Kaannos(
-      @Column(columnDefinition = "TEXT") String otsikko,
-      @Column(columnDefinition = "TEXT") String tiivistelma,
-      @Column(columnDefinition = "TEXT") String kuvaus) {}
+      @Column(length = Integer.MAX_VALUE) String otsikko,
+      @Column(length = Integer.MAX_VALUE) String tiivistelma,
+      @Column(length = Integer.MAX_VALUE) String kuvaus) {}
 
   public LocalizedString getOtsikko() {
     return LocalizedString.of(kaannos, Kaannos::otsikko);

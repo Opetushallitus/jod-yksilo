@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -100,6 +101,7 @@ public class Patevyys implements OsaamisenLahde {
     @Basic(optional = false)
     String nimi;
 
+    @Column(length = Integer.MAX_VALUE)
     String kuvaus;
 
     public boolean isEmpty() {
