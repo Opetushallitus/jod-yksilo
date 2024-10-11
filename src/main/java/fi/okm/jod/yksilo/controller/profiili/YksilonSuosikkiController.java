@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/suosikki")
+@RequestMapping("/api/profiili/suosikit")
 @RequiredArgsConstructor
 @Tag(name = "profiili/suosikki")
 class YksilonSuosikkiController {
