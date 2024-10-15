@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,9 +17,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
+import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
+import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.util.List;
 import java.util.UUID;
 import org.hibernate.AssertionFailure;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -29,33 +37,42 @@ import org.springframework.test.context.jdbc.Sql;
 @Sql("/data/create/yksilon-suosikki-test-data.sql")
 class YksilonSuosikkiServiceTest extends AbstractServiceTest {
 
-  private static final UUID[] TEST_IDS = {
-    UUID.fromString("00016334-886e-4d11-93f0-872fcf671920"),
-    UUID.fromString("00143beb-0817-4e6d-9107-57d0245b57ee"),
-    UUID.fromString("0014885a-4aa6-4202-9865-2fcb4457cc59")
-  };
-
   @Autowired YksilonSuosikkiService service;
+  @Autowired TyomahdollisuusRepository tyomahdollisuusRepository;
+  @Autowired KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
+
+  private List<UUID> tyomahdollisuusIds;
+  private List<UUID> koulutusmahdollisuusIds;
+
+  @BeforeEach
+  void setUp() {
+    tyomahdollisuusIds = tyomahdollisuusRepository.fetchAllIds().stream().toList();
+    koulutusmahdollisuusIds =
+        koulutusmahdollisuusRepository.findAll().stream().map(Koulutusmahdollisuus::getId).toList();
+  }
 
   @Test
   @WithMockUser
-  void testAddingAndGettingYksilonSuosikkit() throws AssertionFailure {
-    var newID = service.create(user, TEST_IDS[0], SuosikkiTyyppi.TYOMAHDOLLISUUS);
+  void testAdd() throws AssertionFailure {
+
+    final UUID kohdeId = tyomahdollisuusIds.getFirst();
+    var newID = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
     var suosikit = service.findAll(user, null);
+
     assertEquals(1L, suosikit.size());
     var suosikki = suosikit.getFirst();
     assertNotNull(suosikki.id());
     assertEquals(newID, suosikki.id());
     assertNotNull(suosikki.luotu());
-    assertEquals(TEST_IDS[0], suosikki.suosionKohdeId());
+    assertEquals(kohdeId, suosikki.suosionKohdeId());
     assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.tyyppi());
   }
 
   @Test
   @WithMockUser()
-  void testAddingSameAgainAndGettingYksilonSuosikkit() throws AssertionFailure {
-    var newID1 = service.create(user, TEST_IDS[1], SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.create(user, TEST_IDS[1], SuosikkiTyyppi.TYOMAHDOLLISUUS);
+  void testAddingSameAgain() throws AssertionFailure {
+    var newID1 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newID2 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
     assertEquals(newID1, newID2);
     var suosikit = service.findAll(user, null);
     assertEquals(1L, suosikit.size());
@@ -63,10 +80,11 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
 
   @Test
   @WithMockUser()
-  void testDeleteYksilonSuosikkit() throws AssertionFailure {
-    var newID1 = service.create(user, TEST_IDS[0], SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.create(user, TEST_IDS[1], SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID3 = service.create(user, TEST_IDS[2], SuosikkiTyyppi.TYOMAHDOLLISUUS);
+  void testDelete() throws AssertionFailure {
+    var newID1 = service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newID2 = service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newID3 =
+        service.add(user, koulutusmahdollisuusIds.get(0), SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS);
     var suosikitBeforeDelete = service.findAll(user, null);
     assertEquals(3L, suosikitBeforeDelete.size());
     service.delete(user, newID2);
@@ -76,5 +94,40 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
     assertTrue(ids.contains(newID1), "result contains new ID 1");
     assertTrue(ids.contains(newID3), "result contains new ID 2");
     assertFalse(ids.contains(newID2), "result does not contain removed ID");
+  }
+
+  @Test
+  @WithMockUser
+  void testAddWithWrongType() throws AssertionFailure {
+    assertThrows(
+        ServiceValidationException.class,
+        () ->
+            service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS));
+  }
+
+  @Test
+  @WithMockUser
+  void testAddNonexistentSuosikki() throws AssertionFailure {
+    assertThrows(
+        ServiceValidationException.class,
+        () -> service.add(user, UUID.randomUUID(), SuosikkiTyyppi.TYOMAHDOLLISUUS));
+  }
+
+  @Test
+  @WithMockUser
+  void testFindAllWithType() throws AssertionFailure {
+    service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var id =
+        service.add(user, koulutusmahdollisuusIds.getFirst(), SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS);
+    var suosikit = service.findAll(user, SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    assertEquals(2L, suosikit.size());
+    assertFalse(suosikit.stream().anyMatch(s -> id.equals(s.id())));
+  }
+
+  @Test
+  @WithMockUser
+  void testDeleteNonexistentSuosikki() throws AssertionFailure {
+    assertThrows(NotFoundException.class, () -> service.delete(user, UUID.randomUUID()));
   }
 }

@@ -16,14 +16,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface YksilonSuosikkiRepository extends JpaRepository<YksilonSuosikki, UUID> {
-  void deleteYksilonSuosikkiByYksiloAndId(Yksilo yksilo, UUID id);
+  long deleteByYksiloAndId(Yksilo yksilo, UUID id);
 
-  Optional<YksilonSuosikki> findYksilonSuosikkiByYksiloIdAndTyomahdollisuusId(
-      UUID yksiloId, UUID id);
+  List<YksilonSuosikki> findByYksilo(Yksilo yksilo);
 
-  List<YksilonSuosikki> findYksilonSuosikkiByYksilo(Yksilo yksilo);
+  List<YksilonSuosikki> findByYksiloAndTyyppi(Yksilo yksilo, SuosikkiTyyppi tyyppi);
 
-  List<YksilonSuosikki> findYksilonSuosikkiByYksiloAndTyyppi(Yksilo yksilo, SuosikkiTyyppi tyyppi);
+  @Query(
+      """
+      SELECT ys FROM YksilonSuosikki ys WHERE
+      ys.yksilo = :yksilo
+      AND ys.tyyppi = :tyyppi
+      AND ((ys.tyyppi = 'TYOMAHDOLLISUUS' AND ys.tyomahdollisuus.id = :kohdeId)
+      OR (ys.tyyppi = 'KOULUTUSMAHDOLLISUUS' AND  ys.koulutusmahdollisuus.id = :kohdeId))
+      """)
+  Optional<YksilonSuosikki> findBy(Yksilo yksilo, SuosikkiTyyppi tyyppi, UUID kohdeId);
 }
