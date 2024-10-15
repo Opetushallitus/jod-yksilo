@@ -29,6 +29,7 @@ public class KiinnostusService {
   private final YksiloRepository yksilot;
   private final OsaaminenRepository osaamiset;
 
+  @Transactional(readOnly = true)
   public Set<URI> getOsaamiset(JodUser user) {
     return yksilot.findOsaamisKiinnostukset(getYksilo(user)).stream()
         .map(URI::create)

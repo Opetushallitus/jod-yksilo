@@ -40,6 +40,7 @@ public class Koulutusmahdollisuus {
   @Id private UUID id;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private KoulutusmahdollisuusTyyppi tyyppi;
 
   @ElementCollection

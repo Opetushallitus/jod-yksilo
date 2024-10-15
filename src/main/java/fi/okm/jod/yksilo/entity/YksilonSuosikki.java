@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,48 +25,55 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
 
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "yksilo_id")})
 // TODO: move constraint to migration tool and add koulutusmahdollisuus type when available
-@Check(constraints = "tyomahdollisuus_id IS NOT NULL AND tyyppi = 'TYOMAHDOLLISUUS'")
-@AllArgsConstructor
-@NoArgsConstructor
+@Check(
+    constraints =
+        "(tyomahdollisuus_id IS NULL OR koulutusmahdollisuus_id IS NULL) AND ((tyyppi = 'TYOMAHDOLLISUUS' and tyomahdollisuus_id IS NOT NULL) OR (tyyppi = 'KOULUTUSMAHDOLLISUUS' and koulutusmahdollisuus_id IS NOT NULL))")
 public class YksilonSuosikki {
   @GeneratedValue @Id private UUID id;
 
-  @Column(name = "luotu", nullable = false, updatable = false)
-  private Instant createdAt;
+  @Column(nullable = false, updatable = false)
+  private Instant luotu = Instant.now();
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @ManyToOne
-  @JoinColumn(name = "tyomahdollisuus_id", referencedColumnName = "id")
+  @ManyToOne(fetch = FetchType.LAZY)
   private Tyomahdollisuus tyomahdollisuus;
 
-  @Column(name = "tyyppi", nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Koulutusmahdollisuus koulutusmahdollisuus;
+
   @Enumerated(EnumType.STRING)
   private SuosikkiTyyppi tyyppi;
 
+  protected YksilonSuosikki() {
+    // For JPA
+  }
+
   public YksilonSuosikki(Yksilo yksilo, Tyomahdollisuus tyomahdollisuus) {
-    this.id = UUID.randomUUID();
     this.yksilo = yksilo;
     this.tyomahdollisuus = tyomahdollisuus;
-    this.createdAt = Instant.now();
     this.tyyppi = SuosikkiTyyppi.TYOMAHDOLLISUUS;
+  }
+
+  public YksilonSuosikki(Yksilo yksilo, Koulutusmahdollisuus koulutusmahdollisuus) {
+    this.yksilo = yksilo;
+    this.koulutusmahdollisuus = koulutusmahdollisuus;
+    this.tyyppi = SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS;
   }
 
   public UUID getKohdeId() {
     return switch (tyyppi) {
       case TYOMAHDOLLISUUS -> tyomahdollisuus.getId();
-      case KOULUTUSMAHDOLLISUUS -> null;
+      case KOULUTUSMAHDOLLISUUS -> koulutusmahdollisuus.getId();
     };
   }
 }

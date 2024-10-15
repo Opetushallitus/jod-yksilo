@@ -32,16 +32,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/profiili/suosikit")
 @RequiredArgsConstructor
-@Tag(name = "profiili/suosikki")
+@Tag(name = "profiili/suosikit")
 class YksilonSuosikkiController {
   private final YksilonSuosikkiService service;
 
   @GetMapping
   @Operation(summary = "Finds all yksilon suosikit")
-  List<SuosikkiDto> get(
+  List<SuosikkiDto> findAll(
       @AuthenticationPrincipal JodUser user,
       @RequestParam(required = false) SuosikkiTyyppi tyyppi) {
     return service.findAll(user, tyyppi);
+  }
+
+  @PostMapping
+  @Operation(summary = "Add a Yksilo's suosikki")
+  UUID add(@AuthenticationPrincipal JodUser user, @RequestBody SuosikkiDto dto) {
+    return service.add(user, dto.suosionKohdeId(), dto.tyyppi());
   }
 
   @DeleteMapping
@@ -49,11 +55,5 @@ class YksilonSuosikkiController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@RequestParam UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);
-  }
-
-  @PostMapping
-  @Operation(summary = "Add a Yksilo's suosikki")
-  UUID post(@AuthenticationPrincipal JodUser user, @RequestBody SuosikkiDto dto) {
-    return service.create(user, dto.suosionKohdeId(), dto.tyyppi());
   }
 }
