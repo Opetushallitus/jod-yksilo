@@ -38,7 +38,7 @@ VALUES ('{
   },
   "osaamiset": {
     "kokonaismaara": 100,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "http://data.europa.eu/esco/skill/bfe4f330-d595-48c7-ab3c-f309471d6953",
@@ -60,7 +60,7 @@ VALUES ('{
   },
   "koulutusalaJakauma": {
     "kokonaismaara": 100,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "kansallinenkoulutusluokitus2016koulutusalataso2_031",
@@ -77,7 +77,7 @@ VALUES ('{
   "kestoMaksimi": 120,
   "maksullisuusJakauma": {
     "kokonaismaara": 18,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "maksullinen",
@@ -95,7 +95,7 @@ VALUES ('{
   },
   "opetustapaJakauma": {
     "kokonaismaara": 18,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "opetuspaikkakk_2#1",
@@ -113,7 +113,7 @@ VALUES ('{
   },
   "aikaJakauma": {
     "kokonaismaara": 18,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "opetusaikakk_2#1",
@@ -131,7 +131,7 @@ VALUES ('{
   },
   "kuntaJakauma": {
     "kokonaismaara": 18,
-    "tyhjienProsenttiosuus": 5,
+    "tyhjienMaara": 5,
     "arvot": [
       {
         "arvo": "Helsinki",
