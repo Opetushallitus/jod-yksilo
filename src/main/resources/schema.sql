@@ -38,8 +38,8 @@ BEGIN
   SELECT id,
          data ->> 'tyyppi',
          (data ->> 'kestoMinimi')::float(53),
-         (data -> 'kestoMediaani')::float(53),
-         (data -> 'kestoMaksimi')::float(53)
+         (data ->> 'kestoMediaani')::float(53),
+         (data ->> 'kestoMaksimi')::float(53)
   FROM koulutusmahdollisuus_data.import;
 
   INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id,
@@ -82,7 +82,7 @@ BEGIN
            SELECT d.id,
                   p.n,
                   (jsonb_path_query_first(d.data, p.p) -> 'kokonaismaara')::int,
-                  (jsonb_path_query_first(d.data, p.p) -> 'tyhjienProsenttiosuus')::int
+                  (jsonb_path_query_first(d.data, p.p) -> 'tyhjienMaara')::int
            FROM koulutusmahdollisuus_data.import d,
                 paths p
            WHERE jsonb_path_exists(d.data, p.p)
