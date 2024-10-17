@@ -19,15 +19,13 @@ import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -83,8 +81,7 @@ class TyomahdollisuudetController {
     if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
-      var emptyMetadata =
-          new EhdotusMetadata(OptionalDouble.empty(), Optional.empty(), OptionalInt.empty());
+      var emptyMetadata = new EhdotusMetadata(null, null, null);
       return tyomahdollisuusIds.stream().map(key -> new EhdotusDto(key, emptyMetadata)).toList();
     }
 
@@ -101,14 +98,11 @@ class TyomahdollisuudetController {
             .collect(Collectors.toMap(Suggestion::id, Suggestion::score, Double::max));
 
     return tyomahdollisuusIds.stream()
-        .map(
-            key ->
-                new EhdotusDto(
-                    key,
-                    new EhdotusMetadata(
-                        OptionalDouble.of(result.get(key)), Optional.empty(), OptionalInt.empty())))
+        .map(key -> new EhdotusDto(key, new EhdotusMetadata(result.get(key), null, null)))
         .sorted(
-            Comparator.comparingDouble((EhdotusDto e) -> e.ehdotusMetadata.pisteet.orElse(0d))
+            Comparator.comparingDouble(
+                    (EhdotusDto e) ->
+                        e.ehdotusMetadata.pisteet != null ? e.ehdotusMetadata.pisteet : 0)
                 .reversed())
         .toList();
   }
@@ -148,11 +142,11 @@ class TyomahdollisuudetController {
    *     opportunity associated with the proposal has been employed.
    */
   public record EhdotusMetadata(
-      OptionalDouble pisteet,
-      Optional<Trendi> trendi,
+      @Nullable Double pisteet,
+      @Nullable Trendi trendi,
 
       /** Value from 0 to */
-      OptionalInt tyollisyysNakyma) {}
+      @Nullable Integer tyollisyysNakyma) {}
 
   /**
    * This record models a proposal by including a reference to an opportunity that contains more
