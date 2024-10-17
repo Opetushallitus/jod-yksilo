@@ -48,6 +48,7 @@ configurations {
   annotationProcessor {
     resolutionStrategy.activateDependencyLocking()
   }
+  schemaSpy
 }
 
 dependencies {
@@ -124,6 +125,9 @@ dependencies {
 
   // spotbugs
   implementation "com.github.spotbugs:spotbugs-annotations:$spotbugsVersion"
+
+  schemaSpy 'org.schemaspy:schemaspy:6.2.4'
+  schemaSpy 'org.postgresql:postgresql'
 
 }
 
@@ -236,9 +240,7 @@ openApi {
   apiDocsUrl = "http://localhost:${port}/openapi/openapi.json"
   waitTimeInSeconds = 30
   customBootRun {
-    environment = [
-        COMPOSE_PROJECT_NAME: "jod-yksilo-openapi"
-    ]
+    environment = [COMPOSE_PROJECT_NAME: "jod-yksilo-openapi"]
     args = ["--spring.main.lazy-initialization=true",
             "--server.port=${port}",
             "--logging.level.root=ERROR",
@@ -246,8 +248,7 @@ openApi {
             "--logging.level.fi.okm.jod=ERROR",
             "--spring.config.additional-location=${projectDir}/src/test/resources/application-default.yml",
             "--spring.docker.compose.file=${projectDir}/compose-test.yml",
-            "--spring.docker.compose.stop.command=down",
-    ]
+            "--spring.docker.compose.stop.command=stop",]
   }
 }
 
@@ -261,4 +262,42 @@ tasks.named("dependencyUpdates").configure {
 
 cyclonedxBom {
   includeConfigs = ["runtimeClasspath"]
+}
+
+tasks.register("generateSchemaDocs", JavaExec) {
+  classpath = configurations.schemaSpy
+  mainClass = 'org.schemaspy.Main'
+  outputs.dir("build/schemaspy")
+  args = ['-t', 'pgsql11',
+          '-host', 'localhost',
+          '-port', '45432',
+          '-db', 'yksilo',
+          '-u', 'postgres',
+          '-p', 'postgres',
+          '-s', 'yksilo',
+          '-o', 'build/schemaspy',
+          '-imageformat', 'svg',
+          '-hq',
+          '-vizjs']
+
+  doFirst {
+    def port = new ServerSocket(0).withCloseable { socket -> socket.getLocalPort() }
+    def builder = new ProcessBuilder(javaLauncher.get().executablePath.toString(),
+        "-cp",
+        bootRun.classpath.asPath,
+        bootRun.mainClass.get(),
+        "--spring.main.lazy-initialization=true",
+        "--spring.docker.compose.file=${projectDir}/compose-test.yml",
+        "--spring.docker.compose.stop.command=down",
+        "--server.port=${port}")
+        .redirectError(file("build/tmp/application-error.log"))
+        .redirectOutput(file("build/tmp/application-output.log"))
+    builder.environment().put("COMPOSE_PROJECT_NAME", "jod-yksilo-schema")
+    ext.process = builder.start()
+    sleep(20000)
+  }
+  dependsOn tasks.resolveMainClassName, tasks.compileJava
+  doLast {
+    ext.process.destroy()
+  }
 }

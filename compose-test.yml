@@ -18,6 +18,7 @@ services:
     ports:
       - target: 5432
         host_ip: 127.0.0.1
+        published: 45432
     volumes:
       - ./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     labels:
