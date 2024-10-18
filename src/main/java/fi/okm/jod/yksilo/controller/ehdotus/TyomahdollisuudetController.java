@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.controller.ehdotus.TyomahdollisuudetController.Response
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.service.KoulutusmahdollisuusService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/api/ehdotus/tyomahdollisuudet")
+@RequestMapping(path = "/api/ehdotus/mahdollisuudet")
 @Slf4j
 @Tag(name = "ehdotus")
 class TyomahdollisuudetController {
@@ -45,16 +47,19 @@ class TyomahdollisuudetController {
   private final InferenceService<Request, Response> inferenceService;
   private final String endpoint;
   private final TyomahdollisuusService tyomahdollisuusService;
+  private final KoulutusmahdollisuusService koulutusmahdollisuusService;
   private final OsaaminenService osaaminenService;
 
   TyomahdollisuudetController(
       InferenceService<Request, Response> inferenceService,
       @Value("${jod.recommendation.tyomahdollisuus.endpoint}") String endpoint,
       TyomahdollisuusService tyomahdollisuusService,
+      KoulutusmahdollisuusService koulutusmahdollisuusService,
       OsaaminenService osaaminenService) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
     this.tyomahdollisuusService = tyomahdollisuusService;
+    this.koulutusmahdollisuusService = koulutusmahdollisuusService;
     this.osaaminenService = osaaminenService;
 
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
@@ -64,7 +69,12 @@ class TyomahdollisuudetController {
   @Timed
   public List<EhdotusDto> createEhdotus(@RequestBody @Valid LuoEhdotusDto ehdotus) {
 
+    // TODO: remove separate list when inference returs type
     var tyomahdollisuusIds = tyomahdollisuusService.fetchAllIds();
+
+    var ids = new HashSet<UUID>();
+    ids.addAll(tyomahdollisuusIds);
+    ids.addAll(koulutusmahdollisuusService.fetchAllIds());
 
     log.info("Creating a suggestion for tyomahdollisuudet");
 
@@ -81,8 +91,10 @@ class TyomahdollisuudetController {
     if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
-      var emptyMetadata = new EhdotusMetadata(null, null, null);
-      return tyomahdollisuusIds.stream().map(key -> new EhdotusDto(key, emptyMetadata)).toList();
+      return ids.stream()
+          .map(
+              key -> new EhdotusDto(key, EhdotusMetadata.empty(getTyyppi(key, tyomahdollisuusIds))))
+          .toList();
     }
 
     var request =
@@ -97,14 +109,26 @@ class TyomahdollisuudetController {
         inferenceService.infer(endpoint, request, Response.class).stream()
             .collect(Collectors.toMap(Suggestion::id, Suggestion::score, Double::max));
 
-    return tyomahdollisuusIds.stream()
-        .map(key -> new EhdotusDto(key, new EhdotusMetadata(result.get(key), null, null)))
+    return ids.stream()
+        .map(
+            key ->
+                new EhdotusDto(
+                    key,
+                    new EhdotusMetadata(
+                        result.get(key), getTyyppi(key, tyomahdollisuusIds), null, null)))
         .sorted(
             Comparator.comparingDouble(
                     (EhdotusDto e) ->
                         e.ehdotusMetadata.pisteet != null ? e.ehdotusMetadata.pisteet : 0)
                 .reversed())
         .toList();
+  }
+
+  // TODO: remove when inference returns type
+  private static MahdollisuusTyyppi getTyyppi(UUID key, Set<UUID> tyomahdollisuusIds) {
+    return tyomahdollisuusIds.contains(key)
+        ? MahdollisuusTyyppi.TYOMAHDOLLISUUS
+        : MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
   }
 
   /**
@@ -120,6 +144,11 @@ class TyomahdollisuudetController {
   public enum Trendi {
     NOUSEVA,
     LASKEVA
+  }
+
+  public enum MahdollisuusTyyppi {
+    TYOMAHDOLLISUUS,
+    KOULUTUSMAHDOLLISUUS
   }
 
   public record Request(Data data) {
@@ -143,10 +172,16 @@ class TyomahdollisuudetController {
    */
   public record EhdotusMetadata(
       @Nullable Double pisteet,
+      MahdollisuusTyyppi tyyppi,
       @Nullable Trendi trendi,
 
       /** Value from 0 to */
-      @Nullable Integer tyollisyysNakyma) {}
+      @Nullable Integer tyollisyysNakyma) {
+
+    public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi) {
+      return new EhdotusMetadata(null, tyyppi, null, null);
+    }
+  }
 
   /**
    * This record models a proposal by including a reference to an opportunity that contains more
