@@ -10,7 +10,12 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import java.util.SequencedSet;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusmahdollisuus, UUID> {}
+public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusmahdollisuus, UUID> {
+  @Query("SELECT k.id FROM Koulutusmahdollisuus k ORDER BY k.id")
+  SequencedSet<UUID> fetchAllIds();
+}
