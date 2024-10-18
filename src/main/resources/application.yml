@@ -86,5 +86,5 @@ jod:
   recommendation:
     skills:
       baseUrl: ""
-    tyomahdollisuus:
+    mahdollisuus:
       endpoint: ""
