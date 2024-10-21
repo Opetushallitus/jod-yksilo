@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.entity.tyomahdollisuus;
 
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.Jakauma;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,5 +48,6 @@ public class TyomahdollisuusJakauma implements Jakauma<TyomahdollisuusJakaumaTyy
 
   @ElementCollection
   @BatchSize(size = 100)
+  @CollectionTable(indexes = {@Index(columnList = "tyomahdollisuus_jakauma_id")})
   private List<Arvo> arvot;
 }
