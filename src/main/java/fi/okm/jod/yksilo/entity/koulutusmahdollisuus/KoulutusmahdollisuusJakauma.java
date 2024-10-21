@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.entity.koulutusmahdollisuus;
 
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.Jakauma;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,5 +48,6 @@ public class KoulutusmahdollisuusJakauma implements Jakauma<Koulutusmahdollisuus
 
   @ElementCollection
   @BatchSize(size = 100)
+  @CollectionTable(indexes = {@Index(columnList = "koulutusmahdollisuus_jakauma_id")})
   private List<Jakauma.Arvo> arvot;
 }
