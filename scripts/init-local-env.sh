@@ -6,7 +6,7 @@ if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   mkdir -p ./.run
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
-  aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/" ./tmp/data/ --exclude "*" --include "*.sql"
+  aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/" ./tmp/data/ --exclude "*" --include "*.sql" --include "*.csv"
   aws s3 sync "s3://${DEV_BUCKET}/tyomahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_tyomahdollisuus.json"
   aws s3 sync "s3://${DEV_BUCKET}/koulutusmahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_koulutusmahdollisuus.json"
 else
@@ -24,34 +24,38 @@ fi
 
 (
   cd ./tmp/data
-  echo 'DROP SCHEMA IF EXISTS esco_data CASCADE;'\
-   | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -U yksilo yksilo
   cat esco_data_scheme.sql\
    | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -U yksilo yksilo
+
   cat skills_*1_1_2.sql\
    | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -1 -U yksilo yksilo
 
-  echo "\
-  CREATE SCHEMA IF NOT EXISTS tyomahdollisuus_data;
-  CREATE TABLE IF NOT EXISTS tyomahdollisuus_data.import(
-    data jsonb not null,
-    id uuid generated always as ( (data ->> 'id')::uuid ) stored primary key);
-  TRUNCATE TABLE tyomahdollisuus_data.import;"\
-   | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -f - -U yksilo yksilo
-  <full_json_lines_tyomahdollisuus.json docker exec \
-    -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
-    -c "\COPY tyomahdollisuus_data.import(data) FROM STDIN (FORMAT text)"
+  for lang in "en" "fi" "sv"; do
+    <occupations_${lang}.csv docker exec \
+      -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
+      -c "SET esco.lang=${lang}" \
+      -c "\COPY esco_data.occupations(conceptType,conceptUri,iscoGroup,preferredLabel,altLabels,hiddenLabels,status,modifiedDate,regulatedProfessionNote,scopeNote,definition,inScheme,description,code) FROM STDIN (FORMAT CSV, HEADER true)"
+  done
 
-  echo "\
-    CREATE SCHEMA IF NOT EXISTS koulutusmahdollisuus_data;
-    CREATE TABLE IF NOT EXISTS koulutusmahdollisuus_data.import(
+  for lang in "en" "fi" "sv"; do
+    <ISCOGroups_${lang}.csv docker exec \
+      -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
+      -c "SET esco.lang=${lang}"\
+      -c "\COPY esco_data.occupations(conceptType,conceptUri,code,preferredLabel,status,altLabels,inScheme,description) FROM STDIN (FORMAT csv, HEADER true);"
+  done
+
+  for mahdollisuus in "tyomahdollisuus" "koulutusmahdollisuus"; do
+    echo "\
+    CREATE SCHEMA IF NOT EXISTS ${mahdollisuus}_data;
+    CREATE TABLE IF NOT EXISTS ${mahdollisuus}_data.import(
       data jsonb not null,
       id uuid generated always as ( (data ->> 'id')::uuid ) stored primary key);
-    TRUNCATE TABLE koulutusmahdollisuus_data.import;"\
-    | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -f - -U yksilo yksilo
-  <full_json_lines_koulutusmahdollisuus.json docker exec \
-    -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
-    -c "\COPY koulutusmahdollisuus_data.import(data) FROM STDIN (FORMAT text)"
+    TRUNCATE TABLE ${mahdollisuus}_data.import;"\
+     | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -f - -U yksilo yksilo
+    <full_json_lines_${mahdollisuus}.json docker exec \
+      -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
+      -c "\COPY ${mahdollisuus}_data.import(data) FROM STDIN (FORMAT text)"
+  done
 )
 
 if [[ $STARTED == true ]]; then
