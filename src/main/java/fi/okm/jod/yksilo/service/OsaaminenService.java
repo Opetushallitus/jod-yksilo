@@ -19,6 +19,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class OsaaminenService {
 
   public List<OsaaminenDto> findBy(Set<URI> uri) {
     var dtos = cache.get(SINGLETON_KEY);
-    return uri.stream().map(dtos::get).toList();
+    return uri.stream().map(dtos::get).filter(Objects::nonNull).toList();
   }
 
   public Map<URI, OsaaminenDto> getAll() {
