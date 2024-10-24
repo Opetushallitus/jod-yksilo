@@ -22,6 +22,7 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ class MahdollisuudetController {
     ids.addAll(tyomahdollisuusIds);
     ids.addAll(koulutusmahdollisuusService.fetchAllIds());
 
-    log.info("Creating a suggestion for tyomahdollisuudet");
+    log.info("Creating the suggestions");
 
     var osaamiset =
         ehdotus.osaamiset() == null
@@ -192,7 +193,7 @@ class MahdollisuudetController {
    *     opportunity associated with the proposal has been employed.
    */
   public record EhdotusMetadata(
-      MahdollisuusTyyppi tyyppi,
+      @NotNull MahdollisuusTyyppi tyyppi,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
 
