@@ -11,7 +11,8 @@ ALTER TABLE yksilo
 --
 -- KOULUTUSMAHDOLLISUUS data import
 --
-CREATE SCHEMA IF NOT EXISTS koulutusmahdollisuus_data;
+CREATE SCHEMA IF NOT EXISTS koulutusmahdollisuus_data
+;;;
 
 CREATE TABLE IF NOT EXISTS koulutusmahdollisuus_data.import (
   data jsonb,
@@ -102,7 +103,8 @@ END
 --
 -- TYÖMAHDOLLISUUS data import
 --
-CREATE SCHEMA IF NOT EXISTS tyomahdollisuus_data;
+CREATE SCHEMA IF NOT EXISTS tyomahdollisuus_data
+;;;
 
 CREATE TABLE IF NOT EXISTS tyomahdollisuus_data.import (
   data jsonb not null,
@@ -190,8 +192,8 @@ END
 
 CREATE SCHEMA IF NOT EXISTS esco_data;
 CREATE TABLE IF NOT EXISTS esco_data.skills_fi (
-  "conceptUri"     VARCHAR(128),
-  "preferredLabel" VARCHAR(128),
+  "conceptUri"     TEXT PRIMARY KEY,
+  "preferredLabel" TEXT NOT NULL,
   "description"    TEXT
 );
 CREATE TABLE IF NOT EXISTS esco_data.skills_en (
@@ -201,8 +203,26 @@ CREATE TABLE IF NOT EXISTS esco_data.skills_sv (
   LIKE esco_data.skills_fi
 );
 
+CREATE TABLE IF NOT EXISTS esco_data.occupations (
+  conceptType             text not null,
+  conceptUri              text not null,
+  lang                    text not null default current_setting('esco.lang'),
+  iscoGroup               text,
+  preferredLabel          text not null,
+  altLabels               text,
+  hiddenLabels            text,
+  status                  text,
+  modifiedDate            text,
+  regulatedProfessionNote text,
+  scopeNote               text,
+  definition              text,
+  inScheme                text,
+  description             text,
+  code                    text not null,
+  primary key (conceptUri, lang)
+);
 
-CREATE OR REPLACE PROCEDURE esco_data.import()
+CREATE OR REPLACE PROCEDURE esco_data.import_osaaminen()
   LANGUAGE SQL AS
 $$
 INSERT INTO osaaminen (uri)
@@ -236,5 +256,27 @@ SELECT o.id             AS osaaminen_id,
 FROM esco_data.skills_en e
        JOIN osaaminen o ON o.uri = e."conceptUri"
 ON CONFLICT DO NOTHING;
+$$
+;;;
+
+CREATE OR REPLACE PROCEDURE esco_data.import_ammatti()
+  LANGUAGE SQL AS
+$$
+INSERT INTO ammatti(uri, koodi)
+SELECT DISTINCT conceptUri, code
+FROM esco_data.occupations
+ON CONFLICT(uri) DO NOTHING;
+
+INSERT INTO ammatti_kaannos (ammatti_id, kaannos_key, kuvaus, nimi)
+SELECT a.id, upper(o.lang), o.description, o.preferredLabel
+FROM ammatti a
+       JOIN esco_data.occupations o on (a.uri = o.conceptUri)
+ON CONFLICT(ammatti_id, kaannos_key)
+  DO UPDATE SET kuvaus = excluded.kuvaus,
+                nimi   = excluded.nimi;
+
+INSERT INTO ammatti_versio AS v (versio)
+VALUES (1)
+ON CONFLICT (id) DO UPDATE SET versio = v.versio + 1;
 $$
 ;;;

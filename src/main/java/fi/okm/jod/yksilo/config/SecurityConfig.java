@@ -100,6 +100,7 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/ehdotus/**",
                         "/api/osaamiset",
+                        "/api/ammatit",
                         "/api/tyomahdollisuudet/**",
                         "/api/koulutusmahdollisuudet/**")
                     .permitAll()

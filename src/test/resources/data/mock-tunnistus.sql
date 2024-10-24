@@ -20,13 +20,13 @@ BEGIN
   END IF;
   RETURN id;
 END
-$$ LANGUAGE PLPGSQL;
-
+$$ LANGUAGE PLPGSQL
+;;;
 CREATE OR REPLACE FUNCTION tunnistus.remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS
 $$
 DELETE
 FROM tunnistus.henkilo
 WHERE yksilo_id = $1
 RETURNING yksilo_id
-$$ LANGUAGE SQL;
+$$ LANGUAGE SQL
 ;;;
