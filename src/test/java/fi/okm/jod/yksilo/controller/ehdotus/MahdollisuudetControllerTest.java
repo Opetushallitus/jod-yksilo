@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
+import static fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -107,10 +109,7 @@ class MahdollisuudetControllerTest {
     // KOULUTUSMAHDOLLISUUS
     assertTrue(
         r.stream()
-            .filter(
-                m ->
-                    m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetController.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS)
+            .filter(m -> m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS)
             .allMatch(
                 m ->
                     koulutusmahdollisuusIds.contains(m.mahdollisuusId())
@@ -132,17 +131,17 @@ class MahdollisuudetControllerTest {
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0), 0.99d, true, false),
+                tyomahdollisuusIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1), 0.89d, true, false),
+                tyomahdollisuusIds.get(1), 0.89d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, true, false),
+                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, false, true),
+                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, false, true),
+                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(2), 0.78d, false, true)));
+                koulutusmahdollisuusIds.get(2), 0.78d, KOULUTUSMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -192,10 +191,7 @@ class MahdollisuudetControllerTest {
     // KOULUTUSMAHDOLLISUUS
     assertTrue(
         r.stream()
-            .filter(
-                m ->
-                    m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetController.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS)
+            .filter(m -> m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS)
             .allMatch(
                 m ->
                     koulutusmahdollisuusIds.contains(m.mahdollisuusId())
@@ -218,19 +214,19 @@ class MahdollisuudetControllerTest {
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0), 0.99d, true, false),
+                tyomahdollisuusIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1), 0.89d, true, false),
+                tyomahdollisuusIds.get(1), 0.89d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, true, false),
+                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, false, true),
+                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, false, true),
+                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(2), 0.78d, false, true),
+                koulutusmahdollisuusIds.get(2), 0.78d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                UUID.randomUUID(), 0.78d, false, true)));
+                UUID.randomUUID(), 0.78d, KOULUTUSMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -269,16 +265,19 @@ class MahdollisuudetControllerTest {
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0), 0.99d, true, false),
+                tyomahdollisuusIds.get(0),
+                0.99d,
+                MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1), 0.89d, true, false),
+                tyomahdollisuusIds.get(1),
+                0.89d,
+                MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, true, false),
+                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, false, true),
+                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, false, true)));
-
+                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name())));
     var osaamiset =
         List.of(
             new OsaaminenDto(
@@ -313,7 +312,6 @@ class MahdollisuudetControllerTest {
             .allMatch(
                 m ->
                     m.ehdotusMetadata().pisteet() == null
-                        && m.ehdotusMetadata().tyyppi()
-                            == MahdollisuudetController.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS));
+                        && m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS));
   }
 }

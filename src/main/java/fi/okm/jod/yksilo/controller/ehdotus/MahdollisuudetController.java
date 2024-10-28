@@ -67,11 +67,12 @@ class MahdollisuudetController {
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
   }
 
-  private static MahdollisuusTyyppi getTyyppi(boolean tyo, boolean koulutus) {
-    if (tyo) return MahdollisuusTyyppi.TYOMAHDOLLISUUS;
-    if (koulutus) return MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
-    throw new IllegalArgumentException(
-        "Unknown mahdollisuus type. Either tyo or koulutus must be true.");
+  private static MahdollisuusTyyppi getTyyppi(String tyyppi) {
+    try {
+      return MahdollisuusTyyppi.valueOf(tyyppi);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException(String.format("Unknown mahdollisuus type. %s", tyyppi), e);
+    }
   }
 
   private static MahdollisuusTyyppi getTyyppi(UUID key, Set<UUID> tyomahdollisuusIds) {
@@ -133,18 +134,14 @@ class MahdollisuudetController {
                               "kohtaanto id {} not found from tyomahdollisuus or koulutus IDs",
                               key.toString());
                           var tyyppi = getTyyppi(key, tyomahdollisuusIds);
-                          return new Suggestion(
-                              key,
-                              -1,
-                              tyyppi == MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                              tyyppi == MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS);
+                          return new Suggestion(key, -1, tyyppi.name());
                         }))
         .map(
             r ->
                 new EhdotusDto(
                     r.id,
                     new EhdotusMetadata(
-                        getTyyppi(r.tyo, r.koulutus), r.score >= 0 ? r.score : null, null, null)))
+                        getTyyppi(r.type), r.score >= 0 ? r.score : null, null, null)))
         .sorted(
             Comparator.comparingDouble(
                     (EhdotusDto e) ->
@@ -233,6 +230,6 @@ class MahdollisuudetController {
 
   @SuppressWarnings("serial")
   static class Response extends ArrayList<Suggestion> {
-    record Suggestion(UUID id, double score, boolean tyo, boolean koulutus) {}
+    record Suggestion(UUID id, double score, String type) {}
   }
 }
