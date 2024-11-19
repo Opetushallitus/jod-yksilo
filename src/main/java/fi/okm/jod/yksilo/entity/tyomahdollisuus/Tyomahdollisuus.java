@@ -45,11 +45,15 @@ public class Tyomahdollisuus {
   @MapKeyColumn(name = "tyyppi")
   private Map<TyomahdollisuusJakaumaTyyppi, TyomahdollisuusJakauma> jakaumat;
 
+  @Column private String ammattiryhma;
+
   @Embeddable
   public record Kaannos(
       @Column(length = Integer.MAX_VALUE) String otsikko,
       @Column(length = Integer.MAX_VALUE) String tiivistelma,
-      @Column(length = Integer.MAX_VALUE) String kuvaus) {}
+      @Column(length = Integer.MAX_VALUE) String kuvaus,
+      @Column(length = Integer.MAX_VALUE) String tehtavat,
+      @Column(length = Integer.MAX_VALUE) String yleisetVaatimukset) {}
 
   public LocalizedString getOtsikko() {
     return LocalizedString.of(kaannos, Kaannos::otsikko);
@@ -61,5 +65,13 @@ public class Tyomahdollisuus {
 
   public LocalizedString getTiivistelma() {
     return LocalizedString.of(kaannos, Kaannos::tiivistelma);
+  }
+
+  public LocalizedString getTehtavat() {
+    return LocalizedString.of(kaannos, Kaannos::tehtavat);
+  }
+
+  public LocalizedString getYleisetVaatimukset() {
+    return LocalizedString.of(kaannos, Kaannos::yleisetVaatimukset);
   }
 }

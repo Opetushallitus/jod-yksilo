@@ -77,6 +77,9 @@ public class TyomahdollisuusService {
             entity.getOtsikko(),
             entity.getTiivistelma(),
             entity.getKuvaus(),
+            entity.getTehtavat(),
+            entity.getYleisetVaatimukset(),
+            entity.getAmmattiryhma(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
   }
