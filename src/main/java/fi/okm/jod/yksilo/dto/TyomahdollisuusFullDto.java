@@ -21,6 +21,9 @@ public record TyomahdollisuusFullDto(
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
+    LocalizedString tehtavat,
+    LocalizedString yleisetVaatimukset,
+    String ammattiryhma,
     @Schema(
             propertyNames = TyomahdollisuusJakaumaTyyppi.class,
             additionalPropertiesSchema = JakaumaDto.class)

@@ -126,24 +126,32 @@ CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
 BEGIN
   ATOMIC
 
-  INSERT INTO tyomahdollisuus(id)
-  SELECT id
-  FROM tyomahdollisuus_data.import;
+  INSERT INTO tyomahdollisuus(id, ammattiryhma)
+  SELECT i.id, i.data ->> 'ammattiryhma'
+  FROM tyomahdollisuus_data.import i;
 
   INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, otsikko,
-                                      tiivistelma,
-                                      kuvaus)
-  SELECT d.id,
-         CASE WHEN x.key = 'se' THEN 'SV' ELSE upper(x.key) END,
-         x.value AS nimi,
-         y.value AS tiivistelma,
-         z.value AS kuvaus
-  FROM tyomahdollisuus_data.import d,
-       jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') x
-         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') y
-                   ON (x.key = y.key)
-         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') z
-                   ON x.key = z.key;
+                                        tiivistelma,
+                                        kuvaus,
+                                        tehtavat,
+                                        yleiset_vaatimukset)
+SELECT d.id,
+       CASE WHEN o.key = 'se' THEN 'SV' ELSE upper(o.key) END,
+       o.value AS nimi,
+       t.value AS tiivistelma,
+       k.value AS kuvaus,
+       tt.value AS tehtavat,
+       yv.value AS yleiset_vaatimukset
+FROM tyomahdollisuus_data.import d,
+     jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') o
+      LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') t
+          ON (o.key = t.key)
+      LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
+          ON o.key = k.key
+      LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
+          ON o.key = tt.key
+      LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
+          ON o.key = yv.key;
 
   WITH paths AS (SELECT n, p::jsonpath
                  FROM (values ('OSAAMINEN', '$.osaamisvaatimukset.osaamiset'),
