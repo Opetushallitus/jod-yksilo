@@ -44,6 +44,6 @@ class LoginController {
       request.getSession().setAttribute(CALLBACK.getKey(), callback.getPath());
     }
 
-    response.sendRedirect(REDIRECT_URI);
+    response.sendRedirect(request.getContextPath() + REDIRECT_URI);
   }
 }

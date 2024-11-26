@@ -44,6 +44,8 @@ server:
       enabled: false
     include-stacktrace: never
     include-exception: false
+  servlet:
+    context-path: /yksilo
 
 springdoc:
   api-docs:

@@ -19,6 +19,8 @@ server:
   tomcat:
     custom:
       secure-connector: true
+  servlet:
+    context-path: /yksilo
 
 springdoc:
   api-docs:
