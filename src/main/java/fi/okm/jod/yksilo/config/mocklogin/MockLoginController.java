@@ -104,7 +104,7 @@ class MockLoginController {
         <body>
         <div class="login-container">
           <h2>JOD Yksilö Mock Login</h2>
-          <form method="post" action="/login">
+          <form method="post" action="{contextPath}/login">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
             <label for="password">Password</label>
@@ -116,6 +116,7 @@ class MockLoginController {
         </body>
         </html>
         """
+        .replace("{contextPath}", request.getContextPath())
         .replace("{csrf}", csrf.getToken());
   }
 }

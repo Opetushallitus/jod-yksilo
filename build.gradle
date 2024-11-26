@@ -237,7 +237,7 @@ sonar {
 openApi {
   def port = new ServerSocket(0).withCloseable { socket -> socket.getLocalPort() }
   outputDir = file("${projectDir}/build/openapi")
-  apiDocsUrl = "http://localhost:${port}/openapi/openapi.json"
+  apiDocsUrl = "http://localhost:${port}/yksilo/openapi/openapi.json"
   waitTimeInSeconds = 30
   customBootRun {
     environment = [COMPOSE_PROJECT_NAME: "jod-yksilo-openapi"]

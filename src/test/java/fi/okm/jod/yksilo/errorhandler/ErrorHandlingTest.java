@@ -78,7 +78,7 @@ class ErrorHandlingTest {
     var response =
         restClient
             .get()
-            .uri("/api/csrf")
+            .uri("/yksilo/api/csrf")
             .retrieve()
             .onStatus(HttpStatusCode::is4xxClientError, (req, resp) -> {})
             .toEntity(ErrorInfo.class);
