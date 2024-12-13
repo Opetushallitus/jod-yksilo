@@ -14,9 +14,9 @@ import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Response.Su
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
-import fi.okm.jod.yksilo.service.KoulutusmahdollisuusService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
-import fi.okm.jod.yksilo.service.TyomahdollisuusService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,17 +27,24 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,20 +55,17 @@ class MahdollisuudetController {
 
   private final InferenceService<Request, Response> inferenceService;
   private final String endpoint;
-  private final TyomahdollisuusService tyomahdollisuusService;
-  private final KoulutusmahdollisuusService koulutusmahdollisuusService;
+  private final MahdollisuudetService mahdollisuudetService;
   private final OsaaminenService osaaminenService;
 
   MahdollisuudetController(
       InferenceService<Request, Response> inferenceService,
       @Value("${jod.recommendation.mahdollisuus.endpoint}") String endpoint,
-      TyomahdollisuusService tyomahdollisuusService,
-      KoulutusmahdollisuusService koulutusmahdollisuusService,
+      MahdollisuudetService mahdollisuudetService,
       OsaaminenService osaaminenService) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
-    this.tyomahdollisuusService = tyomahdollisuusService;
-    this.koulutusmahdollisuusService = koulutusmahdollisuusService;
+    this.mahdollisuudetService = mahdollisuudetService;
     this.osaaminenService = osaaminenService;
 
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
@@ -83,22 +87,20 @@ class MahdollisuudetController {
 
   @PostMapping
   @Timed
-  public List<EhdotusDto> createEhdotus(@RequestBody @Valid LuoEhdotusDto ehdotus) {
-
-    var tyomahdollisuusIds = tyomahdollisuusService.fetchAllIds();
-
-    var ids = new HashSet<UUID>();
-    ids.addAll(tyomahdollisuusIds);
-    ids.addAll(koulutusmahdollisuusService.fetchAllIds());
-
+  public List<EhdotusDto> createEhdotus(
+      @RequestHeader(value = HttpHeaders.CONTENT_LANGUAGE, defaultValue = "fi") Kieli lang,
+      @RequestParam(defaultValue = "asc") Sort.Direction sort,
+      @RequestBody @Valid LuoEhdotusDto ehdotus) {
     log.info("Creating the suggestions");
+    final var mahdollisuusIds =
+        mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(sort, lang);
 
-    var osaamiset =
+    final var osaamiset =
         ehdotus.osaamiset() == null
             ? List.<OsaaminenDto>of()
             : osaaminenService.findBy(ehdotus.osaamiset);
 
-    var kiinnostukset =
+    final var kiinnostukset =
         ehdotus.kiinnostukset() == null
             ? List.<OsaaminenDto>of()
             : osaaminenService.findBy(ehdotus.kiinnostukset);
@@ -106,12 +108,17 @@ class MahdollisuudetController {
     if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
-      return ids.stream()
-          .map(
-              key -> new EhdotusDto(key, EhdotusMetadata.empty(getTyyppi(key, tyomahdollisuusIds))))
-          .toList();
+      return populateEmptyEhdotusDtos(mahdollisuusIds);
     }
 
+    // fetch kohtaanto results from inference endpoint and populate ehdotus DTOs
+    return populateEhdotusDtos(
+        mahdollisuusIds, performInferenceRequest(ehdotus, osaamiset, kiinnostukset));
+  }
+
+  private Map<UUID, Suggestion> performInferenceRequest(
+      LuoEhdotusDto ehdotus, List<OsaaminenDto> osaamiset, List<OsaaminenDto> kiinnostukset) {
+    // TODO: add language support when supported by kohtaanto inference endpoint
     var request =
         new Request(
             new Data(
@@ -120,34 +127,57 @@ class MahdollisuudetController {
                 ehdotus.kiinnostusPainotus,
                 kiinnostukset.stream().map(o -> o.nimi().get(Kieli.FI)).toList()));
 
-    var result =
-        inferenceService.infer(endpoint, request, Response.class).stream()
-            .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
+    return inferenceService.infer(endpoint, request, Response.class).stream()
+        .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
+  }
 
-    return ids.stream()
+  private List<EhdotusDto> populateEmptyEhdotusDtos(LinkedHashMap<UUID, MahdollisuusTyyppi> ids) {
+    final var counter = new AtomicInteger(0);
+    return ids.entrySet().stream()
         .map(
-            key ->
-                Optional.ofNullable(result.get(key))
-                    .orElseGet(
-                        () -> {
-                          log.warn(
-                              "kohtaanto id {} not found from tyomahdollisuus or koulutus IDs",
-                              key.toString());
-                          var tyyppi = getTyyppi(key, tyomahdollisuusIds);
-                          return new Suggestion(key, -1, tyyppi.name());
-                        }))
-        .map(
-            r ->
+            entry ->
                 new EhdotusDto(
-                    r.id,
-                    new EhdotusMetadata(
-                        getTyyppi(r.type), r.score >= 0 ? r.score : null, null, null)))
+                    entry.getKey(),
+                    EhdotusMetadata.empty(entry.getValue(), counter.getAndIncrement())))
+        .toList();
+  }
+
+  private List<EhdotusDto> populateEhdotusDtos(
+      LinkedHashMap<UUID, MahdollisuusTyyppi> ids, Map<UUID, Suggestion> suggestions) {
+    // initialize lexicalIndex counters
+    final var counter = new AtomicInteger(0);
+    return ids.entrySet().stream()
+        .map(
+            entry -> {
+
+              // Retrieve the result or create a new Suggestion if not found
+              Suggestion suggestion =
+                  Optional.ofNullable(suggestions.get(entry.getKey()))
+                      .orElseGet(supplyEmptySuggestion(entry.getKey(), entry.getValue()));
+
+              // Create and return EhdotusDto
+              return new EhdotusDto(
+                  suggestion.id,
+                  new EhdotusMetadata(
+                      MahdollisuusTyyppi.valueOf(suggestion.type),
+                      suggestion.score >= 0 ? suggestion.score : null,
+                      null,
+                      null,
+                      counter.getAndIncrement()));
+            })
         .sorted(
             Comparator.comparingDouble(
                     (EhdotusDto e) ->
                         e.ehdotusMetadata.pisteet != null ? e.ehdotusMetadata.pisteet : 0)
                 .reversed())
         .toList();
+  }
+
+  private static Supplier<Suggestion> supplyEmptySuggestion(UUID key, MahdollisuusTyyppi tyyppi) {
+    return () -> {
+      log.warn("kohtaanto id {} not found from tyomahdollisuus or koulutus IDs", key);
+      return new Suggestion(key, -1, tyyppi.name());
+    };
   }
 
   /**
@@ -163,11 +193,6 @@ class MahdollisuudetController {
   public enum Trendi {
     NOUSEVA,
     LASKEVA
-  }
-
-  public enum MahdollisuusTyyppi {
-    TYOMAHDOLLISUUS,
-    KOULUTUSMAHDOLLISUUS
   }
 
   public record Request(Data data) {
@@ -195,10 +220,11 @@ class MahdollisuudetController {
       @Nullable Trendi trendi,
 
       /** Value from 0 to */
-      @Nullable Integer tyollisyysNakyma) {
+      @Nullable Integer tyollisyysNakyma,
+      @NotNull Integer aakkosIndeksi) {
 
-    public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi) {
-      return new EhdotusMetadata(tyyppi, null, null, null);
+    public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi, int order) {
+      return new EhdotusMetadata(tyyppi, null, null, null, order);
     }
   }
 
