@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,11 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
-
-  @Cacheable("tyomahdollisuusMetadata")
-  public Set<UUID> fetchAllIds() {
-    return tyomahdollisuusRepository.fetchAllIds();
-  }
 
   public Page<TyomahdollisuusDto> findAll(Pageable pageable) {
     return tyomahdollisuusRepository

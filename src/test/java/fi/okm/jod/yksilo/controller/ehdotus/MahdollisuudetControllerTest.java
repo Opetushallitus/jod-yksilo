@@ -9,8 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
-import static fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
-import static fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -26,21 +26,23 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
-import fi.okm.jod.yksilo.service.KoulutusmahdollisuusService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
-import fi.okm.jod.yksilo.service.TyomahdollisuusService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import java.net.URI;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,9 +54,7 @@ class MahdollisuudetControllerTest {
 
   @Autowired ObjectMapper objectMapper;
   @Autowired private MockMvc mockMvc;
-  @MockBean private TyomahdollisuusService tyomahdollisuusService;
-
-  @MockBean private KoulutusmahdollisuusService koulutusmahdollisuusService;
+  @MockBean private MahdollisuudetService mahdollisuudetService;
 
   @MockBean private OsaaminenService osaaminenService;
 
@@ -69,11 +69,22 @@ class MahdollisuudetControllerTest {
         new MahdollisuudetController.LuoEhdotusDto(
             0.5, Collections.emptySet(), 0.5, Collections.emptySet());
 
-    var tyomahdollisuusIds = Set.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-    var koulutusmahdollisuusIds = Set.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    when(tyomahdollisuusService.fetchAllIds()).thenReturn(tyomahdollisuusIds);
-    when(koulutusmahdollisuusService.fetchAllIds()).thenReturn(koulutusmahdollisuusIds);
+    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
+        LinkedHashMap.newLinkedHashMap(3);
+    mahdollisuudet.putAll(
+        Map.of(
+            listOfIds.get(0), TYOMAHDOLLISUUS,
+            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(2), TYOMAHDOLLISUUS,
+            listOfIds.get(3), TYOMAHDOLLISUUS,
+            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(5), TYOMAHDOLLISUUS));
+
+    when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+            Sort.Direction.ASC, Kieli.FI))
+        .thenReturn(mahdollisuudet);
     var response =
         mockMvc
             .perform(
@@ -97,10 +108,10 @@ class MahdollisuudetControllerTest {
             .filter(
                 m ->
                     m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
+                        == MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
             .allMatch(
                 m ->
-                    tyomahdollisuusIds.contains(m.mahdollisuusId())
+                    mahdollisuudet.containsKey(m.mahdollisuusId())
                         && m.ehdotusMetadata().pisteet() == null
                         && m.ehdotusMetadata().trendi() == null
                         && m.ehdotusMetadata().tyollisyysNakyma() == null));
@@ -112,7 +123,7 @@ class MahdollisuudetControllerTest {
             .filter(m -> m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS)
             .allMatch(
                 m ->
-                    koulutusmahdollisuusIds.contains(m.mahdollisuusId())
+                    mahdollisuudet.containsKey(m.mahdollisuusId())
                         && m.ehdotusMetadata().pisteet() == null
                         && m.ehdotusMetadata().trendi() == null
                         && m.ehdotusMetadata().tyollisyysNakyma() == null));
@@ -125,23 +136,33 @@ class MahdollisuudetControllerTest {
         new MahdollisuudetController.LuoEhdotusDto(
             0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
 
-    var tyomahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-    var koulutusmahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
+
+    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
+        LinkedHashMap.newLinkedHashMap(3);
+    mahdollisuudet.putAll(
+        Map.of(
+            listOfIds.get(0), TYOMAHDOLLISUUS,
+            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(2), TYOMAHDOLLISUUS,
+            listOfIds.get(3), TYOMAHDOLLISUUS,
+            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(5), TYOMAHDOLLISUUS));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1), 0.89d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
+                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(2), 0.78d, KOULUTUSMAHDOLLISUUS.name())));
+                listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -150,8 +171,9 @@ class MahdollisuudetControllerTest {
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
-    when(tyomahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(tyomahdollisuusIds));
-    when(koulutusmahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(koulutusmahdollisuusIds));
+    when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+            Sort.Direction.ASC, Kieli.FI))
+        .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
     when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
@@ -178,10 +200,10 @@ class MahdollisuudetControllerTest {
             .filter(
                 m ->
                     m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
+                        == MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
             .allMatch(
                 m ->
-                    tyomahdollisuusIds.contains(m.mahdollisuusId())
+                    mahdollisuudet.containsKey(m.mahdollisuusId())
                         && m.ehdotusMetadata().pisteet() != null
                         && m.ehdotusMetadata().pisteet() > 0
                         && m.ehdotusMetadata().trendi() == null
@@ -194,7 +216,7 @@ class MahdollisuudetControllerTest {
             .filter(m -> m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS)
             .allMatch(
                 m ->
-                    koulutusmahdollisuusIds.contains(m.mahdollisuusId())
+                    mahdollisuudet.containsKey(m.mahdollisuusId())
                         && m.ehdotusMetadata().pisteet() != null
                         && m.ehdotusMetadata().pisteet() > 0
                         && m.ehdotusMetadata().trendi() == null
@@ -208,25 +230,33 @@ class MahdollisuudetControllerTest {
         new MahdollisuudetController.LuoEhdotusDto(
             0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
 
-    var tyomahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-    var koulutusmahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
+
+    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
+        LinkedHashMap.newLinkedHashMap(3);
+    mahdollisuudet.putAll(
+        Map.of(
+            listOfIds.get(0), TYOMAHDOLLISUUS,
+            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(2), TYOMAHDOLLISUUS,
+            listOfIds.get(3), TYOMAHDOLLISUUS,
+            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(5), TYOMAHDOLLISUUS));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1), 0.89d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
+                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(2), 0.78d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                UUID.randomUUID(), 0.78d, KOULUTUSMAHDOLLISUUS.name())));
+                listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -235,8 +265,9 @@ class MahdollisuudetControllerTest {
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
-    when(tyomahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(tyomahdollisuusIds));
-    when(koulutusmahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(koulutusmahdollisuusIds));
+    when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+            Sort.Direction.ASC, Kieli.FI))
+        .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
     when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
@@ -259,25 +290,33 @@ class MahdollisuudetControllerTest {
         new MahdollisuudetController.LuoEhdotusDto(
             0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
 
-    var tyomahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-    var koulutusmahdollisuusIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
+
+    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
+        LinkedHashMap.newLinkedHashMap(3);
+    mahdollisuudet.putAll(
+        Map.of(
+            listOfIds.get(0), TYOMAHDOLLISUUS,
+            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(2), TYOMAHDOLLISUUS,
+            listOfIds.get(3), TYOMAHDOLLISUUS,
+            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
+            listOfIds.get(5), TYOMAHDOLLISUUS));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(0),
-                0.99d,
-                MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS.name()),
+                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(1),
-                0.89d,
-                MahdollisuudetController.MahdollisuusTyyppi.TYOMAHDOLLISUUS.name()),
+                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                tyomahdollisuusIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(0), 0.98d, KOULUTUSMAHDOLLISUUS.name()),
+                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
             new MahdollisuudetController.Response.Suggestion(
-                koulutusmahdollisuusIds.get(1), 0.88d, KOULUTUSMAHDOLLISUUS.name())));
+                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+            new MahdollisuudetController.Response.Suggestion(
+                UUID.randomUUID(), 0.78d, TYOMAHDOLLISUUS.name())));
     var osaamiset =
         List.of(
             new OsaaminenDto(
@@ -285,8 +324,9 @@ class MahdollisuudetControllerTest {
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
-    when(tyomahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(tyomahdollisuusIds));
-    when(koulutusmahdollisuusService.fetchAllIds()).thenReturn(Set.copyOf(koulutusmahdollisuusIds));
+    when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+            Sort.Direction.ASC, Kieli.FI))
+        .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
     when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
@@ -305,13 +345,13 @@ class MahdollisuudetControllerTest {
         objectMapper.readValue(
             response.andReturn().getResponse().getContentAsString(),
             new TypeReference<List<MahdollisuudetController.EhdotusDto>>() {});
-    // assert that missing koulutusmahdollisuus was returned as empty with proper type
+    // assert that missing tyomahdollisusu was returned as empty with proper type
     assertTrue(
         r.stream()
-            .filter(m -> m.mahdollisuusId() == koulutusmahdollisuusIds.get(2))
+            .filter(m -> m.mahdollisuusId() == listOfIds.get(5))
             .allMatch(
                 m ->
                     m.ehdotusMetadata().pisteet() == null
-                        && m.ehdotusMetadata().tyyppi() == KOULUTUSMAHDOLLISUUS));
+                        && m.ehdotusMetadata().tyyppi() == TYOMAHDOLLISUUS));
   }
 }
