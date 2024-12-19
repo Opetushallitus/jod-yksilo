@@ -11,12 +11,15 @@ package fi.okm.jod.yksilo.service.ehdotus;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ServiceException;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.ClientHttpRequestFactories;
@@ -35,18 +38,21 @@ import org.springframework.web.client.RestClientException;
 public class OsaamisetEhdotusService {
 
   public static final int MAX_NUMBER_OF_SKILLS = 37;
-  public static final int MAX_NUMBER_OF_OCCUPATIONS = 1;
+  public static final int MAX_NUMBER_OF_OCCUPATIONS = 13;
   private final RestClient restClient;
   private final OsaaminenService osaamiset;
+  private final AmmattiService ammatit;
 
   public OsaamisetEhdotusService(
       OsaaminenService osaamiset,
+      AmmattiService ammatit,
       RestClient.Builder restClientBuilder,
       MappingJackson2HttpMessageConverter messageConverter,
       @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
     log.info("Creating OsaamisetEhdotusService, baseUrl: {}", baseUrl);
 
     this.osaamiset = osaamiset;
+    this.ammatit = ammatit;
 
     var requestFactory =
         ClientHttpRequestFactories.get(
@@ -76,7 +82,8 @@ public class OsaamisetEhdotusService {
 
     record Input(String text, int maxNumberOfSkills, int maxNumberOfOccupations, Kieli language) {}
     record Skill(URI uri, String label, URI skillType, double score) {}
-    record Result(List<Skill> skills) {}
+    record Occupation(URI uri, String label, double score) {}
+    record Result(List<Skill> skills, List<Occupation> occupations) {}
 
     log.info("Creating a suggestion for osaamiset");
     try {
@@ -93,23 +100,41 @@ public class OsaamisetEhdotusService {
               .retrieve()
               .body(Result.class);
 
-      if (result == null || result.skills() == null) {
+      if (result == null || (result.skills() == null && result.occupations() == null)) {
         return List.of();
       }
 
       var escoIdentifiers = osaamiset.getAll().keySet();
+      var escoOccupationIdentifiers = ammatit.getAll().keySet();
 
-      return result.skills().stream()
-          .filter(
-              s -> {
-                var exists = escoIdentifiers.contains(s.uri());
-                if (!exists && log.isDebugEnabled()) {
-                  log.debug("Unknown ESCO skill: {}", s.uri());
-                }
-                return exists;
-              })
-          .map(s -> new Ehdotus(s.uri, s.score()))
-          .toList();
+      List<Ehdotus> skills =
+          result.skills().stream()
+              .filter(
+                  s -> {
+                    var exists = escoIdentifiers.contains(s.uri());
+                    if (!exists && log.isDebugEnabled()) {
+                      log.debug("Unknown ESCO skill: {}", s.uri());
+                    }
+                    return exists;
+                  })
+              .map(s -> new Ehdotus(s.uri, s.score()))
+              .toList();
+
+      List<Ehdotus> occupations =
+          result.occupations().stream()
+              .filter(
+                  o -> {
+                    var exists = escoOccupationIdentifiers.contains(o.uri());
+                    if (!exists && log.isDebugEnabled()) {
+                      log.debug("Unknown ESCO occupation: {}", o.uri());
+                    }
+                    return exists;
+                  })
+              .map(s -> new Ehdotus(s.uri, s.score()))
+              .sorted((a, b) -> Double.compare(b.osuvuus(), a.osuvuus()))
+              .toList();
+
+      return Stream.of(skills, occupations).flatMap(List::stream).collect(Collectors.toList());
 
     } catch (RestClientException e) {
       log.error("Request failed", e);
