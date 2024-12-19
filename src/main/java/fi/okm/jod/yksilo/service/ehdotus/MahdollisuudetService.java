@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -33,21 +34,13 @@ public class MahdollisuudetService {
 
   private static final String SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS =
       """
-    SELECT tyomahdollisuus_id AS id, otsikko, 'TYOMAHDOLLISUUS' AS tyyppi
-    FROM tyomahdollisuus_kaannos tk
-    WHERE kaannos_key = :lang
-    UNION
-    SELECT koulutusmahdollisuus_id AS id, otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi
-    FROM koulutusmahdollisuus_kaannos kk
-    WHERE kaannos_key = :lang
-    ORDER BY otsikko
-    """;
-
-  private static final String SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS_ASC =
-      SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS + " ASC";
-
-  private static final String SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS_DESC =
-      SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS + " DESC";
+      SELECT * FROM (SELECT tyomahdollisuus_id AS id, otsikko, ''TYOMAHDOLLISUUS'' AS tyyppi
+      FROM tyomahdollisuus_kaannos tk
+      UNION
+      SELECT koulutusmahdollisuus_id AS id, otsikko, ''KOULUTUSMAHDOLLISUUS'' AS tyyppi
+      FROM koulutusmahdollisuus_kaannos kk
+      WHERE kaannos_key = :lang) ORDER BY otsikko COLLATE  "{0}" {1}
+      """;
 
   private final EntityManager entityManager;
 
@@ -60,14 +53,20 @@ public class MahdollisuudetService {
   @Cacheable("mahdollisuusIdsAndTypes")
   public LinkedHashMap<UUID, MahdollisuusTyyppi> fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
       Sort.Direction sort, Kieli lang) {
+    // build sql with order by clause with collate lang and sorting order
+    var sql =
+        MessageFormat.format(
+            SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS,
+            switch (lang) {
+              case FI -> "fi-x-icu";
+              case SV -> "sv-x-icu";
+              case EN -> "en-x-icu";
+            },
+            sort.name());
     // fetch id's and title translation directly from translations
     Query nativeQuery =
         entityManager
-            .createNativeQuery(
-                sort == Sort.Direction.ASC
-                    ? SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS_ASC
-                    : SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS_DESC,
-                TypedResult.class)
+            .createNativeQuery(sql, TypedResult.class)
             .setParameter("lang", lang.name().toUpperCase());
     @SuppressWarnings("unchecked")
     List<TypedResult> results = nativeQuery.getResultList();
