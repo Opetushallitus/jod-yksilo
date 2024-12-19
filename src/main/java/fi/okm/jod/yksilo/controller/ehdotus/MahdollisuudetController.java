@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Response.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi;
@@ -36,6 +38,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -57,16 +61,19 @@ class MahdollisuudetController {
   private final String endpoint;
   private final MahdollisuudetService mahdollisuudetService;
   private final OsaaminenService osaaminenService;
+  private final AmmattiService ammattiService;
 
   MahdollisuudetController(
       InferenceService<Request, Response> inferenceService,
       @Value("${jod.recommendation.mahdollisuus.endpoint}") String endpoint,
       MahdollisuudetService mahdollisuudetService,
-      OsaaminenService osaaminenService) {
+      OsaaminenService osaaminenService,
+      AmmattiService ammattiService) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
     this.mahdollisuudetService = mahdollisuudetService;
     this.osaaminenService = osaaminenService;
+    this.ammattiService = ammattiService;
 
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
   }
@@ -97,13 +104,19 @@ class MahdollisuudetController {
 
     final var osaamiset =
         ehdotus.osaamiset() == null
-            ? List.<OsaaminenDto>of()
-            : osaaminenService.findBy(ehdotus.osaamiset);
+            ? Set.<URI>of()
+            : Stream.concat(
+                osaaminenService.findBy(ehdotus.osaamiset).stream().map(OsaaminenDto::uri),
+                ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
+            .collect(Collectors.toSet());
 
     final var kiinnostukset =
         ehdotus.kiinnostukset() == null
-            ? List.<OsaaminenDto>of()
-            : osaaminenService.findBy(ehdotus.kiinnostukset);
+            ? Set.<URI>of()
+            : Stream.concat(
+                osaaminenService.findBy(ehdotus.kiinnostukset).stream().map(OsaaminenDto::uri),
+                ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
+            .collect(Collectors.toSet());;
 
     if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
@@ -117,15 +130,15 @@ class MahdollisuudetController {
   }
 
   private Map<UUID, Suggestion> performInferenceRequest(
-      LuoEhdotusDto ehdotus, List<OsaaminenDto> osaamiset, List<OsaaminenDto> kiinnostukset) {
+      LuoEhdotusDto ehdotus, Set<URI> osaamiset, Set<URI> kiinnostukset) {
     // TODO: add language support when supported by kohtaanto inference endpoint
     var request =
         new Request(
             new Data(
                 ehdotus.osaamisPainotus,
-                osaamiset.stream().map(o -> o.nimi().get(Kieli.FI)).toList(),
+                osaamiset,
                 ehdotus.kiinnostusPainotus,
-                kiinnostukset.stream().map(o -> o.nimi().get(Kieli.FI)).toList()));
+                kiinnostukset));
 
     return inferenceService.infer(endpoint, request, Response.class).stream()
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
@@ -198,9 +211,9 @@ class MahdollisuudetController {
   public record Request(Data data) {
     record Data(
         double osaamisPainotus,
-        List<String> osaamiset,
+        Set<URI> osaamiset,
         double kiinnostusPainotus,
-        List<String> kiinnostukset) {}
+        Set<URI> kiinnostukset) {}
   }
 
   /**
