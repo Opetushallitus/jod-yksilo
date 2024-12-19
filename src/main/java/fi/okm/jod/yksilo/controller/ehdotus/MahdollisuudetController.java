@@ -11,11 +11,8 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Response.Suggestion;
-import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.KoulutusmahdollisuusService;
-import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.micrometer.core.annotation.Timed;
@@ -50,19 +47,16 @@ class MahdollisuudetController {
   private final String endpoint;
   private final TyomahdollisuusService tyomahdollisuusService;
   private final KoulutusmahdollisuusService koulutusmahdollisuusService;
-  private final OsaaminenService osaaminenService;
 
   MahdollisuudetController(
       InferenceService<Request, Response> inferenceService,
       @Value("${jod.recommendation.mahdollisuus.endpoint}") String endpoint,
       TyomahdollisuusService tyomahdollisuusService,
-      KoulutusmahdollisuusService koulutusmahdollisuusService,
-      OsaaminenService osaaminenService) {
+      KoulutusmahdollisuusService koulutusmahdollisuusService) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
     this.tyomahdollisuusService = tyomahdollisuusService;
     this.koulutusmahdollisuusService = koulutusmahdollisuusService;
-    this.osaaminenService = osaaminenService;
 
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
   }
@@ -93,17 +87,7 @@ class MahdollisuudetController {
 
     log.info("Creating the suggestions");
 
-    var osaamiset =
-        ehdotus.osaamiset() == null
-            ? List.<OsaaminenDto>of()
-            : osaaminenService.findBy(ehdotus.osaamiset);
-
-    var kiinnostukset =
-        ehdotus.kiinnostukset() == null
-            ? List.<OsaaminenDto>of()
-            : osaaminenService.findBy(ehdotus.kiinnostukset);
-
-    if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
+    if (ehdotus.osaamiset.isEmpty() && ehdotus.kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
       return ids.stream()
@@ -116,9 +100,9 @@ class MahdollisuudetController {
         new Request(
             new Data(
                 ehdotus.osaamisPainotus,
-                osaamiset.stream().map(o -> o.nimi().get(Kieli.FI)).toList(),
+                ehdotus.osaamiset,
                 ehdotus.kiinnostusPainotus,
-                kiinnostukset.stream().map(o -> o.nimi().get(Kieli.FI)).toList()));
+                ehdotus.kiinnostukset));
 
     var result =
         inferenceService.infer(endpoint, request, Response.class).stream()
@@ -173,9 +157,9 @@ class MahdollisuudetController {
   public record Request(Data data) {
     record Data(
         double osaamisPainotus,
-        List<String> osaamiset,
+        Set<URI> osaamiset,
         double kiinnostusPainotus,
-        List<String> kiinnostukset) {}
+        Set<URI> kiinnostukset) {}
   }
 
   /**

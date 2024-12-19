@@ -19,6 +19,7 @@ import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.repository.AmmattiRepository;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -84,6 +85,15 @@ public class AmmattiService {
             values.size(),
             (values.size() + koko - 1) / koko);
     return new Versioned<>(value.version(), payload);
+  }
+
+  public List<AmmattiDto> findBy(Set<URI> uri) {
+    var dtos = cache.get(SINGLETON_KEY).payload();
+    return uri.stream().map(dtos::get).filter(Objects::nonNull).toList();
+  }
+
+  public Map<URI, AmmattiDto> getAll() {
+    return cache.get(SINGLETON_KEY).payload();
   }
 
   @RequiredArgsConstructor
