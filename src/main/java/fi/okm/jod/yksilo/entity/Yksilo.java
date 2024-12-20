@@ -46,6 +46,9 @@ public class Yksilo {
   @OneToMany(fetch = FetchType.LAZY)
   private Set<Osaaminen> osaamisKiinnostukset = new HashSet<>();
 
+  @OneToMany(fetch = FetchType.LAZY)
+  private Set<Ammatti> ammattiKiinnostukset = new HashSet<>();
+
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<YksilonSuosikki> suosikit;
 
@@ -60,5 +63,10 @@ public class Yksilo {
   public void setOsaamisKiinnostukset(Collection<Osaaminen> entities) {
     osaamisKiinnostukset.clear();
     osaamisKiinnostukset.addAll(entities);
+  }
+
+  public void setAmmattiKiinnostukset(Collection<Ammatti> entities) {
+    ammattiKiinnostukset.clear();
+    ammattiKiinnostukset.addAll(entities);
   }
 }

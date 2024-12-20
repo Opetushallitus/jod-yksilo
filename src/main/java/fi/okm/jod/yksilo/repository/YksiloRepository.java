@@ -25,4 +25,7 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @Query(value = "SELECT k.uri FROM Yksilo y JOIN y.osaamisKiinnostukset k WHERE y = :yksilo")
   Set<String> findOsaamisKiinnostukset(Yksilo yksilo);
+
+  @Query(value = "SELECT k.uri FROM Yksilo y JOIN y.ammattiKiinnostukset k WHERE y = :yksilo")
+  Set<String> findAmmattiKiinnostukset(Yksilo yksilo);
 }

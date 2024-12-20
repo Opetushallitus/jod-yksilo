@@ -13,9 +13,7 @@ import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.entity.Ammatti;
 import java.net.URI;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,6 +36,8 @@ public interface AmmattiRepository extends Repository<Ammatti, Long> {
   Page<Ammatti> findAll(Pageable page);
 
   Stream<Ammatti> findAll(Sort sort);
+
+  List<Ammatti> findByUriIn(Collection<String> uri);
 
   @Transactional(readOnly = true)
   default Versioned<Map<URI, AmmattiDto>> refreshAll(
