@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -106,17 +105,17 @@ class MahdollisuudetController {
         ehdotus.osaamiset() == null
             ? Set.<URI>of()
             : Stream.concat(
-                osaaminenService.findBy(ehdotus.osaamiset).stream().map(OsaaminenDto::uri),
-                ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
-            .collect(Collectors.toSet());
+                    osaaminenService.findBy(ehdotus.osaamiset).stream().map(OsaaminenDto::uri),
+                    ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
+                .collect(Collectors.toSet());
 
     final var kiinnostukset =
         ehdotus.kiinnostukset() == null
             ? Set.<URI>of()
             : Stream.concat(
-                osaaminenService.findBy(ehdotus.kiinnostukset).stream().map(OsaaminenDto::uri),
-                ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
-            .collect(Collectors.toSet());;
+                    osaaminenService.findBy(ehdotus.kiinnostukset).stream().map(OsaaminenDto::uri),
+                    ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
+                .collect(Collectors.toSet());
 
     if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
@@ -135,10 +134,7 @@ class MahdollisuudetController {
     var request =
         new Request(
             new Data(
-                ehdotus.osaamisPainotus,
-                osaamiset,
-                ehdotus.kiinnostusPainotus,
-                kiinnostukset));
+                ehdotus.osaamisPainotus, osaamiset, ehdotus.kiinnostusPainotus, kiinnostukset));
 
     return inferenceService.infer(endpoint, request, Response.class).stream()
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));

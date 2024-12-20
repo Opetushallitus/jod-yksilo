@@ -26,6 +26,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
+import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
@@ -57,6 +58,7 @@ class MahdollisuudetControllerTest {
   @MockBean private MahdollisuudetService mahdollisuudetService;
 
   @MockBean private OsaaminenService osaaminenService;
+  @MockBean private AmmattiService ammattiService;
 
   @MockBean
   private InferenceService<MahdollisuudetController.Request, MahdollisuudetController.Response>
