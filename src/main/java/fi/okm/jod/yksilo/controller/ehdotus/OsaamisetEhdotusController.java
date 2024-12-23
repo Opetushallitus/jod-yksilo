@@ -39,7 +39,7 @@ class OsaamisetEhdotusController {
   @Timed
   public ResponseEntity<List<Ehdotus>> createEhdotus(
       @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus) {
-    if (kuvaus.asMap().keySet().size() > 1) {
+    if (kuvaus.asMap().size() > 1) {
       throw new IllegalArgumentException("Ambiguous request, only one language version allowed");
     }
     return ResponseEntity.ok(service.createEhdotus(kuvaus));

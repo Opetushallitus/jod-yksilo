@@ -65,7 +65,7 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       HttpStatusCode status,
       WebRequest request) {
     var details =
-        ex.getAllValidationResults().stream()
+        ex.getParameterValidationResults().stream()
             .flatMap(e -> e.getResolvableErrors().stream().map(r -> r.getDefaultMessage()))
             .toList();
     var info = errorInfo.of(ErrorCode.VALIDATION_FAILURE, details);

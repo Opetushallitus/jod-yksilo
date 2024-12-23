@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.ClientHttpRequestFactories;
-import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -55,10 +54,16 @@ public class OsaamisetEhdotusService {
     this.ammatit = ammatit;
 
     var requestFactory =
-        ClientHttpRequestFactories.get(
-            ClientHttpRequestFactorySettings.DEFAULTS
-                .withConnectTimeout(Duration.ofMillis(5000))
-                .withReadTimeout(Duration.ofMillis(10000)));
+        ClientHttpRequestFactoryBuilder.jdk()
+            .withHttpClientCustomizer(
+                builder -> {
+                  builder.connectTimeout(Duration.ofMillis(5000));
+                })
+            .withCustomizer(
+                c -> {
+                  c.setReadTimeout(Duration.ofMillis(5000));
+                })
+            .build();
 
     this.restClient =
         restClientBuilder

@@ -77,20 +77,6 @@ class MahdollisuudetController {
     log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
   }
 
-  private static MahdollisuusTyyppi getTyyppi(String tyyppi) {
-    try {
-      return MahdollisuusTyyppi.valueOf(tyyppi);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String.format("Unknown mahdollisuus type. %s", tyyppi), e);
-    }
-  }
-
-  private static MahdollisuusTyyppi getTyyppi(UUID key, Set<UUID> tyomahdollisuusIds) {
-    return tyomahdollisuusIds.contains(key)
-        ? MahdollisuusTyyppi.TYOMAHDOLLISUUS
-        : MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
-  }
-
   @PostMapping
   @Timed
   public List<EhdotusDto> createEhdotus(

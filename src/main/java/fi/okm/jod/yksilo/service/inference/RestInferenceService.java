@@ -11,8 +11,7 @@ package fi.okm.jod.yksilo.service.inference;
 
 import fi.okm.jod.yksilo.service.ServiceException;
 import java.time.Duration;
-import org.springframework.boot.web.client.ClientHttpRequestFactories;
-import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
@@ -29,10 +28,16 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
       RestClient.Builder restClientBuilder, MappingJackson2HttpMessageConverter messageConverter) {
 
     var requestFactory =
-        ClientHttpRequestFactories.get(
-            ClientHttpRequestFactorySettings.DEFAULTS
-                .withConnectTimeout(Duration.ofMillis(5000))
-                .withReadTimeout(Duration.ofMillis(10000)));
+        ClientHttpRequestFactoryBuilder.jdk()
+            .withHttpClientCustomizer(
+                builder -> {
+                  builder.connectTimeout(Duration.ofMillis(5000));
+                })
+            .withCustomizer(
+                c -> {
+                  c.setReadTimeout(Duration.ofMillis(5000));
+                })
+            .build();
 
     this.restClient =
         restClientBuilder
