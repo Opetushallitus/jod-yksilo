@@ -71,4 +71,15 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
   public String getRelyingPartyRegistrationId() {
     return super.getRelyingPartyRegistrationId();
   }
+
+  // for SpotBugs, intentionally using the inherited equals and hashCode
+  @Override
+  public boolean equals(Object object) {
+    return super.equals(object);
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

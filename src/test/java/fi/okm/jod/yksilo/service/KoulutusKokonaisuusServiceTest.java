@@ -79,6 +79,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
           simulateCommit();
 
           service.delete(user, id);
+          simulateCommit();
         });
   }
 }

@@ -41,11 +41,11 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -55,12 +55,12 @@ class MahdollisuudetControllerTest {
 
   @Autowired ObjectMapper objectMapper;
   @Autowired private MockMvc mockMvc;
-  @MockBean private MahdollisuudetService mahdollisuudetService;
+  @MockitoBean private MahdollisuudetService mahdollisuudetService;
 
-  @MockBean private OsaaminenService osaaminenService;
-  @MockBean private AmmattiService ammattiService;
+  @MockitoBean private OsaaminenService osaaminenService;
+  @MockitoBean private AmmattiService ammattiService;
 
-  @MockBean
+  @MockitoBean
   private InferenceService<MahdollisuudetController.Request, MahdollisuudetController.Response>
       inferenceService;
 
