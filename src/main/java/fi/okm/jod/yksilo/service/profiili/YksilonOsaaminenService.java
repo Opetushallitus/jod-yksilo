@@ -117,7 +117,6 @@ public class YksilonOsaaminenService {
   }
 
   void deleteAll(Set<YksilonOsaaminen> osaamiset) {
-    // Note. bypasses persistence context
-    repository.deleteAllInBatch(osaamiset);
+    repository.deleteAll(osaamiset);
   }
 }
