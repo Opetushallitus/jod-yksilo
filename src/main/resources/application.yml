@@ -90,3 +90,5 @@ jod:
       baseUrl: ""
     mahdollisuus:
       endpoint: ""
+  keskustelu:
+    endpoint: ""

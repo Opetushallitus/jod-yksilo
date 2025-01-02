@@ -13,7 +13,9 @@ import brave.Tracer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceOverloadedException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
@@ -42,24 +44,49 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
 
   @Override
   public R infer(String endpoint, T payload, Class<R> responseType) {
+    return inferInternal(endpoint, null, payload, responseType).data();
+  }
+
+  @Override
+  public InferenceSession<R> infer(
+      String endpoint, UUID sessionId, T payload, Class<R> responseType) {
+    return inferInternal(
+        endpoint, sessionId != null ? sessionId.toString() : "NEW_SESSION", payload, responseType);
+  }
+
+  private InferenceSession<R> inferInternal(
+      String endpoint, String sessionId, T payload, Class<R> responseType) {
     try {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
+              .sessionId(sessionId)
               .customAttributes(tracer.currentSpan().context().traceIdString())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();
 
       var response = sageMakerClient.invokeEndpoint(request);
-      return objectMapper.readValue(response.body().asInputStream(), responseType);
+      if (sessionId != null && sessionId.equals("NEW_SESSION")) {
+        return new InferenceSession<>(
+            objectMapper.readValue(response.body().asInputStream(), responseType),
+            UUID.fromString(
+                response.newSessionId().substring(0, response.newSessionId().indexOf(";"))));
+      } else {
+        return new InferenceSession<>(
+            objectMapper.readValue(response.body().asInputStream(), responseType),
+            (sessionId != null ? UUID.fromString(sessionId) : null));
+      }
     } catch (IOException e) {
       throw new ServiceException("Invoking SageMaker failed", e);
-    } catch (SageMakerRuntimeException se) {
-      if ("ThrottlingException".equals(se.awsErrorDetails().errorCode())) {
-        throw new ServiceOverloadedException("SageMaker is throttling requests", se);
+    } catch (SageMakerRuntimeException e) {
+      if ("ThrottlingException".equals(e.awsErrorDetails().errorCode())) {
+        throw new ServiceOverloadedException("SageMaker is throttling requests", e);
       }
-      throw new ServiceException("Inference failed", se);
+      if ("ValidationError".equals(e.awsErrorDetails().errorCode())) {
+        throw new ServiceValidationException("Invalid request", e);
+      }
+      throw new ServiceException("Inference failed", e);
     }
   }
 }

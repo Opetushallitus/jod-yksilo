@@ -9,7 +9,13 @@
 
 package fi.okm.jod.yksilo.service.inference;
 
+import java.util.UUID;
+
 public interface InferenceService<T, R> {
 
   R infer(String endpoint, T payload, Class<R> responseType);
+
+  InferenceSession<R> infer(String endpoint, UUID sessionId, T payload, Class<R> responseType);
+
+  record InferenceSession<R>(R data, UUID sessionId) {}
 }
