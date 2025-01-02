@@ -102,7 +102,8 @@ public class SecurityConfig {
                         "/api/osaamiset",
                         "/api/ammatit",
                         "/api/tyomahdollisuudet/**",
-                        "/api/koulutusmahdollisuudet/**")
+                        "/api/koulutusmahdollisuudet/**",
+                        "/api/keskustelut/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

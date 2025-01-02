@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.inference;
 
 import fi.okm.jod.yksilo.service.ServiceException;
 import java.time.Duration;
+import java.util.UUID;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -29,14 +30,8 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
 
     var requestFactory =
         ClientHttpRequestFactoryBuilder.jdk()
-            .withHttpClientCustomizer(
-                builder -> {
-                  builder.connectTimeout(Duration.ofMillis(5000));
-                })
-            .withCustomizer(
-                c -> {
-                  c.setReadTimeout(Duration.ofMillis(5000));
-                })
+            .withHttpClientCustomizer(builder -> builder.connectTimeout(Duration.ofMillis(5000)))
+            .withCustomizer(c -> c.setReadTimeout(Duration.ofMillis(5000)))
             .build();
 
     this.restClient =
@@ -57,5 +52,11 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
     } catch (RestClientException e) {
       throw new ServiceException("Invoking Inference Endpoint failed", e);
     }
+  }
+
+  @Override
+  public InferenceSession<R> infer(
+      String endpoint, UUID sessionId, T payload, Class<R> responseType) {
+    throw new UnsupportedOperationException("Session is not supported by this inference service");
   }
 }
