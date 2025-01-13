@@ -42,3 +42,9 @@ management:
       export:
         namespace: "jod/yksilo"
         batch-size: 20
+
+jod:
+  integraatio:
+    koski:
+      hosts:
+        - "testiopintopolku.fi"

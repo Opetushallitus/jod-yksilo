@@ -6,3 +6,9 @@ spring:
   sql:
     init:
       mode: never
+
+jod:
+  integraatio:
+    koski:
+      hosts:
+        - "testiopintopolku.fi"
