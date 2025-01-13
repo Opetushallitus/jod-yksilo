@@ -128,6 +128,7 @@ dependencies {
   schemaSpy 'org.schemaspy:schemaspy:6.2.4'
   schemaSpy 'org.postgresql:postgresql'
 
+  implementation 'com.jayway.jsonpath:json-path:2.9.0'
 }
 
 tasks.named('test', Test) {
