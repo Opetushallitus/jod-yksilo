@@ -6,7 +6,10 @@ spring:
   sql:
     init:
       mode: never
-
+  cloud:
+    aws:
+      parameterstore:
+        enabled: false
 jod:
   integraatio:
     koski:
