@@ -8,6 +8,7 @@ spring:
       parameterstore:
         reload:
           period: 15m
+        enabled: true
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
 server:

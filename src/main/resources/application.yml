@@ -35,6 +35,10 @@ spring:
     type: caffeine
     caffeine:
       spec: initialCapacity=100,maximumSize=500,expireAfterWrite=600s
+  cloud:
+    aws:
+      parameterstore:
+        enabled: false
 
 server:
   compression:
