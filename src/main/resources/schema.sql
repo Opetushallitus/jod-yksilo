@@ -199,17 +199,24 @@ END
 --
 
 CREATE SCHEMA IF NOT EXISTS esco_data;
-CREATE TABLE IF NOT EXISTS esco_data.skills_fi (
-  "conceptUri"     TEXT PRIMARY KEY,
-  "preferredLabel" TEXT NOT NULL,
-  "description"    TEXT
-);
-CREATE TABLE IF NOT EXISTS esco_data.skills_en (
-  LIKE esco_data.skills_fi
-);
-CREATE TABLE IF NOT EXISTS esco_data.skills_sv (
-  LIKE esco_data.skills_fi
-);
+
+CREATE TABLE IF NOT EXISTS esco_data.skills (
+  conceptUri text not null,
+  lang text not null default current_setting('esco.lang'),
+  preferredLabel text not null,
+  description text,
+  conceptType text,
+  skillType text,
+  reuseLevel text,
+  altLabels text,
+  hiddenLabels text,
+  status text,
+  modifiedDate text,
+  scopeNote text,
+  definition text,
+  inScheme text,
+  primary key (conceptUri, lang)
+  );
 
 CREATE TABLE IF NOT EXISTS esco_data.occupations (
   conceptType             text not null,
@@ -233,37 +240,22 @@ CREATE TABLE IF NOT EXISTS esco_data.occupations (
 CREATE OR REPLACE PROCEDURE esco_data.import_osaaminen()
   LANGUAGE SQL AS
 $$
-INSERT INTO osaaminen (uri)
-SELECT "conceptUri" AS uri
-FROM esco_data.skills_fi
-ON CONFLICT DO NOTHING;
+INSERT INTO osaaminen(uri)
+SELECT DISTINCT conceptUri
+FROM esco_data.skills
+  ON CONFLICT(uri) DO NOTHING;
 
 INSERT INTO osaaminen_kaannos (osaaminen_id, kaannos_key, kuvaus, nimi)
-SELECT o.id             AS osaaminen_id,
-       'FI'             AS kaannos_key,
-       description      AS kuvaus,
-       "preferredLabel" AS nimi
-FROM esco_data.skills_fi e
-       JOIN osaaminen o ON o.uri = e."conceptUri"
-ON CONFLICT DO NOTHING;
+SELECT o.id, upper(s.lang), s.description, s.preferredLabel
+FROM osaaminen o
+       JOIN esco_data.skills s on (o.uri = s.conceptUri)
+  ON CONFLICT(osaaminen_id, kaannos_key)
+  DO UPDATE SET kuvaus = excluded.kuvaus,
+         nimi   = excluded.nimi;
 
-INSERT INTO osaaminen_kaannos (osaaminen_id, kaannos_key, kuvaus, nimi)
-SELECT o.id             AS osaaminen_id,
-       'SV'             AS kaannos_key,
-       description      AS kuvaus,
-       "preferredLabel" AS nimi
-FROM esco_data.skills_sv e
-       JOIN osaaminen o ON o.uri = e."conceptUri"
-ON CONFLICT DO NOTHING;
-
-INSERT INTO osaaminen_kaannos (osaaminen_id, kaannos_key, kuvaus, nimi)
-SELECT o.id             AS osaaminen_id,
-       'EN'             AS kaannos_key,
-       description      AS kuvaus,
-       "preferredLabel" AS nimi
-FROM esco_data.skills_en e
-       JOIN osaaminen o ON o.uri = e."conceptUri"
-ON CONFLICT DO NOTHING;
+INSERT INTO osaaminen_versio AS v (versio)
+VALUES (1)
+ON CONFLICT (id) DO UPDATE SET versio = v.versio + 1;
 $$
 ;;;
 

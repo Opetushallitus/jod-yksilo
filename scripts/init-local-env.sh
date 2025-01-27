@@ -24,11 +24,15 @@ fi
 
 (
   cd ./tmp/data
-  cat esco_data_scheme.sql\
+  cat esco_data_scheme_2.sql\
    | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -U yksilo yksilo
 
-  cat skills_*1_1_2.sql\
-   | docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -f - -1 -U yksilo yksilo
+  for lang in "en" "fi" "sv"; do
+    <skills_${lang}.csv docker exec \
+      -i -e PGPASSWORD=yksilo "$DB" psql -q -U yksilo yksilo \
+      -c "SET esco.lang=${lang}" \
+      -c "\COPY esco_data.skills(conceptType,conceptUri,skillType,reuseLevel,preferredLabel,altLabels,hiddenLabels,status,modifiedDate,scopeNote,definition,inScheme,description) FROM STDIN (FORMAT CSV, HEADER true)"
+  done
 
   for lang in "en" "fi" "sv"; do
     <occupations_${lang}.csv docker exec \
