@@ -1,7 +1,10 @@
+
 logging:
   level:
     root: INFO
     fi.okm.jod: DEBUG
+  exception-conversion-word:
+
 spring:
   sql:
     init:
@@ -9,6 +12,12 @@ spring:
   cloud:
     aws:
       parameterstore:
+        enabled: false
+
+management:
+  simple:
+    metrics:
+      export:
         enabled: false
 jod:
   integraatio:

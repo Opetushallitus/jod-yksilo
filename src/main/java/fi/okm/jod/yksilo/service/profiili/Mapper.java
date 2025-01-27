@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
+import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
@@ -24,6 +25,7 @@ import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
@@ -122,6 +124,18 @@ public final class Mapper {
         ? null
         : new YksilonOsaaminenDto(
             entity.getId(), mapOsaaminen(entity.getOsaaminen()), mapOsaamisenLahde(entity));
+  }
+
+  public static PaamaaraDto mapPaamaara(Paamaara entity) {
+    return entity == null
+        ? null
+        : new PaamaaraDto(
+            entity.getId(),
+            entity.getTyyppi(),
+            entity.getMahdollisuusTyyppi(),
+            entity.getMahdollisuusId(),
+            entity.getTavoite(),
+            entity.getLuotu());
   }
 
   private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {

@@ -34,7 +34,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 @Import({YksilonSuosikkiService.class})
-@Sql("/data/create/yksilon-suosikki-test-data.sql")
+@Sql("/data/mahdollisuudet-test-data.sql")
 class YksilonSuosikkiServiceTest extends AbstractServiceTest {
 
   @Autowired YksilonSuosikkiService service;

@@ -37,10 +37,12 @@ public abstract class AbstractServiceTest {
 
   @Autowired protected TestEntityManager entityManager;
   protected TestJodUser user;
+  protected TestJodUser user2;
 
   @BeforeEach
   public void setUpUser() {
     this.user = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
+    this.user2 = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
   }
 
   /** Simulates commit by flushing and clearing the entity manager. */
