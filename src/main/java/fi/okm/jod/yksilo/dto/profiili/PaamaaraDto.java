@@ -11,16 +11,22 @@ package fi.okm.jod.yksilo.dto.profiili;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
-import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
+import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.UUID;
 
-public record SuosikkiDto(
+public record PaamaaraDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
-    @NotNull UUID suosionKohdeId,
-    @NotNull SuosikkiTyyppi tyyppi,
+    @NotNull PaamaaraTyyppi tyyppi,
+    @NotNull MahdollisuusTyyppi mahdollisuusTyyppi,
+    @NotNull UUID mahdollisuusId,
+    @Size(max = 10000) @PrintableString LocalizedString tavoite,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu) {}

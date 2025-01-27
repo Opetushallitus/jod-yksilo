@@ -19,6 +19,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -126,6 +127,13 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   @ExceptionHandler(IllegalArgumentException.class)
   protected ResponseEntity<Object> handleServiceException(
       IllegalArgumentException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      DataIntegrityViolationException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }

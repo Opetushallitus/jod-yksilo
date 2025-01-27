@@ -30,7 +30,7 @@ compileJava {
 
 repositories {
   mavenCentral()
-  maven { url "https://build.shibboleth.net/nexus/content/repositories/releases/" }
+  maven { url = "https://build.shibboleth.net/nexus/content/repositories/releases/" }
 }
 
 ext {
@@ -48,6 +48,7 @@ configurations {
     resolutionStrategy.activateDependencyLocking()
   }
   schemaSpy
+  mockitoAgent
 }
 
 dependencies {
@@ -92,6 +93,8 @@ dependencies {
   implementation 'org.bouncycastle:bcutil-jdk18on:1.80'
   implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
 
+  implementation 'com.jayway.jsonpath:json-path:2.9.0'
+
   // OpenAPI API description and Swagger UI
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.3'
   developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
@@ -128,12 +131,18 @@ dependencies {
   schemaSpy 'org.schemaspy:schemaspy:6.2.4'
   schemaSpy 'org.postgresql:postgresql'
 
-  implementation 'com.jayway.jsonpath:json-path:2.9.0'
+  mockitoAgent('org.mockito:mockito-core') {
+    transitive = false
+  }
+
 }
 
 tasks.named('test', Test) {
   useJUnitPlatform()
-  jvmArgs += '-XX:+EnableDynamicAgentLoading'
+  jvmArgs += [
+      '-XX:+EnableDynamicAgentLoading',
+      "-javaagent:${configurations.mockitoAgent.asPath}"
+  ]
   systemProperty('file.encoding', 'UTF-8')
   testLogging {
     events("passed", "skipped", "failed")
