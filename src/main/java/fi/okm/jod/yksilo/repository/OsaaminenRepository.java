@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.repository;
 
+import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import java.net.URI;
@@ -16,13 +17,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SequencedMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,5 +50,27 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
                     (existing, replacement) -> existing,
                     LinkedHashMap::new));
     return Collections.unmodifiableSequencedMap(map);
+  }
+
+  @Query("SELECT v.versio FROM OsaaminenVersio v WHERE v.id = 1")
+  long currentVersion();
+
+  @Transactional(readOnly = true)
+  default Versioned<Map<URI, OsaaminenDto>> refreshAll(
+      @Nullable Versioned<Map<URI, OsaaminenDto>> previous) {
+    long version = currentVersion();
+    if (previous == null || previous.version() != version) {
+      final var map =
+          findAll(Sort.by("koodi", "id"))
+              .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
+              .collect(
+                  Collectors.toMap(
+                      OsaaminenDto::uri,
+                      Function.identity(),
+                      (existing, replacement) -> existing,
+                      LinkedHashMap::new));
+      return new Versioned<>(version, Collections.unmodifiableSequencedMap(map));
+    }
+    return previous;
   }
 }

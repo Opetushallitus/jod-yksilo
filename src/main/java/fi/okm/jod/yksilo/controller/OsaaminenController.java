@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import static fi.okm.jod.yksilo.controller.ETags.weakETagOf;
+
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.service.OsaaminenService;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 @RestController
 @RequestMapping("/api/osaamiset")
@@ -34,15 +37,26 @@ class OsaaminenController {
 
   @GetMapping
   ResponseEntity<SivuDto<OsaaminenDto>> find(
+      WebRequest request,
       @RequestParam(required = false, defaultValue = "0") int sivu,
       @RequestParam(required = false, defaultValue = "10") @Max(1000) int koko,
       @RequestParam(required = false) Set<URI> uri) {
-    if (uri == null) {
-      return ResponseEntity.ok(osaamiset.findAll(sivu, koko));
+
+    var etag = weakETagOf(osaamiset.currentVersion());
+    SivuDto<OsaaminenDto> body;
+
+    if (request.checkNotModified(etag)) {
+      body = null;
     } else {
-      return ResponseEntity.ok()
-          .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS).cachePrivate())
-          .body(osaamiset.findBy(sivu, koko, uri));
+      var result =
+          (uri == null) ? osaamiset.findAll(sivu, koko) : osaamiset.findBy(sivu, koko, uri);
+      body = result.payload();
+      etag = weakETagOf(result.version());
     }
+
+    return ResponseEntity.ok()
+        .eTag(etag)
+        .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS).mustRevalidate().cachePublic())
+        .body(body);
   }
 }
