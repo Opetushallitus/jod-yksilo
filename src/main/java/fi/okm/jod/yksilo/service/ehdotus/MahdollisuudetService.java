@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.ehdotus;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -79,11 +80,6 @@ public class MahdollisuudetService {
                 LinkedHashMap::new // Supplier for the LinkedHashMap
                 ));
   }
-
-  public enum MahdollisuusTyyppi {
-    TYOMAHDOLLISUUS,
-    KOULUTUSMAHDOLLISUUS;
-  };
 
   record TypedResult(UUID id, String otsikko, String tyyppi) {}
 }
