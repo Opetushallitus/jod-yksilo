@@ -9,8 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
-import static fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
-import static fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AmmattiService;
@@ -73,8 +74,7 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
-        LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
             listOfIds.get(0), TYOMAHDOLLISUUS,
@@ -107,10 +107,7 @@ class MahdollisuudetControllerTest {
     // TYOMAHDOLLISUUS
     assertTrue(
         r.stream()
-            .filter(
-                m ->
-                    m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
+            .filter(m -> m.ehdotusMetadata().tyyppi() == TYOMAHDOLLISUUS)
             .allMatch(
                 m ->
                     mahdollisuudet.containsKey(m.mahdollisuusId())
@@ -140,8 +137,7 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
-        LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
             listOfIds.get(0), TYOMAHDOLLISUUS,
@@ -199,10 +195,7 @@ class MahdollisuudetControllerTest {
     // TYOMAHDOLLISUUS
     assertTrue(
         r.stream()
-            .filter(
-                m ->
-                    m.ehdotusMetadata().tyyppi()
-                        == MahdollisuudetService.MahdollisuusTyyppi.TYOMAHDOLLISUUS)
+            .filter(m -> m.ehdotusMetadata().tyyppi() == TYOMAHDOLLISUUS)
             .allMatch(
                 m ->
                     mahdollisuudet.containsKey(m.mahdollisuusId())
@@ -234,8 +227,7 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
-        LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
             listOfIds.get(0), TYOMAHDOLLISUUS,
@@ -294,8 +286,7 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuudetService.MahdollisuusTyyppi> mahdollisuudet =
-        LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
             listOfIds.get(0), TYOMAHDOLLISUUS,
