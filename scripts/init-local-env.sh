@@ -3,11 +3,25 @@ set -e -o pipefail
 
 mkdir -p ./tmp/data
 mkdir -p ./.run
+ESCO_VERSION="1.2.0"
+
+# Parse command-line options
+while getopts "esco:" opt; do
+  case ${opt} in
+    esco )
+      ESCO_VERSION=$OPTARG
+      ;;
+    \? )
+      echo "Usage: cmd [-esco 1.2.0]"
+      exit 1
+      ;;
+  esac
+done
 
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
-  aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/" ./tmp/data/ --exclude "*" --include "*.sql" --include "*.csv"
+  aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "*.csv"
   aws s3 sync "s3://${DEV_BUCKET}/tyomahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_tyomahdollisuus.json"
   aws s3 sync "s3://${DEV_BUCKET}/koulutusmahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_koulutusmahdollisuus.json"
 else
