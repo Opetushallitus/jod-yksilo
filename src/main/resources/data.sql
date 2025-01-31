@@ -1,3 +1,11 @@
+INSERT INTO osaaminen_versio(versio)
+VALUES (0)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO ammatti_versio(versio)
+VALUES (0)
+ON CONFLICT DO NOTHING;
+
 DO
 $$
   BEGIN

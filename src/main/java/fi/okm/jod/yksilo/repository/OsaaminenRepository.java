@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.repository;
 import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.Osaaminen_;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
     long version = currentVersion();
     if (previous == null || previous.version() != version) {
       final var map =
-          findAll(Sort.by("koodi", "id"))
+          findAll(Sort.by(Osaaminen_.URI, Osaaminen_.ID))
               .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
               .collect(
                   Collectors.toMap(
