@@ -71,40 +71,43 @@ public class KoskiService {
   public List<KoulutusDto> getKoskiData(URI linkki) {
     if (!allowedHosts.contains(linkki.getHost())) {
       final var koskiResponse = restClient.get().uri(linkki).retrieve().body(Object.class);
-
-      List<Object> opinnot = readJsonProperty(koskiResponse, "$.opiskeluoikeudet");
-      if (opinnot == null) {
-        return Collections.emptyList();
-      }
-
-      return opinnot.stream()
-          .map(
-              o -> {
-                var toimija =
-                    readJsonProperty(o, "$.oppilaitos") != null
-                        ? readJsonProperty(o, "$.oppilaitos")
-                        : readJsonProperty(o, "$.koulutustoimija");
-                var nimet = readJsonProperty(toimija, "$.nimi");
-                var localizedNimi = getLocalizedString(nimet);
-                var suoritukset =
-                    readJsonProperty(o, "$.suoritukset[0].koulutusmoduuli.tunniste.nimi");
-                var localizedKuvaus = getLocalizedString(suoritukset);
-
-                String alkuExpression = "$.alkamispäivä";
-
-                if (linkki.getPath().contains("/suoritetut-tutkinnot/")) {
-                  // read vahvistettu
-                  alkuExpression = "$.suoritukset[0].vahvistus.päivä";
-                }
-                var start = getLocalDate(o, alkuExpression);
-                var alkoi = start == null ? LocalDate.ofEpochDay(0) : start;
-                var loppui = getLocalDate(o, "$.päättymispäivä");
-
-                return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
-              })
-          .toList();
+      return getKoulutusData(koskiResponse, linkki);
     }
     throw new IllegalArgumentException("invalid opintopolku URL");
+  }
+
+  public List<KoulutusDto> getKoulutusData(Object koskiResponse, URI linkki) {
+    List<Object> opinnot = readJsonProperty(koskiResponse, "$.opiskeluoikeudet");
+    if (opinnot == null) {
+      return Collections.emptyList();
+    }
+
+    return opinnot.stream()
+        .map(
+            o -> {
+              var toimija =
+                  readJsonProperty(o, "$.oppilaitos") != null
+                      ? readJsonProperty(o, "$.oppilaitos")
+                      : readJsonProperty(o, "$.koulutustoimija");
+              var nimet = readJsonProperty(toimija, "$.nimi");
+              var localizedNimi = getLocalizedString(nimet);
+              var suoritukset =
+                  readJsonProperty(o, "$.suoritukset[0].koulutusmoduuli.tunniste.nimi");
+              var localizedKuvaus = getLocalizedString(suoritukset);
+
+              String alkuExpression = "$.alkamispäivä";
+
+              if (linkki != null && linkki.getPath().contains("/suoritetut-tutkinnot/")) {
+                // read vahvistettu
+                alkuExpression = "$.suoritukset[0].vahvistus.päivä";
+              }
+              var start = getLocalDate(o, alkuExpression);
+              var alkoi = start == null ? LocalDate.ofEpochDay(0) : start;
+              var loppui = getLocalDate(o, "$.päättymispäivä");
+
+              return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
+            })
+        .toList();
   }
 
   private LocalizedString getLocalizedString(Object nimet) {
