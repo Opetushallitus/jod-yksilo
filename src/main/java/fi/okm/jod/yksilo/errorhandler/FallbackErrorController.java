@@ -37,7 +37,7 @@ public class FallbackErrorController implements ErrorController {
   private final Tracer tracer;
 
   /** Renders (almost all) unhandled errors as JSON. */
-  @SuppressWarnings({"java:S6857", "java:S3752"})
+  @SuppressWarnings({"java:S6857", "java:S3752", "java:S6856"})
   @RequestMapping(path = "${server.error.path:/error}")
   public ResponseEntity<ErrorInfo> error(HttpServletRequest request) {
 
@@ -59,17 +59,21 @@ public class FallbackErrorController implements ErrorController {
       }
     }
 
+    var contextPath = request.getContextPath();
     if (status.is4xxClientError()
         && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String uri
-        && (uri.startsWith("/logout") || uri.startsWith("/login"))) {
-      // we need to redirect login/logout failures back to the frontend application
+        && (uri.startsWith(contextPath + "/login")
+            || uri.startsWith(contextPath + "/logout")
+            || uri.startsWith(contextPath + "/oauth2"))) {
+      // Redirect back to the UI application for errors (likely) related to insufficient
+      // authentication
       log.info(
-          "Login or logout failure {}: {}",
+          "Authentication failure {}: {}",
           status.value(),
           request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
 
       return ResponseEntity.status(HttpStatus.SEE_OTHER)
-          .location(URI.create("/?error=AUTHENTICATION_FAILURE"))
+          .location(URI.create(contextPath + "/?error=AUTHENTICATION_FAILURE"))
           .body(
               new ErrorInfo(
                   ErrorCode.AUTHENTICATION_FAILURE, tracer.currentSpan(), List.of(status.name())));

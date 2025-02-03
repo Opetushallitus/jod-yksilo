@@ -89,4 +89,10 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   public String familyName() {
     return "User";
   }
+
+  @Override
+  @JsonIgnore
+  public String getPersonId() {
+    return familyName();
+  }
 }
