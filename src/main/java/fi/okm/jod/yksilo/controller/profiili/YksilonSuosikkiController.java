@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.controller.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
+import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.YksilonSuosikkiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +48,8 @@ class YksilonSuosikkiController {
 
   @PostMapping
   @Operation(summary = "Add a Yksilo's suosikki")
-  UUID add(@AuthenticationPrincipal JodUser user, @RequestBody SuosikkiDto dto) {
+  UUID add(
+      @AuthenticationPrincipal JodUser user, @Validated(Add.class) @RequestBody SuosikkiDto dto) {
     return service.add(user, dto.suosionKohdeId(), dto.tyyppi());
   }
 
