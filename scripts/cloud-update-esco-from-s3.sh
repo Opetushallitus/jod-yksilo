@@ -36,7 +36,7 @@ if [[ -n $AWS_SESSION_TOKEN && -n $BUCKET_NAME ]]; then
   mkdir -p ./tmp/data
 
   # Sync data from S3
-  aws s3 sync "${S3_BUCKET}/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "skills*.csv"
+  aws s3 sync "${S3_BUCKET}/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "*.csv"
 
   echo 'Truncate esco_data.skills...'
   # Truncate the table
@@ -76,6 +76,13 @@ if [[ -n $AWS_SESSION_TOKEN && -n $BUCKET_NAME ]]; then
         -p ${DB_PORT} \
         -c "SET esco.lang=${lang}"\
         -c "\COPY esco_data.occupations(conceptType,conceptUri,code,preferredLabel,status,altLabels,inScheme,description) FROM STDIN (FORMAT csv, HEADER true);"
+    done
+
+  #update esco data
+    for esco in "ammatti" "osaaminen"; do
+      psql "postgresql://yksilo@localhost/${DB_NAME}?sslmode=require" \
+        -p ${DB_PORT} \
+        -c "CALL esco_data.import_${esco}();"
     done
 
   else
