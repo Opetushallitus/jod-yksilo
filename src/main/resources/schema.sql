@@ -135,23 +135,24 @@ BEGIN
                                         kuvaus,
                                         tehtavat,
                                         yleiset_vaatimukset)
-SELECT d.id,
-       CASE WHEN o.key = 'se' THEN 'SV' ELSE upper(o.key) END,
-       o.value AS nimi,
-       t.value AS tiivistelma,
-       k.value AS kuvaus,
-       tt.value AS tehtavat,
-       yv.value AS yleiset_vaatimukset
-FROM tyomahdollisuus_data.import d,
-     jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') o
-      LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') t
-          ON (o.key = t.key)
-      LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
-          ON o.key = k.key
-      LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
-          ON o.key = tt.key
-      LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
-          ON o.key = yv.key;
+  SELECT d.id,
+         CASE WHEN o.key = 'se' THEN 'SV' ELSE upper(o.key) END,
+         o.value AS nimi,
+         t.value AS tiivistelma,
+         k.value AS kuvaus,
+         (SELECT string_agg(elem, E'\n')
+          FROM jsonb_array_elements_text(tt.value::jsonb) elem) AS tehtavat,
+         yv.value AS yleiset_vaatimukset
+  FROM tyomahdollisuus_data.import d,
+       jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') o
+         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') t
+  ON (o.key = t.key)
+    LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
+    ON o.key = k.key
+    LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
+    ON o.key = tt.key
+    LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
+    ON o.key = yv.key;
 
   WITH paths AS (SELECT n, p::jsonpath
                  FROM (values ('OSAAMINEN', '$.osaamisvaatimukset.osaamiset'),
