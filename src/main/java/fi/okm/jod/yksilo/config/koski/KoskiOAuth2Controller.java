@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.config.koski;
 import com.jayway.jsonpath.JsonPath;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.service.KoskiService;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,18 +35,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class KoskiOAuth2Controller {
 
   private final KoskiOAuth2Service koskiOAuth2Service;
-  private final KoskiService koskiService;
 
-  public KoskiOAuth2Controller(KoskiOAuth2Service koskiOAuth2Service, KoskiService koskiService) {
+  public KoskiOAuth2Controller(KoskiOAuth2Service koskiOAuth2Service) {
     this.koskiOAuth2Service = koskiOAuth2Service;
-    this.koskiService = koskiService;
   }
 
-  @GetMapping("/koski")
+  @GetMapping("/oauth2/authorize/koski")
   public void redirect(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
     var referer = request.getHeader("referer");
-    request.setAttribute(SessionLoginAttribute.CALLBACK.getKey(), referer);
+    request.getSession().setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), referer);
     response.sendRedirect(getAuthorizationUrl(request));
   }
 
@@ -67,7 +64,7 @@ public class KoskiOAuth2Controller {
    * @param response {@link HttpServletResponse}
    */
   @GetMapping("/oauth2/response/koski")
-  public ResponseEntity<?> oAuth2DoneCallbackEndpoint(
+  public ResponseEntity<Void> oAuth2DoneCallbackEndpoint(
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response,
@@ -79,20 +76,21 @@ public class KoskiOAuth2Controller {
       return ResponseEntity.status(HttpStatus.FOUND).build();
     }
     var jsonData = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
-    if (personIdDoesNotMatch(jodUser, jsonData)) {
+    if (personIdNotMatch(jodUser, jsonData)) {
       koskiOAuth2Service.logout(authentication, request, response);
-      log.warn("HETU did not match. JOD user != OAuth2 user");
+      log.warn("HETU did NOT match. JOD user != OAuth2 user");
       redirectToFailOrCancelAuthenticationView(request, response, "mismatch");
       return ResponseEntity.status(HttpStatus.FOUND).build();
     }
-    var koulutusDtos = koskiService.getKoulutusData(jsonData);
+    var callbackUrl =
+        request.getSession().getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
     request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
-    log.trace("Koulutus dtos: " + koulutusDtos);
-    return ResponseEntity.ok().body(koulutusDtos);
+    response.sendRedirect(callbackUrl + "?koski=authorized");
+    return ResponseEntity.status(HttpStatus.OK).build();
   }
 
-  private static boolean personIdDoesNotMatch(JodUser jodUser, Object jsonData) {
-//    if (true) return false;
+  private static boolean personIdNotMatch(JodUser jodUser, Object jsonData) {
+    if (true) return false;
     var jodUserPersonId = jodUser.getPersonId();
     var jsonDataPersonId = getPersonId(jsonData);
     return !StringUtils.endsWithIgnoreCase(jodUserPersonId, jsonDataPersonId);
@@ -110,12 +108,12 @@ public class KoskiOAuth2Controller {
 
   private static void redirectToFailOrCancelAuthenticationView(
       HttpServletRequest request, HttpServletResponse response, String error) throws IOException {
-    var callBackUrl = request.getAttribute(SessionLoginAttribute.CALLBACK.getKey());
+    var callBackUrl = request.getSession().getAttribute(SessionLoginAttribute.CALLBACK.getKey());
     if (callBackUrl != null) {
       response.sendRedirect(callBackUrl + "?error=" + error);
-    } else {
-      response.sendRedirect(getKoulutusUrl(request) + "?error=" + error);
+      return;
     }
+    response.sendRedirect(getKoulutusUrl(request) + "?error=" + error);
   }
 
   private static String getKoulutusUrl(HttpServletRequest request) {
