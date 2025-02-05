@@ -12,23 +12,24 @@ package fi.okm.jod.yksilo.config.koski;
 import com.jayway.jsonpath.JsonPath;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.util.UrlUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Profile("!test")
 @ConditionalOnBean(KoskiOAuth2Config.class)
 @RestController("/")
 @Hidden
@@ -41,10 +42,13 @@ public class KoskiOAuth2Controller {
   }
 
   @GetMapping("/oauth2/authorize/koski")
-  public void redirect(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    var referer = request.getHeader("referer");
-    request.getSession().setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), referer);
+  public void redirect(
+      HttpServletRequest request, HttpServletResponse response, @RequestParam String callback)
+      throws IOException, URISyntaxException {
+    var callbackUrl = UrlUtil.getRelativePath(callback);
+    request
+        .getSession()
+        .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackUrl);
     response.sendRedirect(getAuthorizationUrl(request));
   }
 
@@ -90,7 +94,6 @@ public class KoskiOAuth2Controller {
   }
 
   private static boolean personIdNotMatch(JodUser jodUser, Object jsonData) {
-    if (true) return false;
     var jodUserPersonId = jodUser.getPersonId();
     var jsonDataPersonId = getPersonId(jsonData);
     return !StringUtils.endsWithIgnoreCase(jodUserPersonId, jsonDataPersonId);
