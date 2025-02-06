@@ -43,7 +43,7 @@ public class KoskiOAuth2Config {
 
   private final String resourceServer;
 
-  public KoskiOAuth2Config(@Value("${koski.resource-server.url}") String resourceServer) {
+  public KoskiOAuth2Config(@Value("${jod.koski.resource-server.url}") String resourceServer) {
     this.resourceServer = resourceServer;
   }
 

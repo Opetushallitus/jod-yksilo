@@ -16,7 +16,7 @@ spring:
         registration:
           koski:
             provider: koski-mtls
-            client-id: omadataoauth2sample
+            client-id: "${jod.oauth2.koski.client-id:omadataoauth2sample}"
             client-authentication-method: none
             authorization-grant-type: authorization_code
             scope: HENKILOTIEDOT_HETU,OPISKELUOIKEUDET_KAIKKI_TIEDOT
@@ -24,9 +24,10 @@ spring:
             redirect-uri: "{baseUrl}/oauth2/response/{registrationId}"
         provider:
           koski-mtls:
-            token-uri: https://localhost:7022/koski/api/omadata-oauth2/authorization-server
-            authorization-uri: http://localhost:7021/koski/omadata-oauth2/authorize
+            token-uri: "${jod.oauth2.koski.provider.token-uri:https://localhost:7022/koski/api/omadata-oauth2/authorization-server}"
+            authorization-uri: "${jod.oauth2.koski.provider.authorization-uri:http://localhost:7021/koski/omadata-oauth2/authorize}"
 
-koski:
-  resource-server:
-    url: https://localhost:7022/koski/api/omadata-oauth2/resource-server
+jod:
+  koski:
+    resource-server:
+      url: "${jod.oauth2.koski.resource-server.url:https://localhost:7022/koski/api/omadata-oauth2/resource-server}"
