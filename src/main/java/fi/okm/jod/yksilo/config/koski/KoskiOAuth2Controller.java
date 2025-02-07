@@ -26,6 +26,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @ConditionalOnBean(KoskiOAuth2Config.class)
@@ -43,7 +45,9 @@ public class KoskiOAuth2Controller {
   public void redirect(
       HttpServletRequest request, HttpServletResponse response, @RequestParam String callback)
       throws IOException, URISyntaxException {
-    var callbackUrl = UrlUtil.getRelativePath(callback);
+    var callbackUrl =
+        UrlUtil.getRelativePath(
+            UriComponentsBuilder.fromUriString(callback).replaceQuery(null).toUriString());
     request
         .getSession()
         .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackUrl);
@@ -78,21 +82,35 @@ public class KoskiOAuth2Controller {
       redirectToFailOrCancelAuthenticationView(request, response, "cancel");
       return;
     }
-    var jsonData = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
-    if (personIdNotMatch(jodUser, jsonData)) {
-      koskiOAuth2Service.logout(authentication, request, response);
-      log.warn("HETU did NOT match. JOD user != OAuth2 user");
-      redirectToFailOrCancelAuthenticationView(request, response, "mismatch");
-      return;
+    String callbackUrl =
+        request
+            .getSession()
+            .getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey())
+            .toString();
+    JsonNode jsonData;
+    try {
+      jsonData = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
+      if (personIdNotMatch(jodUser, jsonData)) {
+        koskiOAuth2Service.logout(authentication, request, response);
+        log.warn("HETU did NOT match. JOD user != OAuth2 user");
+        redirectToFailOrCancelAuthenticationView(request, response, "mismatch");
+        return;
+      }
+      request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
+      response.sendRedirect(callbackUrl + "?koski=authorized");
+
+    } catch (HttpClientErrorException e) {
+      var callbackWithParams =
+          UriComponentsBuilder.fromUriString(callbackUrl)
+              .queryParam("koski", "error")
+              .queryParam("code", e.getStatusCode().value())
+              .build();
+      response.sendRedirect(callbackWithParams.toUriString());
     }
-    var callbackUrl =
-        request.getSession().getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
-    request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
-    response.sendRedirect(callbackUrl + "?koski=authorized");
   }
 
   private boolean personIdNotMatch(JodUser jodUser, JsonNode jsonData) {
-    // if (true) return false;
+    // if (true) return false; //Bypass for development purpose.
     var jodUserPersonId = jodUser.getPersonId();
     var jsonDataPersonId = getPersonId(jsonData);
     return !StringUtils.endsWithIgnoreCase(jodUserPersonId, jsonDataPersonId);
