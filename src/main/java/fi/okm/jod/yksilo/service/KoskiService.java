@@ -9,7 +9,8 @@
 
 package fi.okm.jod.yksilo.service;
 
-import com.jayway.jsonpath.JsonPath;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,10 +39,14 @@ public class KoskiService {
   private List<String> allowedHosts;
 
   private final RestClient restClient;
+  private final ObjectMapper objectMapper;
 
   public KoskiService(
-      RestClient.Builder restClientBuilder, MappingJackson2HttpMessageConverter messageConverter) {
+      RestClient.Builder restClientBuilder,
+      MappingJackson2HttpMessageConverter messageConverter,
+      ObjectMapper objectMapper) {
     log.info("Creating KoskiService");
+    this.objectMapper = objectMapper;
 
     var requestFactory = new SimpleClientHttpRequestFactory();
     requestFactory.setConnectTimeout(Duration.ofSeconds(10));
@@ -59,79 +65,90 @@ public class KoskiService {
             .build();
   }
 
-  private <T> T readJsonProperty(Object json, String jsonPathExpression) {
-    try {
-      return JsonPath.read(json, jsonPathExpression);
-    } catch (Exception e) {
-      log.debug("JSON expression error", e);
-      return null;
+  private JsonNode readJsonProperty(JsonNode jsonNode, String... paths) {
+    for (String path : paths) {
+      if (jsonNode == null) {
+        return null;
+      }
+      jsonNode = jsonNode.path(path);
     }
+    return jsonNode.isMissingNode() ? null : jsonNode;
   }
 
   public List<KoulutusDto> getKoskiData(URI linkki) {
     if (!allowedHosts.contains(linkki.getHost())) {
       final var koskiResponse = restClient.get().uri(linkki).retrieve().body(Object.class);
-      return getKoulutusData(koskiResponse, linkki);
+      try {
+        JsonNode jsonNode = objectMapper.valueToTree(koskiResponse);
+        return getKoulutusData(jsonNode, linkki);
+      } catch (Exception e) {
+        log.error("Failed to parse JSON response", e);
+      }
     }
     throw new IllegalArgumentException("invalid opintopolku URL");
   }
 
-  public List<KoulutusDto> getKoulutusData(Object koskiResponse, URI linkki) {
-    List<Object> opinnot = readJsonProperty(koskiResponse, "$.opiskeluoikeudet");
-    if (opinnot == null) {
+  public List<KoulutusDto> getKoulutusData(JsonNode koskiResponse, URI linkki) {
+    JsonNode opinnot = readJsonProperty(koskiResponse, "opiskeluoikeudet");
+    if (opinnot == null || !opinnot.isArray()) {
       return Collections.emptyList();
     }
 
-    return opinnot.stream()
+    return StreamSupport.stream(opinnot.spliterator(), false)
         .map(
             o -> {
               var toimija =
-                  readJsonProperty(o, "$.oppilaitos") != null
-                      ? readJsonProperty(o, "$.oppilaitos")
-                      : readJsonProperty(o, "$.koulutustoimija");
-              var nimet = readJsonProperty(toimija, "$.nimi");
+                  readJsonProperty(o, "oppilaitos") != null
+                      ? readJsonProperty(o, "oppilaitos")
+                      : readJsonProperty(o, "koulutustoimija");
+              var nimet = readJsonProperty(toimija, "nimi");
               var localizedNimi = getLocalizedString(nimet);
-              var suoritukset =
-                  readJsonProperty(o, "$.suoritukset[0].koulutusmoduuli.tunniste.nimi");
-              var localizedKuvaus = getLocalizedString(suoritukset);
 
-              String alkuExpression = "$.alkamispäivä";
+              var suoritukset = readJsonProperty(o, "suoritukset");
+              var koulutusmoduuli =
+                  suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()
+                      ? readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi")
+                      : null;
+              var localizedKuvaus = getLocalizedString(koulutusmoduuli);
 
+              var alkuExpression = "alkamispäivä";
               if (linkki != null && linkki.getPath().contains("/suoritetut-tutkinnot/")) {
-                // read vahvistettu
-                alkuExpression = "$.suoritukset[0].vahvistus.päivä";
+                alkuExpression = "suoritukset[0].vahvistus.päivä";
               }
-              var start = getLocalDate(o, alkuExpression);
-              var alkoi = start == null ? LocalDate.ofEpochDay(0) : start;
-              var loppui = getLocalDate(o, "$.päättymispäivä");
+              var alkoi = getLocalDate(o, alkuExpression);
+              var loppui = getLocalDate(o, "päättymispäivä");
 
               return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
             })
         .toList();
   }
 
-  private LocalizedString getLocalizedString(Object nimet) {
+  private LocalizedString getLocalizedString(JsonNode nimet) {
+    if (nimet == null || nimet.isMissingNode()) {
+      return new LocalizedString(Collections.emptyMap());
+    }
 
-    var nonEmptyLocalizedValues =
+    Map<Kieli, String> localizedValues =
         Stream.of(Kieli.values())
-            .map(kieli -> Map.entry(kieli, getString(nimet, "$." + kieli.name().toLowerCase())))
+            .map(kieli -> Map.entry(kieli, getString(nimet, kieli.name().toLowerCase())))
             .filter(entry -> !entry.getValue().isEmpty())
             .collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
                     Map.Entry::getValue,
-                    (existing, replacement) -> existing,
+                    (a, b) -> a,
                     () -> new EnumMap<>(Kieli.class)));
 
-    return new LocalizedString(nonEmptyLocalizedValues);
+    return new LocalizedString(localizedValues);
   }
 
-  private String getString(Object nimet, String expression) {
-    return readJsonProperty(nimet, expression) != null ? readJsonProperty(nimet, expression) : "";
+  private String getString(JsonNode nimet, String path) {
+    JsonNode node = readJsonProperty(nimet, path);
+    return node != null && node.isTextual() ? node.asText() : "";
   }
 
-  private LocalDate getLocalDate(Object nimet, String expression) {
-    String dateString = readJsonProperty(nimet, expression);
-    return dateString == null ? null : LocalDate.parse(dateString);
+  private LocalDate getLocalDate(JsonNode nimet, String path) {
+    JsonNode node = readJsonProperty(nimet, path);
+    return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
   }
 }

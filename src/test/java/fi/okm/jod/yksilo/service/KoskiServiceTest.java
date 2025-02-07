@@ -12,13 +12,11 @@ package fi.okm.jod.yksilo.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.jayway.jsonpath.JsonPath;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import fi.okm.jod.yksilo.util.TestUtil;
 import java.time.LocalDate;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClient;
@@ -26,16 +24,19 @@ import org.springframework.web.client.RestClient;
 class KoskiServiceTest {
 
   private final KoskiService koskiService;
+  private final ObjectMapper objectMapper;
 
   public KoskiServiceTest() {
+    this.objectMapper = new ObjectMapper();
     this.koskiService =
-        new KoskiService(RestClient.builder(), new MappingJackson2HttpMessageConverter());
+        new KoskiService(
+            RestClient.builder(), new MappingJackson2HttpMessageConverter(), objectMapper);
   }
 
   @Test
-  void getKoulutusData() {
-    var content = getContentFromFile("koski-response2.json", this.getClass());
-    var koskiData = koskiService.getKoulutusData(JsonPath.parse(content).json(), null);
+  void getKoulutusData() throws JsonProcessingException {
+    var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
+    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content), null);
 
     assertEquals(1, koskiData.size());
     var koulutusDto = koskiData.getFirst();
@@ -54,16 +55,5 @@ class KoskiServiceTest {
     assertEquals(LocalDate.of(2006, 1, 1), koulutusDto.alkuPvm());
     assertNull(koulutusDto.loppuPvm());
     assertNull(koulutusDto.osaamiset());
-  }
-
-  private static String getContentFromFile(String filename, Class<?> clazz) {
-    try (var inputStream = clazz.getResourceAsStream(filename)) {
-      assert inputStream != null;
-      return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-          .lines()
-          .collect(Collectors.joining("\n"));
-    } catch (Exception e) {
-      throw new RuntimeException("Could not read file: " + filename, e);
-    }
   }
 }

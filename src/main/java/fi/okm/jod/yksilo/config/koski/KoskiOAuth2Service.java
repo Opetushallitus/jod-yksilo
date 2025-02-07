@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.config.koski;
 
 import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -56,7 +57,7 @@ public class KoskiOAuth2Service {
         getRegistrationId(), authentication, request, response);
   }
 
-  public Object fetchDataFromResourceServer(OAuth2AuthorizedClient koski) {
+  public JsonNode fetchDataFromResourceServer(OAuth2AuthorizedClient koski) {
     var accessToken = koski.getAccessToken().getTokenValue();
     return restClient
         .post()
@@ -65,6 +66,6 @@ public class KoskiOAuth2Service {
         .attributes(clientRegistrationId(koskiConfig.getRegistrationId()))
         .accept(MediaType.APPLICATION_JSON)
         .retrieve()
-        .body(Object.class);
+        .body(JsonNode.class);
   }
 }
