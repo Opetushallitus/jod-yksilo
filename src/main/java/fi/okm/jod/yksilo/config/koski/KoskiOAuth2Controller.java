@@ -24,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -31,7 +32,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @ConditionalOnBean(KoskiOAuth2Config.class)
-@RestController("/")
+@RestController
+@RequestMapping("/oauth2")
 @Hidden
 public class KoskiOAuth2Controller {
 
@@ -41,17 +43,20 @@ public class KoskiOAuth2Controller {
     this.koskiOAuth2Service = koskiOAuth2Service;
   }
 
-  @GetMapping("/oauth2/authorize/koski")
-  public void redirect(
+  @GetMapping("/authorize/koski")
+  public void redirectToOAuth2AuthorizationUrl(
       HttpServletRequest request, HttpServletResponse response, @RequestParam String callback)
       throws IOException, URISyntaxException {
-    var callbackUrl =
+    var callbackModified =
         UrlUtil.getRelativePath(
             UriComponentsBuilder.fromUriString(callback).replaceQuery(null).toUriString());
     request
         .getSession()
-        .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackUrl);
-    response.sendRedirect(getAuthorizationUrl(request));
+        .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackModified);
+
+    var authorizationUrl = getAuthorizationUrl(request);
+    log.debug("Redirect user to {}, callback: {}", authorizationUrl, callbackModified);
+    response.sendRedirect(authorizationUrl);
   }
 
   private String getAuthorizationUrl(HttpServletRequest request) {
@@ -70,46 +75,58 @@ public class KoskiOAuth2Controller {
    * @param response {@link HttpServletResponse}
    * @param jodUser {@link JodUser} JOD logged in user.
    */
-  @GetMapping("/oauth2/response/koski")
+  @GetMapping("/response/koski")
   public void oAuth2DoneCallbackEndpoint(
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response,
       @AuthenticationPrincipal JodUser jodUser)
       throws IOException {
+    if (jodUser == null) {
+      log.trace("User is NOT logged in. Redirect to landing page.");
+      response.sendRedirect(request.getContextPath());
+      return;
+    }
     var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
+      log.debug("Permission was NOT give by the user id: {}", jodUser.getId());
       redirectToFailOrCancelAuthenticationView(request, response, "cancel");
       return;
     }
-    String callbackUrl =
+    var callbackUrl =
         request
             .getSession()
             .getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey())
             .toString();
+    log.debug("Permission was given by the user id: {}", jodUser.getId());
     JsonNode jsonData;
     try {
       jsonData = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
       if (personIdNotMatch(jodUser, jsonData)) {
         koskiOAuth2Service.logout(authentication, request, response);
-        log.warn("HETU did NOT match. JOD user != OAuth2 user");
+        log.warn(
+            "HETU did NOT match. JOD user ({}) != OAuth2 user ({})",
+            jodUser.givenName(),
+            authorizedClient.getPrincipalName());
         redirectToFailOrCancelAuthenticationView(request, response, "mismatch");
         return;
       }
       request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
-      response.sendRedirect(callbackUrl + "?koski=authorized");
+      response.sendRedirect(
+          UriComponentsBuilder.fromUriString(callbackUrl)
+              .queryParam("koski", "authorized")
+              .toUriString());
 
     } catch (HttpClientErrorException e) {
-      var callbackWithParams =
+      response.sendRedirect(
           UriComponentsBuilder.fromUriString(callbackUrl)
               .queryParam("koski", "error")
               .queryParam("code", e.getStatusCode().value())
-              .build();
-      response.sendRedirect(callbackWithParams.toUriString());
+              .toUriString());
     }
   }
 
-  private boolean personIdNotMatch(JodUser jodUser, JsonNode jsonData) {
+  private static boolean personIdNotMatch(JodUser jodUser, JsonNode jsonData) {
     // if (true) return false; //Bypass for development purpose.
     var jodUserPersonId = jodUser.getPersonId();
     var jsonDataPersonId = getPersonId(jsonData);
