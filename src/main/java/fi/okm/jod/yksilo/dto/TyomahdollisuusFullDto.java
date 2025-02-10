@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.dto;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ public record TyomahdollisuusFullDto(
     LocalizedString tehtavat,
     LocalizedString yleisetVaatimukset,
     String ammattiryhma,
+    TyomahdollisuusAineisto aineisto,
     @Schema(
             propertyNames = TyomahdollisuusJakaumaTyyppi.class,
             additionalPropertiesSchema = JakaumaDto.class)

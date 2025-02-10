@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,7 @@ public class MahdollisuusImportTest {
             () ->
                 tyomahdollisuusService.get(
                     UUID.fromString("bc77f514-8573-11ef-8f0c-b767f527df04")));
+    assertEquals(TyomahdollisuusAineisto.TMT, t.aineisto());
     assertThat(t.jakaumat()).isNotEmpty();
   }
 }

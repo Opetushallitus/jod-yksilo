@@ -11,12 +11,14 @@ package fi.okm.jod.yksilo.entity.tyomahdollisuus;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyColumn;
@@ -46,6 +48,10 @@ public class Tyomahdollisuus {
   private Map<TyomahdollisuusJakaumaTyyppi, TyomahdollisuusJakauma> jakaumat;
 
   @Column private String ammattiryhma;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TyomahdollisuusAineisto aineisto;
 
   @Embeddable
   public record Kaannos(
