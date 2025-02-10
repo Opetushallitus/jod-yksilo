@@ -36,15 +36,26 @@ public class KoskiSecurityConfig {
       @Qualifier(KoskiOAuth2Config.RESTCLIENT_ID) RestClient oauthRestClient,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository)
       throws Exception {
+
     return http.csrf(
             csrf -> csrf.ignoringRequestMatchers(request -> request.getSession(false) != null))
         .securityMatcher(
-            "/error",
-            "/oauth2/authorize/koski", // For front end to call.
             "/oauth2/authorization/koski",
-            "/oauth2/logout/koski",
-            "/oauth2/response/koski" // OAuth2 callback URL
-            )
+            "/oauth2/response/koski",
+            "/oauth2/authorize/koski",
+            "/oauth2/logout/koski")
+        .authorizeHttpRequests(
+            auth ->
+                auth
+                    // Require authentication for these endpoints
+                    .requestMatchers("/oauth2/authorize/koski", "/oauth2/logout/koski")
+                    .authenticated()
+                    // Allow open access to these endpoints
+                    .requestMatchers("/oauth2/authorization/koski", "/oauth2/response/koski")
+                    .permitAll()
+                    // In case any other request comes through this chain, permit it.
+                    .anyRequest()
+                    .permitAll())
         .oauth2Client(
             client -> {
               client.authorizationCodeGrant(
