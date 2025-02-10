@@ -139,7 +139,8 @@ public class KoskiOAuth2Controller {
 
   private static void redirectToFailOrCancelAuthenticationView(
       HttpServletRequest request, HttpServletResponse response, String error) throws IOException {
-    var callBackUrl = request.getSession().getAttribute(SessionLoginAttribute.CALLBACK.getKey());
+    var callBackUrl =
+        request.getSession().getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
     if (callBackUrl != null) {
       response.sendRedirect(callBackUrl + "?error=" + error);
       return;
