@@ -153,6 +153,7 @@ insert into tyomahdollisuus_data.import(data)
 values ('{
   "id": "bc77f514-8573-11ef-8f0c-b767f527df04",
   "luomisaika": "2024-08-20T00:00:00Z",
+  "aineisto": "TMT",
   "tyopaikkailmoitukset": [
     {
       "ilmoittajanYTunnus": "1234567-8",

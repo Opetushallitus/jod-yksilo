@@ -126,8 +126,10 @@ CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
 BEGIN
   ATOMIC
 
-  INSERT INTO tyomahdollisuus(id, ammattiryhma)
-  SELECT i.id, i.data ->> 'ammattiryhma'
+  INSERT INTO tyomahdollisuus(id, ammattiryhma, aineisto)
+  SELECT i.id,
+         i.data ->> 'ammattiryhma',
+         i.data ->> 'aineisto'
   FROM tyomahdollisuus_data.import i;
 
   INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, otsikko,
