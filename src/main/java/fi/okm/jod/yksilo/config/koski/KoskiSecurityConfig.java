@@ -38,7 +38,9 @@ public class KoskiSecurityConfig {
       throws Exception {
 
     return http.csrf(
-            csrf -> csrf.ignoringRequestMatchers(request -> request.getSession(false) != null))
+            csrf ->
+                csrf.ignoringRequestMatchers(
+                    "/oauth2/authorization/koski", "/oauth2/response/koski"))
         .securityMatcher(
             "/oauth2/authorization/koski",
             "/oauth2/response/koski",
