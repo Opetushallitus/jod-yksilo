@@ -12,12 +12,11 @@ package fi.okm.jod.yksilo.config.koski;
 import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.util.UrlUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.core.Authentication;
@@ -45,17 +44,15 @@ public class KoskiOAuth2Controller {
 
   @GetMapping("/authorize/koski")
   public void redirectToOAuth2AuthorizationUrl(
-      HttpServletRequest request, HttpServletResponse response, @RequestParam String callback)
-      throws IOException, URISyntaxException {
-    var callbackModified =
-        UrlUtil.getRelativePath(
-            UriComponentsBuilder.fromUriString(callback).replaceQuery(null).toUriString());
+      HttpServletRequest request, HttpServletResponse response, @RequestParam URI callback)
+      throws IOException {
+    var callbackPath = callback.getPath();
     request
         .getSession()
-        .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackModified);
+        .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackPath);
 
     var authorizationUrl = getAuthorizationUrl(request);
-    log.debug("Redirect user to {}, callback: {}", authorizationUrl, callbackModified);
+    log.debug("Redirect user to {}, callback: {}", authorizationUrl, callbackPath);
     response.sendRedirect(authorizationUrl);
   }
 

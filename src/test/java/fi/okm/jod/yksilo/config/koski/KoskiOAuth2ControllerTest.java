@@ -73,9 +73,14 @@ class KoskiOAuth2ControllerTest {
   void shouldRedirectToOAuth2Url_whenCallbackExists() throws Exception {
     when(koskiOAuth2Service.getRegistrationId()).thenReturn(REGISTRATION_ID);
 
+    var fullCallbackUrlWithParameters =
+        "http://localhost:8080/koski/fi/omat-sivuni/osaamiseni/koulutukseni?callback="
+            + CALLBACK_PATH
+            + "&extra=blablabla";
     var result =
         mockMvc
-            .perform(get("/oauth2/authorize/koski").param("callback", CALLBACK_PATH))
+            .perform(
+                get("/oauth2/authorize/koski").param("callback", fullCallbackUrlWithParameters))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl(AUTHORIZATION_URL))
             .andReturn();
