@@ -50,7 +50,7 @@ public class Tyomahdollisuus {
   @Column private String ammattiryhma;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column
   private TyomahdollisuusAineisto aineisto;
 
   @Embeddable
@@ -60,6 +60,11 @@ public class Tyomahdollisuus {
       @Column(length = Integer.MAX_VALUE) String kuvaus,
       @Column(length = Integer.MAX_VALUE) String tehtavat,
       @Column(length = Integer.MAX_VALUE) String yleisetVaatimukset) {}
+
+  // TODO: Remove this after the migration to the new data model is complete. Set nullable to false.
+  public TyomahdollisuusAineisto getAineisto() {
+    return aineisto == null ? TyomahdollisuusAineisto.TMT : aineisto;
+  }
 
   public LocalizedString getOtsikko() {
     return LocalizedString.of(kaannos, Kaannos::otsikko);
