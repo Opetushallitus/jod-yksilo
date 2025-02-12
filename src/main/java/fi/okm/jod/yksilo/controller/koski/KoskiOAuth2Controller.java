@@ -7,11 +7,13 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config.koski;
+package fi.okm.jod.yksilo.controller.koski;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

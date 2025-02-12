@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller;
+package fi.okm.jod.yksilo.controller.koski;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -22,10 +22,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Service;
 import fi.okm.jod.yksilo.config.koski.TestKoskiOAuth2Config;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
-import fi.okm.jod.yksilo.service.KoskiService;
+import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
+import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.util.TestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;

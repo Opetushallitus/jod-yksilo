@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service;
+package fi.okm.jod.yksilo.service.koski;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,10 +77,10 @@ public class KoskiService {
 
   public List<KoulutusDto> getKoskiData(URI linkki) {
     if (!allowedHosts.contains(linkki.getHost())) {
-      final var koskiResponse = restClient.get().uri(linkki).retrieve().body(Object.class);
       try {
-        JsonNode jsonNode = objectMapper.valueToTree(koskiResponse);
-        return getKoulutusData(jsonNode, linkki);
+        var koskiResponse = restClient.get().uri(linkki).retrieve().body(JsonNode.class);
+        return getKoulutusData(koskiResponse, linkki);
+
       } catch (Exception e) {
         log.error("Failed to parse JSON response", e);
       }

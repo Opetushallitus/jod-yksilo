@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.util.TestUtil;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;

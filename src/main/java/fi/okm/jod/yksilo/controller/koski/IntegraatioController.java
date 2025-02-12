@@ -7,10 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller;
+package fi.okm.jod.yksilo.controller.koski;
 
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import fi.okm.jod.yksilo.service.KoskiService;
+import fi.okm.jod.yksilo.service.koski.KoskiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;

@@ -7,11 +7,12 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config.koski;
+package fi.okm.jod.yksilo.service.koski;
 
 import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
