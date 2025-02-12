@@ -13,6 +13,7 @@ import static org.springframework.security.oauth2.client.web.client.RequestAttri
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,7 +37,7 @@ public class KoskiOAuth2Service {
   public KoskiOAuth2Service(
       KoskiOAuth2Config koskiConfig,
       OAuth2AuthorizedClientRepository authorizedClientRepository,
-      @Qualifier(KoskiOAuth2Config.RESTCLIENT_ID) RestClient restClient) {
+      @Qualifier(KoskiRestClientConfig.RESTCLIENT_ID) RestClient restClient) {
     this.koskiConfig = koskiConfig;
     this.authorizedClientRepository = authorizedClientRepository;
     this.restClient = restClient;

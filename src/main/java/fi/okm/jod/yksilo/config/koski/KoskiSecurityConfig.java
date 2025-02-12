@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.koski;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
@@ -23,37 +24,37 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @ConditionalOnBean(KoskiOAuth2Config.class)
 @Configuration(KoskiSecurityConfig.SECURITY_CONFIG)
 public class KoskiSecurityConfig {
 
   public static final String SECURITY_CONFIG = "koski-security-config";
 
+  private static final String AUTHORIZATION_URL = "/oauth2/authorization/koski";
+  private static final String AUTHORIZE_CALLBACK_URL = "/oauth2/response/koski";
+  private static final String AUTHORIZE_URL = "/oauth2/authorize/koski";
+
   @Bean
   public SecurityFilterChain oauthConfig(
       HttpSecurity http,
       ClientRegistrationRepository repository,
-      @Qualifier(KoskiOAuth2Config.RESTCLIENT_ID) RestClient oauthRestClient,
+      @Qualifier(KoskiRestClientConfig.RESTCLIENT_ID) RestClient oauthRestClient,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository)
       throws Exception {
+    log.info("Configuring Koski OAuth2 integration...");
 
     return http.csrf(
-            csrf ->
-                csrf.ignoringRequestMatchers(
-                    "/oauth2/authorization/koski", "/oauth2/response/koski"))
-        .securityMatcher(
-            "/oauth2/authorization/koski",
-            "/oauth2/response/koski",
-            "/oauth2/authorize/koski",
-            "/oauth2/logout/koski")
+            csrf -> csrf.ignoringRequestMatchers(AUTHORIZATION_URL, AUTHORIZE_CALLBACK_URL))
+        .securityMatcher(AUTHORIZATION_URL, AUTHORIZE_CALLBACK_URL, AUTHORIZE_URL)
         .authorizeHttpRequests(
             auth ->
                 auth
                     // Require authentication for these endpoints
-                    .requestMatchers("/oauth2/authorize/koski", "/oauth2/logout/koski")
+                    .requestMatchers(AUTHORIZE_URL, AUTHORIZATION_URL)
                     .authenticated()
                     // Allow open access to these endpoints
-                    .requestMatchers("/oauth2/authorization/koski", "/oauth2/response/koski")
+                    .requestMatchers(AUTHORIZE_CALLBACK_URL)
                     .permitAll()
                     // In case any other request comes through this chain, permit it.
                     .anyRequest()
