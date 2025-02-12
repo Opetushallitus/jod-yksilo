@@ -17,9 +17,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Slf4j
-@ConditionalOnProperty(
-    name = "spring.security.oauth2.client.registration.koski.provider",
-    havingValue = "koski-mtls")
+@ConditionalOnProperty(name = "jod.koski.enabled", havingValue = "true")
 @Configuration(proxyBeanMethods = false)
 public class KoskiOAuth2Config {
 
