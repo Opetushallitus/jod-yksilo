@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -23,12 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
@@ -86,68 +83,27 @@ public class KoskiOAuth2Controller {
       response.sendRedirect(request.getContextPath());
       return;
     }
+    var callbackUrl = getSavedCallbackUrl(request);
+    if (callbackUrl == null) {
+      response.sendRedirect(createRedirectUrl(request.getContextPath(), "missingCallback"));
+      return;
+    }
     var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
       log.debug("Permission was NOT give by the user id: {}", jodUser.getId());
-      redirectToFailOrCancelAuthenticationView(request, response, "cancel");
+      response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "cancel"));
       return;
     }
-    var callbackUrl =
-        request
-            .getSession()
-            .getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey())
-            .toString();
     log.debug("Permission was given by the user id: {}", jodUser.getId());
-    JsonNode jsonData;
-    try {
-      jsonData = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
-      if (personIdNotMatch(jodUser, jsonData)) {
-        koskiOAuth2Service.logout(authentication, request, response);
-        log.warn(
-            "HETU did NOT match. JOD user ({}) != OAuth2 user ({})",
-            jodUser.givenName(),
-            authorizedClient.getPrincipalName());
-        redirectToFailOrCancelAuthenticationView(request, response, "mismatch");
-        return;
-      }
-      request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
-      response.sendRedirect(
-          UriComponentsBuilder.fromUriString(callbackUrl)
-              .queryParam("koski", "authorized")
-              .toUriString());
-
-    } catch (HttpClientErrorException e) {
-      response.sendRedirect(
-          UriComponentsBuilder.fromUriString(callbackUrl)
-              .queryParam("koski", "error")
-              .queryParam("code", e.getStatusCode().value())
-              .toUriString());
-    }
+    request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
+    response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "authorized"));
   }
 
-  private static boolean personIdNotMatch(JodUser jodUser, JsonNode jsonData) {
-    // if (true) return false; //Bypass for development purpose.
-    var jodUserPersonId = jodUser.getPersonId();
-    var jsonDataPersonId = getPersonId(jsonData);
-    return !StringUtils.endsWithIgnoreCase(jodUserPersonId, jsonDataPersonId);
+  private static Object getSavedCallbackUrl(HttpServletRequest request) {
+    return request.getSession().getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
   }
 
-  private static String getPersonId(JsonNode jsonData) {
-    return jsonData.get("henkilö").get("hetu").asText();
-  }
-
-  private static void redirectToFailOrCancelAuthenticationView(
-      HttpServletRequest request, HttpServletResponse response, String error) throws IOException {
-    var callBackUrl =
-        request.getSession().getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
-    if (callBackUrl != null) {
-      response.sendRedirect(callBackUrl + "?error=" + error);
-      return;
-    }
-    response.sendRedirect(getKoulutusUrl(request) + "?error=" + error);
-  }
-
-  private static String getKoulutusUrl(HttpServletRequest request) {
-    return request.getContextPath() + "/fi/omat-sivuni/osaamiseni/koulutukseni";
+  private static String createRedirectUrl(String callbackUrl, Object value) {
+    return UriComponentsBuilder.fromUriString(callbackUrl).queryParam("koski", value).toUriString();
   }
 }
