@@ -16,8 +16,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.config.koski.TestKoskiOAuth2Config;
@@ -26,6 +24,7 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import fi.okm.jod.yksilo.util.UrlUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,14 +55,18 @@ class KoskiOAuth2ControllerTest {
   private static final String AUTHORIZATION_URL = "/oauth2/authorization/koski";
   private static final String OAUTH2_CALLBACK_API_ENDPOINT = "/oauth2/response/koski";
   private static final String CALLBACK_PATH = "/koski/fi/omat-sivuni/osaamiseni/koulutukseni";
+  private static final String EXPECTED_LANDING_PAGE_REDIRECT = "";
+  private static final String EXPECTED_CALLBACK_URL_MISSING_REDIRECT = "?koski=missingCallback";
+  private static final String EXPECTED_CANCEL_REDIRECT = CALLBACK_PATH + "?koski=cancel";
   private static final String EXPECTED_AUTHORIZED_REDIRECT = CALLBACK_PATH + "?koski=authorized";
-  private static final String EXPECTED_WRONG_PERSON_ID_REDIRECT = CALLBACK_PATH + "?error=mismatch";
+
+  @MockitoBean private HttpServletRequest request;
+
+  @MockitoBean private HttpSession session;
 
   @MockitoBean private KoskiOAuth2Service koskiOAuth2Service;
 
   @Autowired private WebApplicationContext webApplicationContext;
-
-  @Autowired private ObjectMapper objectMapper;
 
   private MockMvc mockMvc;
 
@@ -99,11 +102,60 @@ class KoskiOAuth2ControllerTest {
   }
 
   @Test
+  void shouldRedirectToLandingPage_whenUserGivesPermissionWithoutLogin() throws Exception {
+    JodUser jodUser = null;
+    var oAuth2AuthorizedClient = prepareOAuth2Client();
+
+    authenticateUser(jodUser);
+
+    performCallback(oAuth2AuthorizedClient, EXPECTED_LANDING_PAGE_REDIRECT);
+
+    verifyNoInteractions(koskiOAuth2Service);
+  }
+
+  @Test
+  void shouldRedirectToLandingPage_whenUserGivesPermissionNoCallbackUrl() throws Exception {
+    var jodUser = mock(JodUser.class);
+    when(jodUser.getPersonId()).thenReturn(PERSON_ID);
+    var oAuth2AuthorizedClient = prepareOAuth2Client();
+
+    authenticateUser(jodUser);
+
+    mockMvc
+        .perform(
+            get(OAUTH2_CALLBACK_API_ENDPOINT)
+                .principal(new TestingAuthenticationToken(oAuth2AuthorizedClient, null)))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl(EXPECTED_CALLBACK_URL_MISSING_REDIRECT));
+
+    verifyNoInteractions(koskiOAuth2Service);
+  }
+
+  @Test
+  void shouldTriggerCallbackEndpoint_whenUserDidNotGivePermission() throws Exception {
+    var jodUser = mock(JodUser.class);
+    when(jodUser.getPersonId()).thenReturn(PERSON_ID);
+
+    var oAuth2AuthorizedClient = prepareOAuth2Client();
+    when(koskiOAuth2Service.getAuthorizedClient(
+            any(Authentication.class), any(HttpServletRequest.class)))
+        .thenReturn(null);
+
+    authenticateUser(jodUser);
+
+    performCallback(oAuth2AuthorizedClient, EXPECTED_CANCEL_REDIRECT);
+
+    verify(koskiOAuth2Service)
+        .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
+    verifyNoMoreInteractions(koskiOAuth2Service);
+  }
+
+  @Test
   void shouldTriggerCallbackEndpoint_whenUserGivesPermission() throws Exception {
     var jodUser = mock(JodUser.class);
     when(jodUser.getPersonId()).thenReturn(PERSON_ID);
 
-    var oAuth2AuthorizedClient = prepareOAuth2Client(PERSON_ID);
+    var oAuth2AuthorizedClient = prepareOAuth2Client();
 
     authenticateUser(jodUser);
 
@@ -111,26 +163,7 @@ class KoskiOAuth2ControllerTest {
 
     verify(koskiOAuth2Service)
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
-    verify(koskiOAuth2Service, never()).logout(any(), any(), any());
-  }
-
-  @Test
-  void shouldTriggerCallbackEndpointAndReturnError_whenUserGivesPermissionWithWrongUser()
-      throws Exception {
-    var jodUser = mock(JodUser.class);
-    when(jodUser.getPersonId()).thenReturn(PERSON_ID);
-
-    var oAuth2AuthorizedClient = prepareOAuth2Client("110107A925J");
-
-    authenticateUser(jodUser);
-
-    performCallback(oAuth2AuthorizedClient, EXPECTED_WRONG_PERSON_ID_REDIRECT);
-
-    verify(koskiOAuth2Service)
-        .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
-    verify(koskiOAuth2Service).logout(any(), any(), any());
+    verifyNoMoreInteractions(koskiOAuth2Service);
   }
 
   private void performCallback(
@@ -144,8 +177,7 @@ class KoskiOAuth2ControllerTest {
         .andExpect(redirectedUrl(expectedRedirectUrl));
   }
 
-  private OAuth2AuthorizedClient prepareOAuth2Client(String personId)
-      throws JsonProcessingException {
+  private OAuth2AuthorizedClient prepareOAuth2Client() {
     var clientRegistration = mock(ClientRegistration.class);
     when(clientRegistration.getRegistrationId()).thenReturn(REGISTRATION_ID);
 
@@ -154,9 +186,6 @@ class KoskiOAuth2ControllerTest {
     when(koskiOAuth2Service.getAuthorizedClient(
             any(Authentication.class), any(HttpServletRequest.class)))
         .thenReturn(oAuth2AuthorizedClient);
-
-    when(koskiOAuth2Service.fetchDataFromResourceServer(oAuth2AuthorizedClient))
-        .thenReturn(objectMapper.readTree("{\"henkilö\":{\"hetu\": \"" + personId + "\"}}"));
 
     return oAuth2AuthorizedClient;
   }
