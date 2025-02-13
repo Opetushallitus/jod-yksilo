@@ -7,12 +7,15 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.util;
+package fi.okm.jod.yksilo.testutil;
 
+import fi.okm.jod.yksilo.domain.JodUser;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class TestUtil {
 
@@ -33,5 +36,11 @@ public class TestUtil {
     } catch (Exception e) {
       throw new RuntimeException("Could not read file: " + filename, e);
     }
+  }
+
+  public static void authenticateUser(JodUser jodUser) {
+    var context = SecurityContextHolder.createEmptyContext();
+    context.setAuthentication(new TestingAuthenticationToken(jodUser, null));
+    SecurityContextHolder.setContext(context);
   }
 }

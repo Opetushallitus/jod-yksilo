@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service;
+package fi.okm.jod.yksilo.service.koski;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.service.koski.KoskiService;
-import fi.okm.jod.yksilo.util.TestUtil;
+import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;

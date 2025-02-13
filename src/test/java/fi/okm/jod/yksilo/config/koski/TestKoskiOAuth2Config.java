@@ -25,6 +25,11 @@ public class TestKoskiOAuth2Config {
     return RestClient.builder();
   }
 
+  @Bean(KoskiRestClientConfig.RESTCLIENT_ID)
+  public RestClient restClient() {
+    return RestClient.builder().build();
+  }
+
   @Bean
   public OAuth2AuthorizedClientManager authorizedClientManager() {
     return mock(OAuth2AuthorizedClientManager.class);

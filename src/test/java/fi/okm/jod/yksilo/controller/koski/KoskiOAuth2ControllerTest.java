@@ -22,7 +22,6 @@ import fi.okm.jod.yksilo.config.koski.TestKoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
-import fi.okm.jod.yksilo.util.UrlUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,17 +34,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@TestPropertySource(
-    properties = "spring.security.oauth2.client.registration.koski.provider=koski-mtls")
+@TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({ErrorInfoFactory.class, KoskiOAuth2Config.class, TestKoskiOAuth2Config.class})
-@ActiveProfiles("test")
 @WebMvcTest(KoskiOAuth2Controller.class)
 class KoskiOAuth2ControllerTest {
 
@@ -59,8 +55,6 @@ class KoskiOAuth2ControllerTest {
   private static final String EXPECTED_CALLBACK_URL_MISSING_REDIRECT = "?koski=missingCallback";
   private static final String EXPECTED_CANCEL_REDIRECT = CALLBACK_PATH + "?koski=cancel";
   private static final String EXPECTED_AUTHORIZED_REDIRECT = CALLBACK_PATH + "?koski=authorized";
-
-  @MockitoBean private HttpServletRequest request;
 
   @MockitoBean private HttpSession session;
 
@@ -93,7 +87,7 @@ class KoskiOAuth2ControllerTest {
 
     var session = result.getRequest().getSession();
     assertThat(session.getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey()))
-        .isEqualTo(UrlUtil.getRelativePath(CALLBACK_PATH));
+        .isEqualTo(CALLBACK_PATH);
   }
 
   @Test
