@@ -61,13 +61,11 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
     return getAttribute(Attribute.SN).or(() -> getAttribute(Attribute.FAMILY_NAME)).orElse(null);
   }
 
+  @JsonIgnore
   @Override
   public String getPersonId() {
-    var personId = getAttribute(PersonIdentifier.FIN.getAttribute()).orElse(null);
-    if (personId != null) {
-      return personId;
-    }
-    return getAttribute(PersonIdentifier.EIDAS.getAttribute()).orElse(null);
+    return getAttribute(PersonIdentifier.FIN.getAttribute())
+        .orElse(getAttribute(PersonIdentifier.EIDAS.getAttribute()).orElse(null));
   }
 
   @JsonIgnore
