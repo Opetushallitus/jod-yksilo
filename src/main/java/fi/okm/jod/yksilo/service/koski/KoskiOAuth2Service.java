@@ -53,7 +53,7 @@ public class KoskiOAuth2Service {
         koskiConfig.getRegistrationId(), authentication, request);
   }
 
-  public void logout(
+  public void unauthorize(
       Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
     authorizedClientRepository.removeAuthorizedClient(
         getRegistrationId(), authentication, request, response);

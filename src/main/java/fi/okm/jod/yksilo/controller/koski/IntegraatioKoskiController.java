@@ -83,7 +83,7 @@ public class IntegraatioKoskiController {
 
     } catch (PersonIdNotMatchException e) {
       log.warn("Person ID did NOT match. JOD user ({}) != OAuth2 user.", jodUser.getId());
-      koskiOAuth2Service.logout(oauth2User, request, response);
+      koskiOAuth2Service.unauthorize(oauth2User, request, response);
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
   }
