@@ -17,4 +17,6 @@ public interface JodUser {
   String givenName();
 
   String familyName();
+
+  String getPersonId();
 }

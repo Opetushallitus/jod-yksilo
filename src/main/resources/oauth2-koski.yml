@@ -1,0 +1,38 @@
+---
+spring:
+  ssl:
+    bundle:
+      pem:
+        koski-ssl-bundle:
+          keystore:
+            certificate: "${jod.koski.client-cert}"
+            private-key: "${jod.koski.client-key}"
+  security:
+    oauth2:
+      client:
+        registration:
+          koski:
+            provider: koski-mtls
+            client-id: "${jod.koski.oauth2.client-id}"
+            client-authentication-method: none
+            authorization-grant-type: authorization_code
+            scope: HENKILOTIEDOT_HETU,OPISKELUOIKEUDET_KAIKKI_TIEDOT
+            client-name: koski
+            redirect-uri: "{baseUrl}/oauth2/response/{registrationId}"
+        provider:
+          koski-mtls:
+            token-uri: "${jod.koski.oauth2.provider.token-uri}"
+            authorization-uri: "${jod.koski.oauth2.provider.authorization-uri}"
+
+jod:
+  koski:
+    enabled: false
+    client-cert: ../koski/koski-luovutuspalvelu/proxy/test/testca/certs/client.crt
+    client-key: ../koski/koski-luovutuspalvelu/proxy/test/testca/private/client.key
+    oauth2:
+      client-id: omadataoauth2sample
+      provider:
+        token-uri: https://localhost:7022/koski/api/omadata-oauth2/authorization-server
+        authorization-uri: http://localhost:7021/koski/omadata-oauth2/authorize
+    resource-server:
+      url: https://localhost:7022/koski/api/omadata-oauth2/resource-server

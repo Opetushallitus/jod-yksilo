@@ -29,6 +29,11 @@ public record TestJodUser(UUID id) implements JodUser {
     return "User";
   }
 
+  @Override
+  public String getPersonId() {
+    return familyName();
+  }
+
   public static JodUser of(String uuid) {
     return new TestJodUser(UUID.fromString(uuid));
   }

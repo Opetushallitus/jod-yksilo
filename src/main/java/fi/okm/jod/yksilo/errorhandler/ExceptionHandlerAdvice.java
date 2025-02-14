@@ -14,6 +14,9 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
+import fi.okm.jod.yksilo.service.koski.ResourceServerException;
+import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
@@ -30,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -136,6 +140,36 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       DataIntegrityViolationException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
+  @ExceptionHandler(PermissionRequiredException.class)
+  protected ResponseEntity<Object> handleException(
+      PermissionRequiredException e, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.PERMISSION_REQUIRED, List.of(e.getMessage()));
+    return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+  }
+
+  @ExceptionHandler(WrongPersonException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      WrongPersonException e, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.PERMISSION_REQUIRED, List.of(e.getMessage()));
+    return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+  }
+
+  @ExceptionHandler(ResourceServerException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      ResourceServerException e, WebRequest request) {
+
+    var errorCode = ErrorCode.SERVICE_ERROR;
+    if (e.getCause() instanceof HttpClientErrorException clientException) {
+      if (clientException.getStatusCode().is4xxClientError()) {
+        log.debug(e.getMessage());
+        errorCode = ErrorCode.PERMISSION_REQUIRED;
+      }
+    }
+    var info = errorInfo.of(errorCode, List.of(e.getMessage()));
+    return handleExceptionInternal(
+        e, info, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
   }
 
   @Override

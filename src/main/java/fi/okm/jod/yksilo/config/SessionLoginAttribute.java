@@ -14,7 +14,8 @@ import lombok.Getter;
 @Getter
 public enum SessionLoginAttribute {
   LANG,
-  CALLBACK;
+  CALLBACK,
+  CALLBACK_FRONTEND;
 
   private final String key;
 

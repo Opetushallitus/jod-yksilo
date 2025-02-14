@@ -7,26 +7,31 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller;
+package fi.okm.jod.yksilo.controller.koski;
 
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import fi.okm.jod.yksilo.service.KoskiService;
+import fi.okm.jod.yksilo.service.koski.KoskiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/integraatiot")
-@RequiredArgsConstructor
 @Tag(name = "integraatiot")
 class IntegraatioController {
+
   private final KoskiService koskiService;
+
+  IntegraatioController(KoskiService koskiService) {
+    this.koskiService = koskiService;
+  }
 
   // Define a set of allowed base URLs or patterns
 
