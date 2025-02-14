@@ -78,9 +78,10 @@ public class KoskiOAuth2Controller {
       HttpServletResponse response,
       @AuthenticationPrincipal JodUser jodUser)
       throws IOException {
+    log.trace("Got callback response from Koski Authorization server.");
     if (jodUser == null) {
       log.trace("User is NOT logged in. Redirect to landing page.");
-      response.sendRedirect(request.getContextPath());
+      response.sendRedirect(request.getContextPath() + "/");
       return;
     }
     var callbackUrl = getSavedCallbackUrl(request);
