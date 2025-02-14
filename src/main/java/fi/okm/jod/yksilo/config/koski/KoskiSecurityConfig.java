@@ -44,8 +44,7 @@ public class KoskiSecurityConfig {
       throws Exception {
     log.info("Configuring Koski OAuth2 integration...");
 
-    return http.csrf(
-            csrf -> csrf.ignoringRequestMatchers(AUTHORIZATION_URL, AUTHORIZE_CALLBACK_URL))
+    return http.csrf(csrf -> csrf.ignoringRequestMatchers(AUTHORIZE_CALLBACK_URL))
         .securityMatcher(AUTHORIZATION_URL, AUTHORIZE_CALLBACK_URL, AUTHORIZE_URL)
         .authorizeHttpRequests(
             auth ->
