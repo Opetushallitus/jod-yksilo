@@ -76,7 +76,9 @@ public class KoskiOAuth2Controller {
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response,
-      @AuthenticationPrincipal JodUser jodUser)
+      @AuthenticationPrincipal JodUser jodUser,
+      @RequestParam(name = "error", required = false) String error,
+      @RequestParam(name = "error_description", required = false) String errorDescription)
       throws IOException {
     log.trace("Got callback response from Koski Authorization server.");
     if (jodUser == null) {
@@ -89,15 +91,30 @@ public class KoskiOAuth2Controller {
       response.sendRedirect(createRedirectUrl(request.getContextPath(), "missingCallback"));
       return;
     }
+    if (error != null) {
+      if (error.equalsIgnoreCase("access_denied")) {
+        handleUserDidNotGivePermission(response, jodUser, callbackUrl);
+        return;
+      }
+      log.error(
+          "Koski OAuth2 authorize failed. Error: {}, description: {}", error, errorDescription);
+      response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "error"));
+      return;
+    }
     var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
-      log.debug("Permission was NOT give by the user id: {}", jodUser.getId());
-      response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "cancel"));
+      handleUserDidNotGivePermission(response, jodUser, callbackUrl);
       return;
     }
     log.debug("Permission was given by the user id: {}", jodUser.getId());
     request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
     response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "authorized"));
+  }
+
+  private static void handleUserDidNotGivePermission(
+      HttpServletResponse response, JodUser jodUser, Object callbackUrl) throws IOException {
+    log.debug("Permission was NOT give by the user id: {}", jodUser.getId());
+    response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "cancel"));
   }
 
   private static Object getSavedCallbackUrl(HttpServletRequest request) {
