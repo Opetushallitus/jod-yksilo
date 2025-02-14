@@ -22,7 +22,6 @@ import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -61,7 +60,7 @@ public class KoskiOAuth2Service {
   }
 
   public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) throws WrongPersonException {
-    // if (true) return false; //Bypass for development purpose.
+    // if (true) return; // Bypass for development purpose.
     var jodUserPersonId = jodUser.getPersonId();
     var oauth2PersonId = getPersonId(jsonData);
     if (!StringUtils.endsWithIgnoreCase(jodUserPersonId, oauth2PersonId)) {
@@ -88,7 +87,6 @@ public class KoskiOAuth2Service {
       return restClient
           .post()
           .uri(koskiConfig.getResourceServer())
-          .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getTokenValue())
           .attributes(clientRegistrationId(koskiConfig.getRegistrationId()))
           .accept(MediaType.APPLICATION_JSON)
           .retrieve()

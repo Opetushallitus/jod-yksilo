@@ -1,6 +1,4 @@
 spring:
-#  config:
-#    import: optional:classpath:/oauth2-koski.yml
   main:
     banner-mode: off
   threads:
