@@ -10,10 +10,7 @@
 package fi.okm.jod.yksilo.testutil;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -29,10 +26,7 @@ public class TestUtil {
         throw new RuntimeException(
             filename + " was NOT found in test resource folder: " + clazz.getPackageName());
       }
-      try (var reader =
-          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-        return reader.lines().collect(Collectors.joining("\n"));
-      }
+      return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     } catch (Exception e) {
       throw new RuntimeException("Could not read file: " + filename, e);
     }
