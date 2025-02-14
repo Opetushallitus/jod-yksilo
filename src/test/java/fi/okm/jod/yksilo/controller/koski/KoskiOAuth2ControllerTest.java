@@ -51,7 +51,7 @@ class KoskiOAuth2ControllerTest {
   private static final String AUTHORIZATION_URL = "/oauth2/authorization/koski";
   private static final String OAUTH2_CALLBACK_API_ENDPOINT = "/oauth2/response/koski";
   private static final String CALLBACK_PATH = "/koski/fi/omat-sivuni/osaamiseni/koulutukseni";
-  private static final String EXPECTED_LANDING_PAGE_REDIRECT = "";
+  private static final String EXPECTED_LANDING_PAGE_REDIRECT = "/";
   private static final String EXPECTED_CALLBACK_URL_MISSING_REDIRECT = "?koski=missingCallback";
   private static final String EXPECTED_CANCEL_REDIRECT = CALLBACK_PATH + "?koski=cancel";
   private static final String EXPECTED_AUTHORIZED_REDIRECT = CALLBACK_PATH + "?koski=authorized";
