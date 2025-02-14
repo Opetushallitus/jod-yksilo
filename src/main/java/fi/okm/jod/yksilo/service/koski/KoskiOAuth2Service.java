@@ -60,7 +60,7 @@ public class KoskiOAuth2Service {
   }
 
   public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) throws WrongPersonException {
-    if (true) return; // Bypass for development purpose.
+    // if (true) return; // Bypass for development purpose.
     var jodUserPersonId = jodUser.getPersonId();
     var oauth2PersonId = getPersonId(jsonData);
     if (!StringUtils.endsWithIgnoreCase(jodUserPersonId, oauth2PersonId)) {
