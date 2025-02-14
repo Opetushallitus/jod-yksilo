@@ -24,6 +24,8 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
@@ -53,6 +57,7 @@ class KoskiOAuth2ControllerTest {
   private static final String CALLBACK_PATH = "/koski/fi/omat-sivuni/osaamiseni/koulutukseni";
   private static final String EXPECTED_LANDING_PAGE_REDIRECT = "/";
   private static final String EXPECTED_CALLBACK_URL_MISSING_REDIRECT = "?koski=missingCallback";
+  private static final String EXPECTED_ERROR_REDIRECT = CALLBACK_PATH + "?koski=error";
   private static final String EXPECTED_CANCEL_REDIRECT = CALLBACK_PATH + "?koski=cancel";
   private static final String EXPECTED_AUTHORIZED_REDIRECT = CALLBACK_PATH + "?koski=authorized";
 
@@ -126,7 +131,32 @@ class KoskiOAuth2ControllerTest {
   }
 
   @Test
-  void shouldTriggerCallbackEndpoint_whenUserDidNotGivePermission() throws Exception {
+  void shouldRedirectToSavedUrlWithErrorCode_whenUserGivesPermissionButErrorOccurs()
+      throws Exception {
+    var jodUser = mock(JodUser.class);
+    when(jodUser.getPersonId()).thenReturn(PERSON_ID);
+
+    var oAuth2AuthorizedClient = prepareOAuth2Client();
+
+    authenticateUser(jodUser);
+
+    var queryMap =
+        new LinkedMultiValueMap<>(
+            Map.of(
+                "error", List.of("invalid_token_response"),
+                "error_description",
+                    List.of(
+                        "An error occurred while attempting to retrieve the OAuth 2.0 Access Token Response: I/O error on POST request for...")));
+
+    performCallback(oAuth2AuthorizedClient, EXPECTED_ERROR_REDIRECT, queryMap);
+
+    verify(koskiOAuth2Service, never())
+        .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
+    verifyNoMoreInteractions(koskiOAuth2Service);
+  }
+
+  @Test
+  void shouldRedirectToSavedUrlWithCancelCode_whenUserDidNotGivePermission() throws Exception {
     var jodUser = mock(JodUser.class);
     when(jodUser.getPersonId()).thenReturn(PERSON_ID);
 
@@ -145,7 +175,7 @@ class KoskiOAuth2ControllerTest {
   }
 
   @Test
-  void shouldTriggerCallbackEndpoint_whenUserGivesPermission() throws Exception {
+  void shouldRedirectToSavedUrlWithOkAuthorizedCode_whenUserGivesPermission() throws Exception {
     var jodUser = mock(JodUser.class);
     when(jodUser.getPersonId()).thenReturn(PERSON_ID);
 
@@ -162,9 +192,21 @@ class KoskiOAuth2ControllerTest {
 
   private void performCallback(
       OAuth2AuthorizedClient oAuth2AuthorizedClient, String expectedRedirectUrl) throws Exception {
+    performCallback(oAuth2AuthorizedClient, expectedRedirectUrl, null);
+  }
+
+  private void performCallback(
+      OAuth2AuthorizedClient oAuth2AuthorizedClient,
+      String expectedRedirectUrl,
+      MultiValueMap<String, String> queryParameters)
+      throws Exception {
+    var requestBuilder = get(OAUTH2_CALLBACK_API_ENDPOINT);
+    if (queryParameters != null && !queryParameters.isEmpty()) {
+      requestBuilder = requestBuilder.params(queryParameters);
+    }
     mockMvc
         .perform(
-            get(OAUTH2_CALLBACK_API_ENDPOINT)
+            requestBuilder
                 .sessionAttr(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), CALLBACK_PATH)
                 .principal(new TestingAuthenticationToken(oAuth2AuthorizedClient, null)))
         .andExpect(status().is3xxRedirection())

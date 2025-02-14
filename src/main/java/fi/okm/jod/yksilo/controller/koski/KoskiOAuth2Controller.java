@@ -76,7 +76,9 @@ public class KoskiOAuth2Controller {
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response,
-      @AuthenticationPrincipal JodUser jodUser)
+      @AuthenticationPrincipal JodUser jodUser,
+      @RequestParam(name = "error", required = false) String error,
+      @RequestParam(name = "error_description", required = false) String errorDescription)
       throws IOException {
     log.trace("Got callback response from Koski Authorization server.");
     if (jodUser == null) {
@@ -87,6 +89,12 @@ public class KoskiOAuth2Controller {
     var callbackUrl = getSavedCallbackUrl(request);
     if (callbackUrl == null) {
       response.sendRedirect(createRedirectUrl(request.getContextPath(), "missingCallback"));
+      return;
+    }
+    if (error != null) {
+      log.error(
+          "Koski OAuth2 authorize failed. Error: {}, description: {}", error, errorDescription);
+      response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "error"));
       return;
     }
     var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
