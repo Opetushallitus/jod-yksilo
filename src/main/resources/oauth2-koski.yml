@@ -7,9 +7,6 @@ spring:
           keystore:
             certificate: "${jod.koski.client-cert}"
             private-key: "${jod.koski.client-key}"
-          truststore:
-            # Our client will trust the Authorization and Resource server with it's the certificate.
-            certificate: "${jod.koski.server-cert}"
   security:
     oauth2:
       client:
@@ -32,7 +29,6 @@ jod:
     enabled: false
     client-cert: ../koski/koski-luovutuspalvelu/proxy/test/testca/certs/client.crt
     client-key: ../koski/koski-luovutuspalvelu/proxy/test/testca/private/client.key
-    server-cert: ../koski/koski-luovutuspalvelu/proxy/test/testca/certs/root-ca.crt
     oauth2:
       client-id: omadataoauth2sample
       provider:
