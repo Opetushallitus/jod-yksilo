@@ -18,8 +18,6 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
@@ -30,12 +28,20 @@ import org.springframework.web.client.RestClient;
 @Configuration(proxyBeanMethods = false)
 public class KoskiRestClientConfig {
 
+  public static final String OAUTH2_RESTCLIENT_ID = "koski-oauth2-rest-client";
   public static final String RESTCLIENT_ID = "koski-rest-client";
 
   private static final String SSL_BUNDLE = "koski-ssl-bundle";
 
   @Bean(RESTCLIENT_ID)
   public RestClient koskiRestClient(
+      RestClient.Builder builder,
+      OAuth2AuthorizedClientManager authorizedClientManager,
+      SslBundles sslBundles) {
+    return createRestClient(builder, authorizedClientManager, sslBundles).build();
+  }
+
+  private static RestClient.Builder createRestClient(
       RestClient.Builder builder,
       OAuth2AuthorizedClientManager authorizedClientManager,
       SslBundles sslBundles) {
@@ -47,16 +53,22 @@ public class KoskiRestClientConfig {
                     .withConnectTimeout(Duration.ofSeconds(5))
                     .withReadTimeout(Duration.ofSeconds(10)));
 
-    var messageConverters =
-        List.of(
-            new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter(),
-            new StringHttpMessageConverter(), new MappingJackson2HttpMessageConverter());
-
     return builder
         .requestInterceptor(new OAuth2ClientHttpRequestInterceptor(authorizedClientManager))
         .requestFactory(requestFactory)
+        .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler());
+  }
+
+  @Bean(OAUTH2_RESTCLIENT_ID)
+  public RestClient koskiRestClientOAuth2(
+      RestClient.Builder builder,
+      OAuth2AuthorizedClientManager authorizedClientManager,
+      SslBundles sslBundles) {
+    var messageConverters =
+        List.of(
+            new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter());
+    return createRestClient(builder, authorizedClientManager, sslBundles)
         .messageConverters(messageConverters)
-        .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())
         .build();
   }
 }

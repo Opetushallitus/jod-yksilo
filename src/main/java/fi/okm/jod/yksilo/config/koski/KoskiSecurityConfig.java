@@ -39,7 +39,7 @@ public class KoskiSecurityConfig {
   public SecurityFilterChain oauthConfig(
       HttpSecurity http,
       ClientRegistrationRepository repository,
-      @Qualifier(KoskiRestClientConfig.RESTCLIENT_ID) RestClient oauthRestClient,
+      @Qualifier(KoskiRestClientConfig.OAUTH2_RESTCLIENT_ID) RestClient oauthRestClient,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository)
       throws Exception {
     log.info("Configuring Koski OAuth2 integration...");
