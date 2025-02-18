@@ -1,0 +1,185 @@
+{
+  "henkilö": {
+    "hetu": "241001B765F"
+  },
+  "opiskeluoikeudet": [
+    {
+      "oid": "1.2.246.562.15.93520514022",
+      "versionumero": 1,
+      "aikaleima": "2025-02-03T13:56:53.044526",
+      "oppilaitos": {
+        "oid": "1.2.246.562.10.14613773812",
+        "oppilaitosnumero": {
+          "koodiarvo": "00204",
+          "nimi": {
+            "fi": "Jyväskylän normaalikoulu",
+            "sv": "Jyväskylän normaalikoulu",
+            "en": "Jyväskylän normaalikoulu"
+          },
+          "lyhytNimi": {
+            "fi": "Jyväskylän normaalikoulu",
+            "sv": "Jyväskylän normaalikoulu",
+            "en": "Jyväskylän normaalikoulu"
+          },
+          "koodistoUri": "oppilaitosnumero"
+        },
+        "nimi": {
+          "fi": "Jyväskylän normaalikoulu",
+          "sv": "Jyväskylän normaalikoulu",
+          "en": "Jyväskylän normaalikoulu"
+        },
+        "kotipaikka": {
+          "koodiarvo": "179",
+          "nimi": {
+            "fi": "Jyväskylä",
+            "sv": "Jyväskylä"
+          },
+          "koodistoUri": "kunta"
+        }
+      },
+      "koulutustoimija": {
+        "oid": "1.2.246.562.10.77055527103",
+        "nimi": {
+          "fi": "Jyväskylän yliopisto"
+        },
+        "yTunnus": "0245894-7",
+        "kotipaikka": {
+          "koodiarvo": "179",
+          "nimi": {
+            "fi": "Jyväskylä",
+            "sv": "Jyväskylä"
+          },
+          "koodistoUri": "kunta"
+        }
+      },
+      "tila": {
+        "opiskeluoikeusjaksot": [
+          {
+            "alku": "2006-01-01",
+            "tila": {
+              "koodiarvo": "lasna",
+              "nimi": {
+                "fi": "Läsnä",
+                "sv": "Närvarande",
+                "en": "Present"
+              },
+              "koodistoUri": "koskiopiskeluoikeudentila",
+              "koodistoVersio": 1
+            },
+            "opintojenRahoitus": {
+              "koodiarvo": "6",
+              "nimi": {
+                "fi": "Muuta kautta rahoitettu",
+                "sv": "Finansierad på annat sätt",
+                "en": "Funded by other means"
+              },
+              "koodistoUri": "opintojenrahoitus",
+              "koodistoVersio": 1
+            }
+          }
+        ]
+      },
+      "suoritukset": [
+        {
+          "koulutusmoduuli": {
+            "perusteenDiaarinumero": "19/011/2015",
+            "tunniste": {
+              "koodiarvo": "aikuistenperusopetuksenoppimaaranalkuvaihe",
+              "nimi": {
+                "fi": "Aikuisten perusopetuksen oppimäärän alkuvaihe",
+                "sv": "Inledningsskedet i den grundläggande utbildningen för vuxna",
+                "en": "Introductory phase to basic education for adults  syllabus"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            }
+          },
+          "luokka": "6C",
+          "toimipiste": {
+            "oid": "1.2.246.562.10.14613773812",
+            "oppilaitosnumero": {
+              "koodiarvo": "00204",
+              "nimi": {
+                "fi": "Jyväskylän normaalikoulu",
+                "sv": "Jyväskylän normaalikoulu",
+                "en": "Jyväskylän normaalikoulu"
+              },
+              "lyhytNimi": {
+                "fi": "Jyväskylän normaalikoulu",
+                "sv": "Jyväskylän normaalikoulu",
+                "en": "Jyväskylän normaalikoulu"
+              },
+              "koodistoUri": "oppilaitosnumero"
+            },
+            "nimi": {
+              "fi": "Jyväskylän normaalikoulu",
+              "sv": "Jyväskylän normaalikoulu",
+              "en": "Jyväskylän normaalikoulu"
+            },
+            "kotipaikka": {
+              "koodiarvo": "179",
+              "nimi": {
+                "fi": "Jyväskylä",
+                "sv": "Jyväskylä"
+              },
+              "koodistoUri": "kunta"
+            }
+          },
+          "suoritustapa": {
+            "koodiarvo": "erityinentutkinto",
+            "nimi": {
+              "fi": "Erityinen tutkinto",
+              "sv": "Särskild examen",
+              "en": "Separate basic education examination"
+            },
+            "koodistoUri": "perusopetuksensuoritustapa",
+            "koodistoVersio": 1
+          },
+          "suorituskieli": {
+            "koodiarvo": "FI",
+            "nimi": {
+              "fi": "suomi",
+              "sv": "finska",
+              "en": "Finnish"
+            },
+            "lyhytNimi": {
+              "fi": "suomi",
+              "sv": "finska",
+              "en": "Finnish"
+            },
+            "koodistoUri": "kieli",
+            "koodistoVersio": 1
+          },
+          "tyyppi": {
+            "koodiarvo": "aikuistenperusopetuksenoppimaaranalkuvaihe",
+            "nimi": {
+              "fi": "Aikuisten perusopetuksen oppimäärän alkuvaihe",
+              "sv": "Inledningsskedet i den grundläggande utbildningen för vuxna",
+              "en": "Introductory phase to basic education for adults  syllabus"
+            },
+            "koodistoUri": "suorituksentyyppi",
+            "koodistoVersio": 1
+          }
+        }
+      ],
+      "tyyppi": {
+        "koodiarvo": "aikuistenperusopetus",
+        "nimi": {
+          "fi": "Aikuisten perusopetus",
+          "sv": "Grundläggande utbildning för vuxna",
+          "en": "Preparatory instruction and lower secondary education for adults"
+        },
+        "lyhytNimi": {
+          "fi": "Aikuisten perusopetus"
+        },
+        "koodistoUri": "opiskeluoikeudentyyppi",
+        "koodistoVersio": 1
+      },
+      "alkamispäivä": "2006-01-01"
+    }
+  ],
+  "tokenInfo": {
+    "scope": "HENKILOTIEDOT_HETU OPISKELUOIKEUDET_KAIKKI_TIEDOT",
+    "expirationTime": "2025-02-03T15:18:55.8604+02:00"
+  }
+}

@@ -31,5 +31,6 @@ public record ErrorInfo(
     UNSPECIFIED_ERROR,
     VALIDATION_FAILURE,
     SERVICE_ERROR,
+    PERMISSION_REQUIRED, // User need to give permission.
   }
 }
