@@ -1,9 +1,9 @@
 spring:
   config:
     import:
-      - aws-parameterstore:/jod/config/
       - classpath:/saml2-suomifi.yml
       - classpath:/oauth2-koski.yml
+      - aws-parameterstore:/jod/config/
   cloud:
     aws:
       parameterstore:
