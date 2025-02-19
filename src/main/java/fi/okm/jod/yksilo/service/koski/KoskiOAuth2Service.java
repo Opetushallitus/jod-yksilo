@@ -9,8 +9,6 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
-import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
@@ -60,7 +58,6 @@ public class KoskiOAuth2Service {
   }
 
   public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) throws WrongPersonException {
-    // if (true) return; // Bypass for development purpose.
     var jodUserPersonId = jodUser.getPersonId();
     var oauth2PersonId = getPersonId(jsonData);
     if (!StringUtils.endsWithIgnoreCase(jodUserPersonId, oauth2PersonId)) {
@@ -87,7 +84,7 @@ public class KoskiOAuth2Service {
       return restClient
           .post()
           .uri(koskiConfig.getResourceServer())
-          .attributes(clientRegistrationId(koskiConfig.getRegistrationId()))
+          .headers(headers -> headers.setBearerAuth(accessToken.getTokenValue()))
           .accept(MediaType.APPLICATION_JSON)
           .retrieve()
           .body(JsonNode.class);

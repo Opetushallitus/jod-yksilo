@@ -107,7 +107,7 @@ public class KoskiOAuth2Controller {
       return;
     }
     log.debug("Permission was given by the user id: {}", jodUser.getId());
-    request.removeAttribute(SessionLoginAttribute.CALLBACK.getKey());
+    request.getSession().removeAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
     response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "authorized"));
   }
 
