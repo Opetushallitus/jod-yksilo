@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.MediaType;
@@ -57,16 +58,30 @@ public class KoskiOAuth2Service {
         koskiConfig.getRegistrationId(), authentication, request);
   }
 
-  public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) throws WrongPersonException {
+  public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) {
     var jodUserPersonId = jodUser.getPersonId();
     var oauth2PersonId = getPersonId(jsonData);
+    if (oauth2PersonId == null) {
+      throw new NoDataException("User data not found.");
+    }
     if (!StringUtils.endsWithIgnoreCase(jodUserPersonId, oauth2PersonId)) {
       throw new WrongPersonException(jodUser.getId());
     }
   }
 
   private static String getPersonId(JsonNode jsonData) {
-    return jsonData.get("henkilö").get("hetu").asText();
+    if (jsonData == null) {
+      return null;
+    }
+    var henkilo = jsonData.get("henkilö");
+    if (henkilo == null) {
+      return null;
+    }
+    var hetu = henkilo.get("hetu");
+    if (hetu == null) {
+      return null;
+    }
+    return hetu.asText();
   }
 
   public void unauthorize(
@@ -90,6 +105,10 @@ public class KoskiOAuth2Service {
           .body(JsonNode.class);
 
     } catch (HttpClientErrorException e) {
+      if (e.getStatusCode().value() == HttpStatus.SC_NOT_FOUND) {
+        log.debug("Resource server returned: {}", e.getMessage());
+        throw new NoDataException(e.getMessage());
+      }
       throw new ResourceServerException("Fail to get data from Koski resource server.", e);
     }
   }

@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
+import com.codahale.metrics.Clock;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
@@ -60,7 +61,15 @@ public class IntegraatioKoskiController {
     }
 
     try {
+      var clock = Clock.defaultClock();
+      long startTime = clock.getTime();
       var dataInJson = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
+      long duration = clock.getTime() - startTime;
+      if (duration > 1_000) {
+        log.warn(
+            "Fetching data from Koski's opintopolku took {} ms, which longer than expected (1s).",
+            duration);
+      }
       koskiOAuth2Service.checkPersonIdMatches(jodUser, dataInJson);
 
       var educationHistories = koskiService.getKoulutusData(dataInJson, null);
