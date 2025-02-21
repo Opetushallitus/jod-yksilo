@@ -91,8 +91,9 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   }
 
   @Override
+  @SuppressWarnings("java:S1186")
   @JsonIgnore
   public String getPersonId() {
-    return familyName();
+    return username;
   }
 }

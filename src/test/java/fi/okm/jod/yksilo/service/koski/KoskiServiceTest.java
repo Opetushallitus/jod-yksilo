@@ -18,8 +18,6 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestClient;
 
 class KoskiServiceTest {
 
@@ -28,9 +26,7 @@ class KoskiServiceTest {
 
   public KoskiServiceTest() {
     this.objectMapper = new ObjectMapper();
-    this.koskiService =
-        new KoskiService(
-            RestClient.builder(), new MappingJackson2HttpMessageConverter(), objectMapper);
+    this.koskiService = new KoskiService();
   }
 
   @Test

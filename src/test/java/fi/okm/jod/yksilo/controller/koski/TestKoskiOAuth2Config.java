@@ -7,13 +7,17 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config.koski;
+package fi.okm.jod.yksilo.controller.koski;
 
 import static org.mockito.Mockito.mock;
 
+import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
+import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
+import java.util.UUID;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.web.client.RestClient;
 
@@ -38,5 +42,10 @@ public class TestKoskiOAuth2Config {
   @Bean
   public SslBundles sslBundles() {
     return mock(SslBundles.class);
+  }
+
+  @Bean
+  UserDetailsService mockUserDetailsService() {
+    return username -> new MockJodUserImpl(username, UUID.nameUUIDFromBytes(username.getBytes()));
   }
 }
