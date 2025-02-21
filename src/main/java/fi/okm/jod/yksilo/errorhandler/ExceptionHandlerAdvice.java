@@ -152,7 +152,7 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   @ExceptionHandler(WrongPersonException.class)
   protected ResponseEntity<Object> handleServiceException(
       WrongPersonException e, WebRequest request) {
-    var info = errorInfo.of(ErrorCode.PERMISSION_REQUIRED, List.of(e.getMessage()));
+    var info = errorInfo.of(ErrorCode.WRONG_PERSON, List.of(e.getMessage()));
     return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
   }
 
