@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
+import com.codahale.metrics.Clock;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
@@ -51,23 +52,31 @@ public class IntegraatioKoskiController {
   @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
   ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
       @AuthenticationPrincipal JodUser jodUser,
-      Authentication oauth2User,
+      Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response) {
-    var authorizedClient = koskiOAuth2Service.getAuthorizedClient(oauth2User, request);
+    var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
       throw new PermissionRequiredException(jodUser.getId());
     }
 
     try {
+      var clock = Clock.defaultClock();
+      long startTime = clock.getTime();
       var dataInJson = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
+      long duration = clock.getTime() - startTime;
+      if (duration > 1_000) {
+        log.warn(
+            "Fetching data from Koski's opintopolku took {} ms, which longer than expected (1s).",
+            duration);
+      }
       koskiOAuth2Service.checkPersonIdMatches(jodUser, dataInJson);
 
       var educationHistories = koskiService.getKoulutusData(dataInJson, null);
       return ResponseEntity.ok(educationHistories);
 
     } catch (WrongPersonException e) {
-      koskiOAuth2Service.unauthorize(oauth2User, request, response);
+      koskiOAuth2Service.unauthorize(authentication, request, response);
       throw e;
     }
   }

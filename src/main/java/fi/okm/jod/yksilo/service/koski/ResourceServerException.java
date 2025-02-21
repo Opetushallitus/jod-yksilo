@@ -9,11 +9,13 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
-import org.springframework.web.client.HttpClientErrorException;
-
 public class ResourceServerException extends KoskiServiceException {
 
-  public ResourceServerException(String message, HttpClientErrorException e) {
-    super(message, e);
+  public ResourceServerException(String message) {
+    super(message);
+  }
+
+  public ResourceServerException(String message, Throwable t) {
+    super(message, t);
   }
 }
