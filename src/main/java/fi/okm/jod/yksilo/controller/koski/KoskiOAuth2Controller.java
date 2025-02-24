@@ -49,16 +49,19 @@ public class KoskiOAuth2Controller {
     request
         .getSession()
         .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackPath);
-
     var authorizationUrl = getAuthorizationUrl(request);
     log.debug("Redirect user to {}, callback: {}", authorizationUrl, callbackPath);
     response.sendRedirect(authorizationUrl);
   }
 
   private String getAuthorizationUrl(HttpServletRequest request) {
-    return request.getContextPath()
-        + "/oauth2/authorization/"
-        + koskiOAuth2Service.getRegistrationId();
+    var language = request.getParameter("lang") != null ? request.getParameter("lang") : "fi";
+    return UriComponentsBuilder.fromUriString(
+            request.getContextPath()
+                + "/oauth2/authorization/"
+                + koskiOAuth2Service.getRegistrationId())
+        .queryParam("locale", language)
+        .toUriString();
   }
 
   /**

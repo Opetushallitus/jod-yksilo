@@ -75,7 +75,7 @@ class KoskiOAuth2ControllerTest {
   }
 
   @Test
-  void shouldRedirectToOAuth2Url_whenCallbackExists() throws Exception {
+  void shouldRedirectToOAuth2Url_whenNoLangParameter() throws Exception {
     when(koskiOAuth2Service.getRegistrationId()).thenReturn(REGISTRATION_ID);
 
     var fullCallbackUrlWithParameters =
@@ -87,7 +87,30 @@ class KoskiOAuth2ControllerTest {
             .perform(
                 get("/oauth2/authorize/koski").param("callback", fullCallbackUrlWithParameters))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl(AUTHORIZATION_URL))
+            .andExpect(redirectedUrl(AUTHORIZATION_URL + "?locale=fi"))
+            .andReturn();
+
+    var session = result.getRequest().getSession();
+    assertThat(session.getAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey()))
+        .isEqualTo(CALLBACK_PATH);
+  }
+
+  @Test
+  void shouldRedirectToOAuth2Url() throws Exception {
+    when(koskiOAuth2Service.getRegistrationId()).thenReturn(REGISTRATION_ID);
+
+    var fullCallbackUrlWithParameters =
+        "http://localhost:8080/koski/fi/omat-sivuni/osaamiseni/koulutukseni?callback="
+            + CALLBACK_PATH
+            + "&extra=blablabla";
+    var result =
+        mockMvc
+            .perform(
+                get("/oauth2/authorize/koski")
+                    .param("callback", fullCallbackUrlWithParameters)
+                    .param("lang", "en"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl(AUTHORIZATION_URL + "?locale=en"))
             .andReturn();
 
     var session = result.getRequest().getSession();

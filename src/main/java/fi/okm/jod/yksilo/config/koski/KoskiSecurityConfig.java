@@ -46,7 +46,8 @@ public class KoskiSecurityConfig {
       HttpSecurity http,
       ClientRegistrationRepository repository,
       @Qualifier(KoskiRestClientConfig.OAUTH2_RESTCLIENT_ID) RestClient oauthRestClient,
-      HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository)
+      HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository,
+      HttpServletRequest request)
       throws Exception {
     log.info("Configuring Koski OAuth2 integration...");
 
@@ -59,7 +60,7 @@ public class KoskiSecurityConfig {
               client.authorizationCodeGrant(
                   code -> {
                     code.authorizationRequestResolver(
-                        createKoskiAuthorizationRequestResolver(repository));
+                        createKoskiAuthorizationRequestResolver(repository, request));
                     code.accessTokenResponseClient(
                         createAccessTokenResponseClient(oauthRestClient));
                   });
@@ -78,7 +79,7 @@ public class KoskiSecurityConfig {
   }
 
   private static DefaultOAuth2AuthorizationRequestResolver createKoskiAuthorizationRequestResolver(
-      ClientRegistrationRepository repository) {
+      ClientRegistrationRepository repository, HttpServletRequest request) {
     var resolver =
         new DefaultOAuth2AuthorizationRequestResolver(
             repository,
@@ -88,8 +89,11 @@ public class KoskiSecurityConfig {
             .andThen(
                 customizer ->
                     customizer.additionalParameters(
-                        additionalParameters ->
-                            additionalParameters.put("response_mode", "form_post"))));
+                        additionalParameters -> {
+                          var lang = request.getParameter("locale");
+                          additionalParameters.put("locale", lang != null ? lang : "fi");
+                          additionalParameters.put("response_mode", "form_post");
+                        })));
     return resolver;
   }
 
