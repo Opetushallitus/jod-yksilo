@@ -9,13 +9,9 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
-public class KoskiServiceException extends RuntimeException {
+public class NoDataException extends KoskiServiceException {
 
-  public KoskiServiceException(String message) {
+  public NoDataException(String message) {
     super(message);
-  }
-
-  public KoskiServiceException(String message, Throwable throwable) {
-    super(message, throwable);
   }
 }

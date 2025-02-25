@@ -32,5 +32,7 @@ public record ErrorInfo(
     VALIDATION_FAILURE,
     SERVICE_ERROR,
     PERMISSION_REQUIRED, // User need to give permission.
+    WRONG_PERSON,
+    DATA_NOT_FOUND,
   }
 }

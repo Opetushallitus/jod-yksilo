@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.koski.NoDataException;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.ResourceServerException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
@@ -152,7 +153,16 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
   @ExceptionHandler(WrongPersonException.class)
   protected ResponseEntity<Object> handleServiceException(
       WrongPersonException e, WebRequest request) {
-    var info = errorInfo.of(ErrorCode.PERMISSION_REQUIRED, List.of(e.getMessage()));
+    var info = errorInfo.of(ErrorCode.WRONG_PERSON, List.of(e.getMessage()));
+    return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+  }
+
+  @ExceptionHandler(NoDataException.class)
+  protected ResponseEntity<Object> handleServiceException(NoDataException e, WebRequest request) {
+    var info =
+        errorInfo.of(
+            ErrorCode.DATA_NOT_FOUND,
+            List.of("The user either has no data or lacks access to retrieve it."));
     return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
   }
 
