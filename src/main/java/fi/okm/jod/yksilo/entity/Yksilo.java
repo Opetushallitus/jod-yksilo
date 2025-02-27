@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -29,6 +30,8 @@ public class Yksilo {
   @Id
   @Column(updatable = false, nullable = false)
   private UUID id;
+
+  @Setter private Boolean tervetuloapolku;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 10)
@@ -58,6 +61,10 @@ public class Yksilo {
 
   protected Yksilo() {
     // For JPA
+  }
+
+  public boolean getTervetuloapolku() {
+    return tervetuloapolku != null ? tervetuloapolku : false;
   }
 
   public void setOsaamisKiinnostukset(Collection<Osaaminen> entities) {

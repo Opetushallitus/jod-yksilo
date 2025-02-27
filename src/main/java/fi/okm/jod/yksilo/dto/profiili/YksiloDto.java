@@ -9,7 +9,4 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-import jakarta.validation.constraints.NotNull;
-import java.util.UUID;
-
-public record YksiloDto(@NotNull UUID id) {}
+public record YksiloDto(boolean tervetuloapolku) {}
