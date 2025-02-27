@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,12 +47,16 @@ public class YksiloController {
         user.familyName(),
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
-        yksiloService.get(user).getTervetuloapolku());
+        user.getTervetuloapolku());
   }
 
   @PutMapping
-  public void update(@AuthenticationPrincipal JodUser user, @RequestBody @Valid YksiloDto dto) {
-    yksiloService.update(user, dto);
+  public void update(
+      @AuthenticationPrincipal JodUser user,
+      @RequestBody @Valid YksiloDto dto,
+      Authentication authentication,
+      HttpServletRequest request) {
+    yksiloService.update(user, dto, authentication, request);
   }
 
   @DeleteMapping

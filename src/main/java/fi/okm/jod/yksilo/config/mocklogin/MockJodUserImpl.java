@@ -95,4 +95,9 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   public String getPersonId() {
     return familyName();
   }
+
+  @Override
+  public boolean getTervetuloapolku() {
+    return true;
+  }
 }

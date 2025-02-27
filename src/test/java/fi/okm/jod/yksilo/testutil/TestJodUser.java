@@ -34,6 +34,11 @@ public record TestJodUser(UUID id) implements JodUser {
     return familyName();
   }
 
+  @Override
+  public boolean getTervetuloapolku() {
+    return true;
+  }
+
   public static JodUser of(String uuid) {
     return new TestJodUser(UUID.fromString(uuid));
   }

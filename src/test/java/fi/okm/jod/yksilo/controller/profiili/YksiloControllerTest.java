@@ -11,10 +11,13 @@ package fi.okm.jod.yksilo.controller.profiili;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
+import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import java.util.UUID;
@@ -24,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -37,6 +41,7 @@ class YksiloControllerTest {
 
   @MockitoBean private YksiloService yksiloService;
   @Autowired private MockMvc mockMvc;
+  @Autowired ObjectMapper objectMapper;
 
   @TestConfiguration
   static class TestConfig {
@@ -53,7 +58,8 @@ class YksiloControllerTest {
         .perform(get("/api/profiili/yksilo").with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.etunimi").isNotEmpty())
-        .andExpect(jsonPath("$.csrf.token").isNotEmpty());
+        .andExpect(jsonPath("$.csrf.token").isNotEmpty())
+        .andExpect(jsonPath("$.tervetuloapolku").isNotEmpty());
   }
 
   @Test
@@ -61,5 +67,18 @@ class YksiloControllerTest {
     mockMvc
         .perform(get("/api/profiili/yksilo").with(csrf()))
         .andExpect(jsonPath("$.csrf.token").doesNotExist());
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldUpdateUserInformation() throws Exception {
+    var dto = new YksiloDto(true);
+    mockMvc
+        .perform(
+            put("/api/profiili/yksilo")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+        .andExpect(status().isOk());
   }
 }

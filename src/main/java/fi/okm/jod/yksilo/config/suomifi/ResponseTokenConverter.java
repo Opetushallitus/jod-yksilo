@@ -16,7 +16,6 @@ import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import java.net.URI;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.convert.converter.Converter;
@@ -80,7 +79,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
         throw new BadCredentialsException("Unsupported authentication method: " + level);
       }
 
-      var userId =
+      var yksilo =
           resolveUser(
               getPersonId(principal, pid)
                   .orElseThrow(() -> new BadCredentialsException("Invalid person identifier")));
@@ -91,7 +90,8 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
               principal.getAttributes(),
               principal.getSessionIndexes(),
               principal.getRelyingPartyRegistrationId(),
-              userId),
+              yksilo.getId(),
+              yksilo.getTervetuloapolku()),
           authentication.getSaml2Response(),
           authentication.getAuthorities());
     }
@@ -99,12 +99,12 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     throw new BadCredentialsException("Invalid response token");
   }
 
-  private UUID resolveUser(String personId) {
+  private Yksilo resolveUser(String personId) {
 
     return transactionTemplate.execute(
         status -> {
           var id = yksilot.findIdByHenkiloId(personId);
-          return yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id))).getId();
+          return yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id)));
         });
   }
 

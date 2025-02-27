@@ -63,6 +63,7 @@ class JodSaml2PrincipalTest {
     var relyingPartyRegistrationId = "relyingParty123";
     var id = UUID.randomUUID();
 
-    return new JodSaml2Principal(name, attributes, sessionIndexes, relyingPartyRegistrationId, id);
+    return new JodSaml2Principal(
+        name, attributes, sessionIndexes, relyingPartyRegistrationId, id, false);
   }
 }
