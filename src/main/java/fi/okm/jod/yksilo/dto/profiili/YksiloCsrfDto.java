@@ -12,4 +12,5 @@ package fi.okm.jod.yksilo.dto.profiili;
 import fi.okm.jod.yksilo.dto.CsrfTokenDto;
 import jakarta.validation.constraints.NotNull;
 
-public record YksiloCsrfDto(String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf) {}
+public record YksiloCsrfDto(
+    String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf, boolean tervetuloapolku) {}

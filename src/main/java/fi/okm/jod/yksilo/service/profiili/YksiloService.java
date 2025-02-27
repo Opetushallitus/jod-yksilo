@@ -10,7 +10,10 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.service.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class YksiloService {
   private final YksiloRepository yksilot;
 
-  public void deleteYksilo(JodUser user) {
+  public Yksilo get(JodUser user) {
+    return yksilot
+        .findById(user.getId())
+        .orElseThrow(() -> new NotFoundException("Profiili does not exist"));
+  }
+
+  public void update(JodUser user, YksiloDto dto) {
+    var yksilo =
+        yksilot
+            .findById(user.getId())
+            .orElseThrow(() -> new NotFoundException("Profiili does not exist"));
+    yksilo.setTervetuloapolku(dto.tervetuloapolku() != null ? dto.tervetuloapolku() : false);
+    yksilot.save(yksilo);
+  }
+
+  public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
   }
