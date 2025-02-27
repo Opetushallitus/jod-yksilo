@@ -19,4 +19,6 @@ public interface JodUser {
   String familyName();
 
   String getPersonId();
+
+  boolean getTervetuloapolku();
 }

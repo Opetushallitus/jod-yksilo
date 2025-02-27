@@ -21,25 +21,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.Setter;
 import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
 
 @SuppressWarnings({"java:S4544", "serial"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties(ignoreUnknown = true)
-final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
+public final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
 
   private final UUID id;
+  @Setter private boolean tervetuloapolku;
 
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-  JodSaml2Principal(
+  public JodSaml2Principal(
       @JsonProperty("name") String name,
       @JsonProperty("attributes") Map<String, List<Object>> attributes,
       @JsonProperty("sessionIndexes") List<String> sessionIndexes,
       @JsonProperty("registrationId") String relyingPartyRegistrationId,
-      @JsonProperty("id") UUID id) {
+      @JsonProperty("id") UUID id,
+      @JsonProperty("tervetuloapolku") boolean tervetuloapolku) {
     super(name, attributes, sessionIndexes);
     super.setRelyingPartyRegistrationId(relyingPartyRegistrationId);
     this.id = requireNonNull(id);
+    this.tervetuloapolku = tervetuloapolku;
   }
 
   @Override
@@ -66,6 +70,11 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
   public String getPersonId() {
     return getAttribute(PersonIdentifier.FIN.getAttribute())
         .orElse(getAttribute(PersonIdentifier.EIDAS.getAttribute()).orElse(null));
+  }
+
+  @Override
+  public boolean getTervetuloapolku() {
+    return tervetuloapolku;
   }
 
   @JsonIgnore

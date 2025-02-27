@@ -96,4 +96,9 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   public String getPersonId() {
     return username;
   }
+
+  @Override
+  public boolean getTervetuloapolku() {
+    return true;
+  }
 }
