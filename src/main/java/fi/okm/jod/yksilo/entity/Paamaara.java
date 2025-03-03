@@ -17,6 +17,7 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -30,10 +31,13 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
@@ -63,6 +67,14 @@ public class Paamaara {
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Koulutusmahdollisuus koulutusmahdollisuus;
+
+  @OneToMany(
+      mappedBy = "paamaara",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @BatchSize(size = 100)
+  private List<PolunSuunnitelma> suunnitelmat = new ArrayList<>();
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
