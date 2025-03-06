@@ -21,15 +21,14 @@ import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.repository.PolunVaiheRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,12 @@ import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
 @Sql("/data/mahdollisuudet-test-data.sql")
-@Import({PolunVaiheService.class, PolunSuunnitelmaService.class, PaamaaraService.class})
+@Import({
+  PolunVaiheService.class,
+  PolunSuunnitelmaService.class,
+  PaamaaraService.class,
+  YksilonOsaaminenService.class
+})
 public class PolunVaiheServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
   @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
@@ -49,7 +53,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   @Autowired private PolunVaiheRepository vaiheRepository;
 
   @Test
-  void shouldAddVaihe() throws MalformedURLException, URISyntaxException {
+  void shouldAddVaihe() {
     var paamaaraId =
         paamaarat.add(
             user,
@@ -63,7 +67,9 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
                 null));
     var suunnitelmaId =
         suunnitelmat.add(
-            user, paamaaraId, new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet()));
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
     var dto =
         new PolunVaiheDto(
             null,
@@ -83,7 +89,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldUpdateVaihe() throws MalformedURLException, URISyntaxException {
+  void shouldUpdateVaihe() {
     var paamaaraId =
         paamaarat.add(
             user,
@@ -97,7 +103,9 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
                 null));
     var suunnitelmaId =
         suunnitelmat.add(
-            user, paamaaraId, new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet()));
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
     var dto =
         new PolunVaiheDto(
             null,
@@ -129,7 +137,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldDeleteVaihe() throws MalformedURLException, URISyntaxException {
+  void shouldDeleteVaihe() {
     var paamaaraId =
         paamaarat.add(
             user,
@@ -143,7 +151,9 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
                 null));
     var suunnitelmaId =
         suunnitelmat.add(
-            user, paamaaraId, new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet()));
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
     var dto =
         new PolunVaiheDto(
             null,
@@ -163,8 +173,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldThrowServiceValidationExceptionWhenAddingTooManyVaihes()
-      throws MalformedURLException, URISyntaxException {
+  void shouldThrowServiceValidationExceptionWhenAddingTooManyVaihes() {
     int testLimit = 3;
     try (MockedStatic<PolunVaiheService> mockedService = mockStatic(PolunVaiheService.class)) {
       mockedService.when(PolunVaiheService::getVaihePerSuunnitelmaLimit).thenReturn(testLimit);
@@ -182,7 +191,9 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
                   null));
       var suunnitelmaId =
           suunnitelmat.add(
-              user, paamaaraId, new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet()));
+              user,
+              paamaaraId,
+              new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
       for (var i = 0; i < testLimit; i++) {
         var dto =
             new PolunVaiheDto(
@@ -215,8 +226,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithInvalidOsaaminen()
-      throws MalformedURLException, URISyntaxException {
+  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithInvalidOsaaminen() {
     var paamaaraId =
         paamaarat.add(
             user,
@@ -230,7 +240,9 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
                 null));
     var suunnitelmaId =
         suunnitelmat.add(
-            user, paamaaraId, new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet()));
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
     var dto =
         new PolunVaiheDto(
             null,
@@ -241,6 +253,77 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
             LocalDate.of(2020, 10, 31),
             LocalDate.of(2023, 2, 5),
             Set.of(URI.create("urn:osaaminen1"), URI.create("urn:unknown")),
+            false);
+    assertThrows(
+        ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+  }
+
+  @Test
+  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenNotInPaamaara() {
+    var paamaaraId =
+        paamaarat.add(
+            user,
+            new PaamaaraDto(
+                null,
+                PaamaaraTyyppi.PITKA,
+                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
+                tyomahdollisuusdet.findAll().getFirst().getId(),
+                ls("tavoite"),
+                null,
+                null));
+    var suunnitelmaId =
+        suunnitelmat.add(
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var dto =
+        new PolunVaiheDto(
+            null,
+            PolunVaiheTyyppi.KOULUTUS,
+            ls("nimi"),
+            ls("kuvaus"),
+            Set.of("https://example.com"),
+            LocalDate.of(2020, 10, 31),
+            LocalDate.of(2023, 2, 5),
+            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen7")),
+            false);
+    assertThrows(
+        ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+  }
+
+  @Test
+  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenInSuunnitelma() {
+    var paamaaraId =
+        paamaarat.add(
+            user,
+            new PaamaaraDto(
+                null,
+                PaamaaraTyyppi.PITKA,
+                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
+                tyomahdollisuusdet.findAll().getFirst().getId(),
+                ls("tavoite"),
+                null,
+                null));
+    var suunnitelmaId =
+        suunnitelmat.add(
+            user,
+            paamaaraId,
+            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    suunnitelmat.update(
+        user,
+        paamaaraId,
+        new PolunSuunnitelmaUpdateDto(
+            suunnitelmaId, ls("nimi"), Set.of(URI.create("urn:osaaminen1")), null));
+    var dto =
+        new PolunVaiheDto(
+            null,
+            PolunVaiheTyyppi.KOULUTUS,
+            ls("nimi"),
+            ls("kuvaus"),
+            Set.of("https://example.com"),
+            LocalDate.of(2020, 10, 31),
+            LocalDate.of(2023, 2, 5),
+            Set.of(URI.create("urn:osaaminen1")),
             false);
     assertThrows(
         ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));

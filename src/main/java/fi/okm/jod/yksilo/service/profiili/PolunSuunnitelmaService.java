@@ -10,16 +10,27 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.MuuOsaaminen;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
+import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.PaamaaraRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
+import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolunSuunnitelmaService {
   private final PaamaaraRepository paamaarat;
   private final PolunSuunnitelmaRepository suunnitelmat;
+  private final YksilonOsaaminenService osaamiset;
+  private final OsaaminenRepository osaamisetRepository;
+  private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
 
   @Transactional(readOnly = true)
   public PolunSuunnitelmaDto get(JodUser user, UUID paamaaraId, UUID id) {
@@ -51,7 +65,7 @@ public class PolunSuunnitelmaService {
     return add(paamaara, dto).getId();
   }
 
-  public void update(JodUser user, UUID paamaaraId, PolunSuunnitelmaDto dto) {
+  public void update(JodUser user, UUID paamaaraId, PolunSuunnitelmaUpdateDto dto) {
     var suunnitelma =
         suunnitelmat
             .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, dto.id())
@@ -74,13 +88,67 @@ public class PolunSuunnitelmaService {
     return entity;
   }
 
-  private void update(PolunSuunnitelma entity, PolunSuunnitelmaDto dto) {
+  private void update(PolunSuunnitelma entity, PolunSuunnitelmaUpdateDto dto) {
     entity.setNimi(dto.nimi());
+    if (dto.osaamiset() != null) {
+      var yksilo = entity.getPaamaara().getYksilo();
+      osaamiset.add(
+          new MuuOsaaminen(
+              yksilo,
+              new HashSet<>(
+                  yksilonOsaaminenRepository.findAllByYksiloIdAndLahde(
+                      yksilo.getId(), OsaamisenLahdeTyyppi.MUU_OSAAMINEN, Sort.unsorted()))),
+          dto.osaamiset());
+      entity.setOsaamiset(getOsaamiset(entity, dto));
+    }
+    if (dto.alaHuomioiOsaamiset() != null) {
+      entity.setAlaHuomioiOsaamiset(getAlaHuomioiOsaamiset(entity, dto));
+    }
     suunnitelmat.save(entity);
   }
 
   private void delete(PolunSuunnitelma entity) {
     suunnitelmat.delete(entity);
+  }
+
+  private List<Osaaminen> getOsaamiset(
+      PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
+    var ids =
+        dto.osaamiset().stream().map(Object::toString).collect(Collectors.toUnmodifiableSet());
+    var osaamiset = osaamisetRepository.findByUriIn(ids);
+    var vaiheOsaamiset =
+        suunnitelma.getVaiheet().stream()
+            .flatMap(v -> v.getOsaamiset().stream())
+            .map(Osaaminen::getUri)
+            .map(Objects::toString)
+            .collect(Collectors.toSet());
+
+    if (osaamiset.size() != ids.size()) {
+      throw new ServiceValidationException("Unknown osaaminen");
+    } else if (!suunnitelma.getPaamaara().getOsaamiset().containsAll(ids)) {
+      throw new ServiceValidationException("Osaaminen not in paamaara");
+    } else if (ids.stream().anyMatch(vaiheOsaamiset::contains)) {
+      throw new ServiceValidationException("Osaaminen in vaihe");
+    }
+
+    return osaamiset;
+  }
+
+  private List<Osaaminen> getAlaHuomioiOsaamiset(
+      PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
+    var ids =
+        dto.alaHuomioiOsaamiset().stream()
+            .map(Object::toString)
+            .collect(Collectors.toUnmodifiableSet());
+    var osaamiset = osaamisetRepository.findByUriIn(ids);
+
+    if (osaamiset.size() != ids.size()) {
+      throw new ServiceValidationException("Unknown osaaminen");
+    } else if (!suunnitelma.getPaamaara().getOsaamiset().containsAll(ids)) {
+      throw new ServiceValidationException("Osaaminen not in paamaara");
+    }
+
+    return osaamiset;
   }
 
   static NotFoundException notFound() {

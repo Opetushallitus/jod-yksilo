@@ -25,14 +25,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
@@ -61,6 +65,14 @@ public class PolunSuunnitelma {
   @BatchSize(size = 100)
   private List<PolunVaihe> vaiheet = new ArrayList<>();
 
+  @ManyToMany
+  @BatchSize(size = 100)
+  private Set<Osaaminen> osaamiset = new HashSet<>();
+
+  @ManyToMany
+  @BatchSize(size = 100)
+  private Set<Osaaminen> alaHuomioiOsaamiset = new HashSet<>();
+
   protected PolunSuunnitelma() {
     // For JPA
   }
@@ -68,6 +80,16 @@ public class PolunSuunnitelma {
   public PolunSuunnitelma(Paamaara paamaara) {
     this.paamaara = requireNonNull(paamaara);
     this.kaannos = new EnumMap<>(Kieli.class);
+  }
+
+  public void setOsaamiset(Collection<Osaaminen> entities) {
+    osaamiset.clear();
+    osaamiset.addAll(entities);
+  }
+
+  public void setAlaHuomioiOsaamiset(Collection<Osaaminen> entities) {
+    alaHuomioiOsaamiset.clear();
+    alaHuomioiOsaamiset.addAll(entities);
   }
 
   public LocalizedString getNimi() {

@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,6 +20,7 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -30,7 +32,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
 @Sql("/data/mahdollisuudet-test-data.sql")
-@Import({PolunSuunnitelmaService.class, PaamaaraService.class})
+@Import({PolunSuunnitelmaService.class, PaamaaraService.class, YksilonOsaaminenService.class})
 public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
   @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
@@ -50,7 +52,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
                 tavoite,
                 null,
                 null));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null);
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = assertDoesNotThrow(() -> service.add(user, paamaaraId, dto));
     var result = service.get(user, paamaaraId, id);
     assertThat(dto)
@@ -74,13 +76,13 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
                 ls("tavoite"),
                 null,
                 null));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null);
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = service.add(user, paamaaraId, dto);
-    dto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null);
-    service.update(user, paamaaraId, dto);
-    assertThat(dto)
+    var updateDto = new PolunSuunnitelmaUpdateDto(id, ls("uusi nimi"), null, null);
+    service.update(user, paamaaraId, updateDto);
+    assertThat(updateDto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "paamaara", "vaiheet")
+        .ignoringFields("id", "paamaara", "vaiheet", "osaamiset", "alaHuomioiOsaamiset")
         .isEqualTo(service.get(user, paamaaraId, id));
   }
 
@@ -97,7 +99,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
                 ls("tavoite"),
                 null,
                 null));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null);
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = service.add(user, paamaaraId, dto);
     service.delete(user, paamaaraId, id);
     assertThrows(NotFoundException.class, () -> service.get(user, paamaaraId, id));
@@ -124,12 +126,12 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
-        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null);
+        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet(), emptySet());
         service.add(user, paamaaraId, dto);
       }
 
       // Attempt to add one more Suunnitelma, which should throw an exception
-      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null);
+      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet(), emptySet());
       assertThrows(ServiceValidationException.class, () -> service.add(user, paamaaraId, dto));
     }
   }

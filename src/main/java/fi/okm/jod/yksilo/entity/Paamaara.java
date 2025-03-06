@@ -10,11 +10,14 @@
 package fi.okm.jod.yksilo.entity;
 
 import static fi.okm.jod.yksilo.entity.Translation.merge;
+import static java.util.Collections.emptySet;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.CascadeType;
@@ -39,7 +42,9 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -129,6 +134,31 @@ public class Paamaara {
 
   public UUID getMahdollisuusId() {
     return tyomahdollisuus != null ? tyomahdollisuus.getId() : koulutusmahdollisuus.getId();
+  }
+
+  public Set<String> getOsaamiset() {
+    if (getMahdollisuusTyyppi() == MahdollisuusTyyppi.TYOMAHDOLLISUUS) {
+      var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
+      if (jakauma != null && jakauma.getArvot() != null) {
+        return jakauma.getArvot().stream()
+            .map(Jakauma.Arvo::arvo)
+            .collect(Collectors.toUnmodifiableSet());
+      }
+    } else {
+      var jakauma =
+          koulutusmahdollisuus.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN);
+      if (jakauma != null && jakauma.getArvot() != null) {
+        return koulutusmahdollisuus
+            .getJakaumat()
+            .get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN)
+            .getArvot()
+            .stream()
+            .map(Jakauma.Arvo::arvo)
+            .collect(Collectors.toUnmodifiableSet());
+      }
+    }
+
+    return emptySet();
   }
 
   @Embeddable

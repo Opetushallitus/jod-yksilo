@@ -185,7 +185,13 @@ public final class Mapper {
             entity.getNimi(),
             new PaamaaraYhteenvetoDto(
                 entity.getPaamaara().getId(), entity.getPaamaara().getTavoite()),
-            entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()));
+            entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getUri()))
+                .collect(Collectors.toUnmodifiableSet()),
+            entity.getAlaHuomioiOsaamiset().stream()
+                .map(o -> URI.create(o.getUri()))
+                .collect(Collectors.toUnmodifiableSet()));
   }
 
   public static PolunVaiheDto mapPolunVaihe(PolunVaihe entity) {

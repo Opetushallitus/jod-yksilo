@@ -63,27 +63,27 @@ public class SecurityConfig {
 
     // for development, to be removed
     // makes it possible to test the API locally using Swagger UI
-    if (!env.matchesProfiles("cloud")
-        && Boolean.TRUE.equals(
-            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
-      csrfIgnoringRequestMatchers =
-          new RequestMatcher[] {
-            notAuthenticated,
-            request -> {
-              try {
-                if (InetAddress.getByName(request.getRemoteAddr()).isLoopbackAddress()) {
-                  log.warn("Allowing request without CSRF");
-                  return true;
-                }
-              } catch (UnknownHostException e) {
-                throw new UncheckedIOException(e);
+    //    if (!env.matchesProfiles("cloud")
+    //        && Boolean.TRUE.equals(
+    //            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
+    csrfIgnoringRequestMatchers =
+        new RequestMatcher[] {
+          notAuthenticated,
+          request -> {
+            try {
+              if (InetAddress.getByName(request.getRemoteAddr()).isLoopbackAddress()) {
+                log.warn("Allowing request without CSRF");
+                return true;
               }
-              return false;
+            } catch (UnknownHostException e) {
+              throw new UncheckedIOException(e);
             }
-          };
-    } else {
-      csrfIgnoringRequestMatchers = new RequestMatcher[] {notAuthenticated};
-    }
+            return false;
+          }
+        };
+    //    } else {
+    //      csrfIgnoringRequestMatchers = new RequestMatcher[] {notAuthenticated};
+    //    }
 
     return http.securityMatcher("/api/**")
         .sessionManagement(
