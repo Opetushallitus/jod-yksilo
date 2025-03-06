@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,12 +61,16 @@ public class KoskiService {
               var localizedNimi = getLocalizedString(nimet);
 
               var suoritukset = readJsonProperty(o, "suoritukset");
-              var koulutusmoduuli =
-                  suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()
-                      ? readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi")
-                      : null;
-              var localizedKuvaus = getLocalizedString(koulutusmoduuli);
-
+              LocalizedString localizedKuvaus = null;
+              if (suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()) {
+                var tunnisteNimiNode =
+                    readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi");
+                var nimiNode = readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "nimi");
+                localizedKuvaus =
+                    getKuvaus(
+                        getLocalizedString(tunnisteNimiNode),
+                        nimiNode == null ? null : getLocalizedString(nimiNode));
+              }
               var alkuExpression = "alkamispäivä";
               if (linkki != null && linkki.getPath().contains("/suoritetut-tutkinnot/")) {
                 alkuExpression = "suoritukset[0].vahvistus.päivä";
@@ -76,6 +81,26 @@ public class KoskiService {
               return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
             })
         .toList();
+  }
+
+  private LocalizedString getKuvaus(
+      LocalizedString localizedKuvaus, LocalizedString localizedKuvausNimi) {
+    if (localizedKuvausNimi == null) {
+      return localizedKuvaus;
+    }
+    var resultMap = new EnumMap<Kieli, String>(Kieli.class);
+    for (var kieli : Kieli.values()) {
+      var kuvaus = localizedKuvaus.getOrDefault(kieli);
+      if (kuvaus != null) {
+        var nimi = localizedKuvausNimi.getOrDefault(kieli);
+        if (nimi == null || StringUtils.equalsIgnoreCase(kuvaus, nimi)) {
+          resultMap.put(kieli, kuvaus);
+        } else if (!kuvaus.isEmpty() && !nimi.isEmpty()) {
+          resultMap.put(kieli, nimi);
+        }
+      }
+    }
+    return resultMap.isEmpty() ? null : new LocalizedString(resultMap);
   }
 
   private LocalizedString getLocalizedString(JsonNode nimet) {
