@@ -99,6 +99,8 @@ public class KoskiOAuth2Controller {
         handleUserDidNotGivePermission(response, jodUser, callbackUrl);
         return;
       }
+      // This happens when network is not okay. For example server IP is not in allow the Koski
+      // list.
       log.error(
           "Koski OAuth2 authorize failed. Error: {}, description: {}", error, errorDescription);
       response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "error"));

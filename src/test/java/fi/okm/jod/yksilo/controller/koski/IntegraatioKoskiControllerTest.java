@@ -78,7 +78,7 @@ class IntegraatioKoskiControllerTest {
             TestUtil.getContentFromFile(EDUCATIONS_HISTORY_KOSKI_RESPONSE, KoskiService.class));
     when(koskiOAuth2Service.fetchDataFromResourceServer(mockAuthorizedClient))
         .thenReturn(mockDataInJson);
-    when(koskiService.getKoulutusData(mockDataInJson, null))
+    when(koskiService.getKoulutusData(mockDataInJson))
         .thenReturn(
             List.of(
                 new KoulutusDto(
@@ -100,7 +100,7 @@ class IntegraatioKoskiControllerTest {
     performGetEducationsDataFromKoski(status().isOk(), expectedResponseJson);
 
     verify(koskiOAuth2Service).fetchDataFromResourceServer(mockAuthorizedClient);
-    verify(koskiService).getKoulutusData(mockDataInJson, null);
+    verify(koskiService).getKoulutusData(mockDataInJson);
   }
 
   @Test

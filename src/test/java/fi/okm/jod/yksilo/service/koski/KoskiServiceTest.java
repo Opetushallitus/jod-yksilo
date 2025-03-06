@@ -10,13 +10,16 @@
 package fi.okm.jod.yksilo.service.koski;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class KoskiServiceTest {
@@ -32,7 +35,7 @@ class KoskiServiceTest {
   @Test
   void getKoulutusData() throws JsonProcessingException {
     var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
-    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content), null);
+    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content));
 
     assertEquals(1, koskiData.size());
     var koulutusDto = koskiData.getFirst();
@@ -51,5 +54,19 @@ class KoskiServiceTest {
     assertEquals(LocalDate.of(2006, 1, 1), koulutusDto.alkuPvm());
     assertNull(koulutusDto.loppuPvm());
     assertNull(koulutusDto.osaamiset());
+  }
+
+  @Test
+  void testGetLocalizedKuvaus() {
+    var description =
+        new LocalizedString(Map.of(Kieli.FI, "Avoimen opinnot", Kieli.SV, "Öppna studier"));
+    var name = new LocalizedString(Map.of(Kieli.FI, "Lisätietoja", Kieli.EN, "Additional info"));
+
+    var result = KoskiService.getLocalizedKuvaus(description, name);
+
+    assertNotNull(result);
+    assertEquals(2, result.asMap().size());
+    assertEquals("Avoimen opinnot: Lisätietoja", result.get(Kieli.FI));
+    assertEquals("Öppna studier", result.get(Kieli.SV));
   }
 }
