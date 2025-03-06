@@ -57,8 +57,8 @@ public class KoskiRestClientConfig {
             .build(
                 ClientHttpRequestFactorySettings.defaults()
                     .withSslBundle(sslBundles.getBundle(SSL_BUNDLE))
-                    .withConnectTimeout(Duration.ofSeconds(5))
-                    .withReadTimeout(Duration.ofSeconds(10)));
+                    .withConnectTimeout(Duration.ofSeconds(10))
+                    .withReadTimeout(Duration.ofSeconds(30)));
 
     return builder
         .requestFactory(requestFactory)
