@@ -82,7 +82,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     service.update(user, paamaaraId, updateDto);
     assertThat(updateDto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "paamaara", "vaiheet", "osaamiset", "alaHuomioiOsaamiset")
+        .ignoringFields("id", "paamaara", "vaiheet", "osaamiset", "ignoredOsaamiset")
         .isEqualTo(service.get(user, paamaaraId, id));
   }
 

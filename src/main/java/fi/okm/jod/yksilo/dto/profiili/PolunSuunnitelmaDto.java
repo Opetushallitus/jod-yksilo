@@ -34,5 +34,4 @@ public record PolunSuunnitelmaDto(
         @Size(max = Limits.VAIHE_PER_SUUNNITELMA)
         Set<@Valid @NotNull PolunVaiheDto> vaiheet,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Set<@NotNull URI> osaamiset,
-    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY)
-        Set<@NotNull URI> alaHuomioiOsaamiset) {}
+    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Set<@NotNull URI> ignoredOsaamiset) {}

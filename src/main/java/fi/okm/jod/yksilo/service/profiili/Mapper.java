@@ -189,7 +189,7 @@ public final class Mapper {
             entity.getOsaamiset().stream()
                 .map(o -> URI.create(o.getUri()))
                 .collect(Collectors.toUnmodifiableSet()),
-            entity.getAlaHuomioiOsaamiset().stream()
+            entity.getIgnoredOsaamiset().stream()
                 .map(o -> URI.create(o.getUri()))
                 .collect(Collectors.toUnmodifiableSet()));
   }

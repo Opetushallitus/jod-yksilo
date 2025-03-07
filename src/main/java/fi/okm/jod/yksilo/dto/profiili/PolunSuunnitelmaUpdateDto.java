@@ -24,4 +24,4 @@ public record PolunSuunnitelmaUpdateDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     Set<@NotNull URI> osaamiset,
-    Set<@NotNull URI> alaHuomioiOsaamiset) {}
+    Set<@NotNull URI> ignoredOsaamiset) {}

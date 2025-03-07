@@ -34,5 +34,5 @@ public record PolunVaiheDto(
     @NotNull LocalDate alkuPvm,
     @NotNull LocalDate loppuPvm,
     Set<@NotNull URI> osaamiset,
-    @NotNull boolean valmis)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean valmis)
     implements ValidInterval {}

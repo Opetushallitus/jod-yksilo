@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -38,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "profiili/paamaarat")
 public class PolunSuunnitelmaController {
-  @Autowired private final PolunSuunnitelmaService service;
+  private final PolunSuunnitelmaService service;
 
   @GetMapping("/{suunnitelmaId}")
   @Operation(summary = "Gets a suunnitelma of the paamaara")

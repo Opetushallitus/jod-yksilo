@@ -33,16 +33,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PolunVaiheService {
   private final OsaaminenRepository osaamisetRepository;
-  private final PolunSuunnitelmaRepository suunnitelmat;
-  private final PolunVaiheRepository vaiheet;
+  private final PolunSuunnitelmaRepository suunnitelmaRepository;
+  private final PolunVaiheRepository vaiheRepository;
 
   public UUID add(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
     var suunnitelma =
-        suunnitelmat
+        suunnitelmaRepository
             .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, suunnitelmaId)
             .orElseThrow(PolunVaiheService::notFound);
 
-    if (vaiheet.countByPolunSuunnitelma(suunnitelma) >= getVaihePerSuunnitelmaLimit()) {
+    if (vaiheRepository.countByPolunSuunnitelma(suunnitelma) >= getVaihePerSuunnitelmaLimit()) {
       throw new ServiceValidationException("Too many Vaihes");
     }
 
@@ -51,7 +51,7 @@ public class PolunVaiheService {
 
   public void update(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
     var vaihe =
-        vaiheet
+        vaiheRepository
             .findByPolunSuunnitelmaPaamaaraYksiloIdAndPolunSuunnitelmaPaamaaraIdAndPolunSuunnitelmaIdAndId(
                 user.getId(), paamaaraId, suunnitelmaId, dto.id())
             .orElseThrow(PolunVaiheService::notFound);
@@ -60,7 +60,7 @@ public class PolunVaiheService {
 
   public void delete(JodUser user, UUID paamaaraId, UUID suunnitelmaId, UUID vaiheId) {
     var vaihe =
-        vaiheet
+        vaiheRepository
             .findByPolunSuunnitelmaPaamaaraYksiloIdAndPolunSuunnitelmaPaamaaraIdAndPolunSuunnitelmaIdAndId(
                 user.getId(), paamaaraId, suunnitelmaId, vaiheId)
             .orElseThrow(PolunVaiheService::notFound);
@@ -79,7 +79,7 @@ public class PolunVaiheService {
       entity.setOsaamiset(getOsaamiset(entity, dto));
     }
     entity.setValmis(dto.valmis());
-    entity = vaiheet.save(entity);
+    entity = vaiheRepository.save(entity);
 
     return entity;
   }
@@ -95,11 +95,11 @@ public class PolunVaiheService {
       entity.setOsaamiset(getOsaamiset(entity, dto));
     }
     entity.setValmis(dto.valmis());
-    vaiheet.save(entity);
+    vaiheRepository.save(entity);
   }
 
   private void delete(PolunVaihe entity) {
-    vaiheet.delete(entity);
+    vaiheRepository.delete(entity);
   }
 
   private List<Osaaminen> getOsaamiset(PolunVaihe vaihe, PolunVaiheDto dto) {

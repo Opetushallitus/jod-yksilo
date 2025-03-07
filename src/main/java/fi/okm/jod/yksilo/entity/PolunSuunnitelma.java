@@ -71,7 +71,7 @@ public class PolunSuunnitelma {
 
   @ManyToMany
   @BatchSize(size = 100)
-  private Set<Osaaminen> alaHuomioiOsaamiset = new HashSet<>();
+  private Set<Osaaminen> ignoredOsaamiset = new HashSet<>();
 
   protected PolunSuunnitelma() {
     // For JPA
@@ -87,9 +87,9 @@ public class PolunSuunnitelma {
     osaamiset.addAll(entities);
   }
 
-  public void setAlaHuomioiOsaamiset(Collection<Osaaminen> entities) {
-    alaHuomioiOsaamiset.clear();
-    alaHuomioiOsaamiset.addAll(entities);
+  public void setIgnoredOsaamiset(Collection<Osaaminen> entities) {
+    ignoredOsaamiset.clear();
+    ignoredOsaamiset.addAll(entities);
   }
 
   public LocalizedString getNimi() {

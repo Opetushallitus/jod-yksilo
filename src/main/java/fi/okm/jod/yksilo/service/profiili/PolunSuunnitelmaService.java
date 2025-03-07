@@ -38,15 +38,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PolunSuunnitelmaService {
-  private final PaamaaraRepository paamaarat;
-  private final PolunSuunnitelmaRepository suunnitelmat;
-  private final YksilonOsaaminenService osaamiset;
+  private final PaamaaraRepository paamaaraRepository;
+  private final PolunSuunnitelmaRepository suunnitelmaRepository;
+  private final YksilonOsaaminenService yksilonOsaaminenService;
   private final OsaaminenRepository osaamisetRepository;
   private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
 
   @Transactional(readOnly = true)
   public PolunSuunnitelmaDto get(JodUser user, UUID paamaaraId, UUID id) {
-    return suunnitelmat
+    return suunnitelmaRepository
         .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, id)
         .map(Mapper::mapPolunSuunnitelma)
         .orElseThrow(PolunSuunnitelmaService::notFound);
@@ -54,11 +54,11 @@ public class PolunSuunnitelmaService {
 
   public UUID add(JodUser user, UUID paamaaraId, PolunSuunnitelmaDto dto) {
     var paamaara =
-        paamaarat
+        paamaaraRepository
             .findByYksiloIdAndId(user.getId(), paamaaraId)
             .orElseThrow(PolunSuunnitelmaService::notFound);
 
-    if (suunnitelmat.countByPaamaara(paamaara) >= getSuunnitelmaPerPaamaaraLimit()) {
+    if (suunnitelmaRepository.countByPaamaara(paamaara) >= getSuunnitelmaPerPaamaaraLimit()) {
       throw new ServiceValidationException("Too many Suunnitelmas");
     }
 
@@ -67,7 +67,7 @@ public class PolunSuunnitelmaService {
 
   public void update(JodUser user, UUID paamaaraId, PolunSuunnitelmaUpdateDto dto) {
     var suunnitelma =
-        suunnitelmat
+        suunnitelmaRepository
             .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, dto.id())
             .orElseThrow(PolunSuunnitelmaService::notFound);
     update(suunnitelma, dto);
@@ -75,7 +75,7 @@ public class PolunSuunnitelmaService {
 
   public void delete(JodUser user, UUID paamaaraId, UUID id) {
     var suunnitelma =
-        suunnitelmat
+        suunnitelmaRepository
             .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, id)
             .orElseThrow(PolunSuunnitelmaService::notFound);
     delete(suunnitelma);
@@ -84,7 +84,7 @@ public class PolunSuunnitelmaService {
   private PolunSuunnitelma add(Paamaara paamaara, PolunSuunnitelmaDto dto) {
     var entity = new PolunSuunnitelma(paamaara);
     entity.setNimi(dto.nimi());
-    entity = suunnitelmat.save(entity);
+    entity = suunnitelmaRepository.save(entity);
     return entity;
   }
 
@@ -92,7 +92,7 @@ public class PolunSuunnitelmaService {
     entity.setNimi(dto.nimi());
     if (dto.osaamiset() != null) {
       var yksilo = entity.getPaamaara().getYksilo();
-      osaamiset.add(
+      yksilonOsaaminenService.add(
           new MuuOsaaminen(
               yksilo,
               new HashSet<>(
@@ -101,14 +101,14 @@ public class PolunSuunnitelmaService {
           dto.osaamiset());
       entity.setOsaamiset(getOsaamiset(entity, dto));
     }
-    if (dto.alaHuomioiOsaamiset() != null) {
-      entity.setAlaHuomioiOsaamiset(getAlaHuomioiOsaamiset(entity, dto));
+    if (dto.ignoredOsaamiset() != null) {
+      entity.setIgnoredOsaamiset(getIgnoredOsaamiset(entity, dto));
     }
-    suunnitelmat.save(entity);
+    suunnitelmaRepository.save(entity);
   }
 
   private void delete(PolunSuunnitelma entity) {
-    suunnitelmat.delete(entity);
+    suunnitelmaRepository.delete(entity);
   }
 
   private List<Osaaminen> getOsaamiset(
@@ -134,10 +134,10 @@ public class PolunSuunnitelmaService {
     return osaamiset;
   }
 
-  private List<Osaaminen> getAlaHuomioiOsaamiset(
+  private List<Osaaminen> getIgnoredOsaamiset(
       PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
     var ids =
-        dto.alaHuomioiOsaamiset().stream()
+        dto.ignoredOsaamiset().stream()
             .map(Object::toString)
             .collect(Collectors.toUnmodifiableSet());
     var osaamiset = osaamisetRepository.findByUriIn(ids);

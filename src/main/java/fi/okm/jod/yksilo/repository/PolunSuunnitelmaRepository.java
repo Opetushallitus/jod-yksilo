@@ -11,13 +11,11 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolunSuunnitelmaRepository extends JpaRepository<PolunSuunnitelma, UUID> {
-  List<PolunSuunnitelma> findByPaamaaraYksiloIdAndPaamaaraId(UUID yksiloId, UUID paamaaraId);
 
   Optional<PolunSuunnitelma> findByPaamaaraYksiloIdAndPaamaaraIdAndId(
       UUID yksiloId, UUID paamaaraId, UUID id);
