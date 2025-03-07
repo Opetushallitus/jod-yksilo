@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 The Finnish Ministry of Education and Culture, The Finnish
+ * Copyright (c) 2025 The Finnish Ministry of Education and Culture, The Finnish
  * The Ministry of Economic Affairs and Employment, The Finnish National Agency of
  * Education (Opetushallitus) and The Finnish Development and Administration centre
  * for ELY Centres and TE Offices (KEHA).
@@ -10,20 +10,18 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.service.profiili.PaamaaraService;
+import fi.okm.jod.yksilo.service.profiili.PolunVaiheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,43 +31,46 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/paamaarat")
+@RequestMapping("/api/profiili/paamaarat/{id}/suunnitelmat/{suunnitelmaId}/vaiheet")
 @RequiredArgsConstructor
 @Tag(name = "profiili/paamaarat")
-class PaamaaraController {
-  private final PaamaaraService service;
-
-  @GetMapping
-  @Operation(summary = "Gets all paamaarat")
-  List<PaamaaraDto> findAll(@AuthenticationPrincipal JodUser user) {
-    return service.findAll(user);
-  }
+public class PolunVaiheController {
+  private final PolunVaiheService service;
 
   @PostMapping
-  @Operation(summary = "Adds a new paamaara")
+  @Operation(summary = "Adds a new vaihe to the suunnitelma")
   @ResponseStatus(HttpStatus.CREATED)
-  UUID add(
-      @AuthenticationPrincipal JodUser user, @Validated(Add.class) @RequestBody PaamaaraDto dto) {
-    return service.add(user, dto);
-  }
-
-  @PutMapping("/{id}")
-  @Operation(summary = "Updates a paamaara")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void update(
+  public UUID add(
       @AuthenticationPrincipal JodUser user,
       @PathVariable UUID id,
-      @Valid @RequestBody PaamaaraDto dto) {
-    if (dto.id() == null || !id.equals(dto.id())) {
-      throw new IllegalArgumentException("Invalid identifier");
-    }
-    service.update(user, dto);
+      @PathVariable UUID suunnitelmaId,
+      @Validated(Add.class) @RequestBody PolunVaiheDto dto) {
+    return service.add(user, id, suunnitelmaId, dto);
   }
 
-  @DeleteMapping("/{id}")
-  @Operation(summary = "Deletes a paamaara")
+  @PutMapping("/{vaiheId}")
+  @Operation(summary = "Updates a vaihe of the suunnitelma")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, id);
+  public void update(
+      @AuthenticationPrincipal JodUser user,
+      @PathVariable UUID id,
+      @PathVariable UUID suunnitelmaId,
+      @PathVariable UUID vaiheId,
+      @Valid @RequestBody PolunVaiheDto dto) {
+    if (dto.id() == null || !vaiheId.equals(dto.id())) {
+      throw new IllegalArgumentException("Invalid identifier");
+    }
+    service.update(user, id, suunnitelmaId, dto);
+  }
+
+  @DeleteMapping("/{vaiheId}")
+  @Operation(summary = "Deletes a vaihe of the suunnitelma")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(
+      @AuthenticationPrincipal JodUser user,
+      @PathVariable UUID id,
+      @PathVariable UUID suunnitelmaId,
+      @PathVariable UUID vaiheId) {
+    service.delete(user, id, suunnitelmaId, vaiheId);
   }
 }

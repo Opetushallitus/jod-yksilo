@@ -16,6 +16,8 @@ public final class Limits {
   public static final int TOIMINTO = 1_000;
   public static final int PATEVYYS_PER_TOIMINTO = 1_000;
   public static final int KOULUTUSKOKONAISUUS = 1_000;
+  public static final int SUUNNITELMA_PER_PAAMAARA = 1_000;
+  public static final int VAIHE_PER_SUUNNITELMA = 1_000;
 
   private Limits() {}
 }

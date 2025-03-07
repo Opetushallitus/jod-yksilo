@@ -10,13 +10,17 @@
 package fi.okm.jod.yksilo.entity;
 
 import static fi.okm.jod.yksilo.entity.Translation.merge;
+import static java.util.Collections.emptySet;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -30,12 +34,17 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -63,6 +72,14 @@ public class Paamaara {
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Koulutusmahdollisuus koulutusmahdollisuus;
+
+  @OneToMany(
+      mappedBy = "paamaara",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @BatchSize(size = 100)
+  private List<PolunSuunnitelma> suunnitelmat = new ArrayList<>();
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
@@ -117,6 +134,31 @@ public class Paamaara {
 
   public UUID getMahdollisuusId() {
     return tyomahdollisuus != null ? tyomahdollisuus.getId() : koulutusmahdollisuus.getId();
+  }
+
+  public Set<String> getOsaamiset() {
+    if (getMahdollisuusTyyppi() == MahdollisuusTyyppi.TYOMAHDOLLISUUS) {
+      var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
+      if (jakauma != null && jakauma.getArvot() != null) {
+        return jakauma.getArvot().stream()
+            .map(Jakauma.Arvo::arvo)
+            .collect(Collectors.toUnmodifiableSet());
+      }
+    } else {
+      var jakauma =
+          koulutusmahdollisuus.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN);
+      if (jakauma != null && jakauma.getArvot() != null) {
+        return koulutusmahdollisuus
+            .getJakaumat()
+            .get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN)
+            .getArvot()
+            .stream()
+            .map(Jakauma.Arvo::arvo)
+            .collect(Collectors.toUnmodifiableSet());
+      }
+    }
+
+    return emptySet();
   }
 
   @Embeddable

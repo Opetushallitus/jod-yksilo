@@ -17,7 +17,11 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.dto.profiili.PaamaaraYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
@@ -27,6 +31,8 @@ import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Patevyys;
+import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
+import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
@@ -135,7 +141,13 @@ public final class Mapper {
             entity.getMahdollisuusTyyppi(),
             entity.getMahdollisuusId(),
             entity.getTavoite(),
-            entity.getLuotu());
+            entity.getLuotu(),
+            entity.getSuunnitelmat().stream()
+                .map(
+                    polunSuunnitelma ->
+                        new PolunSuunnitelmaYhteenvetoDto(
+                            polunSuunnitelma.getId(), polunSuunnitelma.getNimi()))
+                .collect(Collectors.toSet()));
   }
 
   private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {
@@ -163,5 +175,39 @@ public final class Mapper {
                     mapOsaaminen.apply(entity.getOsaaminen()),
                     mapOsaamisenLahde(entity)))
         .toList();
+  }
+
+  public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
+    return entity == null
+        ? null
+        : new PolunSuunnitelmaDto(
+            entity.getId(),
+            entity.getNimi(),
+            new PaamaaraYhteenvetoDto(
+                entity.getPaamaara().getId(), entity.getPaamaara().getTavoite()),
+            entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getUri()))
+                .collect(Collectors.toUnmodifiableSet()),
+            entity.getIgnoredOsaamiset().stream()
+                .map(o -> URI.create(o.getUri()))
+                .collect(Collectors.toUnmodifiableSet()));
+  }
+
+  public static PolunVaiheDto mapPolunVaihe(PolunVaihe entity) {
+    return entity == null
+        ? null
+        : new PolunVaiheDto(
+            entity.getId(),
+            entity.getTyyppi(),
+            entity.getNimi(),
+            entity.getKuvaus(),
+            entity.getLinkit(),
+            entity.getAlkuPvm(),
+            entity.getLoppuPvm(),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getUri()))
+                .collect(Collectors.toUnmodifiableSet()),
+            entity.isValmis());
   }
 }
