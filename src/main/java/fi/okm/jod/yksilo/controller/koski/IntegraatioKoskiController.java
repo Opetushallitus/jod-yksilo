@@ -72,7 +72,7 @@ public class IntegraatioKoskiController {
       }
       koskiOAuth2Service.checkPersonIdMatches(jodUser, dataInJson);
 
-      var educationHistories = koskiService.getKoulutusData(dataInJson, null);
+      var educationHistories = koskiService.getKoulutusData(dataInJson);
       return ResponseEntity.ok(educationHistories);
 
     } catch (WrongPersonException e) {

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -44,7 +43,7 @@ public class KoskiService {
     return jsonNode.isMissingNode() ? null : jsonNode;
   }
 
-  public List<KoulutusDto> getKoulutusData(JsonNode koskiResponse, URI linkki) {
+  public List<KoulutusDto> getKoulutusData(JsonNode koskiResponse) {
     JsonNode opinnot = readJsonProperty(koskiResponse, "opiskeluoikeudet");
     if (opinnot == null || !opinnot.isArray()) {
       return Collections.emptyList();
@@ -67,15 +66,11 @@ public class KoskiService {
                     readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi");
                 var nimiNode = readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "nimi");
                 localizedKuvaus =
-                    getKuvaus(
+                    getLocalizedKuvaus(
                         getLocalizedString(tunnisteNimiNode),
                         nimiNode == null ? null : getLocalizedString(nimiNode));
               }
-              var alkuExpression = "alkamispäivä";
-              if (linkki != null && linkki.getPath().contains("/suoritetut-tutkinnot/")) {
-                alkuExpression = "suoritukset[0].vahvistus.päivä";
-              }
-              var alkoi = getLocalDate(o, alkuExpression);
+              var alkoi = getLocalDate(o, "alkamispäivä");
               var loppui = getLocalDate(o, "päättymispäivä");
 
               return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
@@ -83,7 +78,7 @@ public class KoskiService {
         .toList();
   }
 
-  private LocalizedString getKuvaus(
+  private LocalizedString getLocalizedKuvaus(
       LocalizedString localizedKuvaus, LocalizedString localizedKuvausNimi) {
     if (localizedKuvausNimi == null) {
       return localizedKuvaus;
@@ -96,7 +91,7 @@ public class KoskiService {
         if (nimi == null || StringUtils.equalsIgnoreCase(kuvaus, nimi)) {
           resultMap.put(kieli, kuvaus);
         } else if (!kuvaus.isEmpty() && !nimi.isEmpty()) {
-          resultMap.put(kieli, nimi);
+          resultMap.put(kieli, kuvaus + ": " + nimi);
         }
       }
     }

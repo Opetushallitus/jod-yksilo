@@ -32,7 +32,7 @@ class KoskiServiceTest {
   @Test
   void getKoulutusData() throws JsonProcessingException {
     var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
-    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content), null);
+    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content));
 
     assertEquals(1, koskiData.size());
     var koulutusDto = koskiData.getFirst();
