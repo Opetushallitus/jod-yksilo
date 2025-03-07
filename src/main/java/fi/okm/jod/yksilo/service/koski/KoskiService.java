@@ -78,7 +78,7 @@ public class KoskiService {
         .toList();
   }
 
-  private LocalizedString getLocalizedKuvaus(
+  static LocalizedString getLocalizedKuvaus(
       LocalizedString localizedKuvaus, LocalizedString localizedKuvausNimi) {
     if (localizedKuvausNimi == null) {
       return localizedKuvaus;
@@ -98,7 +98,7 @@ public class KoskiService {
     return resultMap.isEmpty() ? null : new LocalizedString(resultMap);
   }
 
-  private LocalizedString getLocalizedString(JsonNode nimet) {
+  private static LocalizedString getLocalizedString(JsonNode nimet) {
     if (nimet == null || nimet.isMissingNode()) {
       return new LocalizedString(Collections.emptyMap());
     }
@@ -117,7 +117,7 @@ public class KoskiService {
     return new LocalizedString(localizedValues);
   }
 
-  private String getStringOrDefault(JsonNode nimet, Kieli kieli) {
+  private static String getStringOrDefault(JsonNode nimet, Kieli kieli) {
     var value = getString(nimet, kieli.name().toLowerCase());
     if (value.isEmpty()) {
       return getString(nimet, Kieli.FI.name().toLowerCase());
@@ -125,12 +125,12 @@ public class KoskiService {
     return value;
   }
 
-  private String getString(JsonNode nimet, String path) {
+  private static String getString(JsonNode nimet, String path) {
     JsonNode node = readJsonProperty(nimet, path);
     return node != null && node.isTextual() ? node.asText() : "";
   }
 
-  private LocalDate getLocalDate(JsonNode nimet, String path) {
+  private static LocalDate getLocalDate(JsonNode nimet, String path) {
     JsonNode node = readJsonProperty(nimet, path);
     return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
   }
