@@ -42,6 +42,15 @@ public final class LocalizedString {
     return values.get(requireNonNull(kieli));
   }
 
+  @Schema(hidden = true)
+  public String getOrDefault(Kieli kieli) {
+    var value = get(kieli);
+    if (value == null) {
+      value = get(Kieli.FI);
+    }
+    return value;
+  }
+
   public Map<Kieli, String> asMap() {
     // due to the invariant, returning the map directly is safe
     return values;
