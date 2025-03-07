@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mockStatic;
 
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
@@ -25,6 +26,7 @@ import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -41,17 +43,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Test
   void shouldAddSuunnitelma() {
     var tavoite = ls("tavoite");
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                tavoite,
-                null,
-                null));
+    var paamaaraId = addPaamaara(tavoite);
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = assertDoesNotThrow(() -> service.add(user, paamaaraId, dto));
     var result = service.get(user, paamaaraId, id);
@@ -65,17 +57,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldUpdateSuunnitelma() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
+    var paamaaraId = addPaamaara(ls("tavoite"));
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = service.add(user, paamaaraId, dto);
     var updateDto = new PolunSuunnitelmaUpdateDto(id, ls("uusi nimi"), null, null);
@@ -88,17 +70,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldDeleteSuunnitelma() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
+    var paamaaraId = addPaamaara(ls("tavoite"));
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     var id = service.add(user, paamaaraId, dto);
     service.delete(user, paamaaraId, id);
@@ -112,17 +84,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
       mockedService
           .when(PolunSuunnitelmaService::getSuunnitelmaPerPaamaaraLimit)
           .thenReturn(testLimit);
-      var paamaaraId =
-          paamaarat.add(
-              user,
-              new PaamaaraDto(
-                  null,
-                  PaamaaraTyyppi.PITKA,
-                  MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                  tyomahdollisuusdet.findAll().getFirst().getId(),
-                  ls("tavoite"),
-                  null,
-                  null));
+      var paamaaraId = addPaamaara(ls("tavoite"));
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
@@ -134,5 +96,18 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
       var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet(), emptySet());
       assertThrows(ServiceValidationException.class, () -> service.add(user, paamaaraId, dto));
     }
+  }
+
+  private UUID addPaamaara(LocalizedString tavoite) {
+    return paamaarat.add(
+        user,
+        new PaamaaraDto(
+            null,
+            PaamaaraTyyppi.PITKA,
+            MahdollisuusTyyppi.TYOMAHDOLLISUUS,
+            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tavoite,
+            null,
+            null));
   }
 }

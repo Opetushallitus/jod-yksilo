@@ -31,6 +31,7 @@ import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,22 +55,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldAddVaihe() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -90,22 +77,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldUpdateVaihe() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -138,22 +111,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldDeleteVaihe() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -178,22 +137,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
     try (MockedStatic<PolunVaiheService> mockedService = mockStatic(PolunVaiheService.class)) {
       mockedService.when(PolunVaiheService::getVaihePerSuunnitelmaLimit).thenReturn(testLimit);
 
-      var paamaaraId =
-          paamaarat.add(
-              user,
-              new PaamaaraDto(
-                  null,
-                  PaamaaraTyyppi.PITKA,
-                  MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                  tyomahdollisuusdet.findAll().getFirst().getId(),
-                  ls("tavoite"),
-                  null,
-                  null));
-      var suunnitelmaId =
-          suunnitelmat.add(
-              user,
-              paamaaraId,
-              new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+      var paamaaraId = addPaamaara();
+      var suunnitelmaId = addSuunnitelma(paamaaraId);
       for (var i = 0; i < testLimit; i++) {
         var dto =
             new PolunVaiheDto(
@@ -227,22 +172,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithInvalidOsaaminen() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -260,22 +191,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenNotInPaamaara() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -293,22 +210,8 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenInSuunnitelma() {
-    var paamaaraId =
-        paamaarat.add(
-            user,
-            new PaamaaraDto(
-                null,
-                PaamaaraTyyppi.PITKA,
-                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-                tyomahdollisuusdet.findAll().getFirst().getId(),
-                ls("tavoite"),
-                null,
-                null));
-    var suunnitelmaId =
-        suunnitelmat.add(
-            user,
-            paamaaraId,
-            new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+    var paamaaraId = addPaamaara();
+    var suunnitelmaId = addSuunnitelma(paamaaraId);
     suunnitelmat.update(
         user,
         paamaaraId,
@@ -327,5 +230,25 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
             false);
     assertThrows(
         ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+  }
+
+  private UUID addPaamaara() {
+    return paamaarat.add(
+        user,
+        new PaamaaraDto(
+            null,
+            PaamaaraTyyppi.PITKA,
+            MahdollisuusTyyppi.TYOMAHDOLLISUUS,
+            tyomahdollisuusdet.findAll().getFirst().getId(),
+            ls("tavoite"),
+            null,
+            null));
+  }
+
+  private UUID addSuunnitelma(UUID paamaaraId) {
+    return suunnitelmat.add(
+        user,
+        paamaaraId,
+        new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
   }
 }
