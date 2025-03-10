@@ -19,6 +19,7 @@ import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import java.util.HashSet;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import org.springframework.test.context.jdbc.Sql;
 @Import(PaamaaraService.class)
 class PaamaaraServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService service;
-  @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
+  @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @Test
   void shouldAddPaamaara() {
@@ -38,8 +39,9 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            null,
             null);
     assertDoesNotThrow(() -> service.add(user, dto));
     assertEquals(1, service.findAll(user).size());
@@ -52,8 +54,9 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            null,
             null);
 
     var id = service.add(user, dto);
@@ -64,7 +67,8 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             dto.mahdollisuusTyyppi(),
             dto.mahdollisuusId(),
             ls("tavoite2"),
-            null);
+            null,
+            new HashSet<>());
     assertDoesNotThrow(() -> service.update(user, updated));
     assertThat(updated)
         .usingRecursiveComparison()
@@ -81,6 +85,7 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
             UUID.randomUUID(),
             ls("tavoite"),
+            null,
             null);
     assertThrows(NotFoundException.class, () -> service.add(user, dto));
   }
@@ -92,8 +97,9 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            null,
             null);
     var id = service.add(user, dto);
     assertDoesNotThrow(() -> service.delete(user, id));
@@ -107,8 +113,9 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            null,
             null);
     var id = service.add(user, dto);
     assertThrows(NotFoundException.class, () -> service.delete(user2, id));
