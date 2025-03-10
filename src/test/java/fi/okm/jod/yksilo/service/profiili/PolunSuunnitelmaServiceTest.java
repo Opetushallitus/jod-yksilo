@@ -35,9 +35,9 @@ import org.springframework.test.context.jdbc.Sql;
 @Sql("/data/osaaminen.sql")
 @Sql("/data/mahdollisuudet-test-data.sql")
 @Import({PolunSuunnitelmaService.class, PaamaaraService.class, YksilonOsaaminenService.class})
-public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
+class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
-  @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
+  @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
   @Autowired private PolunSuunnitelmaService service;
 
   @Test
@@ -50,7 +50,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     assertThat(dto)
         .usingRecursiveComparison()
         .ignoringFields("id", "paamaara", "vaiheet")
-        .isEqualTo(service.get(user, paamaaraId, id));
+        .isEqualTo(result);
     assertThat(result.paamaara().id()).isEqualTo(paamaaraId);
     assertThat(result.paamaara().tavoite()).usingRecursiveComparison().isEqualTo(tavoite);
   }
@@ -105,7 +105,7 @@ public class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.PITKA,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             tavoite,
             null,
             null));

@@ -30,7 +30,7 @@ import org.springframework.test.context.jdbc.Sql;
 @Import(PaamaaraService.class)
 class PaamaaraServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService service;
-  @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
+  @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @Test
   void shouldAddPaamaara() {
@@ -39,7 +39,7 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             null,
             null);
@@ -54,7 +54,7 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             null,
             null);
@@ -97,7 +97,7 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             null,
             null);
@@ -113,7 +113,7 @@ class PaamaaraServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             null,
             null);

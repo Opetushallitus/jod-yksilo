@@ -46,9 +46,9 @@ import org.springframework.test.context.jdbc.Sql;
   PaamaaraService.class,
   YksilonOsaaminenService.class
 })
-public class PolunVaiheServiceTest extends AbstractServiceTest {
+class PolunVaiheServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
-  @Autowired private TyomahdollisuusRepository tyomahdollisuusdet;
+  @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
   @Autowired private PolunSuunnitelmaService suunnitelmat;
   @Autowired private PolunVaiheService vaiheet;
   @Autowired private PolunVaiheRepository vaiheRepository;
@@ -58,16 +58,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
     var paamaaraId = addPaamaara();
     var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
-        new PolunVaiheDto(
-            null,
-            PolunVaiheTyyppi.KOULUTUS,
-            ls("nimi"),
-            ls("kuvaus"),
-            Set.of("https://example.com"),
-            LocalDate.of(2020, 10, 31),
-            LocalDate.of(2023, 2, 5),
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-            false);
+        createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
     var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
     assertThat(dto)
         .usingRecursiveComparison()
@@ -80,16 +71,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
     var paamaaraId = addPaamaara();
     var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
-        new PolunVaiheDto(
-            null,
-            PolunVaiheTyyppi.KOULUTUS,
-            ls("nimi"),
-            ls("kuvaus"),
-            Set.of("https://example.com"),
-            LocalDate.of(2020, 10, 31),
-            LocalDate.of(2023, 2, 5),
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-            false);
+        createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
     var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
     var updatedDto =
         new PolunVaiheDto(
@@ -114,16 +96,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
     var paamaaraId = addPaamaara();
     var suunnitelmaId = addSuunnitelma(paamaaraId);
     var dto =
-        new PolunVaiheDto(
-            null,
-            PolunVaiheTyyppi.KOULUTUS,
-            ls("nimi"),
-            ls("kuvaus"),
-            Set.of("https://example.com"),
-            LocalDate.of(2020, 10, 31),
-            LocalDate.of(2023, 2, 5),
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-            false);
+        createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
     var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
     vaiheet.delete(user, paamaaraId, suunnitelmaId, id);
     assertThat(vaiheRepository.findById(id)).isEmpty();
@@ -141,29 +114,11 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
       var suunnitelmaId = addSuunnitelma(paamaaraId);
       for (var i = 0; i < testLimit; i++) {
         var dto =
-            new PolunVaiheDto(
-                null,
-                PolunVaiheTyyppi.KOULUTUS,
-                ls("nimi"),
-                ls("kuvaus"),
-                Set.of("https://example.com"),
-                LocalDate.of(2020, 10, 31),
-                LocalDate.of(2023, 2, 5),
-                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-                false);
+            createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
         vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
       }
       var dto =
-          new PolunVaiheDto(
-              null,
-              PolunVaiheTyyppi.KOULUTUS,
-              ls("nimi"),
-              ls("kuvaus"),
-              Set.of("https://example.com"),
-              LocalDate.of(2020, 10, 31),
-              LocalDate.of(2023, 2, 5),
-              Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
-              false);
+          createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
       assertThrows(
           ServiceValidationException.class,
           () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
@@ -174,17 +129,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithInvalidOsaaminen() {
     var paamaaraId = addPaamaara();
     var suunnitelmaId = addSuunnitelma(paamaaraId);
-    var dto =
-        new PolunVaiheDto(
-            null,
-            PolunVaiheTyyppi.KOULUTUS,
-            ls("nimi"),
-            ls("kuvaus"),
-            Set.of("https://example.com"),
-            LocalDate.of(2020, 10, 31),
-            LocalDate.of(2023, 2, 5),
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:unknown")),
-            false);
+    var dto = createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:unknown")));
     assertThrows(
         ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
   }
@@ -217,17 +162,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
         paamaaraId,
         new PolunSuunnitelmaUpdateDto(
             suunnitelmaId, ls("nimi"), Set.of(URI.create("urn:osaaminen1")), null));
-    var dto =
-        new PolunVaiheDto(
-            null,
-            PolunVaiheTyyppi.KOULUTUS,
-            ls("nimi"),
-            ls("kuvaus"),
-            Set.of("https://example.com"),
-            LocalDate.of(2020, 10, 31),
-            LocalDate.of(2023, 2, 5),
-            Set.of(URI.create("urn:osaaminen1")),
-            false);
+    var dto = createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1")));
     assertThrows(
         ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
   }
@@ -239,7 +174,7 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
             null,
             PaamaaraTyyppi.PITKA,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuusdet.findAll().getFirst().getId(),
+            tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             null,
             null));
@@ -250,5 +185,18 @@ public class PolunVaiheServiceTest extends AbstractServiceTest {
         user,
         paamaaraId,
         new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+  }
+
+  private PolunVaiheDto createPolunVaiheDto(Set<URI> osaamiset) {
+    return new PolunVaiheDto(
+        null,
+        PolunVaiheTyyppi.KOULUTUS,
+        ls("nimi"),
+        ls("kuvaus"),
+        Set.of("https://example.com"),
+        LocalDate.of(2020, 10, 31),
+        LocalDate.of(2023, 2, 5),
+        osaamiset,
+        false);
   }
 }
