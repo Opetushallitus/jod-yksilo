@@ -108,7 +108,7 @@ public class KoskiService {
 
     Map<Kieli, String> localizedValues =
         Stream.of(Kieli.values())
-            .map(kieli -> Map.entry(kieli, getStringOrDefault(nimet, kieli)))
+            .map(kieli -> Map.entry(kieli, getString(nimet, kieli.name().toLowerCase())))
             .filter(entry -> !entry.getValue().isEmpty())
             .collect(
                 Collectors.toMap(
@@ -118,14 +118,6 @@ public class KoskiService {
                     () -> new EnumMap<>(Kieli.class)));
 
     return new LocalizedString(localizedValues);
-  }
-
-  private static String getStringOrDefault(JsonNode nimet, Kieli kieli) {
-    var value = getString(nimet, kieli.name().toLowerCase());
-    if (value.isEmpty()) {
-      return getString(nimet, Kieli.FI.name().toLowerCase());
-    }
-    return value;
   }
 
   private static String getString(JsonNode nimet, String path) {
