@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,10 @@ public class KoulutusKokonaisuusService {
     return kokonaisuudet.findByYksiloId(user.getId()).stream()
         .map(Mapper::mapKoulutusKokonaisuus)
         .toList();
+  }
+
+  public void addMany(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
+    dtos.forEach(dto -> add(user, dto));
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
