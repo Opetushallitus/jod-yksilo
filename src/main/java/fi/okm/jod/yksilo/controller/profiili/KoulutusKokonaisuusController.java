@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,15 @@ class KoulutusKokonaisuusController {
   @Operation(summary = "Get all koulutuskokonaisuudet of the user")
   List<KoulutusKokonaisuusDto> getAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
+  }
+
+  @PostMapping("/tuonti")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Adds many new koulutuskokonaisuudet, and optionally associated koulutukset")
+  void addMany(
+      @Validated(Add.class) @RequestBody Set<KoulutusKokonaisuusDto> dtos,
+      @AuthenticationPrincipal JodUser user) {
+    service.addMany(user, dtos);
   }
 
   @PostMapping
