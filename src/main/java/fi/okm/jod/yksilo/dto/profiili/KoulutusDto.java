@@ -25,7 +25,7 @@ public record KoulutusDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
-    @NotNull LocalDate alkuPvm,
+    LocalDate alkuPvm,
     LocalDate loppuPvm,
     Set<@NotNull URI> osaamiset)
     implements ValidInterval {}
