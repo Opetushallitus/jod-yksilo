@@ -16,13 +16,12 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
-import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
-import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +33,15 @@ import org.springframework.test.context.jdbc.Sql;
 class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
 
   @Autowired KoulutusKokonaisuusService service;
-  @Autowired KoulutusKokonaisuusRepository toimenkuvat;
-  @Autowired YksilonOsaaminenRepository osaaminen;
 
   @Test
   void shouldAddKoulutusKokonaisuus() {
     assertDoesNotThrow(
         () -> {
-          var id = service.add(user, new KoulutusKokonaisuusDto(null, ls(Kieli.FI, "nimi"), null));
+          var id =
+              service.add(
+                  user,
+                  new KoulutusKokonaisuusDto(null, ls(Kieli.FI, "nimi"), Collections.emptySet()));
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
@@ -73,7 +73,10 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                                 ls(Kieli.FI, "kuvaus"),
                                 LocalDate.now(),
                                 null,
-                                Set.of(URI.create("urn:osaaminen1")))
+                                Set.of(URI.create("urn:osaaminen1")),
+                                null,
+                                null,
+                                null)
                           })));
 
           simulateCommit();

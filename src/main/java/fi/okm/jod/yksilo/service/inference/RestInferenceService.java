@@ -14,13 +14,14 @@ import java.time.Duration;
 import java.util.UUID;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 @Component
-@Profile("default")
+@Profile("!cloud")
 public class RestInferenceService<T, R> implements InferenceService<T, R> {
 
   private final RestClient restClient;
@@ -46,7 +47,7 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
   }
 
   @Override
-  public R infer(String endpoint, T payload, Class<R> responseType) {
+  public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
     try {
       return restClient.post().uri(endpoint).body(payload).retrieve().body(responseType);
     } catch (RestClientException e) {
@@ -56,7 +57,7 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
 
   @Override
   public InferenceSession<R> infer(
-      String endpoint, UUID sessionId, T payload, Class<R> responseType) {
+      String endpoint, UUID sessionId, T payload, ParameterizedTypeReference<R> responseType) {
     throw new UnsupportedOperationException("Session is not supported by this inference service");
   }
 }

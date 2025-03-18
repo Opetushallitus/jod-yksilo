@@ -53,10 +53,10 @@ class KoulutusKokonaisuusController {
   @PostMapping("/tuonti")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Adds many new koulutuskokonaisuudet, and optionally associated koulutukset")
-  void addMany(
+  List<UUID> addMany(
       @Validated(Add.class) @RequestBody Set<KoulutusKokonaisuusDto> dtos,
       @AuthenticationPrincipal JodUser user) {
-    service.addMany(user, dtos);
+    return service.addManyForImport(user, dtos);
   }
 
   @PostMapping

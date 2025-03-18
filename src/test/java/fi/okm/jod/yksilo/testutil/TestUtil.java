@@ -9,12 +9,15 @@
 
 package fi.okm.jod.yksilo.testutil;
 
-import fi.okm.jod.yksilo.domain.JodUser;
 import java.nio.charset.StandardCharsets;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class TestUtil {
+
+  private static final String POSTGRES_VERSION = "postgres:16-alpine";
+  private static final String REDIS_VERSION = "redis:7-alpine";
 
   private TestUtil() {
     // Utility class.
@@ -32,9 +35,13 @@ public class TestUtil {
     }
   }
 
-  public static void authenticateUser(JodUser jodUser) {
-    var context = SecurityContextHolder.createEmptyContext();
-    context.setAuthentication(new TestingAuthenticationToken(jodUser, null));
-    SecurityContextHolder.setContext(context);
+  public static PostgreSQLContainer<?> createPostgresSQLContainer() {
+    return new PostgreSQLContainer<>(TestUtil.POSTGRES_VERSION)
+        .withEnv("LANG", "en_US.UTF-8")
+        .withEnv("LC_ALL", "en_US.UTF-8");
+  }
+
+  public static GenericContainer<?> createRedisContainer() {
+    return new GenericContainer<>(DockerImageName.parse(REDIS_VERSION)).withExposedPorts(6379);
   }
 }

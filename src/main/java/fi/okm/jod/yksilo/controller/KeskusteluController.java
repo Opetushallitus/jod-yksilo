@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,7 +52,7 @@ public class KeskusteluController {
             endpoint,
             null,
             new Request(entry.getValue(), entry.getKey().toString()),
-            Response.class);
+            new ParameterizedTypeReference<>() {});
     return new ResponseWithId(
         response.sessionId(), response.data().kiinnostukset(), response.data().response());
   }
@@ -67,7 +68,10 @@ public class KeskusteluController {
     var entry = kuvaus.asMap().entrySet().iterator().next();
     var response =
         inferenceService.infer(
-            endpoint, id, new Request(entry.getValue(), entry.getKey().toString()), Response.class);
+            endpoint,
+            id,
+            new Request(entry.getValue(), entry.getKey().toString()),
+            new ParameterizedTypeReference<>() {});
     return new ResponseWithId(
         response.sessionId(), response.data().kiinnostukset(), response.data().response());
   }

@@ -6,6 +6,11 @@ INSERT INTO ammatti_versio(versio)
 VALUES (0)
 ON CONFLICT DO NOTHING;
 
+--- temporary recovery for failed competence detection tasks
+UPDATE koulutus
+SET osaamisen_tunnistus_status = 'FAIL'
+WHERE osaamisen_tunnistus_status = 'WAIT';
+
 DO
 $$
   BEGIN

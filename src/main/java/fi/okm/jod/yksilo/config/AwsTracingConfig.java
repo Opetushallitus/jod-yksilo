@@ -14,6 +14,8 @@ import brave.propagation.aws.AWSPropagation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.task.TaskDecorator;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 
 /**
  * Configures trace id propagation for micrometer tracing
@@ -28,5 +30,10 @@ public class AwsTracingConfig {
   @Bean
   public Propagation.Factory awsTracePropagation() {
     return AWSPropagation.FACTORY;
+  }
+
+  @Bean
+  public TaskDecorator taskDecorator() {
+    return new ContextPropagatingTaskDecorator();
   }
 }

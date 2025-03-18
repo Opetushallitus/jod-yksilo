@@ -16,8 +16,10 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -28,6 +30,8 @@ import org.springframework.util.StringUtils;
 @Service
 @Slf4j
 public class KoskiService {
+
+  private static final String KOULUTUSMODUULI_FIELD = "koulutusmoduuli";
 
   public KoskiService() {
     log.info("Creating KoskiService");
@@ -63,8 +67,8 @@ public class KoskiService {
               LocalizedString localizedKuvaus = null;
               if (suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()) {
                 var tunnisteNimiNode =
-                    readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi");
-                var nimiNode = readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "nimi");
+                    readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "tunniste", "nimi");
+                var nimiNode = readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "nimi");
                 localizedKuvaus =
                     getLocalizedKuvaus(
                         getLocalizedString(tunnisteNimiNode),
@@ -72,10 +76,36 @@ public class KoskiService {
               }
               var alkoi = getLocalDate(o, "alkamispäivä");
               var loppui = getLocalDate(o, "päättymispäivä");
+              var osasuoritukset =
+                  suoritukset != null
+                      ? getOsasuoritukset(readJsonProperty(suoritukset.get(0), "osasuoritukset"))
+                      : null;
 
-              return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
+              return new KoulutusDto(
+                  null,
+                  localizedNimi,
+                  localizedKuvaus,
+                  alkoi,
+                  loppui,
+                  null,
+                  true,
+                  null,
+                  osasuoritukset);
             })
         .toList();
+  }
+
+  private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
+    var osasuorituksetList = new HashSet<String>();
+    if (osasuoritukset != null && osasuoritukset.isArray() && !osasuoritukset.isEmpty()) {
+      for (var jsonNode : osasuoritukset) {
+        var nimiNode = readJsonProperty(jsonNode, KOULUTUSMODUULI_FIELD, "nimi");
+        if (nimiNode != null && !nimiNode.isEmpty()) {
+          osasuorituksetList.add(getLocalizedString(nimiNode).get(Kieli.FI));
+        }
+      }
+    }
+    return osasuorituksetList;
   }
 
   static LocalizedString getLocalizedKuvaus(
