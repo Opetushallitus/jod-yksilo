@@ -87,8 +87,10 @@ class IntegraatioKoskiControllerTest {
                     ls(Kieli.FI, "Kuvaus", Kieli.EN, "Description", Kieli.SV, "Beskrivning"),
                     LocalDate.of(2006, 1, 1), // alkuPvm
                     null, // loppuPvm is null
-                    null // osaamiset is null
-                    )));
+                    null, // osaamiset is null
+                    true, // osaamisetOdottaaTunnistusta
+                    null,
+                    null)));
     doAnswer(invocationOnMock -> null)
         .when(koskiOAuth2Service)
         .checkPersonIdMatches(any(JodUser.class), any(JsonNode.class));
