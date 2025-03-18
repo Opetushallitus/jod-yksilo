@@ -73,7 +73,8 @@ public class KoskiService {
               var alkoi = getLocalDate(o, "alkamispäivä");
               var loppui = getLocalDate(o, "päättymispäivä");
 
-              return new KoulutusDto(null, localizedNimi, localizedKuvaus, alkoi, loppui, null);
+              return new KoulutusDto(
+                  null, localizedNimi, localizedKuvaus, alkoi, loppui, null, true);
             })
         .toList();
   }
