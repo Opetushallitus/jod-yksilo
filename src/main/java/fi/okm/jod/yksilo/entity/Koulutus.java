@@ -63,6 +63,10 @@ public class Koulutus implements OsaamisenLahde {
   @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
+  @Setter
+  private Boolean
+      osaamisetOdottaaTunnistusta; // null=no need for tunnistus, true=pending, false=completed
+
   protected Koulutus() {
     // For JPA
   }

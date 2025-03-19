@@ -60,7 +60,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   null,
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
-                  Set.of(URI.create("urn:osaaminen1"))));
+                  Set.of(URI.create("urn:osaaminen1")),
+                  null));
           entityManager.flush();
           entityManager.clear();
 
@@ -83,7 +84,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
                       null,
                       LocalDate.of(2021, 1, 1),
                       null,
-                      Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
+                      Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                      null));
           entityManager.flush();
           entityManager.clear();
 
@@ -102,7 +104,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   null,
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
-                  updated));
+                  updated,
+                  null));
           entityManager.flush();
           entityManager.clear();
 
@@ -123,7 +126,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
+                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                null));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
     simulateCommit();
@@ -141,7 +145,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
             null,
             LocalDate.of(2021, 1, 1),
             null,
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
+            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+            null));
 
     var id =
         service.add(
@@ -153,7 +158,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"))));
+                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                null));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
     simulateCommit();

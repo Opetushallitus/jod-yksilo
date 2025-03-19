@@ -86,8 +86,7 @@ public final class Mapper {
             entity.getOsaamiset().stream()
                 .map(o -> URI.create(o.getOsaaminen().getUri()))
                 .collect(Collectors.toUnmodifiableSet()),
-            false // TODO: OPHJOD-1310
-            );
+            entity.getOsaamisetOdottaaTunnistusta());
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {

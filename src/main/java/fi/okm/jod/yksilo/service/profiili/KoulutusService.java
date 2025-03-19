@@ -78,11 +78,17 @@ public class KoulutusService {
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {
+    return add(kokonaisuus, dto, null);
+  }
+
+  Koulutus add(
+      KoulutusKokonaisuus kokonaisuus, KoulutusDto dto, Boolean odottaaOsaamisetTunnistusta) {
     var entity = new Koulutus(kokonaisuus);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
+    entity.setOsaamisetOdottaaTunnistusta(odottaaOsaamisetTunnistusta);
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.add(entity, dto.osaamiset());
