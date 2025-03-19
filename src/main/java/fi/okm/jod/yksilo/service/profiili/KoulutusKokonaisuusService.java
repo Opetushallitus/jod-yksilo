@@ -12,19 +12,20 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
-import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class KoulutusKokonaisuusService {
   private final YksiloRepository yksilot;
   private final KoulutusKokonaisuusRepository kokonaisuudet;
   private final KoulutusService koulutusService;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   public List<KoulutusKokonaisuusDto> findAll(JodUser user) {
     return kokonaisuudet.findByYksiloId(user.getId()).stream()
@@ -43,17 +45,12 @@ public class KoulutusKokonaisuusService {
         .toList();
   }
 
-  public Map<UUID, Set<UUID>> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    var resultMap = new java.util.HashMap<UUID, Set<UUID>>();
+  public void addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
+    var resultMap = new ArrayList<KoulutusKokonaisuus>();
     for (KoulutusKokonaisuusDto dto : dtos) {
-      var koulutusKokonaisuusEntity = add(user, dto, true);
-      var koulutusIds =
-          koulutusKokonaisuusEntity.getKoulutukset().stream()
-              .map(Koulutus::getId)
-              .collect(java.util.stream.Collectors.toSet());
-      resultMap.put(koulutusKokonaisuusEntity.getId(), koulutusIds);
+      resultMap.add(add(user, dto, true));
     }
-    return resultMap;
+    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(resultMap));
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
