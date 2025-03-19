@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
+import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -20,6 +21,7 @@ import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +43,25 @@ public class KoulutusKokonaisuusService {
         .toList();
   }
 
-  public void addMany(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    dtos.forEach(dto -> add(user, dto));
+  public Map<UUID, Set<UUID>> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
+    var resultMap = new java.util.HashMap<UUID, Set<UUID>>();
+    for (KoulutusKokonaisuusDto dto : dtos) {
+      var koulutusKokonaisuusEntity = add(user, dto, true);
+      var koulutusIds =
+          koulutusKokonaisuusEntity.getKoulutukset().stream()
+              .map(Koulutus::getId)
+              .collect(java.util.stream.Collectors.toSet());
+      resultMap.put(koulutusKokonaisuusEntity.getId(), koulutusIds);
+    }
+    return resultMap;
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
+    return add(user, dto, null).getId();
+  }
+
+  private KoulutusKokonaisuus add(
+      JodUser user, KoulutusKokonaisuusDto dto, Boolean odottaaOsaamisetTunnistusta) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (kokonaisuudet.countByYksilo(yksilo) >= Limits.KOULUTUSKOKONAISUUS) {
       throw new ServiceValidationException("Too many KoulutusKokonaisuus");
@@ -56,11 +72,13 @@ public class KoulutusKokonaisuusService {
             new KoulutusKokonaisuus(yksilot.getReferenceById(user.getId()), dto.nimi()));
     if (dto.koulutukset() != null) {
       for (var koulutus : dto.koulutukset()) {
-        entity.getKoulutukset().add(koulutusService.add(entity, koulutus));
+        entity
+            .getKoulutukset()
+            .add(koulutusService.add(entity, koulutus, odottaaOsaamisetTunnistusta));
       }
     }
 
-    return entity.getId();
+    return entity;
   }
 
   public KoulutusKokonaisuusDto get(JodUser user, UUID id) {

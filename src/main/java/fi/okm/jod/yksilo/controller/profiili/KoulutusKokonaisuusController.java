@@ -56,7 +56,7 @@ class KoulutusKokonaisuusController {
   void addMany(
       @Validated(Add.class) @RequestBody Set<KoulutusKokonaisuusDto> dtos,
       @AuthenticationPrincipal JodUser user) {
-    service.addMany(user, dtos);
+    service.addManyForImport(user, dtos);
   }
 
   @PostMapping
