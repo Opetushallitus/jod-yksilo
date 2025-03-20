@@ -61,6 +61,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
                   Set.of(URI.create("urn:osaaminen1")),
+                  null,
                   null));
           entityManager.flush();
           entityManager.clear();
@@ -85,6 +86,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                       LocalDate.of(2021, 1, 1),
                       null,
                       Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                      null,
                       null));
           entityManager.flush();
           entityManager.clear();
@@ -105,6 +107,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
                   updated,
+                  null,
                   null));
           entityManager.flush();
           entityManager.clear();
@@ -127,6 +130,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 LocalDate.of(2021, 1, 1),
                 null,
                 Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                null,
                 null));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
@@ -146,6 +150,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
             LocalDate.of(2021, 1, 1),
             null,
             Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+            null,
             null));
 
     var id =
@@ -159,6 +164,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 LocalDate.of(2021, 1, 1),
                 null,
                 Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                null,
                 null));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);

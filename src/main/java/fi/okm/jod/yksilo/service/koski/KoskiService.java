@@ -74,7 +74,7 @@ public class KoskiService {
               var loppui = getLocalDate(o, "päättymispäivä");
 
               return new KoulutusDto(
-                  null, localizedNimi, localizedKuvaus, alkoi, loppui, null, true);
+                  null, localizedNimi, localizedKuvaus, alkoi, loppui, null, true, null);
             })
         .toList();
   }

@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -88,7 +89,8 @@ public class KoulutusService {
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
-    entity.setOsaamisetOdottaaTunnistusta(odottaaOsaamisetTunnistusta);
+    entity.setOsaamisenTunnistusStatus(
+        odottaaOsaamisetTunnistusta == null ? null : OsaamisenTunnistusStatus.WAIT);
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.add(entity, dto.osaamiset());

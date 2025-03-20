@@ -29,6 +29,7 @@ import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
@@ -75,18 +76,30 @@ public final class Mapper {
   }
 
   public static KoulutusDto mapKoulutus(Koulutus entity) {
-    return entity == null
-        ? null
-        : new KoulutusDto(
-            entity.getId(),
-            entity.getNimi(),
-            entity.getKuvaus(),
-            entity.getAlkuPvm(),
-            entity.getLoppuPvm(),
-            entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
-                .collect(Collectors.toUnmodifiableSet()),
-            entity.getOsaamisetOdottaaTunnistusta());
+    if (entity == null) {
+      return null;
+    }
+    var builder =
+        KoulutusDto.builder()
+            .id(entity.getId())
+            .nimi(entity.getNimi())
+            .kuvaus(entity.getKuvaus())
+            .alkuPvm(entity.getAlkuPvm())
+            .loppuPvm(entity.getLoppuPvm())
+            .osaamiset(
+                entity.getOsaamiset().stream()
+                    .map(o -> URI.create(o.getOsaaminen().getUri()))
+                    .collect(Collectors.toUnmodifiableSet()));
+
+    var osaamisenTunnistusStatus = entity.getOsaamisenTunnistusStatus();
+    if (osaamisenTunnistusStatus != null) {
+      builder.osaamisetOdottaaTunnistusta(
+          osaamisenTunnistusStatus == OsaamisenTunnistusStatus.WAIT);
+      if (osaamisenTunnistusStatus == OsaamisenTunnistusStatus.FAIL) {
+        builder.osaamisetTunnistusEpaonnistui(true);
+      }
+    }
+    return builder.build();
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {

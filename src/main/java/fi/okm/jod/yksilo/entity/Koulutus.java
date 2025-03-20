@@ -23,6 +23,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -64,8 +65,8 @@ public class Koulutus implements OsaamisenLahde {
   private Set<YksilonOsaaminen> osaamiset;
 
   @Setter
-  private Boolean
-      osaamisetOdottaaTunnistusta; // null=no need for tunnistus, true=pending, false=completed
+  @Enumerated(EnumType.STRING)
+  private OsaamisenTunnistusStatus osaamisenTunnistusStatus; // null = No need for tunnistus.
 
   protected Koulutus() {
     // For JPA
