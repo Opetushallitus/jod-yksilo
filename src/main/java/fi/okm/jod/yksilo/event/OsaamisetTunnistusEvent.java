@@ -9,8 +9,7 @@
 
 package fi.okm.jod.yksilo.event;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import java.util.List;
 
-public record OsaamisetTunnistusEvent(Map<UUID, Set<UUID>> koulutusKokonaisuudetKoulutusMap) {}
+public record OsaamisetTunnistusEvent(List<KoulutusKokonaisuus> koulutusKokonaisuusList) {}

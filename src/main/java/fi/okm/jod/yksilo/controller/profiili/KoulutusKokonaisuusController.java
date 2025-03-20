@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.dto.IdDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -45,7 +43,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @Tag(name = "profiili/koulutuskokonaisuudet")
 class KoulutusKokonaisuusController {
   private final KoulutusKokonaisuusService service;
-  private final ApplicationEventPublisher applicationEventPublisher;
 
   @GetMapping
   @Operation(summary = "Get all koulutuskokonaisuudet of the user")
@@ -59,8 +56,7 @@ class KoulutusKokonaisuusController {
   void addMany(
       @Validated(Add.class) @RequestBody Set<KoulutusKokonaisuusDto> dtos,
       @AuthenticationPrincipal JodUser user) {
-    var result = service.addManyForImport(user, dtos);
-    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(result));
+    service.addManyForImport(user, dtos);
   }
 
   @PostMapping
