@@ -46,11 +46,12 @@ public class KoulutusKokonaisuusService {
   }
 
   public void addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    var resultMap = new ArrayList<KoulutusKokonaisuus>();
+    var koulutusKokonaisuudet = new ArrayList<KoulutusKokonaisuus>();
     for (KoulutusKokonaisuusDto dto : dtos) {
-      resultMap.add(add(user, dto, true));
+      koulutusKokonaisuudet.add(add(user, dto, true));
     }
-    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, resultMap));
+    applicationEventPublisher.publishEvent(
+        new OsaamisetTunnistusEvent(user, koulutusKokonaisuudet));
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {

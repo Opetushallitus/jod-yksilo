@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.koski;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,23 +38,59 @@ class KoskiServiceTest {
     var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
     var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content));
 
-    assertEquals(1, koskiData.size());
+    assertEquals(2, koskiData.size());
     var koulutusDto = koskiData.getFirst();
     assertNull(koulutusDto.id());
-    assertEquals("Jyväskylän normaalikoulu", koulutusDto.nimi().get(Kieli.FI));
-    assertEquals("Jyväskylän normaalikoulu", koulutusDto.nimi().get(Kieli.EN));
-    assertEquals("Jyväskylän normaalikoulu", koulutusDto.nimi().get(Kieli.SV));
-    assertEquals(
-        "Aikuisten perusopetuksen oppimäärän alkuvaihe", koulutusDto.kuvaus().get(Kieli.FI));
-    assertEquals(
-        "Introductory phase to basic education for adults  syllabus",
-        koulutusDto.kuvaus().get(Kieli.EN));
-    assertEquals(
-        "Inledningsskedet i den grundläggande utbildningen för vuxna",
-        koulutusDto.kuvaus().get(Kieli.SV));
-    assertEquals(LocalDate.of(2006, 1, 1), koulutusDto.alkuPvm());
-    assertNull(koulutusDto.loppuPvm());
+    assertLocalizedString(
+        koulutusDto.nimi(),
+        "Itä-Suomen yliopisto",
+        "Östra Finlands Universitet",
+        "University of Eastern Finland");
+    assertLocalizedString(
+        koulutusDto.kuvaus(),
+        "Lääketieteen lisensiaatti",
+        "Medicine licentiat",
+        "Licentiate of Medicine");
+    assertEquals(LocalDate.of(2018, 8, 1), koulutusDto.alkuPvm());
+    assertEquals(LocalDate.of(2026, 7, 31), koulutusDto.loppuPvm());
     assertNull(koulutusDto.osaamiset());
+    assertEquals(71, koulutusDto.osasuoritukset().size());
+
+    var koulutusDto2 = koskiData.get(1);
+    assertNull(koulutusDto2.id());
+    assertLocalizedString(
+        koulutusDto2.nimi(),
+        "Ylioppilastutkintolautakunta",
+        "Studentexamensnämnden",
+        "The Matriculation Examination Board");
+    assertLocalizedString(
+        koulutusDto2.kuvaus(), "Ylioppilastutkinto", "Studentexamen", "Matriculation Examination");
+    assertNull(koulutusDto2.alkuPvm());
+    assertNull(koulutusDto2.loppuPvm());
+    assertNull(koulutusDto2.osaamiset());
+    assertTrue(koulutusDto2.osasuoritukset().isEmpty());
+  }
+
+  private static void assertLocalizedString(
+      LocalizedString localizedString,
+      String expectedFinnish,
+      String expectedSwedish,
+      String expectedEnglish) {
+    if (expectedFinnish == null) {
+      assertNull(localizedString.get(Kieli.FI));
+    } else {
+      assertEquals(expectedFinnish, localizedString.get(Kieli.FI));
+    }
+    if (expectedSwedish == null) {
+      assertNull(localizedString.get(Kieli.SV));
+    } else {
+      assertEquals(expectedSwedish, localizedString.get(Kieli.SV));
+    }
+    if (expectedEnglish == null) {
+      assertNull(localizedString.get(Kieli.EN));
+    } else {
+      assertEquals(expectedEnglish, localizedString.get(Kieli.EN));
+    }
   }
 
   @Test
@@ -66,7 +103,6 @@ class KoskiServiceTest {
 
     assertNotNull(result);
     assertEquals(2, result.asMap().size());
-    assertEquals("Avoimen opinnot: Lisätietoja", result.get(Kieli.FI));
-    assertEquals("Öppna studier", result.get(Kieli.SV));
+    assertLocalizedString(result, "Avoimen opinnot: Lisätietoja", "Öppna studier", null);
   }
 }

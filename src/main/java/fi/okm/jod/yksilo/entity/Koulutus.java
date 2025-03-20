@@ -30,10 +30,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -67,6 +69,8 @@ public class Koulutus implements OsaamisenLahde {
   @Setter
   @Enumerated(EnumType.STRING)
   private OsaamisenTunnistusStatus osaamisenTunnistusStatus; // null = No need for tunnistus.
+
+  @Setter @Transient private List<String> osasuoritukset;
 
   protected Koulutus() {
     // For JPA

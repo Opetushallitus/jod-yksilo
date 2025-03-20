@@ -75,6 +75,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                                 null,
                                 Set.of(URI.create("urn:osaaminen1")),
                                 null,
+                                null,
                                 null)
                           })));
 

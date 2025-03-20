@@ -89,6 +89,7 @@ class IntegraatioKoskiControllerTest {
                     null, // loppuPvm is null
                     null, // osaamiset is null
                     true, // osaamisetOdottaaTunnistusta
+                    null,
                     null)));
     doAnswer(invocationOnMock -> null)
         .when(koskiOAuth2Service)
