@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -72,11 +73,36 @@ public class KoskiService {
               }
               var alkoi = getLocalDate(o, "alkamispäivä");
               var loppui = getLocalDate(o, "päättymispäivä");
+              var osasuoritukset =
+                  suoritukset != null
+                      ? getOsasuoritukset(readJsonProperty(suoritukset.get(0), "osasuoritukset"))
+                      : null;
 
               return new KoulutusDto(
-                  null, localizedNimi, localizedKuvaus, alkoi, loppui, null, true, null);
+                  null,
+                  localizedNimi,
+                  localizedKuvaus,
+                  alkoi,
+                  loppui,
+                  null,
+                  true,
+                  null,
+                  osasuoritukset);
             })
         .toList();
+  }
+
+  private static ArrayList<String> getOsasuoritukset(JsonNode osasuoritukset) {
+    var osasuorituksetList = new ArrayList<String>();
+    if (osasuoritukset != null && osasuoritukset.isArray() && !osasuoritukset.isEmpty()) {
+      for (var jsonNode : osasuoritukset) {
+        var nimiNode = readJsonProperty(jsonNode, "koulutusmoduuli", "nimi");
+        if (nimiNode != null && !nimiNode.isEmpty()) {
+          osasuorituksetList.add(getLocalizedString(nimiNode).get(Kieli.FI));
+        }
+      }
+    }
+    return osasuorituksetList;
   }
 
   static LocalizedString getLocalizedKuvaus(
