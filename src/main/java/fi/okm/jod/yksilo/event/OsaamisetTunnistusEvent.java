@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.event;
 
+import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import java.util.List;
 
-public record OsaamisetTunnistusEvent(List<KoulutusKokonaisuus> koulutusKokonaisuusList) {}
+public record OsaamisetTunnistusEvent(
+    JodUser jodUser, List<KoulutusKokonaisuus> koulutusKokonaisuusList) {}

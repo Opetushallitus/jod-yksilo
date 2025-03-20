@@ -50,7 +50,7 @@ public class KoulutusKokonaisuusService {
     for (KoulutusKokonaisuusDto dto : dtos) {
       resultMap.add(add(user, dto, true));
     }
-    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(resultMap));
+    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, resultMap));
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
