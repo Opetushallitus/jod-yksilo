@@ -18,7 +18,6 @@ import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Builder;
@@ -33,5 +32,5 @@ public record KoulutusDto(
     Set<@NotNull URI> osaamiset,
     Boolean osaamisetOdottaaTunnistusta,
     Boolean osaamisetTunnistusEpaonnistui,
-    List<String> osasuoritukset)
+    Set<String> osasuoritukset)
     implements ValidInterval {}
