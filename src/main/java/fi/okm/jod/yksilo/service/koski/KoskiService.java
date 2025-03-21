@@ -14,11 +14,12 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -92,8 +93,8 @@ public class KoskiService {
         .toList();
   }
 
-  private static ArrayList<String> getOsasuoritukset(JsonNode osasuoritukset) {
-    var osasuorituksetList = new ArrayList<String>();
+  private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
+    var osasuorituksetList = new HashSet<String>();
     if (osasuoritukset != null && osasuoritukset.isArray() && !osasuoritukset.isEmpty()) {
       for (var jsonNode : osasuoritukset) {
         var nimiNode = readJsonProperty(jsonNode, "koulutusmoduuli", "nimi");

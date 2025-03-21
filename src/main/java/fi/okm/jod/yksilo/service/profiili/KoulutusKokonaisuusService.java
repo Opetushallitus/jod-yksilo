@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
+import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
@@ -46,12 +47,12 @@ public class KoulutusKokonaisuusService {
   }
 
   public void addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    var koulutusKokonaisuudet = new ArrayList<KoulutusKokonaisuus>();
+    var entities = new ArrayList<Koulutus>();
     for (KoulutusKokonaisuusDto dto : dtos) {
-      koulutusKokonaisuudet.add(add(user, dto, true));
+      var koulutusList = add(user, dto, true).getKoulutukset();
+      entities.addAll(koulutusList);
     }
-    applicationEventPublisher.publishEvent(
-        new OsaamisetTunnistusEvent(user, koulutusKokonaisuudet));
+    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, entities));
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
