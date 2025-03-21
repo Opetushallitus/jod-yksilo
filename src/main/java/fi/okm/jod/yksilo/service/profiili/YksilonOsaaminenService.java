@@ -76,7 +76,7 @@ public class YksilonOsaaminenService {
     }
   }
 
-  List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
+  public List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
     var osaamiset = osaamisetRepository.findByUriIn(ids.stream().map(Object::toString).toList());
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
