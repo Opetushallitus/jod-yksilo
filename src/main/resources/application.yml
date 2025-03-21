@@ -96,8 +96,6 @@ jod:
       endpoint: ""
   keskustelu:
     endpoint:
-  integraatio:
-    koski:
-      hosts:
-        - "testiopintopolku.fi"
-        - "opintopolku.fi"
+  ai:
+    osaamiset:
+      url: http://localhost:8080
