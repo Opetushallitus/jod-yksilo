@@ -46,13 +46,14 @@ public class KoulutusKokonaisuusService {
         .toList();
   }
 
-  public void addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
+  public List<UUID> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
     var entities = new ArrayList<Koulutus>();
     for (KoulutusKokonaisuusDto dto : dtos) {
       var koulutusList = add(user, dto, true).getKoulutukset();
       entities.addAll(koulutusList);
     }
     applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, entities));
+    return entities.stream().map(Koulutus::getId).toList();
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
