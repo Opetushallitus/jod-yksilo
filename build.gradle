@@ -118,6 +118,9 @@ dependencies {
   testImplementation 'org.testcontainers:junit-jupiter'
   testImplementation 'org.junit.jupiter:junit-jupiter'
 
+  testImplementation 'org.testcontainers:mockserver'
+  testImplementation 'org.mock-server:mockserver-client-java:3.10.4'
+
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
   testAnnotationProcessor 'org.projectlombok:lombok'
@@ -161,6 +164,7 @@ checkstyle {
 spotless {
   java {
     target 'src/*/**/*.java'
+    targetExclude '**/AbstractIntegrationTest.java'
     googleJavaFormat()
     licenseHeader '''\
     /*
