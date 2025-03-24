@@ -12,38 +12,25 @@ package fi.okm.jod.yksilo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import fi.okm.jod.yksilo.testutil.TestUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest
 @EnableAutoConfiguration(
     exclude = ObservationAutoConfiguration.class /* excluded due to intermittent test failures */)
-@DirtiesContext
-@Testcontainers
-@AutoConfigureMockMvc
-class ApplicationTest {
-
-  @Autowired private MockMvc mockMvc;
+class ApplicationTest extends AbstractIntegrationTest {
 
   @Container @ServiceConnection
-  static GenericContainer<?> redisContainer =
-      new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
+  private static final GenericContainer<?> redisContainer = TestUtil.createRedisContainer();
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+  private static final PostgreSQLContainer<?> postgreSQLContainer =
+      TestUtil.createPostgresSQLContainer();
 
   @Test
   void contextLoads() throws Exception {

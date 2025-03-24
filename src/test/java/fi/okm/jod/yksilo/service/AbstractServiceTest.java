@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
+import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +23,6 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @DataJpaTest(showSql = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -30,10 +30,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractServiceTest {
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-          .withEnv("LANG", "en_US.UTF-8")
-          .withEnv("LC_ALL", "en_US.UTF-8");
+  static PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
 
   @Autowired protected TestEntityManager entityManager;
   protected TestJodUser user;

@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
+import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,7 +34,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -44,12 +44,10 @@ class ErrorHandlingTest {
   @Autowired ObjectMapper mapper;
 
   @Container @ServiceConnection
-  static GenericContainer<?> redisContainer =
-      new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
+  static GenericContainer<?> redisContainer = TestUtil.createRedisContainer();
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+  static PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
 
   @Test
   void invalidRequestShouldReturnErrorInfo() throws IOException {
