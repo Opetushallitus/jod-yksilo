@@ -15,15 +15,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,5 +180,55 @@ class KoulutusServiceTest extends AbstractServiceTest {
     service.delete(user, kokonaisuusId, id);
     simulateCommit();
     assertNotNull(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
+  }
+
+  @Test
+  void shouldUpdateOsaamisetTunnistusStatus() {
+    var koulutus1 = new Koulutus(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
+    koulutus1.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
+
+    var koulutusKokonaisuus2 =
+        new KoulutusKokonaisuus(
+            entityManager.find(Yksilo.class, user.getId()),
+            new LocalizedString(Map.of(Kieli.FI, "Testi 2")));
+    entityManager.persist(koulutusKokonaisuus2);
+    var koulutus2 = new Koulutus(koulutusKokonaisuus2);
+    koulutus2.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
+
+    entityManager.persist(koulutus1);
+    entityManager.persist(koulutus2);
+    simulateCommit();
+
+    service.updateOsaamisetTunnistusStatus(
+        List.of(koulutus1, koulutus2), OsaamisenTunnistusStatus.DONE, null);
+    simulateCommit();
+
+    var updatedKoulutus1 = entityManager.find(Koulutus.class, koulutus1.getId());
+    var updatedKoulutus2 = entityManager.find(Koulutus.class, koulutus2.getId());
+
+    assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus1.getOsaamisenTunnistusStatus());
+    assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus2.getOsaamisenTunnistusStatus());
+  }
+
+  @Test
+  void shouldAddOsaamisetToKoulutusWhenUpdatingStatus() {
+    var koulutus = new Koulutus(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
+    koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
+    entityManager.persist(koulutus);
+    simulateCommit();
+
+    var osaaminenUris = Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+    var koulutusToOsaamisetMap = Map.of(koulutus.getId(), osaaminenUris);
+
+    service.updateOsaamisetTunnistusStatus(
+        List.of(koulutus), OsaamisenTunnistusStatus.DONE, koulutusToOsaamisetMap);
+
+    var updatedKoulutus = entityManager.find(Koulutus.class, koulutus.getId());
+    assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus.getOsaamisenTunnistusStatus());
+    assertTrue(
+        updatedKoulutus.getOsaamiset().stream()
+            .map(osaaminen -> URI.create(osaaminen.getOsaaminen().getUri()))
+            .collect(Collectors.toSet())
+            .containsAll(osaaminenUris));
   }
 }
