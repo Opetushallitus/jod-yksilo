@@ -96,6 +96,6 @@ jod:
       endpoint: ""
   keskustelu:
     endpoint:
-  ai:
+  ai-tunnistus:
     osaamiset:
-      url: http://localhost:8080
+      url: http://localhost:9080/yksilo/api/tunnistus/osaamiset

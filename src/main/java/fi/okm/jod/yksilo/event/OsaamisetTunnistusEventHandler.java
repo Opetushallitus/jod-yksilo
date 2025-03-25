@@ -12,11 +12,8 @@ package fi.okm.jod.yksilo.event;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
-import fi.okm.jod.yksilo.repository.KoulutusRepository;
-import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
-import jakarta.transaction.Transactional;
+import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import java.net.URI;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,11 +23,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.lang.Nullable;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -39,28 +34,20 @@ import org.springframework.web.client.RestClient;
 @Component
 public class OsaamisetTunnistusEventHandler {
 
-  private static final String IDENTIFY_OSAAMISET_API_URI =
-      "/yksilo/api/tunnistus/osaamiset"; // TODO: OPHJOD-1403
-
-  private final KoulutusRepository koulutusRepository;
+  private final KoulutusService koulutusService;
   private final RestClient restClient;
-  private final YksilonOsaaminenService osaaminenService;
 
   public OsaamisetTunnistusEventHandler(
-      KoulutusRepository koulutusRepository,
-      @Value("${jod.ai.osaamiset.url}") String aiOsaamisetTunnistusUrl,
-      RestClient.Builder restClientBuilder,
-      YksilonOsaaminenService osaaminenService) {
-    this.koulutusRepository = koulutusRepository;
-    this.osaaminenService = osaaminenService;
-    var requestFactory =
-        ClientHttpRequestFactoryBuilder.jdk()
-            .build(
-                ClientHttpRequestFactorySettings.defaults()
-                    .withConnectTimeout(Duration.ofSeconds(10))
-                    .withReadTimeout(Duration.ofSeconds(30)));
+      KoulutusService koulutusService,
+      @Value("${jod.ai-tunnistus.osaamiset.url}") String aiOsaamisetTunnistusUrl,
+      ClientHttpRequestFactory clientHttpRequestFactory,
+      RestClient.Builder restClientBuilder) {
+    this.koulutusService = koulutusService;
     this.restClient =
-        restClientBuilder.baseUrl(aiOsaamisetTunnistusUrl).requestFactory(requestFactory).build();
+        restClientBuilder
+            .baseUrl(aiOsaamisetTunnistusUrl)
+            .requestFactory(clientHttpRequestFactory)
+            .build();
   }
 
   @EventListener
@@ -71,8 +58,8 @@ public class OsaamisetTunnistusEventHandler {
     try {
       List<OsaamisetTunnistusResponse> osaamisetTunnistusResponses =
           callIdentifyOsaamisetApi(koulutukset);
-      updateOsaamisetTunnistusStatus(
-          koulutukset, OsaamisenTunnistusStatus.DONE, osaamisetTunnistusResponses);
+      koulutusService.updateOsaamisetTunnistusStatus(
+          koulutukset, OsaamisenTunnistusStatus.DONE, convertResponse(osaamisetTunnistusResponses));
 
     } catch (Exception e) {
       if (e instanceof IdentifyOsaamisetException) {
@@ -80,7 +67,8 @@ public class OsaamisetTunnistusEventHandler {
       } else {
         log.error("Error processing OsaamisetTunnistusEvent: {}", e.getMessage(), e);
       }
-      updateOsaamisetTunnistusStatus(koulutukset, OsaamisenTunnistusStatus.FAIL, null);
+      koulutusService.updateOsaamisetTunnistusStatus(
+          koulutukset, OsaamisenTunnistusStatus.FAIL, null);
     }
   }
 
@@ -98,7 +86,6 @@ public class OsaamisetTunnistusEventHandler {
 
       return restClient
           .post()
-          .uri(IDENTIFY_OSAAMISET_API_URI)
           .body(osaamisetTunnistusRequests)
           .retrieve()
           .body(new ParameterizedTypeReference<>() {});
@@ -108,31 +95,11 @@ public class OsaamisetTunnistusEventHandler {
     }
   }
 
-  @Transactional(Transactional.TxType.REQUIRED)
-  protected void updateOsaamisetTunnistusStatus(
-      List<Koulutus> koulutukset,
-      OsaamisenTunnistusStatus newStatus,
-      @Nullable List<OsaamisetTunnistusResponse> apiResponse) {
-    List<Koulutus> latestKoulutukset =
-        koulutusRepository.findAllById(koulutukset.stream().map(Koulutus::getId).toList());
-    latestKoulutukset.forEach(koulutus -> koulutus.setOsaamisenTunnistusStatus(newStatus));
-
-    if (apiResponse != null) {
-      Map<UUID, Set<URI>> koulutusIdToOsaamisetMap =
-          apiResponse.stream()
-              .collect(Collectors.toMap(response -> response.id, response -> response.osaamiset));
-      if (!koulutusIdToOsaamisetMap.isEmpty()) {
-        latestKoulutukset.forEach(
-            koulutus -> {
-              Set<URI> osaamisetUris = koulutusIdToOsaamisetMap.get(koulutus.getId());
-              if (osaamisetUris != null && !osaamisetUris.isEmpty()) {
-                osaaminenService.add(koulutus, osaamisetUris);
-              }
-            });
-      }
-    }
-
-    koulutusRepository.saveAllAndFlush(latestKoulutukset);
+  private Map<UUID, Set<URI>> convertResponse(List<OsaamisetTunnistusResponse> response) {
+    return response != null
+        ? response.stream()
+            .collect(Collectors.toMap(response1 -> response1.id, response1 -> response1.osaamiset))
+        : null;
   }
 
   @Getter

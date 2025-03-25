@@ -19,7 +19,10 @@ import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -117,5 +120,26 @@ public class KoulutusService {
 
   static NotFoundException notFound() {
     return new NotFoundException("Not found");
+  }
+
+  @Transactional
+  public void updateOsaamisetTunnistusStatus(
+      List<Koulutus> koulutusList,
+      OsaamisenTunnistusStatus newStatus,
+      Map<UUID, Set<URI>> koulutusIdToOsaamisetMap) {
+    var latestKoulutukset =
+        koulutukset.findAllById(koulutusList.stream().map(Koulutus::getId).toList());
+    latestKoulutukset.forEach(koulutus -> koulutus.setOsaamisenTunnistusStatus(newStatus));
+
+    if (koulutusIdToOsaamisetMap != null && !koulutusIdToOsaamisetMap.isEmpty()) {
+      latestKoulutukset.forEach(
+          koulutus -> {
+            Set<URI> osaamisetUris = koulutusIdToOsaamisetMap.get(koulutus.getId());
+            if (osaamisetUris != null && !osaamisetUris.isEmpty()) {
+              osaamiset.add(koulutus, osaamisetUris);
+            }
+          });
+    }
+    koulutukset.saveAllAndFlush(latestKoulutukset);
   }
 }
