@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -52,5 +53,9 @@ public class TestUtil {
 
   public static GenericContainer<?> createRedisContainer() {
     return new GenericContainer<>(DockerImageName.parse(REDIS_VERSION)).withExposedPorts(6379);
+  }
+
+  public static MockServerContainer createMockServerContainer() {
+    return new MockServerContainer(DockerImageName.parse("mockserver/mockserver:latest"));
   }
 }

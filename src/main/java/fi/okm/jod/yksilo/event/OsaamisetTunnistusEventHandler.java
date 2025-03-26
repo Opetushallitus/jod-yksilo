@@ -65,7 +65,7 @@ public class OsaamisetTunnistusEventHandler {
       if (e instanceof IdentifyOsaamisetException) {
         log.error(e.getMessage(), e);
       } else {
-        log.error("Error processing OsaamisetTunnistusEvent: {}", e.getMessage(), e);
+        log.error("Fail to processing OsaamisetTunnistusEvent.", e);
       }
       koulutusService.updateOsaamisetTunnistusStatus(
           koulutukset, OsaamisenTunnistusStatus.FAIL, null);
@@ -88,7 +88,8 @@ public class OsaamisetTunnistusEventHandler {
           .post()
           .body(osaamisetTunnistusRequests)
           .retrieve()
-          .body(new ParameterizedTypeReference<>() {});
+          .toEntity(new ParameterizedTypeReference<List<OsaamisetTunnistusResponse>>() {})
+          .getBody();
 
     } catch (Exception e) {
       throw new IdentifyOsaamisetException("Error calling OsaamisetTunnistus AI API.", e);

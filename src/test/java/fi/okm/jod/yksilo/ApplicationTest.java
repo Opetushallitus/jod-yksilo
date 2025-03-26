@@ -14,16 +14,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
+@AutoConfigureMockMvc
 @EnableAutoConfiguration(
     exclude = ObservationAutoConfiguration.class /* excluded due to intermittent test failures */)
-class ApplicationTest extends AbstractIntegrationTest {
+class ApplicationTest implements AbstractIntegrationTest {
+
+  @Autowired protected MockMvc mockMvc;
 
   @Container @ServiceConnection
   private static final GenericContainer<?> redisContainer = TestUtil.createRedisContainer();

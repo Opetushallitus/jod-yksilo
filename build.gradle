@@ -119,7 +119,7 @@ dependencies {
   testImplementation 'org.junit.jupiter:junit-jupiter'
 
   testImplementation 'org.testcontainers:mockserver'
-  testImplementation 'org.mock-server:mockserver-client-java:3.10.4'
+  testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
 
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
