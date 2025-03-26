@@ -42,6 +42,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
@@ -84,16 +85,24 @@ public final class Mapper {
             entity.getKuvaus(),
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
-            entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
-                .collect(Collectors.toUnmodifiableSet()),
-            entity.getOsaamisenTunnistusStatus() == null
-                ? null
-                : entity.getOsaamisenTunnistusStatus() == OsaamisenTunnistusStatus.WAIT,
-            entity.getOsaamisenTunnistusStatus() == null
-                ? null
-                : entity.getOsaamisenTunnistusStatus() == OsaamisenTunnistusStatus.FAIL,
+            extractOsaamisetUris(entity),
+            isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
+            isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
             entity.getOsasuoritukset());
+  }
+
+  private static Set<URI> extractOsaamisetUris(Koulutus entity) {
+    return entity.getOsaamiset().stream()
+        .map(o -> URI.create(o.getOsaaminen().getUri()))
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
+  }
+
+  private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.FAIL;
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {

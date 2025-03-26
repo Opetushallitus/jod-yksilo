@@ -178,7 +178,7 @@ class OsaamisetTunnistusEventHandlerTestIT implements AbstractIntegrationTest {
                     new OsaamisetTunnistusEventHandler.OsaamisetTunnistusResponse(
                         entry.getKey(),
                         entry.getValue().stream().map(URI::create).collect(Collectors.toSet())))
-            .collect(Collectors.toList());
+            .toList();
 
     mockServerClient
         .when(HttpRequest.request().withMethod(HttpMethod.POST.name()).withPath(URL_PATH))
