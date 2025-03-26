@@ -76,30 +76,24 @@ public final class Mapper {
   }
 
   public static KoulutusDto mapKoulutus(Koulutus entity) {
-    if (entity == null) {
-      return null;
-    }
-    var builder =
-        KoulutusDto.builder()
-            .id(entity.getId())
-            .nimi(entity.getNimi())
-            .kuvaus(entity.getKuvaus())
-            .alkuPvm(entity.getAlkuPvm())
-            .loppuPvm(entity.getLoppuPvm())
-            .osaamiset(
-                entity.getOsaamiset().stream()
-                    .map(o -> URI.create(o.getOsaaminen().getUri()))
-                    .collect(Collectors.toUnmodifiableSet()));
-
-    var osaamisenTunnistusStatus = entity.getOsaamisenTunnistusStatus();
-    if (osaamisenTunnistusStatus != null) {
-      builder.osaamisetOdottaaTunnistusta(
-          osaamisenTunnistusStatus == OsaamisenTunnistusStatus.WAIT);
-      if (osaamisenTunnistusStatus == OsaamisenTunnistusStatus.FAIL) {
-        builder.osaamisetTunnistusEpaonnistui(true);
-      }
-    }
-    return builder.build();
+    return entity == null
+        ? null
+        : new KoulutusDto(
+            entity.getId(),
+            entity.getNimi(),
+            entity.getKuvaus(),
+            entity.getAlkuPvm(),
+            entity.getLoppuPvm(),
+            entity.getOsaamiset().stream()
+                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .collect(Collectors.toUnmodifiableSet()),
+            entity.getOsaamisenTunnistusStatus() == null
+                ? null
+                : entity.getOsaamisenTunnistusStatus() == OsaamisenTunnistusStatus.WAIT,
+            entity.getOsaamisenTunnistusStatus() == null
+                ? null
+                : entity.getOsaamisenTunnistusStatus() == OsaamisenTunnistusStatus.FAIL,
+            entity.getOsasuoritukset());
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {
