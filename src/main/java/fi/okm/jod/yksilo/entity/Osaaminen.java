@@ -20,6 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
+import java.net.URI;
 import java.util.Map;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -34,7 +35,7 @@ public class Osaaminen {
   private Long id;
 
   @Column(unique = true, nullable = false)
-  private String uri;
+  private URI uri;
 
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)

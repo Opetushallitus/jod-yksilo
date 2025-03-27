@@ -37,13 +37,13 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
   Page<Osaaminen> findAll(Pageable page);
 
-  List<Osaaminen> findByUriIn(Collection<String> uri);
+  List<Osaaminen> findByUriIn(Collection<URI> uri);
 
   @Transactional(readOnly = true)
   default SequencedMap<URI, OsaaminenDto> loadAll() {
     final var map =
         findAll(Sort.by("id"))
-            .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
+            .map(it -> new OsaaminenDto(it.getUri(), it.getNimi(), it.getKuvaus()))
             .collect(
                 Collectors.toMap(
                     OsaaminenDto::uri,
@@ -63,7 +63,7 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
     if (previous == null || previous.version() != version) {
       final var map =
           findAll(Sort.by(Osaaminen_.URI, Osaaminen_.ID))
-              .map(it -> new OsaaminenDto(URI.create(it.getUri()), it.getNimi(), it.getKuvaus()))
+              .map(it -> new OsaaminenDto(it.getUri(), it.getNimi(), it.getKuvaus()))
               .collect(
                   Collectors.toMap(
                       OsaaminenDto::uri,

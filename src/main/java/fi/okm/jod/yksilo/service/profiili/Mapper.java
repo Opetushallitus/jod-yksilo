@@ -37,7 +37,6 @@ import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
-import java.net.URI;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -59,7 +58,7 @@ public final class Mapper {
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .map(o -> o.getOsaaminen().getUri())
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
@@ -84,7 +83,7 @@ public final class Mapper {
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .map(o -> o.getOsaaminen().getUri())
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
@@ -107,7 +106,7 @@ public final class Mapper {
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
+                .map(o -> o.getOsaaminen().getUri())
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
@@ -122,7 +121,7 @@ public final class Mapper {
 
   public static OsaaminenDto mapOsaaminen(Osaaminen entity) {
     requireNonNull(entity);
-    return new OsaaminenDto(URI.create(entity.getUri()), entity.getNimi(), entity.getKuvaus());
+    return new OsaaminenDto(entity.getUri(), entity.getNimi(), entity.getKuvaus());
   }
 
   public static YksilonOsaaminenDto mapYksilonOsaaminen(YksilonOsaaminen entity) {
@@ -187,10 +186,10 @@ public final class Mapper {
                 entity.getPaamaara().getId(), entity.getPaamaara().getTavoite()),
             entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()),
             entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getUri()))
+                .map(Osaaminen::getUri)
                 .collect(Collectors.toUnmodifiableSet()),
             entity.getIgnoredOsaamiset().stream()
-                .map(o -> URI.create(o.getUri()))
+                .map(Osaaminen::getUri)
                 .collect(Collectors.toUnmodifiableSet()));
   }
 
@@ -206,7 +205,7 @@ public final class Mapper {
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
             entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getUri()))
+                .map(Osaaminen::getUri)
                 .collect(Collectors.toUnmodifiableSet()),
             entity.isValmis());
   }

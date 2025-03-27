@@ -118,9 +118,8 @@ public class PolunSuunnitelmaService {
 
   private List<Osaaminen> getOsaamiset(
       PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
-    var ids =
-        dto.osaamiset().stream().map(Object::toString).collect(Collectors.toUnmodifiableSet());
-    var osaamiset = osaamisetRepository.findByUriIn(ids);
+    var ids = dto.osaamiset();
+    var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
     var vaiheOsaamiset =
         suunnitelma.getVaiheet().stream()
             .flatMap(v -> v.getOsaamiset().stream())
@@ -141,10 +140,7 @@ public class PolunSuunnitelmaService {
 
   private List<Osaaminen> getIgnoredOsaamiset(
       PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
-    var ids =
-        dto.ignoredOsaamiset().stream()
-            .map(Object::toString)
-            .collect(Collectors.toUnmodifiableSet());
+    var ids = dto.ignoredOsaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
 
     if (osaamiset.size() != ids.size()) {
