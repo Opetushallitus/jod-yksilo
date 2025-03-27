@@ -24,6 +24,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
@@ -47,7 +48,7 @@ public class Tyomahdollisuus {
   @MapKeyColumn(name = "tyyppi")
   private Map<TyomahdollisuusJakaumaTyyppi, TyomahdollisuusJakauma> jakaumat;
 
-  @Column private String ammattiryhma;
+  @Column private URI ammattiryhma;
 
   @Enumerated(EnumType.STRING)
   @Column

@@ -37,6 +37,7 @@ import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -136,12 +137,13 @@ public class Paamaara {
     return tyomahdollisuus != null ? tyomahdollisuus.getId() : koulutusmahdollisuus.getId();
   }
 
-  public Set<String> getOsaamiset() {
+  public Set<URI> getOsaamiset() {
     if (getMahdollisuusTyyppi() == MahdollisuusTyyppi.TYOMAHDOLLISUUS) {
       var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
       if (jakauma != null && jakauma.getArvot() != null) {
         return jakauma.getArvot().stream()
             .map(Jakauma.Arvo::arvo)
+            .map(URI::create)
             .collect(Collectors.toUnmodifiableSet());
       }
     } else {
@@ -154,6 +156,7 @@ public class Paamaara {
             .getArvot()
             .stream()
             .map(Jakauma.Arvo::arvo)
+            .map(URI::create)
             .collect(Collectors.toUnmodifiableSet());
       }
     }

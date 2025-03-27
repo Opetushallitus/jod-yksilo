@@ -43,9 +43,8 @@ public class KiinnostusService {
 
   public void updateOsaamiset(JodUser user, Set<URI> kiinnostukset) {
     var yksilo = getYksilo(user);
-    var osaamisetEntities =
-        osaamiset.findByUriIn(kiinnostukset.stream().map(URI::toString).toList());
-    var ammatitEntities = ammatit.findByUriIn(kiinnostukset.stream().map(URI::toString).toList());
+    var osaamisetEntities = osaamiset.findByUriIn(kiinnostukset);
+    var ammatitEntities = ammatit.findByUriIn(kiinnostukset);
     if ((osaamisetEntities.size() + ammatitEntities.size()) != kiinnostukset.size()) {
       throw new ServiceValidationException("Invalid kiinnostus");
     }
