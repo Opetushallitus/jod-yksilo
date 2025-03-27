@@ -164,7 +164,6 @@ checkstyle {
 spotless {
   java {
     target 'src/*/**/*.java'
-    targetExclude '**/AbstractIntegrationTest.java'
     googleJavaFormat()
     licenseHeader '''\
     /*

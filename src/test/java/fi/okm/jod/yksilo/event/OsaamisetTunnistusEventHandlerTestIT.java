@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.okm.jod.yksilo.AbstractIntegrationTest;
+import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.Koulutus;
@@ -57,7 +57,7 @@ import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
-class OsaamisetTunnistusEventHandlerTestIT implements AbstractIntegrationTest {
+class OsaamisetTunnistusEventHandlerTestIT implements IntegrationTest {
 
   @Container @ServiceConnection
   private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =

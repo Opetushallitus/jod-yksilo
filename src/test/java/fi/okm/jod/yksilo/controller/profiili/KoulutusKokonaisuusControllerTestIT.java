@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fi.okm.jod.yksilo.AbstractIntegrationTest;
+import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
@@ -45,13 +45,13 @@ import org.testcontainers.junit.jupiter.Container;
 @SqlConfig(separator = ";;;")
 @Sql(scripts = {"/data/mock-tunnistus.sql", "/schema.sql"})
 @AutoConfigureMockMvc
-class KoulutusKokonaisuusControllerTestIT implements AbstractIntegrationTest {
+class KoulutusKokonaisuusControllerTestIT implements IntegrationTest {
 
   @Container @ServiceConnection
-  private static final GenericContainer<?> redisContainer = TestUtil.createRedisContainer();
+  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
 
   @Container @ServiceConnection
-  private static final PostgreSQLContainer<?> postgreSQLContainer =
+  private static final PostgreSQLContainer<?> POSTGRES_SQL_CONTAINER =
       TestUtil.createPostgresSQLContainer();
 
   @MockitoBean private OsaamisetTunnistusEventHandler eventHandler;

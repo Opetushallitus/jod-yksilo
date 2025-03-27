@@ -27,15 +27,15 @@ import org.testcontainers.junit.jupiter.Container;
 @AutoConfigureMockMvc
 @EnableAutoConfiguration(
     exclude = ObservationAutoConfiguration.class /* excluded due to intermittent test failures */)
-class ApplicationTest implements AbstractIntegrationTest {
+class ApplicationTest implements IntegrationTest {
 
   @Autowired protected MockMvc mockMvc;
 
   @Container @ServiceConnection
-  private static final GenericContainer<?> redisContainer = TestUtil.createRedisContainer();
+  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
 
   @Container @ServiceConnection
-  private static final PostgreSQLContainer<?> postgreSQLContainer =
+  private static final PostgreSQLContainer<?> POSTGRES_SQL_CONTAINER =
       TestUtil.createPostgresSQLContainer();
 
   @Test

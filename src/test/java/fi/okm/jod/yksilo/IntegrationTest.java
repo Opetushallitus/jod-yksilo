@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) 2025 The Finnish Ministry of Education and Culture, The Finnish
+ * The Ministry of Economic Affairs and Employment, The Finnish National Agency of
+ * Education (Opetushallitus) and The Finnish Development and Administration centre
+ * for ELY Centres and TE Offices (KEHA).
+ *
+ * Licensed under the EUPL-1.2-or-later.
+ */
+
+package fi.okm.jod.yksilo;
+
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+/**
+ * Add the following code to the implemented class as we want integration test classes to run own
+ * test container instance not to share with another processes as it will cause issues when running
+ * in parallel:
+ *
+ * {@snippet :
+ * @Container @ServiceConnection
+ * private static final PostgreSQLContainer<?> POSTGRES_CONTAINER = TestUtil.createPostgresSQLContainer();
+ *
+ * @Container @ServiceConnection
+ * private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
+ * }
+ */
+@Testcontainers
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public interface IntegrationTest {}
