@@ -23,11 +23,11 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -77,7 +77,7 @@ public class YksilonOsaaminenService {
   }
 
   List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
-    var osaamiset = osaamisetRepository.findByUriIn(ids.stream().map(Object::toString).toList());
+    var osaamiset = osaamisetRepository.findByUriIn(ids);
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
@@ -87,25 +87,25 @@ public class YksilonOsaaminenService {
     return entities;
   }
 
-  void update(OsaamisenLahde lahde, Set<URI> ids) {
+  void update(OsaamisenLahde lahde, Set<URI> originalIds) {
+    var ids = new HashSet<>(originalIds);
 
     var deleted = new ArrayList<YksilonOsaaminen>();
-    var refs = ids.stream().map(Object::toString).collect(Collectors.toSet());
 
     for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {
       var o = i.next();
-      final String uri = o.getOsaaminen().getUri();
-      if (!refs.contains(uri)) {
+      final URI uri = o.getOsaaminen().getUri();
+      if (!ids.contains(uri)) {
         i.remove();
         deleted.add(o);
       } else {
-        refs.remove(uri);
+        ids.remove(uri);
       }
     }
     repository.deleteAllInBatch(deleted);
 
-    var osaamiset = osaamisetRepository.findByUriIn(refs);
-    if (osaamiset.size() != refs.size()) {
+    var osaamiset = osaamisetRepository.findByUriIn(ids);
+    if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
 

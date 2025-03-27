@@ -21,7 +21,6 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -103,23 +102,18 @@ public class PolunVaiheService {
   }
 
   private List<Osaaminen> getOsaamiset(PolunVaihe vaihe, PolunVaiheDto dto) {
-    var ids =
-        dto.osaamiset().stream().map(Object::toString).collect(Collectors.toUnmodifiableSet());
+    var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
     var suunnitelma = vaihe.getPolunSuunnitelma();
     var paamaaraOsaamiset = suunnitelma.getPaamaara().getOsaamiset();
     var suunnitelmaOsaamiset =
-        suunnitelma.getOsaamiset().stream()
-            .map(Osaaminen::getUri)
-            .map(Objects::toString)
-            .collect(Collectors.toSet());
+        suunnitelma.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet());
     var vaiheet = suunnitelma.getVaiheet();
     var vaiheetOsaamiset =
         vaiheet.stream()
             .filter(v -> v.getId() != vaihe.getId())
             .flatMap(v -> v.getOsaamiset().stream())
             .map(Osaaminen::getUri)
-            .map(Objects::toString)
             .collect(Collectors.toSet());
 
     if (osaamiset.size() != ids.size()) {
