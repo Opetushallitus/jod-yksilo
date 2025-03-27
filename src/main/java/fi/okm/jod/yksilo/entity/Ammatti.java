@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.entity;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -20,6 +21,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
+import java.net.URI;
 import java.util.Map;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -34,7 +36,8 @@ public class Ammatti {
   private Long id;
 
   @Column(unique = true, nullable = false)
-  private String uri;
+  @Convert(converter = UriConverter.class)
+  private URI uri;
 
   @Column(nullable = false)
   private String koodi;

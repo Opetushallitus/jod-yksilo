@@ -45,7 +45,7 @@ public class KiinnostusService {
     var yksilo = getYksilo(user);
     var osaamisetEntities =
         osaamiset.findByUriIn(kiinnostukset.stream().map(URI::toString).toList());
-    var ammatitEntities = ammatit.findByUriIn(kiinnostukset.stream().map(URI::toString).toList());
+    var ammatitEntities = ammatit.findByUriIn(kiinnostukset);
     if ((osaamisetEntities.size() + ammatitEntities.size()) != kiinnostukset.size()) {
       throw new ServiceValidationException("Invalid kiinnostus");
     }
