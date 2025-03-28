@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.suomifi;
 
+import java.net.URI;
 import lombok.Getter;
 
 // https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/590ad07b14bbb10001966f50
@@ -46,6 +47,10 @@ public enum Attribute {
   private final String uri;
 
   Attribute(String uri) {
+    var parsedUri = URI.create(uri);
+    if (parsedUri.getScheme() == null) {
+      throw new IllegalArgumentException("URI must have a scheme: " + uri);
+    }
     this.uri = uri;
   }
 }
