@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.event;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import java.net.URI;
 import java.util.List;
@@ -19,36 +20,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Component
 public class OsaamisetTunnistusEventHandler {
 
   private final KoulutusService koulutusService;
-  private final RestClient restClient;
+  private final String aiTunnistusOsaamisetEndpoint;
+  private final InferenceService<List<SageMakerRequestRow>, List<SageMakerResponseRow>>
+      inferenceService;
 
   public OsaamisetTunnistusEventHandler(
       KoulutusService koulutusService,
-      @Value("${jod.ai-tunnistus.osaamiset.url}") String aiOsaamisetTunnistusUrl,
-      ClientHttpRequestFactory clientHttpRequestFactory,
-      RestClient.Builder restClientBuilder) {
+      @Value("${jod.ai-tunnistus.osaamiset.endpoint}") String aiTunnistusOsaamisetEndpoint,
+      InferenceService<List<SageMakerRequestRow>, List<SageMakerResponseRow>> inferenceService) {
     this.koulutusService = koulutusService;
-    this.restClient =
-        restClientBuilder
-            .baseUrl(aiOsaamisetTunnistusUrl)
-            .requestFactory(clientHttpRequestFactory)
-            .build();
+    this.aiTunnistusOsaamisetEndpoint = aiTunnistusOsaamisetEndpoint;
+    this.inferenceService = inferenceService;
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -57,7 +52,7 @@ public class OsaamisetTunnistusEventHandler {
     log.debug("Osaamiset tunnistus event: {}", event);
     var koulutukset = event.koulutukset();
     try {
-      List<OsaamisetTunnistusResponse> osaamisetTunnistusResponses =
+      List<SageMakerResponseRow> osaamisetTunnistusResponses =
           callIdentifyOsaamisetApi(koulutukset);
       koulutusService.updateOsaamisetTunnistusStatus(
           koulutukset, OsaamisenTunnistusStatus.DONE, convertResponse(osaamisetTunnistusResponses));
@@ -73,51 +68,38 @@ public class OsaamisetTunnistusEventHandler {
     }
   }
 
-  private List<OsaamisetTunnistusResponse> callIdentifyOsaamisetApi(List<Koulutus> koulutukset) {
+  private List<SageMakerResponseRow> callIdentifyOsaamisetApi(List<Koulutus> koulutukset) {
     try {
-      List<OsaamisetTunnistusRequest> osaamisetTunnistusRequests =
+      List<SageMakerRequestRow> osaamisetTunnistusRequests =
           koulutukset.stream()
               .map(
                   koulutus ->
-                      new OsaamisetTunnistusRequest(
+                      new SageMakerRequestRow(
                           koulutus.getId(),
                           koulutus.getNimi().get(Kieli.FI),
                           koulutus.getOsasuoritukset()))
               .toList();
 
-      return restClient
-          .post()
-          .body(osaamisetTunnistusRequests)
-          .retrieve()
-          .toEntity(new ParameterizedTypeReference<List<OsaamisetTunnistusResponse>>() {})
-          .getBody();
+      return inferenceService.infer(
+          aiTunnistusOsaamisetEndpoint,
+          osaamisetTunnistusRequests,
+          new ParameterizedTypeReference<>() {});
 
     } catch (Exception e) {
       throw new IdentifyOsaamisetException("Error calling OsaamisetTunnistus AI API.", e);
     }
   }
 
-  private Map<UUID, Set<URI>> convertResponse(List<OsaamisetTunnistusResponse> response) {
+  private Map<UUID, Set<URI>> convertResponse(List<SageMakerResponseRow> response) {
     return response != null
         ? response.stream()
             .collect(Collectors.toMap(response1 -> response1.id, response1 -> response1.osaamiset))
         : null;
   }
 
-  @Getter
-  @AllArgsConstructor
-  public static class OsaamisetTunnistusRequest {
-    private UUID id;
-    private String nimi;
-    private Set<String> osaamiset;
-  }
+  public record SageMakerRequestRow(UUID id, String nimi, Set<String> osaamiset) {}
 
-  @Getter
-  @AllArgsConstructor
-  public static class OsaamisetTunnistusResponse {
-    private UUID id;
-    private Set<URI> osaamiset;
-  }
+  public record SageMakerResponseRow(UUID id, Set<URI> osaamiset) {}
 
   private static class IdentifyOsaamisetException extends RuntimeException {
     public IdentifyOsaamisetException(String message, Exception exception) {

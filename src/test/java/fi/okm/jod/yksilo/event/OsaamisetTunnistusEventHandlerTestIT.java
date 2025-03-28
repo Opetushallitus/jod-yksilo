@@ -87,7 +87,7 @@ class OsaamisetTunnistusEventHandlerTestIT implements IntegrationTest {
   @DynamicPropertySource
   static void registerProperties(DynamicPropertyRegistry registry) {
     registry.add(
-        "jod.ai-tunnistus.osaamiset.url",
+        "jod.ai-tunnistus.osaamiset.endpoint",
         () ->
             "http://"
                 + MOCK_SERVER_CONTAINER.getHost()
@@ -171,11 +171,11 @@ class OsaamisetTunnistusEventHandlerTestIT implements IntegrationTest {
             koulutukset.get(0).getId(), Set.of(osaaminen1, osaaminen2),
             koulutukset.get(1).getId(), Set.of(osaaminen3));
 
-    List<OsaamisetTunnistusEventHandler.OsaamisetTunnistusResponse> apiResponseList =
+    List<OsaamisetTunnistusEventHandler.SageMakerResponseRow> apiResponseList =
         koulutusToOsaamisetMap.entrySet().stream()
             .map(
                 entry ->
-                    new OsaamisetTunnistusEventHandler.OsaamisetTunnistusResponse(
+                    new OsaamisetTunnistusEventHandler.SageMakerResponseRow(
                         entry.getKey(),
                         entry.getValue().stream().map(URI::create).collect(Collectors.toSet())))
             .toList();

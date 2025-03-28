@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
@@ -43,19 +44,19 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
   }
 
   @Override
-  public R infer(String endpoint, T payload, Class<R> responseType) {
+  public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
     return inferInternal(endpoint, null, payload, responseType).data();
   }
 
   @Override
   public InferenceSession<R> infer(
-      String endpoint, UUID sessionId, T payload, Class<R> responseType) {
+      String endpoint, UUID sessionId, T payload, ParameterizedTypeReference<R> responseType) {
     return inferInternal(
         endpoint, sessionId != null ? sessionId.toString() : "NEW_SESSION", payload, responseType);
   }
 
   private InferenceSession<R> inferInternal(
-      String endpoint, String sessionId, T payload, Class<R> responseType) {
+      String endpoint, String sessionId, T payload, ParameterizedTypeReference<R> responseType) {
     try {
       var request =
           InvokeEndpointRequest.builder()
@@ -67,14 +68,15 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
               .build();
 
       var response = sageMakerClient.invokeEndpoint(request);
+      var javaType = objectMapper.getTypeFactory().constructType(responseType.getType());
       if (sessionId != null && sessionId.equals("NEW_SESSION")) {
         return new InferenceSession<>(
-            objectMapper.readValue(response.body().asInputStream(), responseType),
+            objectMapper.readValue(response.body().asInputStream(), javaType),
             UUID.fromString(
                 response.newSessionId().substring(0, response.newSessionId().indexOf(";"))));
       } else {
         return new InferenceSession<>(
-            objectMapper.readValue(response.body().asInputStream(), responseType),
+            objectMapper.readValue(response.body().asInputStream(), javaType),
             (sessionId != null ? UUID.fromString(sessionId) : null));
       }
     } catch (IOException e) {

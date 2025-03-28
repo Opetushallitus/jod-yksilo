@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -122,7 +123,7 @@ class MahdollisuudetController {
             new Data(
                 ehdotus.osaamisPainotus, osaamiset, ehdotus.kiinnostusPainotus, kiinnostukset));
 
-    return inferenceService.infer(endpoint, request, Response.class).stream()
+    return inferenceService.infer(endpoint, request, new ParameterizedTypeReference<>() {}).stream()
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
   }
 
