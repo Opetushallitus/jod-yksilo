@@ -20,7 +20,13 @@ public class UriConverter implements AttributeConverter<URI, String> {
   @Override
   public String convertToDatabaseColumn(URI attribute) {
     // Serialization: URI object to database string.
-    return attribute != null ? attribute.toString() : null;
+    if (attribute == null) {
+      return null;
+    }
+    if (attribute.getScheme() == null) {
+      throw new IllegalArgumentException("URI scheme is null from: " + attribute);
+    }
+    return attribute.toString();
   }
 
   @Override
