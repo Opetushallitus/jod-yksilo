@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public record TyomahdollisuusFullDto(
     LocalizedString kuvaus,
     LocalizedString tehtavat,
     LocalizedString yleisetVaatimukset,
-    String ammattiryhma,
+    URI ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     @Schema(
             propertyNames = TyomahdollisuusJakaumaTyyppi.class,

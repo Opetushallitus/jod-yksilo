@@ -37,7 +37,7 @@ public interface AmmattiRepository extends Repository<Ammatti, Long> {
 
   Stream<Ammatti> findAll(Sort sort);
 
-  List<Ammatti> findByUriIn(Collection<String> uri);
+  List<Ammatti> findByUriIn(Collection<URI> uri);
 
   @Transactional(readOnly = true)
   default Versioned<Map<URI, AmmattiDto>> refreshAll(
@@ -46,10 +46,7 @@ public interface AmmattiRepository extends Repository<Ammatti, Long> {
     if (previous == null || previous.version() != version) {
       final var map =
           findAll(Sort.by("koodi", "id"))
-              .map(
-                  it ->
-                      new AmmattiDto(
-                          URI.create(it.getUri()), it.getKoodi(), it.getNimi(), it.getKuvaus()))
+              .map(it -> new AmmattiDto(it.getUri(), it.getKoodi(), it.getNimi(), it.getKuvaus()))
               .collect(
                   Collectors.toMap(
                       AmmattiDto::uri,
