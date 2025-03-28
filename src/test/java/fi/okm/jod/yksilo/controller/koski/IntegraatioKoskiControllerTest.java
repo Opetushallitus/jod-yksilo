@@ -41,6 +41,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -55,6 +57,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({ErrorInfoFactory.class, KoskiOAuth2Config.class, TestKoskiOAuth2Config.class})
 @WebMvcTest(IntegraatioKoskiController.class)
+@Execution(ExecutionMode.SAME_THREAD)
 class IntegraatioKoskiControllerTest {
 
   private static final String EDUCATIONS_HISTORY_KOSKI_RESPONSE = "koski-response.json";
