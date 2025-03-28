@@ -95,9 +95,7 @@ jod:
     mahdollisuus:
       endpoint: ""
   keskustelu:
-    endpoint:
-  integraatio:
-    koski:
-      hosts:
-        - "testiopintopolku.fi"
-        - "opintopolku.fi"
+    endpoint: ""
+  ai-tunnistus:
+    osaamiset:
+      endpoint: ""

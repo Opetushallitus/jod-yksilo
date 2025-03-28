@@ -13,12 +13,16 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -78,11 +82,19 @@ public class KoulutusService {
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {
+    return add(kokonaisuus, dto, null);
+  }
+
+  Koulutus add(
+      KoulutusKokonaisuus kokonaisuus, KoulutusDto dto, Boolean odottaaOsaamisetTunnistusta) {
     var entity = new Koulutus(kokonaisuus);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
+    entity.setOsaamisenTunnistusStatus(
+        odottaaOsaamisetTunnistusta == null ? null : OsaamisenTunnistusStatus.WAIT);
+    entity.setOsasuoritukset(dto.osasuoritukset());
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.add(entity, dto.osaamiset());
@@ -108,5 +120,26 @@ public class KoulutusService {
 
   static NotFoundException notFound() {
     return new NotFoundException("Not found");
+  }
+
+  @Transactional
+  public void updateOsaamisetTunnistusStatus(
+      List<Koulutus> koulutusList,
+      OsaamisenTunnistusStatus newStatus,
+      Map<UUID, Set<URI>> koulutusIdToOsaamisetMap) {
+    var latestKoulutukset =
+        koulutukset.findAllById(koulutusList.stream().map(Koulutus::getId).toList());
+    latestKoulutukset.forEach(koulutus -> koulutus.setOsaamisenTunnistusStatus(newStatus));
+
+    if (koulutusIdToOsaamisetMap != null && !koulutusIdToOsaamisetMap.isEmpty()) {
+      latestKoulutukset.forEach(
+          koulutus -> {
+            Set<URI> osaamisetUris = koulutusIdToOsaamisetMap.get(koulutus.getId());
+            if (osaamisetUris != null && !osaamisetUris.isEmpty()) {
+              osaamiset.add(koulutus, osaamisetUris);
+            }
+          });
+    }
+    koulutukset.saveAllAndFlush(latestKoulutukset);
   }
 }

@@ -29,6 +29,7 @@ import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
@@ -41,6 +42,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
@@ -83,9 +85,24 @@ public final class Mapper {
             entity.getKuvaus(),
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
-            entity.getOsaamiset().stream()
-                .map(o -> URI.create(o.getOsaaminen().getUri()))
-                .collect(Collectors.toUnmodifiableSet()));
+            extractOsaamisetUris(entity),
+            isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
+            isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
+            entity.getOsasuoritukset());
+  }
+
+  private static Set<URI> extractOsaamisetUris(Koulutus entity) {
+    return entity.getOsaamiset().stream()
+        .map(o -> URI.create(o.getOsaaminen().getUri()))
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
+  }
+
+  private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.FAIL;
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {
