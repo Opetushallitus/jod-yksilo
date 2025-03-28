@@ -55,6 +55,9 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<YksilonSuosikki> suosikit;
 
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  private Set<Paamaara> paamaarat;
+
   public Yksilo(UUID uuid) {
     this.id = uuid;
   }
