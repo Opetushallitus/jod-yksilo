@@ -31,6 +31,8 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class KoskiService {
 
+  private static final String KOULUTUSMODUULI_FIELD = "koulutusmoduuli";
+
   public KoskiService() {
     log.info("Creating KoskiService");
   }
@@ -65,8 +67,8 @@ public class KoskiService {
               LocalizedString localizedKuvaus = null;
               if (suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()) {
                 var tunnisteNimiNode =
-                    readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "tunniste", "nimi");
-                var nimiNode = readJsonProperty(suoritukset.get(0), "koulutusmoduuli", "nimi");
+                    readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "tunniste", "nimi");
+                var nimiNode = readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "nimi");
                 localizedKuvaus =
                     getLocalizedKuvaus(
                         getLocalizedString(tunnisteNimiNode),
@@ -97,7 +99,7 @@ public class KoskiService {
     var osasuorituksetList = new HashSet<String>();
     if (osasuoritukset != null && osasuoritukset.isArray() && !osasuoritukset.isEmpty()) {
       for (var jsonNode : osasuoritukset) {
-        var nimiNode = readJsonProperty(jsonNode, "koulutusmoduuli", "nimi");
+        var nimiNode = readJsonProperty(jsonNode, KOULUTUSMODUULI_FIELD, "nimi");
         if (nimiNode != null && !nimiNode.isEmpty()) {
           osasuorituksetList.add(getLocalizedString(nimiNode).get(Kieli.FI));
         }
