@@ -20,27 +20,30 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @DataJpaTest(showSql = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Testcontainers
 public abstract class AbstractServiceTest {
 
-  @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer =
+  @ServiceConnection
+  static final PostgreSQLContainer<?> postgreSQLContainer =
       new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
           .withEnv("LANG", "en_US.UTF-8")
           .withEnv("LC_ALL", "en_US.UTF-8");
+
+  static {
+    // Singleton containers are started before the tests and stopped after all tests have been run.
+    // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
+    postgreSQLContainer.start();
+  }
 
   @Autowired protected TestEntityManager entityManager;
   protected TestJodUser user;
   protected TestJodUser user2;
 
   @BeforeEach
-  public void setUpUser() {
+  public void setup() {
     this.user = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
     this.user2 = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
   }
