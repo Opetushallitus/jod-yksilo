@@ -29,7 +29,7 @@ compileJava {
 }
 
 test {
-  maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+  maxParallelForks = 3
 
   doFirst {
     println "Running tests with maxParallelForks = ${maxParallelForks}"
