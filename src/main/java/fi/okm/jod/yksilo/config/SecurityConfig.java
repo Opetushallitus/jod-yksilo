@@ -61,9 +61,7 @@ public class SecurityConfig {
             request.getSession(false) == null
                 || SecurityContextHolder.getContext().getAuthentication() == null;
 
-    // for development, to be removed
-    // makes it possible to test the API locally using Swagger UI
-    if (!env.matchesProfiles("cloud")
+    if (env.matchesProfiles("local")
         && Boolean.TRUE.equals(
             env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
       csrfIgnoringRequestMatchers =
