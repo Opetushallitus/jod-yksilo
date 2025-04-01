@@ -17,6 +17,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,11 +62,8 @@ public class SecurityConfig {
             request.getSession(false) == null
                 || SecurityContextHolder.getContext().getAuthentication() == null;
 
-    // for development, to be removed
-    // makes it possible to test the API locally using Swagger UI
-    if (!env.matchesProfiles("cloud")
-        && Boolean.TRUE.equals(
-            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
+    var isLocalProfileActive = Arrays.stream(env.getActiveProfiles()).anyMatch("local"::equals);
+    if (isLocalProfileActive) {
       csrfIgnoringRequestMatchers =
           new RequestMatcher[] {
             notAuthenticated,
