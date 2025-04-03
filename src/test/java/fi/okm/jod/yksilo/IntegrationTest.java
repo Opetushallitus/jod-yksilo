@@ -9,11 +9,32 @@
 
 package fi.okm.jod.yksilo;
 
+import fi.okm.jod.yksilo.testutil.TestUtil;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-@Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public interface IntegrationTest {}
+@Execution(ExecutionMode.CONCURRENT)
+@ResourceLock("SLOW")
+public abstract class IntegrationTest {
+  @ServiceConnection
+  private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
+      TestUtil.createPostgresSQLContainer();
+
+  @ServiceConnection
+  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
+
+  static {
+    // Singleton containers are started before the tests and stopped after all tests have been run.
+    // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
+    POSTGRES_CONTAINER.start();
+    REDIS_CONTAINER.start();
+  }
+}

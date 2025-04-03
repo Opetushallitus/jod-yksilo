@@ -18,6 +18,9 @@ import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -38,6 +41,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Sql(scripts = {"/data/mock-tunnistus.sql", "/schema.sql", "/data.sql", "/data/mahdollisuudet.sql"})
 @DirtiesContext
 @Import({TyomahdollisuusService.class, KoulutusmahdollisuusService.class})
+@Execution(ExecutionMode.CONCURRENT)
+@ResourceLock("SLOW")
 public class MahdollisuusImportTest {
 
   @Container @ServiceConnection

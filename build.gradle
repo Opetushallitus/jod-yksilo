@@ -138,6 +138,7 @@ dependencies {
 
 tasks.named('test', Test) {
   useJUnitPlatform()
+  maxHeapSize = "1g"
   jvmArgs += [
       '-XX:+EnableDynamicAgentLoading',
       "-javaagent:${configurations.mockitoAgent.asPath}"
@@ -146,6 +147,7 @@ tasks.named('test', Test) {
   testLogging {
     events("passed", "skipped", "failed")
   }
+  maxParallelForks=1
 }
 
 checkstyle {

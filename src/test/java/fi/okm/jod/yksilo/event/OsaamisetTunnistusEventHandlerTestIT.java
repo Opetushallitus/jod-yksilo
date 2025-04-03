@@ -27,7 +27,6 @@ import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
-import fi.okm.jod.yksilo.testutil.TestUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.net.URI;
@@ -44,26 +43,19 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 @TestPropertySource(
     properties = "jod.ai-tunnistus.osaamiset.endpoint=http://mylocalhost/invocations")
 @Sql(value = "/data/osaaminen.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class OsaamisetTunnistusEventHandlerTestIT implements IntegrationTest {
+class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
 
   private static final String ENDPOINT_URL = "http://mylocalhost/invocations";
-
-  @Container @ServiceConnection
-  private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
-      TestUtil.createPostgresSQLContainer();
 
   @Autowired private OsaamisetTunnistusEventHandler eventHandler;
   @Autowired private PlatformTransactionManager transactionManager;

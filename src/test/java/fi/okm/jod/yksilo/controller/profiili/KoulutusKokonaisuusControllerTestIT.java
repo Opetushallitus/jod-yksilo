@@ -25,34 +25,22 @@ import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.event.OsaamisetTunnistusEventHandler;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
-import fi.okm.jod.yksilo.testutil.TestUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 @SqlConfig(separator = ";;;")
 @Sql(scripts = {"/data/mock-tunnistus.sql", "/schema.sql"})
 @AutoConfigureMockMvc
-class KoulutusKokonaisuusControllerTestIT implements IntegrationTest {
-
-  @Container @ServiceConnection
-  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
-
-  @Container @ServiceConnection
-  private static final PostgreSQLContainer<?> POSTGRES_SQL_CONTAINER =
-      TestUtil.createPostgresSQLContainer();
+class KoulutusKokonaisuusControllerTestIT extends IntegrationTest {
 
   @MockitoBean private OsaamisetTunnistusEventHandler eventHandler;
 

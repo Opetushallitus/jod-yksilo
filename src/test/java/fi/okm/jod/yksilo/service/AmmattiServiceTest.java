@@ -14,33 +14,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.benmanes.caffeine.cache.Ticker;
 import fi.okm.jod.yksilo.repository.AmmattiRepository;
-import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.net.URI;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@DataJpaTest(showSql = false)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Testcontainers
 @Sql("/data/ammatti.sql")
 @Import({AmmattiService.class})
-class AmmattiServiceTest {
+@Execution(ExecutionMode.SAME_THREAD)
+class AmmattiServiceTest extends AbstractServiceTest {
   @Autowired private AmmattiRepository repository;
   @Autowired private TestEntityManager entityManager;
   @Autowired private PlatformTransactionManager transactionManager;
@@ -49,14 +41,17 @@ class AmmattiServiceTest {
   private TestTicker ticker;
   private TransactionTemplate transactionTemplate;
 
-  @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
-
   @BeforeEach
-  void setUp() {
+  @Override
+  public void setup() {
     ticker = new TestTicker();
     service = new AmmattiService(repository, ticker, Runnable::run);
     transactionTemplate = new TransactionTemplate(transactionManager);
+  }
+
+  @Override
+  public void simulateCommit() {
+    // NOP
   }
 
   @Test
@@ -76,7 +71,6 @@ class AmmattiServiceTest {
   }
 
   @Test
-  @DirtiesContext
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void shouldReloadCacheIfVersionChanges() {
 
