@@ -17,7 +17,6 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,8 +61,9 @@ public class SecurityConfig {
             request.getSession(false) == null
                 || SecurityContextHolder.getContext().getAuthentication() == null;
 
-    var isLocalProfileActive = Arrays.stream(env.getActiveProfiles()).anyMatch("local"::equals);
-    if (isLocalProfileActive) {
+    if (env.matchesProfiles("local")
+        && Boolean.TRUE.equals(
+            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
       csrfIgnoringRequestMatchers =
           new RequestMatcher[] {
             notAuthenticated,
