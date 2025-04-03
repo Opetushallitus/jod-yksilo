@@ -49,7 +49,7 @@ class YksiloServiceTest extends AbstractServiceTest {
             null,
             null));
     simulateCommit();
-    assertDoesNotThrow(() -> service.delete(user));
+    assertDoesNotThrow(() -> service.delete(user.id()));
     assertEquals(0, paamaaraService.findAll(user).size());
     assertThrows(NotFoundException.class, () -> service.get(user));
   }

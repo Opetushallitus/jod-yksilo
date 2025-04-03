@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +36,9 @@ public class YksiloService {
     yksilot.save(yksilo);
   }
 
-  public void delete(JodUser user) {
-    yksilot.deleteById(user.getId());
-    yksilot.removeId(user.getId());
+  public void delete(UUID id) {
+    yksilot.deleteById(id);
+    yksilot.removeId(id);
   }
 
   private Yksilo getYksilo(JodUser user) {

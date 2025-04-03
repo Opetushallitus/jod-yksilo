@@ -14,11 +14,13 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import fi.okm.jod.yksilo.config.LoginSuccessHandler;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.opensaml.saml.saml2.core.NameIDType;
@@ -43,13 +45,16 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "jod.authentication.provider", havingValue = "suomifi")
 @Slf4j
+@RequiredArgsConstructor
 public class Saml2LoginConfig {
   private final VetumaExtensionBuilder vetumaExtensionBuilder = new VetumaExtensionBuilder();
+  private final YksiloService yksiloService;
 
   @Bean
   @SuppressWarnings("java:S4502")
@@ -67,6 +72,7 @@ public class Saml2LoginConfig {
 
     var loginSuccessHandler = new LoginSuccessHandler(redirectStrategy);
     var authenticationEventHandler = new AuthenticationEventHandler(redirectStrategy);
+    var profileDeletionHandler = new ProfileDeletionHandler(yksiloService);
 
     var authProvider = new OpenSaml4AuthenticationProvider();
     authProvider.setResponseAuthenticationConverter(converter);
@@ -95,6 +101,7 @@ public class Saml2LoginConfig {
                     request.logoutRequestResolver(logoutRequestResolver);
                   });
             })
+        .logout(logout -> logout.addLogoutHandler(profileDeletionHandler))
         .logout(logout -> logout.logoutSuccessHandler(authenticationEventHandler))
         .headers(
             headers ->
@@ -199,6 +206,20 @@ public class Saml2LoginConfig {
         HttpServletRequest request, HttpServletResponse response, Authentication authentication)
         throws IOException {
       handle(request, response, null);
+    }
+  }
+
+  @RequiredArgsConstructor
+  static class ProfileDeletionHandler implements LogoutHandler {
+    private final YksiloService yksiloService;
+
+    @Override
+    public void logout(
+        HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+      if ("true".equals(request.getParameter("deletion"))) {
+        var principal = (JodSaml2Principal) authentication.getPrincipal();
+        yksiloService.delete(principal.getId());
+      }
     }
   }
 }
