@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -52,6 +54,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @WebMvcTest(value = MahdollisuudetController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class})
+@Execution(ExecutionMode.SAME_THREAD)
 class MahdollisuudetControllerTest {
 
   @Autowired ObjectMapper objectMapper;

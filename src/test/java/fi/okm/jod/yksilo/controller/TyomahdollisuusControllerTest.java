@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -41,6 +43,7 @@ import org.springframework.util.MultiValueMap;
 
 @WebMvcTest(value = TyomahdollisuusController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class})
+@Execution(ExecutionMode.SAME_THREAD)
 class TyomahdollisuusControllerTest {
 
   @Autowired private MockMvc mockMvc;
