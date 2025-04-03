@@ -25,6 +25,8 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -40,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(value = YksiloController.class)
 @Import({ErrorInfoFactory.class})
 @EnableWebSecurity
+@Execution(ExecutionMode.SAME_THREAD)
 class YksiloControllerTest {
 
   @MockitoBean private YksiloService yksiloService;

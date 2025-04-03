@@ -6,6 +6,13 @@ logging:
   exception-conversion-word:
 
 spring:
+  test:
+    context:
+      cache:
+        maxSize: 16
+  datasource:
+    hikari:
+      maximum-pool-size: 3
   sql:
     init:
       mode: never
@@ -13,6 +20,9 @@ spring:
     aws:
       parameterstore:
         enabled: false
+
+server:
+  shutdown: immediate
 
 management:
   simple:

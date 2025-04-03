@@ -25,6 +25,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -40,6 +42,7 @@ import org.springframework.util.MultiValueMap;
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({ErrorInfoFactory.class, KoskiOAuth2Config.class, TestKoskiOAuth2Config.class})
 @WebMvcTest(KoskiOAuth2Controller.class)
+@Execution(ExecutionMode.SAME_THREAD)
 class KoskiOAuth2ControllerTest {
 
   private static final String REGISTRATION_ID = "koski";
