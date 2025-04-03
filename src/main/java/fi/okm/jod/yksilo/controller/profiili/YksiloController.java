@@ -16,22 +16,17 @@ import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -64,14 +59,6 @@ public class YksiloController {
   @PutMapping
   public void update(@AuthenticationPrincipal JodUser user, @RequestBody @Valid YksiloDto dto) {
     yksiloService.update(user, dto);
-  }
-
-  @DeleteMapping
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(HttpServletRequest request, @AuthenticationPrincipal JodUser user)
-      throws ServletException {
-    yksiloService.delete(user);
-    request.logout();
   }
 
   public record YksiloCsrfDto(

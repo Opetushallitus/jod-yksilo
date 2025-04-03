@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.controller.profiili;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -87,12 +86,5 @@ class YksiloControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isOk());
-  }
-
-  @Test
-  @WithUserDetails("test")
-  void shouldDeleteUserInformation() throws Exception {
-    mockMvc.perform(delete("/api/profiili/yksilo").with(csrf())).andExpect(status().isNoContent());
-    mockMvc.perform(get("/api/profiili/yksilo").with(csrf())).andExpect(status().isUnauthorized());
   }
 }

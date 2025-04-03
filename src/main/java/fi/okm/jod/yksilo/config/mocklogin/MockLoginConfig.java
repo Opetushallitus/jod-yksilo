@@ -10,8 +10,11 @@
 package fi.okm.jod.yksilo.config.mocklogin;
 
 import fi.okm.jod.yksilo.config.LoginSuccessHandler;
+import fi.okm.jod.yksilo.config.ProfileDeletionHandler;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.service.profiili.YksiloService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -31,7 +34,10 @@ import org.springframework.util.StringUtils;
     havingValue = "mock",
     matchIfMissing = true)
 @Slf4j
+@RequiredArgsConstructor
 public class MockLoginConfig {
+
+  private final YksiloService yksiloService;
 
   /** Mock authentication using form login. */
   @Bean
@@ -45,10 +51,15 @@ public class MockLoginConfig {
 
     var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
     logoutSuccessHandler.setRedirectStrategy(redirectStrategy);
+    var profileDeletionHandler = new ProfileDeletionHandler(yksiloService);
 
     return http.securityMatcher("/login/**", "/logout/**")
         .formLogin(login -> login.successHandler(loginSuccessHandler).loginPage("/login"))
-        .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
+        .logout(
+            logout -> {
+              logout.addLogoutHandler(profileDeletionHandler);
+              logout.logoutSuccessHandler(logoutSuccessHandler);
+            })
         .headers(
             headers ->
                 headers.contentSecurityPolicy(
