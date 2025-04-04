@@ -39,14 +39,21 @@ BEGIN
   SET aktiivinen = false
   WHERE id NOT IN (SELECT id FROM koulutusmahdollisuus_data.import) AND aktiivinen = true;
 
-  INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi,
-                                   kesto_mediaani, kesto_maksimi)
+  -- Then perform koulutusmahdollisuus upsert, setting active to true for all imported records
+  INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi, kesto_mediaani, kesto_maksimi, aktiivinen)
   SELECT id,
          data ->> 'tyyppi',
          (data ->> 'kestoMinimi')::float(53),
          (data ->> 'kestoMediaani')::float(53),
-         (data ->> 'kestoMaksimi')::float(53)
-  FROM koulutusmahdollisuus_data.import;
+         (data ->> 'kestoMaksimi')::float(53),
+         true -- Set aktiivinen to true for all imported records
+  FROM koulutusmahdollisuus_data.import
+  ON CONFLICT (id) DO UPDATE SET
+                               tyyppi = EXCLUDED.tyyppi,
+                               kesto_minimi = EXCLUDED.kesto_minimi,
+                               kesto_mediaani = EXCLUDED.kesto_mediaani,
+                               kesto_maksimi = EXCLUDED.kesto_maksimi,
+                               aktiivinen = true; -- Ensure updated records are marked as active
 
   INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id,
                                            kaannos_key, otsikko,
