@@ -23,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.List;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -48,6 +49,11 @@ public class KoulutusmahdollisuusJakauma implements Jakauma<Koulutusmahdollisuus
 
   @ElementCollection
   @BatchSize(size = 100)
-  @CollectionTable(indexes = {@Index(columnList = "koulutusmahdollisuus_jakauma_id")})
+  @CollectionTable(
+      uniqueConstraints = {
+        @UniqueConstraint(
+            name = "koulutusmahdollisuus_jakauma_id_arvo",
+            columnNames = {"koulutusmahdollisuus_jakauma_id", "arvo"})
+      })
   private List<Jakauma.Arvo> arvot;
 }

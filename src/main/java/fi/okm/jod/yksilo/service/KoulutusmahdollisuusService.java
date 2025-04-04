@@ -47,7 +47,8 @@ public class KoulutusmahdollisuusService {
             entity.getOtsikko(),
             entity.getTiivistelma(),
             entity.getKuvaus(),
-            mapKesto(entity.getKesto()));
+            mapKesto(entity.getKesto()),
+            entity.isAktiivinen());
   }
 
   private static KoulutusmahdollisuusFullDto mapFull(Koulutusmahdollisuus entity) {

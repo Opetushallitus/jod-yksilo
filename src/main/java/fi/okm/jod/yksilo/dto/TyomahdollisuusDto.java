@@ -17,4 +17,5 @@ public record TyomahdollisuusDto(
     @NotNull UUID id,
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
-    LocalizedString kuvaus) {}
+    LocalizedString kuvaus,
+    Boolean aktiivinen) {}

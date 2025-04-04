@@ -35,12 +35,13 @@ public class MahdollisuudetService {
 
   private static final String SQL_UNION_OF_TYO_AND_KOULUTUSMAHDOLLISUUS_IDS =
       """
-      SELECT * FROM (SELECT tyomahdollisuus_id AS id, otsikko, ''TYOMAHDOLLISUUS'' AS tyyppi
-      FROM tyomahdollisuus_kaannos tk
+      SELECT * FROM (SELECT tk.tyomahdollisuus_id AS id, tk.otsikko, ''TYOMAHDOLLISUUS'' AS tyyppi
+      FROM tyomahdollisuus_kaannos tk LEFT JOIN tyomahdollisuus t ON tk.tyomahdollisuus_id = t.id
+      WHERE tk.kaannos_key = :lang AND t.aktiivinen IS true
       UNION
-      SELECT koulutusmahdollisuus_id AS id, otsikko, ''KOULUTUSMAHDOLLISUUS'' AS tyyppi
-      FROM koulutusmahdollisuus_kaannos kk
-      WHERE kaannos_key = :lang) ORDER BY otsikko COLLATE  "{0}" {1}
+      SELECT kk.koulutusmahdollisuus_id AS id, kk.otsikko, ''KOULUTUSMAHDOLLISUUS'' AS tyyppi
+      FROM koulutusmahdollisuus_kaannos kk LEFT JOIN koulutusmahdollisuus k ON kk.koulutusmahdollisuus_id = k.id
+      WHERE kk.kaannos_key = :lang AND k.aktiivinen IS true ) ORDER BY otsikko COLLATE  "{0}" {1}
       """;
 
   private final EntityManager entityManager;

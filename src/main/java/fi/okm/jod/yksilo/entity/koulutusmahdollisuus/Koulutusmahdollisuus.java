@@ -58,6 +58,9 @@ public class Koulutusmahdollisuus {
   @MapKeyColumn(name = "tyyppi")
   private Map<KoulutusmahdollisuusJakaumaTyyppi, KoulutusmahdollisuusJakauma> jakaumat;
 
+  @Column(columnDefinition = "boolean default true")
+  private boolean aktiivinen = true;
+
   @Embedded
   @AttributeOverride(name = "minimi", column = @Column(name = "kesto_minimi"))
   @AttributeOverride(name = "mediaani", column = @Column(name = "kesto_mediaani"))

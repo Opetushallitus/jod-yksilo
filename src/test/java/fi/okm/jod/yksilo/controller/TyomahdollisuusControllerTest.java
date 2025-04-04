@@ -79,7 +79,8 @@ class TyomahdollisuusControllerTest {
                 mockIds.stream().findFirst().orElse(UUID.randomUUID()),
                 otsikko,
                 tiivistelma,
-                kuvaus));
+                kuvaus,
+                true));
     when(service.findByIds(mockIds)).thenReturn(mockTyomahdolliuudet);
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();

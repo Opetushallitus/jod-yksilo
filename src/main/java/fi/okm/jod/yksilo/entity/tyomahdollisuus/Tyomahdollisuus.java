@@ -54,6 +54,9 @@ public class Tyomahdollisuus {
   @Column
   private TyomahdollisuusAineisto aineisto;
 
+  @Column(columnDefinition = "boolean default true")
+  private boolean aktiivinen = true;
+
   @Embeddable
   public record Kaannos(
       @Column(length = Integer.MAX_VALUE) String otsikko,

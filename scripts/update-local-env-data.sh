@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e -o pipefail
 
-echo "NOTE: This script will DELETE all user data related to tyomahdollisuus and koulutusmahdollisuus from:
+echo "NOTE: This script will UPDATE all user data related to tyomahdollisuus and koulutusmahdollisuus from:
  - tyomahdollisuus_jakauma_arvot
  - paamaara
  - tyomahdollisuus_kaannos
@@ -47,7 +47,7 @@ fi
 echo "CLEAR and UPDATE tyomahdollisuus, koulutusmahdollisuus and esco"
 (
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-    -c "CALL tyomahdollisuus_data.clear(); CALL koulutusmahdollisuus_data.clear(); CALL tyomahdollisuus_data.import(); CALL koulutusmahdollisuus_data.import();"
+    -c "CALL tyomahdollisuus_data.import(); CALL koulutusmahdollisuus_data.import();"
 
   #update esco data
   for esco in "ammatti" "osaaminen"; do
