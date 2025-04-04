@@ -34,50 +34,105 @@ CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.import()
 BEGIN
   ATOMIC
 
-  INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi,
-                                   kesto_mediaani, kesto_maksimi)
+  -- First, mark all existing records as inactive that are not in the current import
+  UPDATE koulutusmahdollisuus
+  SET aktiivinen = false
+  WHERE id NOT IN (SELECT id FROM koulutusmahdollisuus_data.import) AND aktiivinen = true;
+
+  -- Then perform koulutusmahdollisuus upsert, setting active to true for all records that will be imported
+  INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi, kesto_mediaani, kesto_maksimi, aktiivinen)
   SELECT id,
          data ->> 'tyyppi',
          (data ->> 'kestoMinimi')::float(53),
          (data ->> 'kestoMediaani')::float(53),
-         (data ->> 'kestoMaksimi')::float(53)
-  FROM koulutusmahdollisuus_data.import;
+         (data ->> 'kestoMaksimi')::float(53),
+         true -- Set aktiivinen to true for all imported records
+  FROM koulutusmahdollisuus_data.import
+  ON CONFLICT (id) DO UPDATE SET
+                               tyyppi = EXCLUDED.tyyppi,
+                               kesto_minimi = EXCLUDED.kesto_minimi,
+                               kesto_mediaani = EXCLUDED.kesto_mediaani,
+                               kesto_maksimi = EXCLUDED.kesto_maksimi,
+                               aktiivinen = true; -- Ensure updated records are marked as active
 
-  INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id,
-                                           kaannos_key, otsikko,
-                                           tiivistelma, kuvaus)
-  SELECT d.id,
-         upper(x.key),
-         x.value AS nimi,
-         y.value AS tiivistelma,
-         z.value AS kuvaus
-  FROM koulutusmahdollisuus_data.import d,
-       jsonb_each_text(data -> 'otsikko') x
-         LEFT JOIN LATERAL jsonb_each_text(data -> 'tiivistelma') y ON (x.key = y.key)
-         LEFT JOIN LATERAL jsonb_each_text(data -> 'kuvaus') z ON x.key = z.key;
+  -- Upsert translations
+  WITH translation_data AS (
+    SELECT d.id,
+           upper(x.key) as kaannos_key,
+           x.value AS otsikko,
+           y.value AS tiivistelma,
+           z.value AS kuvaus
+    FROM koulutusmahdollisuus_data.import d,
+         jsonb_each_text(data -> 'otsikko') x
+           LEFT JOIN LATERAL jsonb_each_text(data -> 'tiivistelma') y ON (x.key = y.key)
+           LEFT JOIN LATERAL jsonb_each_text(data -> 'kuvaus') z ON x.key = z.key
+  )
+  INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id, kaannos_key, otsikko, tiivistelma, kuvaus)
+  SELECT id, kaannos_key, otsikko, tiivistelma, kuvaus
+  FROM translation_data
+  ON CONFLICT (koulutusmahdollisuus_id, kaannos_key) DO UPDATE SET
+                                                                 otsikko = EXCLUDED.otsikko,
+                                                                 tiivistelma = EXCLUDED.tiivistelma,
+                                                                 kuvaus = EXCLUDED.kuvaus;
 
-  WITH koulutukset AS (SELECT d.id, k.oid, k.nimi
-                       FROM koulutusmahdollisuus_data.import d,
-                            jsonb_to_recordset(data -> 'koulutukset') AS k(oid varchar, nimi jsonb)),
-       viitteet
-         AS (INSERT INTO koulutus_viite (oid, koulutusmahdollisuus_id)
-         SELECT oid, id
-         FROM koulutukset
-         RETURNING id, oid, koulutusmahdollisuus_id)
-  INSERT
-  INTO koulutus_viite_kaannos(koulutus_viite_id, kaannos_key, nimi)
-  SELECT v.id, upper(x.key), x.value
-  FROM viitteet v
-         JOIN koulutukset k ON (v.koulutusmahdollisuus_id = k.id AND v.oid = k.oid),
-       jsonb_each_text(k.nimi) x;
+  -- Delete related koulutus_viite_kaannos records first
+  DELETE FROM koulutus_viite_kaannos
+  WHERE koulutus_viite_id IN (
+    SELECT kv.id
+    FROM koulutus_viite kv
+    WHERE kv.koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import)
+  );
 
-  WITH paths AS (SELECT n, p::jsonpath
-                 FROM (values ('OSAAMINEN', '$.osaamiset'),
-                              ('KOULUTUSALA', '$.koulutusalaJakauma'),
-                              ('MAKSULLISUUS', '$.maksullisuusJakauma'),
-                              ('OPETUSTAPA', '$.opetustapaJakauma'),
-                              ('AIKA', '$.aikaJakauma'),
-                              ('KUNTA', '$.kuntaJakauma')) AS x(n, p)),
+  -- Delete parent koulutus_viite records
+  DELETE FROM koulutus_viite
+  WHERE koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import);
+
+  -- Insert new references
+  WITH koulutukset AS (
+    SELECT DISTINCT d.id, k.oid, k.nimi
+    FROM koulutusmahdollisuus_data.import d,
+         jsonb_to_recordset(data -> 'koulutukset') AS k(oid varchar, nimi jsonb)
+  ),
+       viitteet AS (
+         INSERT INTO koulutus_viite (oid, koulutusmahdollisuus_id)
+           SELECT oid, id
+           FROM koulutukset
+           RETURNING id, oid, koulutusmahdollisuus_id
+       ),
+       translation_keys AS (
+         SELECT v.id as koulutus_viite_id,
+                upper(x.key) as kaannos_key,
+                x.value as nimi
+         FROM viitteet v
+                JOIN koulutukset k ON (v.koulutusmahdollisuus_id = k.id AND v.oid = k.oid),
+              jsonb_each_text(k.nimi) x
+       )
+  INSERT INTO koulutus_viite_kaannos(koulutus_viite_id, kaannos_key, nimi)
+  SELECT koulutus_viite_id, kaannos_key, nimi
+  FROM translation_keys;
+
+  -- Delete koulutusmahdollisuus_jakauma_arvot first
+  DELETE FROM koulutusmahdollisuus_jakauma_arvot
+  WHERE koulutusmahdollisuus_jakauma_id IN (
+    SELECT kmj.id
+    FROM koulutusmahdollisuus_jakauma kmj
+    WHERE kmj.koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import)
+  );
+
+  -- Delete parent koulutusmahdollisuus_jakauma records
+  DELETE FROM koulutusmahdollisuus_jakauma
+  WHERE koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import);
+
+  -- Insert new jakauma records
+  WITH paths AS (
+    SELECT n, p::jsonpath
+    FROM (values ('OSAAMINEN', '$.osaamiset'),
+                 ('KOULUTUSALA', '$.koulutusalaJakauma'),
+                 ('MAKSULLISUUS', '$.maksullisuusJakauma'),
+                 ('OPETUSTAPA', '$.opetustapaJakauma'),
+                 ('AIKA', '$.aikaJakauma'),
+                 ('KUNTA', '$.kuntaJakauma')) AS x(n, p)
+  ),
        jakaumat AS (
          INSERT INTO koulutusmahdollisuus_jakauma (koulutusmahdollisuus_id, tyyppi, maara, tyhjia)
            SELECT d.id,
@@ -87,16 +142,20 @@ BEGIN
            FROM koulutusmahdollisuus_data.import d,
                 paths p
            WHERE jsonb_path_exists(d.data, p.p)
-           RETURNING id, koulutusmahdollisuus_id, tyyppi)
-  INSERT
-  INTO koulutusmahdollisuus_jakauma_arvot(koulutusmahdollisuus_jakauma_id, arvo, osuus)
-  SELECT j.id, x.*
-  from paths p
-         join jakaumat j on (p.n = j.tyyppi)
-         JOIN koulutusmahdollisuus_data.import d
-              ON (j.koulutusmahdollisuus_id = d.id),
-       jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53));
-
+           RETURNING id, koulutusmahdollisuus_id, tyyppi
+       ),
+       distribution_values AS (
+         SELECT j.id as koulutusmahdollisuus_jakauma_id,
+                x.arvo as arvo,
+                x.prosenttiOsuus as osuus
+         FROM paths p
+                JOIN jakaumat j ON (p.n = j.tyyppi)
+                JOIN koulutusmahdollisuus_data.import d ON (j.koulutusmahdollisuus_id = d.id),
+              jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53))
+       )
+  INSERT INTO koulutusmahdollisuus_jakauma_arvot(koulutusmahdollisuus_jakauma_id, arvo, osuus)
+  SELECT koulutusmahdollisuus_jakauma_id, arvo, osuus
+  FROM distribution_values;
 END
 ;;;
 
@@ -126,17 +185,33 @@ CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
 BEGIN
   ATOMIC
 
-  INSERT INTO tyomahdollisuus(id, ammattiryhma, aineisto)
+  -- First, mark all existing records as inactive that are not in the current import
+  UPDATE tyomahdollisuus
+  SET aktiivinen = false
+  WHERE id NOT IN (SELECT id FROM tyomahdollisuus_data.import) AND aktiivinen = true;
+
+  -- Then perform tyomahdollisuus upsert, setting active to true for all imported records
+  INSERT INTO tyomahdollisuus(id, ammattiryhma, aineisto, aktiivinen)
   SELECT i.id,
          i.data ->> 'ammattiryhma',
-         i.data ->> 'aineisto'
-  FROM tyomahdollisuus_data.import i;
+         i.data ->> 'aineisto',
+         true -- Set aktiivinen to true for all imported records
+  FROM tyomahdollisuus_data.import i
+  ON CONFLICT (id) DO UPDATE SET
+                               ammattiryhma = EXCLUDED.ammattiryhma,
+                               aineisto = EXCLUDED.aineisto,
+                               aktiivinen = true; -- Ensure updated records are marked as active
 
+  -- Delete existing translations for imported records
+  DELETE FROM tyomahdollisuus_kaannos
+  WHERE tyomahdollisuus_id IN (SELECT id FROM tyomahdollisuus_data.import);
+
+  -- Insert translations
   INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, otsikko,
-                                        tiivistelma,
-                                        kuvaus,
-                                        tehtavat,
-                                        yleiset_vaatimukset)
+                                      tiivistelma,
+                                      kuvaus,
+                                      tehtavat,
+                                      yleiset_vaatimukset)
   SELECT d.id,
          CASE WHEN o.key = 'se' THEN 'SV' ELSE upper(o.key) END,
          o.value AS nimi,
@@ -148,14 +223,26 @@ BEGIN
   FROM tyomahdollisuus_data.import d,
        jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') o
          LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') t
-  ON (o.key = t.key)
-    LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
-    ON o.key = k.key
-    LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
-    ON o.key = tt.key
-    LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
-    ON o.key = yv.key;
+                   ON (o.key = t.key)
+         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
+                   ON o.key = k.key
+         LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
+                   ON o.key = tt.key
+         LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data, '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
+                   ON o.key = yv.key;
 
+  -- Delete existing jakaumat for imported records
+  DELETE FROM tyomahdollisuus_jakauma_arvot
+  WHERE tyomahdollisuus_jakauma_id IN (
+    SELECT id
+    FROM tyomahdollisuus_jakauma
+    WHERE tyomahdollisuus_id IN (SELECT id FROM tyomahdollisuus_data.import)
+  );
+
+  DELETE FROM tyomahdollisuus_jakauma
+  WHERE tyomahdollisuus_id IN (SELECT id FROM tyomahdollisuus_data.import);
+
+  -- Insert jakauma data
   WITH paths AS (SELECT n, p::jsonpath
                  FROM (values ('OSAAMINEN', '$.osaamisvaatimukset.osaamiset'),
                               ('AMMATTI', '$.osaamisvaatimukset.ammatit'),
@@ -184,15 +271,20 @@ BEGIN
            FROM tyomahdollisuus_data.import d,
                 paths p
            WHERE jsonb_path_exists(d.data, p.p)
-           RETURNING id, tyomahdollisuus_id, tyyppi)
-  INSERT
-  INTO tyomahdollisuus_jakauma_arvot(tyomahdollisuus_jakauma_id, arvo, osuus)
-  SELECT j.id, x.*
-  from paths p
-         join jakaumat j on (p.n = j.tyyppi)
-         JOIN tyomahdollisuus_data.import d ON (j.tyomahdollisuus_id = d.id),
-       jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53));
-
+           RETURNING id, tyomahdollisuus_id, tyyppi
+       ),
+       distribution_values AS (
+         SELECT j.id as tyomahdollisuus_jakauma_id,
+                x.arvo as arvo,
+                x.prosenttiOsuus as osuus
+         FROM paths p
+                JOIN jakaumat j ON (p.n = j.tyyppi)
+                JOIN tyomahdollisuus_data.import d ON (j.tyomahdollisuus_id = d.id),
+              jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53))
+       )
+  INSERT INTO tyomahdollisuus_jakauma_arvot(tyomahdollisuus_jakauma_id, arvo, osuus)
+  SELECT tyomahdollisuus_jakauma_id, arvo, osuus
+  FROM distribution_values;
 END
 ;;;
 

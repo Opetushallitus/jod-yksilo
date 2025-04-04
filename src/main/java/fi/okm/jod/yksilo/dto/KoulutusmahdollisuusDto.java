@@ -20,4 +20,5 @@ public record KoulutusmahdollisuusDto(
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
-    KestoJakaumaDto kesto) {}
+    KestoJakaumaDto kesto,
+    Boolean aktiivinen) {}

@@ -60,7 +60,11 @@ public class TyomahdollisuusService {
     return entity == null
         ? null
         : new TyomahdollisuusDto(
-            entity.getId(), entity.getOtsikko(), entity.getTiivistelma(), entity.getKuvaus());
+            entity.getId(),
+            entity.getOtsikko(),
+            entity.getTiivistelma(),
+            entity.getKuvaus(),
+            entity.isAktiivinen());
   }
 
   private static TyomahdollisuusFullDto mapFull(Tyomahdollisuus entity) {
