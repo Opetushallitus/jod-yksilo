@@ -30,10 +30,12 @@ import java.util.UUID;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Immutable
+@SQLRestriction("aktiivinen = true")
 public class Tyomahdollisuus {
   @Id private UUID id;
 
@@ -53,6 +55,9 @@ public class Tyomahdollisuus {
   @Enumerated(EnumType.STRING)
   @Column
   private TyomahdollisuusAineisto aineisto;
+
+  @Column(columnDefinition = "boolean default true")
+  private boolean aktiivinen = true;
 
   @Embeddable
   public record Kaannos(

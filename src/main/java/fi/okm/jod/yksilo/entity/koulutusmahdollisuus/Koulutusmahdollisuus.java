@@ -32,10 +32,12 @@ import java.util.UUID;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Immutable
+@SQLRestriction("aktiivinen = true")
 public class Koulutusmahdollisuus {
   @Id private UUID id;
 
@@ -57,6 +59,9 @@ public class Koulutusmahdollisuus {
   @MapKeyEnumerated(EnumType.STRING)
   @MapKeyColumn(name = "tyyppi")
   private Map<KoulutusmahdollisuusJakaumaTyyppi, KoulutusmahdollisuusJakauma> jakaumat;
+
+  @Column(columnDefinition = "boolean default true")
+  private boolean aktiivinen = true;
 
   @Embedded
   @AttributeOverride(name = "minimi", column = @Column(name = "kesto_minimi"))
