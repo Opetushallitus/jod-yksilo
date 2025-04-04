@@ -100,13 +100,16 @@ BEGIN
          FROM translation_keys
          ON CONFLICT (koulutus_viite_id, kaannos_key) DO UPDATE SET nimi = EXCLUDED.nimi;
 
-  WITH paths AS (SELECT n, p::jsonpath
-                 FROM (values ('OSAAMINEN', '$.osaamiset'),
-                              ('KOULUTUSALA', '$.koulutusalaJakauma'),
-                              ('MAKSULLISUUS', '$.maksullisuusJakauma'),
-                              ('OPETUSTAPA', '$.opetustapaJakauma'),
-                              ('AIKA', '$.aikaJakauma'),
-                              ('KUNTA', '$.kuntaJakauma')) AS x(n, p)),
+  -- Upsert jakauma data
+  WITH paths AS (
+    SELECT n, p::jsonpath
+    FROM (values ('OSAAMINEN', '$.osaamiset'),
+                 ('KOULUTUSALA', '$.koulutusalaJakauma'),
+                 ('MAKSULLISUUS', '$.maksullisuusJakauma'),
+                 ('OPETUSTAPA', '$.opetustapaJakauma'),
+                 ('AIKA', '$.aikaJakauma'),
+                 ('KUNTA', '$.kuntaJakauma')) AS x(n, p)
+  ),
        jakaumat AS (
          INSERT INTO koulutusmahdollisuus_jakauma (koulutusmahdollisuus_id, tyyppi, maara, tyhjia)
            SELECT d.id,
@@ -116,15 +119,24 @@ BEGIN
            FROM koulutusmahdollisuus_data.import d,
                 paths p
            WHERE jsonb_path_exists(d.data, p.p)
-           RETURNING id, koulutusmahdollisuus_id, tyyppi)
-  INSERT
-  INTO koulutusmahdollisuus_jakauma_arvot(koulutusmahdollisuus_jakauma_id, arvo, osuus)
-  SELECT j.id, x.*
-  from paths p
-         join jakaumat j on (p.n = j.tyyppi)
-         JOIN koulutusmahdollisuus_data.import d
-              ON (j.koulutusmahdollisuus_id = d.id),
-       jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53));
+           ON CONFLICT (koulutusmahdollisuus_id, tyyppi) DO UPDATE SET
+             maara = EXCLUDED.maara,
+             tyhjia = EXCLUDED.tyhjia
+           RETURNING id, koulutusmahdollisuus_id, tyyppi
+       ),
+       distribution_values AS (
+         SELECT j.id as koulutusmahdollisuus_jakauma_id,
+                x.arvo as arvo,
+                x.prosenttiOsuus as osuus
+         FROM paths p
+                JOIN jakaumat j ON (p.n = j.tyyppi)
+                JOIN koulutusmahdollisuus_data.import d ON (j.koulutusmahdollisuus_id = d.id),
+              jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53))
+       )
+  INSERT INTO koulutusmahdollisuus_jakauma_arvot(koulutusmahdollisuus_jakauma_id, arvo, osuus)
+         SELECT koulutusmahdollisuus_jakauma_id, arvo, osuus
+         FROM distribution_values
+         ON CONFLICT (koulutusmahdollisuus_jakauma_id, arvo) DO UPDATE SET osuus = EXCLUDED.osuus;
 
 END
 ;;;
