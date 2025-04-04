@@ -34,6 +34,11 @@ CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.import()
 BEGIN
   ATOMIC
 
+  -- First, mark all existing records as inactive that are not in the current import
+  UPDATE koulutusmahdollisuus
+  SET aktiivinen = false
+  WHERE id NOT IN (SELECT id FROM koulutusmahdollisuus_data.import) AND aktiivinen = true;
+
   INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi,
                                    kesto_mediaani, kesto_maksimi)
   SELECT id,
