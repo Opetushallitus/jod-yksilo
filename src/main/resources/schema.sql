@@ -75,20 +75,30 @@ BEGIN
                                                                  tiivistelma = EXCLUDED.tiivistelma,
                                                                  kuvaus = EXCLUDED.kuvaus;
 
-  WITH koulutukset AS (SELECT d.id, k.oid, k.nimi
-                       FROM koulutusmahdollisuus_data.import d,
-                            jsonb_to_recordset(data -> 'koulutukset') AS k(oid varchar, nimi jsonb)),
-       viitteet
-         AS (INSERT INTO koulutus_viite (oid, koulutusmahdollisuus_id)
-         SELECT oid, id
-         FROM koulutukset
-         RETURNING id, oid, koulutusmahdollisuus_id)
-  INSERT
-  INTO koulutus_viite_kaannos(koulutus_viite_id, kaannos_key, nimi)
-  SELECT v.id, upper(x.key), x.value
-  FROM viitteet v
-         JOIN koulutukset k ON (v.koulutusmahdollisuus_id = k.id AND v.oid = k.oid),
-       jsonb_each_text(k.nimi) x;
+  -- Upsert koulutukset references and their translations
+  WITH koulutukset AS (
+    SELECT d.id, k.oid, k.nimi
+    FROM koulutusmahdollisuus_data.import d,
+         jsonb_to_recordset(data -> 'koulutukset') AS k(oid varchar, nimi jsonb)
+  ),
+       viitteet AS (
+         INSERT INTO koulutus_viite (oid, koulutusmahdollisuus_id)
+           SELECT oid, id
+           FROM koulutukset
+           ON CONFLICT (oid, koulutusmahdollisuus_id) DO UPDATE SET oid = EXCLUDED.oid
+           RETURNING id, oid, koulutusmahdollisuus_id
+       ),
+       translation_keys AS (
+         SELECT v.id as koulutus_viite_id,
+                upper(x.key) as kaannos_key,
+                x.value as nimi
+         FROM viitteet v
+           JOIN koulutukset k ON (v.koulutusmahdollisuus_id = k.id AND v.oid = k.oid), jsonb_each_text(k.nimi) x
+       )
+  INSERT INTO koulutus_viite_kaannos(koulutus_viite_id, kaannos_key, nimi)
+         SELECT koulutus_viite_id, kaannos_key, nimi
+         FROM translation_keys
+         ON CONFLICT (koulutus_viite_id, kaannos_key) DO UPDATE SET nimi = EXCLUDED.nimi;
 
   WITH paths AS (SELECT n, p::jsonpath
                  FROM (values ('OSAAMINEN', '$.osaamiset'),
