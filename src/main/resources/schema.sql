@@ -55,18 +55,25 @@ BEGIN
                                kesto_maksimi = EXCLUDED.kesto_maksimi,
                                aktiivinen = true; -- Ensure updated records are marked as active
 
-  INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id,
-                                           kaannos_key, otsikko,
-                                           tiivistelma, kuvaus)
-  SELECT d.id,
-         upper(x.key),
-         x.value AS nimi,
-         y.value AS tiivistelma,
-         z.value AS kuvaus
-  FROM koulutusmahdollisuus_data.import d,
-       jsonb_each_text(data -> 'otsikko') x
-         LEFT JOIN LATERAL jsonb_each_text(data -> 'tiivistelma') y ON (x.key = y.key)
-         LEFT JOIN LATERAL jsonb_each_text(data -> 'kuvaus') z ON x.key = z.key;
+  -- Upsert translations
+  WITH translation_data AS (
+    SELECT d.id,
+           upper(x.key) as kaannos_key,
+           x.value AS otsikko,
+           y.value AS tiivistelma,
+           z.value AS kuvaus
+    FROM koulutusmahdollisuus_data.import d,
+         jsonb_each_text(data -> 'otsikko') x
+           LEFT JOIN LATERAL jsonb_each_text(data -> 'tiivistelma') y ON (x.key = y.key)
+           LEFT JOIN LATERAL jsonb_each_text(data -> 'kuvaus') z ON x.key = z.key
+  )
+  INSERT INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id, kaannos_key, otsikko, tiivistelma, kuvaus)
+  SELECT id, kaannos_key, otsikko, tiivistelma, kuvaus
+  FROM translation_data
+  ON CONFLICT (koulutusmahdollisuus_id, kaannos_key) DO UPDATE SET
+                                                                 otsikko = EXCLUDED.otsikko,
+                                                                 tiivistelma = EXCLUDED.tiivistelma,
+                                                                 kuvaus = EXCLUDED.kuvaus;
 
   WITH koulutukset AS (SELECT d.id, k.oid, k.nimi
                        FROM koulutusmahdollisuus_data.import d,
