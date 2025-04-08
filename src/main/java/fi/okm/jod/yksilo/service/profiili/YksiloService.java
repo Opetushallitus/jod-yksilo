@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
+import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -38,6 +39,11 @@ public class YksiloService {
   public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
+  }
+
+  public YksiloExportDto export(JodUser user) {
+    var yksilo = getYksilo(user);
+    return ExportMapper.mapYksilo(yksilo);
   }
 
   private Yksilo getYksilo(JodUser user) {

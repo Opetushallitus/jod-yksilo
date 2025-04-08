@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,6 +60,7 @@ public class PolunVaihe {
   @Enumerated(EnumType.STRING)
   private PolunVaiheTyyppi tyyppi;
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)

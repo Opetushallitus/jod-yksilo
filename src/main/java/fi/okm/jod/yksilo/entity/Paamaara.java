@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -82,6 +83,7 @@ public class Paamaara {
   @BatchSize(size = 100)
   private List<PolunSuunnitelma> suunnitelmat = new ArrayList<>();
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)

@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +56,7 @@ public class Toimenkuva implements OsaamisenLahde {
   @JoinColumn(updatable = false, nullable = false)
   private Tyopaikka tyopaikka;
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)
