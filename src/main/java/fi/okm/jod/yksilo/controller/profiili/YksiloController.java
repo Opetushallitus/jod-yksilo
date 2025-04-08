@@ -9,8 +9,10 @@
 
 package fi.okm.jod.yksilo.controller.profiili;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
+import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +21,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class YksiloController {
   private final YksiloService yksiloService;
+  private final ObjectMapper objectMapper;
 
   @GetMapping
   public YksiloCsrfDto get(
@@ -46,6 +51,14 @@ public class YksiloController {
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
         yksiloService.get(user).tervetuloapolku());
+  }
+
+  @GetMapping("/vienti")
+  public ResponseEntity<YksiloExportDto> export(@AuthenticationPrincipal JodUser user) {
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=profiili.json")
+        .header(HttpHeaders.CONTENT_TYPE, "application/json")
+        .body(yksiloService.export(user));
   }
 
   @PutMapping

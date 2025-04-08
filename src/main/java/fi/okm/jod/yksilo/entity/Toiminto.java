@@ -35,6 +35,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 
@@ -49,6 +50,7 @@ public class Toiminto {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)

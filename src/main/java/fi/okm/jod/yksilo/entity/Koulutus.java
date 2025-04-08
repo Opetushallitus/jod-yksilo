@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,12 +51,14 @@ public class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;
+
   @Setter private LocalDate loppuPvm;
 
-  @ManyToOne(fetch = FetchType.LAZY)
   @Setter
+  @ManyToOne(fetch = FetchType.LAZY)
   private KoulutusKokonaisuus kokonaisuus;
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
@@ -52,6 +53,7 @@ public class PolunSuunnitelma {
   @JoinColumn(updatable = false, nullable = false)
   private Paamaara paamaara;
 
+  @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 100)
