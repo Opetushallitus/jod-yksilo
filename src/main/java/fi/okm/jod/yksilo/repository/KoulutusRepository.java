@@ -15,8 +15,10 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -38,4 +40,7 @@ public interface KoulutusRepository
 
   Optional<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(
       UUID id, UUID tyopaikkaId, UUID id1);
+
+  List<Koulutus> findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
+      UUID id, List<UUID> uuids, Set<OsaamisenTunnistusStatus> statusesToReturn);
 }

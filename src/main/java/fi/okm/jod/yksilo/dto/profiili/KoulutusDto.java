@@ -20,7 +20,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record KoulutusDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
