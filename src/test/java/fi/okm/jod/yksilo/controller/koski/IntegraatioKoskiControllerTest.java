@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
-import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -24,10 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
+import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.NoDataException;
@@ -37,8 +36,6 @@ import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -51,11 +48,18 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
-@Import({ErrorInfoFactory.class, KoskiOAuth2Config.class, TestKoskiOAuth2Config.class})
+@Import({
+  ErrorInfoFactory.class,
+  KoskiOAuth2Config.class,
+  TestKoskiOAuth2Config.class,
+  KoskiService.class,
+  MappingConfig.class
+})
 @WebMvcTest(IntegraatioKoskiController.class)
 @Execution(ExecutionMode.SAME_THREAD)
 class IntegraatioKoskiControllerTest {
@@ -63,6 +67,8 @@ class IntegraatioKoskiControllerTest {
   private static final String EDUCATIONS_HISTORY_KOSKI_RESPONSE = "koski-response.json";
   private static final String API_KOSKI_KOULUTUKSET_ENDPOINT =
       "/api/integraatiot/koski/koulutukset";
+  private static final String GET_EDUCATIONS_DATA_API_RESPONSE =
+      "getEducationsDataFromKoski-response.json";
 
   @Autowired private MockMvc mockMvc;
 
@@ -70,7 +76,9 @@ class IntegraatioKoskiControllerTest {
 
   @MockitoBean private KoskiOAuth2Service koskiOAuth2Service;
 
-  @MockitoBean private KoskiService koskiService;
+  @MockitoSpyBean private KoskiService koskiService;
+
+  @MockitoBean private KoulutusRepository koulutusRepository;
 
   @WithUserDetails("test")
   @Test
@@ -81,27 +89,12 @@ class IntegraatioKoskiControllerTest {
             TestUtil.getContentFromFile(EDUCATIONS_HISTORY_KOSKI_RESPONSE, KoskiService.class));
     when(koskiOAuth2Service.fetchDataFromResourceServer(mockAuthorizedClient))
         .thenReturn(mockDataInJson);
-    when(koskiService.getKoulutusData(mockDataInJson))
-        .thenReturn(
-            List.of(
-                new KoulutusDto(
-                    null, // id
-                    ls(Kieli.FI, "nimi", Kieli.EN, "Name", Kieli.SV, "Namm"),
-                    ls(Kieli.FI, "Kuvaus", Kieli.EN, "Description", Kieli.SV, "Beskrivning"),
-                    LocalDate.of(2006, 1, 1), // alkuPvm
-                    null, // loppuPvm is null
-                    null, // osaamiset is null
-                    true, // osaamisetOdottaaTunnistusta
-                    null,
-                    null)));
     doAnswer(invocationOnMock -> null)
         .when(koskiOAuth2Service)
         .checkPersonIdMatches(any(JodUser.class), any(JsonNode.class));
 
     var expectedResponseJson =
-        """
-        [{"id":null,"nimi":{},"kuvaus":{},"alkuPvm":"2006-01-01","loppuPvm":null,"osaamiset":null}]
-        """;
+        TestUtil.getContentFromFile(GET_EDUCATIONS_DATA_API_RESPONSE, KoskiService.class);
     performGetEducationsDataFromKoski(status().isOk(), expectedResponseJson);
 
     verify(koskiOAuth2Service).fetchDataFromResourceServer(mockAuthorizedClient);
