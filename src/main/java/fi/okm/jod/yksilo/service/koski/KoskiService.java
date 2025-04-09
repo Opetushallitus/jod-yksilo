@@ -181,12 +181,14 @@ public class KoskiService {
     }
 
     var koulutusList = koulutusRepository.findAllById(uuids);
+    if (koulutusList.isEmpty()) {
+      return Collections.emptyList();
+    }
     var userId = user.getId();
     for (var koulutus : koulutusList) {
       if (!userId.equals(koulutus.getYksilo().getId())) {
-        log.warn(
-            "User {} attempted to access unauthorized koulutus id: {}", userId, koulutus.getId());
-        throw new WrongPersonException(userId);
+        throw new KoskiServiceException(
+            "Koulutus UUID " + koulutus.getId() + " belongs to another user.");
       }
     }
     return koulutusList.stream().map(Mapper::mapKoulutusForPoll).collect(Collectors.toList());
