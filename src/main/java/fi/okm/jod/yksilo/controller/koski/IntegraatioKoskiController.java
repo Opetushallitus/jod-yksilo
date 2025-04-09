@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnBean(KoskiOAuth2Config.class)
@@ -47,7 +49,6 @@ public class IntegraatioKoskiController {
     this.koskiService = koskiService;
   }
 
-  @ConditionalOnBean(KoskiOAuth2Config.class)
   @GetMapping("/koulutukset")
   @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
   ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
@@ -79,5 +80,12 @@ public class IntegraatioKoskiController {
       koskiOAuth2Service.unauthorize(authentication, request, response);
       throw e;
     }
+  }
+
+  @GetMapping("/osaamiset/tunnistus")
+  public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusTila(
+      @AuthenticationPrincipal JodUser user, @RequestParam("id") List<UUID> uuids) {
+    List<KoulutusDto> koulutusDtos = koskiService.getOsaamisetIdentified(user, uuids);
+    return ResponseEntity.ok(koulutusDtos);
   }
 }

@@ -13,11 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
 import java.util.Map;
@@ -30,7 +32,7 @@ class KoskiServiceTest {
 
   public KoskiServiceTest() {
     this.objectMapper = new ObjectMapper();
-    this.koskiService = new KoskiService();
+    this.koskiService = new KoskiService(mock(KoulutusRepository.class));
   }
 
   @Test

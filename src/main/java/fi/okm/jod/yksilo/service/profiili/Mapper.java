@@ -92,6 +92,21 @@ public final class Mapper {
             entity.getOsasuoritukset());
   }
 
+  public static KoulutusDto mapKoulutusForPoll(Koulutus entity) {
+    return entity == null
+        ? null
+        : new KoulutusDto(
+            entity.getId(),
+            null,
+            null,
+            null,
+            null,
+            extractOsaamisetUris(entity),
+            isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
+            isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
+            null);
+  }
+
   private static Set<URI> extractOsaamisetUris(Koulutus entity) {
     if (entity.getOsaamiset() == null) {
       return Collections.emptySet();
