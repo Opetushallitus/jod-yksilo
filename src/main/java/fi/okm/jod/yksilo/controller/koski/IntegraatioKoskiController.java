@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -84,10 +85,10 @@ public class IntegraatioKoskiController {
   }
 
   @GetMapping("/osaamiset/tunnistus")
-  public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusTila(
+  public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusStatusQuery(
       @AuthenticationPrincipal JodUser user,
-      @RequestParam("id") @Parameter(description = "Koulutus ids") List<UUID> uuids) {
-    List<KoulutusDto> koulutusDtos = koskiService.getOsaamisetIdentified(user, uuids);
+      @RequestParam("id") @Parameter(description = "Koulutus ids") @NotEmpty List<UUID> uuids) {
+    var koulutusDtos = koskiService.getOsaamisetIdentified(user, uuids);
     return ResponseEntity.ok(koulutusDtos);
   }
 }
