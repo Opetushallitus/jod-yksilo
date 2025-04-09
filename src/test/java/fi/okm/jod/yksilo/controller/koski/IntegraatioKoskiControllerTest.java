@@ -25,6 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.Koulutus;
+import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
@@ -36,6 +43,11 @@ import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -43,7 +55,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.TestPropertySource;
@@ -69,6 +83,8 @@ class IntegraatioKoskiControllerTest {
       "/api/integraatiot/koski/koulutukset";
   private static final String GET_EDUCATIONS_DATA_API_RESPONSE =
       "getEducationsDataFromKoski-response.json";
+  private static final String API_OSAAMISEN_TUNNISTUS_STATUS_QUERY =
+      "/api/integraatiot/koski/osaamiset/tunnistus";
 
   @Autowired private MockMvc mockMvc;
 
@@ -79,6 +95,8 @@ class IntegraatioKoskiControllerTest {
   @MockitoSpyBean private KoskiService koskiService;
 
   @MockitoBean private KoulutusRepository koulutusRepository;
+
+  @Autowired UserDetailsService userDetailsService;
 
   @WithUserDetails("test")
   @Test
@@ -200,5 +218,75 @@ class IntegraatioKoskiControllerTest {
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
 
     verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldReturnOsaamisetIdentified_whenValidRequestProvided() throws Exception {
+    var koulutusUUIDs =
+        List.of(
+            UUID.fromString("5edaca37-8ca1-4f18-918b-7aa73997c676"),
+            UUID.fromString("842a5528-06ac-455a-8d7e-7a401947b1f7"));
+    var yksilo = new Yksilo(UUID.nameUUIDFromBytes("test".getBytes()));
+
+    var koulutus1 = mock(Koulutus.class);
+    when(koulutus1.getYksilo()).thenReturn(yksilo);
+    when(koulutus1.getId()).thenReturn(koulutusUUIDs.get(0));
+    when(koulutus1.getNimi()).thenReturn(new LocalizedString(Map.of(Kieli.FI, "koulutus1")));
+    when(koulutus1.getAlkuPvm()).thenReturn(LocalDate.of(2023, 1, 1));
+    when(koulutus1.getLoppuPvm()).thenReturn(LocalDate.of(2023, 12, 31));
+    when(koulutus1.getOsaamisenTunnistusStatus()).thenReturn(OsaamisenTunnistusStatus.DONE);
+    var yksilonOsaaminen1 = mock(YksilonOsaaminen.class);
+    var osaaminen1 = mock(Osaaminen.class);
+    when(osaaminen1.getUri())
+        .thenReturn(
+            URI.create("http://data.europa.eu/esco/skill/008fa98b-dba6-4abf-909e-04299728e3eb"));
+    when(yksilonOsaaminen1.getOsaaminen()).thenReturn(osaaminen1);
+    when(koulutus1.getOsaamiset()).thenReturn(Set.of(yksilonOsaaminen1));
+    var koulutus2 = mock(Koulutus.class);
+    when(koulutus2.getYksilo()).thenReturn(yksilo);
+    when(koulutus2.getId()).thenReturn(koulutusUUIDs.get(1));
+    when(koulutus2.getNimi()).thenReturn(new LocalizedString(Map.of(Kieli.FI, "koulutus2")));
+    when(koulutus2.getAlkuPvm()).thenReturn(LocalDate.of(2024, 1, 1));
+    when(koulutus2.getOsaamisenTunnistusStatus()).thenReturn(OsaamisenTunnistusStatus.WAIT);
+    when(koulutusRepository.findAllById(koulutusUUIDs)).thenReturn(List.of(koulutus1, koulutus2));
+
+    var expectedJson =
+        String.format(
+            """
+        [
+            {
+                "id": "%s",
+                "osaamiset": [
+                    "%s"
+                ],
+                "osaamisetOdottaaTunnistusta": false,
+                "osaamisetTunnistusEpaonnistui": false
+            },
+            {
+                "id": "%s",
+                "osaamiset": [],
+                "osaamisetOdottaaTunnistusta": true,
+                "osaamisetTunnistusEpaonnistui": false
+            }
+        ]
+        """,
+            koulutusUUIDs.get(0), osaaminen1.getUri(), koulutusUUIDs.get(1));
+    mockMvc
+        .perform(
+            get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY)
+                .param("id", koulutusUUIDs.get(0).toString())
+                .param("id", koulutusUUIDs.get(1).toString())
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldReturnBadRequest_whenNoIdsProvided() throws Exception {
+    mockMvc
+        .perform(get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
   }
 }

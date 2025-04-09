@@ -88,7 +88,6 @@ public class IntegraatioKoskiController {
   public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusStatusQuery(
       @AuthenticationPrincipal JodUser user,
       @RequestParam("id") @Parameter(description = "Koulutus ids") @NotEmpty List<UUID> uuids) {
-    var koulutusDtos = koskiService.getOsaamisetIdentified(user, uuids);
-    return ResponseEntity.ok(koulutusDtos);
+    return ResponseEntity.ok(koskiService.getOsaamisetIdentified(user, uuids));
   }
 }
