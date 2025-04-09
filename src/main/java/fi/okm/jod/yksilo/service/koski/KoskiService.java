@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -172,6 +173,7 @@ public class KoskiService {
     return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
   }
 
+  @Cacheable(value = "osaamisetIdentified", key = "'user_' + #user.id")
   @Transactional(readOnly = true)
   public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
     if (uuids.size() > (Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS)) {
