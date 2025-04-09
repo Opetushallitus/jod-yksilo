@@ -191,6 +191,6 @@ public class KoskiService {
             "Koulutus UUID " + koulutus.getId() + " belongs to another user.");
       }
     }
-    return koulutusList.stream().map(Mapper::mapKoulutusForPoll).collect(Collectors.toList());
+    return koulutusList.stream().map(Mapper::mapKoulutusForPoll).toList();
   }
 }
