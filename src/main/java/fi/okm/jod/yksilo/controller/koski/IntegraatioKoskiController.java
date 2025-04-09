@@ -17,11 +17,15 @@ import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
+import fi.okm.jod.yksilo.validation.Limits;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnBean(KoskiOAuth2Config.class)
@@ -47,7 +52,6 @@ public class IntegraatioKoskiController {
     this.koskiService = koskiService;
   }
 
-  @ConditionalOnBean(KoskiOAuth2Config.class)
   @GetMapping("/koulutukset")
   @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
   ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
@@ -79,5 +83,15 @@ public class IntegraatioKoskiController {
       koskiOAuth2Service.unauthorize(authentication, request, response);
       throw e;
     }
+  }
+
+  @GetMapping("/osaamiset/tunnistus")
+  public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusStatusQuery(
+      @AuthenticationPrincipal JodUser user,
+      @RequestParam("ids")
+          @Parameter(description = "Koulutus ids")
+          @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS)
+          List<UUID> uuids) {
+    return ResponseEntity.ok(koskiService.getOsaamisetIdentified(user, uuids));
   }
 }

@@ -10,9 +10,14 @@
 package fi.okm.jod.yksilo.service.koski;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.repository.KoulutusRepository;
+import fi.okm.jod.yksilo.service.profiili.Mapper;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -20,20 +25,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+@ConditionalOnBean(KoskiOAuth2Config.class)
 @Service
 @Slf4j
 public class KoskiService {
 
   private static final String KOULUTUSMODUULI_FIELD = "koulutusmoduuli";
 
-  public KoskiService() {
+  private final KoulutusRepository koulutusRepository;
+
+  public KoskiService(KoulutusRepository koulutusRepository) {
+    this.koulutusRepository = koulutusRepository;
     log.info("Creating KoskiService");
   }
 
@@ -158,5 +170,14 @@ public class KoskiService {
   private static LocalDate getLocalDate(JsonNode nimet, String path) {
     JsonNode node = readJsonProperty(nimet, path);
     return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
+  }
+
+  @Transactional(readOnly = true)
+  public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
+    var statusesToReturn = Set.of(OsaamisenTunnistusStatus.DONE, OsaamisenTunnistusStatus.FAIL);
+    var koulutusList =
+        koulutusRepository.findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
+            user.getId(), uuids, statusesToReturn);
+    return koulutusList.stream().map(Mapper::mapKoulutus).toList();
   }
 }
