@@ -180,16 +180,10 @@ public class KoskiService {
       throw new KoskiServiceException("UUID limit exceeded.");
     }
 
-    var koulutusList = koulutusRepository.findAllById(uuids);
+    var userId = user.getId();
+    var koulutusList = koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(userId, uuids);
     if (koulutusList.isEmpty()) {
       return Collections.emptyList();
-    }
-    var userId = user.getId();
-    for (var koulutus : koulutusList) {
-      if (!userId.equals(koulutus.getYksilo().getId())) {
-        throw new KoskiServiceException(
-            "Koulutus UUID " + koulutus.getId() + " belongs to another user.");
-      }
     }
     return koulutusList.stream().map(Mapper::mapKoulutusForPoll).toList();
   }

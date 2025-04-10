@@ -38,4 +38,6 @@ public interface KoulutusRepository
 
   Optional<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(
       UUID id, UUID tyopaikkaId, UUID id1);
+
+  List<Koulutus> findByKokonaisuusYksiloIdAndIdIn(UUID yksiloId, List<UUID> uuids);
 }

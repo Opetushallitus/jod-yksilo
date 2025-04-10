@@ -208,27 +208,4 @@ class KoskiServiceTest extends AbstractServiceTest {
             KoskiServiceException.class, () -> koskiService.getOsaamisetIdentified(user, uuids));
     assertThat(exception.getMessage()).contains("exceeded");
   }
-
-  @Test
-  void testGetOsaamisetIdentified_unauthorizedAccess() {
-    var em = entityManager.getEntityManager();
-
-    var yksilo = em.find(Yksilo.class, user.getId());
-    var koulutusKokonaisuus1 = new KoulutusKokonaisuus(yksilo, ls("Koulu1"));
-    entityManager.persist(koulutusKokonaisuus1);
-    var koulutus1 = createKoulutus1(entityManager, koulutusKokonaisuus1, yksilo);
-
-    var koulutusKokonaisuus2 =
-        new KoulutusKokonaisuus(em.find(Yksilo.class, user2.getId()), ls("Koulu2"));
-    entityManager.persist(koulutusKokonaisuus2);
-    var koulutus2 = createKoulutus2(entityManager, koulutusKokonaisuus2);
-
-    var koulutusIds = List.of(koulutus1.getId(), koulutus2.getId());
-    assertThat(
-            assertThrows(
-                    KoskiServiceException.class,
-                    () -> koskiService.getOsaamisetIdentified(user, koulutusIds))
-                .getMessage())
-        .contains("another user");
-  }
 }

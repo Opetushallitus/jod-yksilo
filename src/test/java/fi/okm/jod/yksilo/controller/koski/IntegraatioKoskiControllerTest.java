@@ -249,7 +249,8 @@ class IntegraatioKoskiControllerTest {
     when(koulutus2.getNimi()).thenReturn(new LocalizedString(Map.of(Kieli.FI, "koulutus2")));
     when(koulutus2.getAlkuPvm()).thenReturn(LocalDate.of(2024, 1, 1));
     when(koulutus2.getOsaamisenTunnistusStatus()).thenReturn(OsaamisenTunnistusStatus.WAIT);
-    when(koulutusRepository.findAllById(koulutusUUIDs)).thenReturn(List.of(koulutus1, koulutus2));
+    when(koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(yksilo.getId(), koulutusUUIDs))
+        .thenReturn(List.of(koulutus1, koulutus2));
 
     var expectedJson =
         String.format(
