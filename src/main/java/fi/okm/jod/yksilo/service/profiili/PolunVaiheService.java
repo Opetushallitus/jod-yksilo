@@ -20,7 +20,7 @@ import fi.okm.jod.yksilo.repository.PolunVaiheRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -101,7 +101,7 @@ public class PolunVaiheService {
     vaiheRepository.delete(entity);
   }
 
-  private List<Osaaminen> getOsaamiset(PolunVaihe vaihe, PolunVaiheDto dto) {
+  private Set<Osaaminen> getOsaamiset(PolunVaihe vaihe, PolunVaiheDto dto) {
     var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
     var suunnitelma = vaihe.getPolunSuunnitelma();

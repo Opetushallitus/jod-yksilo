@@ -17,9 +17,9 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SequencedMap;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +37,7 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
   Page<Osaaminen> findAll(Pageable page);
 
-  List<Osaaminen> findByUriIn(Collection<URI> uri);
+  Set<Osaaminen> findByUriIn(Collection<URI> uri);
 
   @Transactional(readOnly = true)
   default SequencedMap<URI, OsaaminenDto> loadAll() {
