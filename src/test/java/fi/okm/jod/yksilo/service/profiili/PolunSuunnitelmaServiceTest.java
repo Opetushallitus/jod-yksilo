@@ -34,7 +34,12 @@ import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/osaaminen.sql")
 @Sql("/data/mahdollisuudet-test-data.sql")
-@Import({PolunSuunnitelmaService.class, PaamaaraService.class, YksilonOsaaminenService.class})
+@Import({
+  PolunSuunnitelmaService.class,
+  PaamaaraService.class,
+  YksilonOsaaminenService.class,
+  MuuOsaaminenService.class
+})
 class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;

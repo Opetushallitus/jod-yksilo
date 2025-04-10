@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.domain.OsaamisenLahde;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
@@ -76,47 +77,50 @@ public class YksilonOsaaminenService {
     }
   }
 
-  List<YksilonOsaaminen> add(OsaamisenLahde lahde, Set<URI> ids) {
+  Set<Osaaminen> getOsaamiset(Set<URI> ids) {
     var osaamiset = osaamisetRepository.findByUriIn(ids);
     if (osaamiset.size() != ids.size()) {
-      throw new ServiceValidationException("Unknown osaaminen");
+      throw new ServiceValidationException("Unknown Osaaminen");
     }
-    var entities =
-        repository.saveAll(osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList());
-    lahde.getOsaamiset().addAll(entities);
-    return entities;
+    return osaamiset;
   }
 
-  void update(OsaamisenLahde lahde, Set<URI> originalIds) {
-    var ids = new HashSet<>(originalIds);
+  void add(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
+    update(lahde, osaamiset, false);
+  }
 
+  void update(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
+    update(lahde, osaamiset, true);
+  }
+
+  void deleteAll(Set<YksilonOsaaminen> osaamiset) {
+    repository.deleteAll(osaamiset);
+  }
+
+  /*
+   * Update osaamiset for a given OsaamisenLahde. Filters duplicates and optinally removes Osaaminen
+   * not present in the updated set.
+   */
+  private void update(OsaamisenLahde lahde, Set<Osaaminen> updated, boolean remove) {
+    var updatedOsaaminen = new HashSet<>(updated);
     var deleted = new ArrayList<YksilonOsaaminen>();
 
     for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {
       var o = i.next();
-      final URI uri = o.getOsaaminen().getUri();
-      if (!ids.contains(uri)) {
+      if (updatedOsaaminen.contains(o.getOsaaminen())) {
+        // filter out duplicates
+        updatedOsaaminen.remove(o.getOsaaminen());
+      } else if (remove) {
         i.remove();
         deleted.add(o);
-      } else {
-        ids.remove(uri);
       }
     }
-    repository.deleteAllInBatch(deleted);
-
-    var osaamiset = osaamisetRepository.findByUriIn(ids);
-    if (osaamiset.size() != ids.size()) {
-      throw new ServiceValidationException("Unknown osaaminen");
-    }
+    repository.deleteAll(deleted);
 
     lahde
         .getOsaamiset()
         .addAll(
             repository.saveAll(
-                osaamiset.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
-  }
-
-  void deleteAll(Set<YksilonOsaaminen> osaamiset) {
-    repository.deleteAll(osaamiset);
+                updatedOsaaminen.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
   }
 }

@@ -12,6 +12,8 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import java.net.URI;
@@ -30,23 +32,31 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MuuOsaaminenService {
 
-  private final YksilonOsaaminenRepository repository;
+  private final YksilonOsaaminenRepository osaaminen;
   private final YksiloRepository yksilot;
-  private final YksilonOsaaminenService yksilonOsaaminenService;
+  private final YksilonOsaaminenService osaaminenService;
 
   public Set<URI> findAll(JodUser user) {
-    return yksilonOsaaminenService.findAll(user, OsaamisenLahdeTyyppi.MUU_OSAAMINEN, null).stream()
+    return osaaminenService.findAll(user, OsaamisenLahdeTyyppi.MUU_OSAAMINEN, null).stream()
         .map(yo -> yo.osaaminen().uri())
         .collect(Collectors.toSet());
   }
 
   public void update(JodUser user, Set<URI> ids) {
-    yksilonOsaaminenService.update(
-        new MuuOsaaminen(
-            yksilot.getReferenceById(user.getId()),
-            new HashSet<>(
-                repository.findAllByYksiloIdAndLahde(
-                    user.getId(), OsaamisenLahdeTyyppi.MUU_OSAAMINEN, Sort.unsorted()))),
-        ids);
+    osaaminenService.update(
+        getMuuOsaaminen(yksilot.getReferenceById(user.getId())),
+        osaaminenService.getOsaamiset(ids));
+  }
+
+  void add(Yksilo yksilo, Set<Osaaminen> osaamiset) {
+    osaaminenService.add(getMuuOsaaminen(yksilo), osaamiset);
+  }
+
+  private MuuOsaaminen getMuuOsaaminen(Yksilo yksilo) {
+    return new MuuOsaaminen(
+        yksilo,
+        new HashSet<>(
+            osaaminen.findAllByYksiloIdAndLahde(
+                yksilo.getId(), OsaamisenLahdeTyyppi.MUU_OSAAMINEN, Sort.unsorted())));
   }
 }

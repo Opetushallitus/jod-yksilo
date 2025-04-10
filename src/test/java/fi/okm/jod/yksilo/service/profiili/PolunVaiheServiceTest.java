@@ -44,7 +44,8 @@ import org.springframework.test.context.jdbc.Sql;
   PolunVaiheService.class,
   PolunSuunnitelmaService.class,
   PaamaaraService.class,
-  YksilonOsaaminenService.class
+  YksilonOsaaminenService.class,
+  MuuOsaaminenService.class
 })
 class PolunVaiheServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;

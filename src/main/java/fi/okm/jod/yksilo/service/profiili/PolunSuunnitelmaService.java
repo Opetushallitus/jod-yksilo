@@ -10,8 +10,6 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.domain.MuuOsaaminen;
-import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
@@ -20,17 +18,13 @@ import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.PaamaaraRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
-import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolunSuunnitelmaService {
   private final PaamaaraRepository paamaaraRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
-  private final YksilonOsaaminenService yksilonOsaaminenService;
   private final OsaaminenRepository osaamisetRepository;
-  private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
+  private final MuuOsaaminenService muuOsaaminenService;
 
   @Transactional(readOnly = true)
   public PolunSuunnitelmaDto get(JodUser user, UUID paamaaraId, UUID id) {
@@ -92,19 +85,9 @@ public class PolunSuunnitelmaService {
     entity.setNimi(dto.nimi());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
-      var yksilo = entity.getPaamaara().getYksilo();
-      var yksilonOsaamiset =
-          yksilonOsaaminenRepository.findAllByYksiloIdAndLahde(
-              yksilo.getId(), OsaamisenLahdeTyyppi.MUU_OSAAMINEN, Sort.unsorted());
-      var yksilonOsaamisetUris =
-          yksilonOsaamiset.stream().map(o -> o.getOsaaminen().getUri()).toList();
-      var newYksilonOsaamiset =
-          osaamiset.stream()
-              .filter(o -> !yksilonOsaamisetUris.contains(o.toString()))
-              .collect(Collectors.toUnmodifiableSet());
-      yksilonOsaaminenService.add(
-          new MuuOsaaminen(yksilo, new HashSet<>(yksilonOsaamiset)), newYksilonOsaamiset);
-      entity.setOsaamiset(getOsaamiset(entity, dto));
+      var entities = getOsaamiset(entity, dto);
+      entity.setOsaamiset(entities);
+      muuOsaaminenService.add(entity.getPaamaara().getYksilo(), entities);
     }
     if (dto.ignoredOsaamiset() != null) {
       entity.setIgnoredOsaamiset(getIgnoredOsaamiset(entity, dto));
@@ -116,29 +99,26 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-  private List<Osaaminen> getOsaamiset(
-      PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
+  private Set<Osaaminen> getOsaamiset(PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
     var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
     var vaiheOsaamiset =
         suunnitelma.getVaiheet().stream()
             .flatMap(v -> v.getOsaamiset().stream())
-            .map(Osaaminen::getUri)
-            .map(Objects::toString)
             .collect(Collectors.toSet());
 
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     } else if (!suunnitelma.getPaamaara().getOsaamiset().containsAll(ids)) {
       throw new ServiceValidationException("Osaaminen not in paamaara");
-    } else if (ids.stream().anyMatch(vaiheOsaamiset::contains)) {
+    } else if (osaamiset.stream().anyMatch(vaiheOsaamiset::contains)) {
       throw new ServiceValidationException("Osaaminen in vaihe");
     }
 
     return osaamiset;
   }
 
-  private List<Osaaminen> getIgnoredOsaamiset(
+  private Set<Osaaminen> getIgnoredOsaamiset(
       PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
     var ids = dto.ignoredOsaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
