@@ -42,7 +42,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
   private UUID kokonaisuusId;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     var kokonaisuus =
         new KoulutusKokonaisuus(
             entityManager.find(Yksilo.class, user.getId()),
@@ -199,7 +199,8 @@ class KoulutusServiceTest extends AbstractServiceTest {
     entityManager.persist(koulutus2);
     simulateCommit();
 
-    service.updateOsaamisetTunnistusStatus(koulutus1, OsaamisenTunnistusStatus.DONE, null);
+    service.updateOsaamisetTunnistusStatus(
+        koulutus1, OsaamisenTunnistusStatus.DONE, Set.of(URI.create("urn:osaaminen1")));
     service.updateOsaamisetTunnistusStatus(koulutus2, OsaamisenTunnistusStatus.FAIL, null);
     simulateCommit();
 
@@ -207,7 +208,9 @@ class KoulutusServiceTest extends AbstractServiceTest {
     var updatedKoulutus2 = entityManager.find(Koulutus.class, koulutus2.getId());
 
     assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus1.getOsaamisenTunnistusStatus());
+    assertEquals(1, updatedKoulutus1.getOsaamiset().size());
     assertEquals(OsaamisenTunnistusStatus.FAIL, updatedKoulutus2.getOsaamisenTunnistusStatus());
+    assertEquals(0, updatedKoulutus2.getOsaamiset().size());
   }
 
   @Test

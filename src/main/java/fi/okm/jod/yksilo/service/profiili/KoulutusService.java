@@ -127,6 +127,8 @@ public class KoulutusService {
     koulutus.setOsaamisenTunnistusStatus(newStatus);
     if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
       osaamiset.add(koulutus, osaamiset.getOsaamiset(newOsaamiset));
+    } else {
+      koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.FAIL);
     }
     koulutukset.save(koulutus);
   }
