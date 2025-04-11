@@ -176,9 +176,6 @@ public class KoskiService {
   @Transactional(readOnly = true)
   public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
     var koulutusList = koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(user.getId(), uuids);
-    if (koulutusList.isEmpty()) {
-      return Collections.emptyList();
-    }
-    return koulutusList.stream().map(Mapper::mapKoulutusForPoll).toList();
+    return koulutusList.stream().map(Mapper::mapKoulutus).toList();
   }
 }
