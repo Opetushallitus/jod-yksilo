@@ -122,10 +122,14 @@ public class KoulutusService {
     return new NotFoundException("Not found");
   }
 
-  public void updateOsaamisetTunnistusStatus(
+  public void completeOsaamisetTunnistus(
       Koulutus koulutus, OsaamisenTunnistusStatus newStatus, @Nullable Set<URI> newOsaamiset) {
     koulutus.setOsaamisenTunnistusStatus(newStatus);
-    if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
+    if (newStatus.compareTo(OsaamisenTunnistusStatus.DONE) == 0
+        && (newOsaamiset == null || newOsaamiset.isEmpty())) {
+      koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.FAIL);
+
+    } else if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
       osaamiset.add(koulutus, osaamiset.getOsaamiset(newOsaamiset));
     }
     koulutukset.save(koulutus);
