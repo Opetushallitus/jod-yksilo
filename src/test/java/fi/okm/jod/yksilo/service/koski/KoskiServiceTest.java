@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
+import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -16,22 +18,46 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.mapping.MappingConfig;
+import fi.okm.jod.yksilo.controller.koski.TestKoskiOAuth2Config;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.Koulutus;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.entity.Toimenkuva;
+import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
+import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 
-class KoskiServiceTest {
+@Sql(value = "/data/osaaminen.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@TestPropertySource(properties = "jod.koski.enabled=true")
+@Import({
+  ErrorInfoFactory.class,
+  KoskiOAuth2Config.class,
+  TestKoskiOAuth2Config.class,
+  KoskiService.class,
+  MappingConfig.class,
+  ObjectMapper.class,
+})
+class KoskiServiceTest extends AbstractServiceTest {
 
-  private final KoskiService koskiService;
-  private final ObjectMapper objectMapper;
-
-  public KoskiServiceTest() {
-    this.objectMapper = new ObjectMapper();
-    this.koskiService = new KoskiService();
-  }
+  @Autowired private KoskiService koskiService;
+  @Autowired private ObjectMapper objectMapper;
 
   @Test
   void getKoulutusData() throws JsonProcessingException {
@@ -104,5 +130,58 @@ class KoskiServiceTest {
     assertNotNull(result);
     assertEquals(2, result.asMap().size());
     assertLocalizedString(result, "Avoimen opinnot: Lisätietoja", "Öppna studier", null);
+  }
+
+  @Test
+  void testGetOsaamisetIdentified_validData() {
+    var em = entityManager.getEntityManager();
+
+    var yksilo = em.find(Yksilo.class, user.getId());
+    var koulutusKokonaisuus = new KoulutusKokonaisuus(yksilo, ls("Koulu1"));
+    entityManager.persist(koulutusKokonaisuus);
+    var koulutus1 = createKoulutus1(entityManager, koulutusKokonaisuus, yksilo);
+    var koulutus2 = createKoulutus2(entityManager, koulutusKokonaisuus);
+
+    var result =
+        koskiService.getOsaamisetIdentified(user, List.of(koulutus1.getId(), koulutus2.getId()));
+
+    assertEquals(1, result.size());
+    var koulutusDto = result.getFirst();
+    assertEquals(koulutus1.getId(), koulutusDto.id());
+    assertThat(koulutusDto.osaamiset()).hasSize(1);
+    assertThat(koulutusDto.osaamisetOdottaaTunnistusta()).isFalse();
+    assertThat(koulutusDto.osaamisetTunnistusEpaonnistui()).isFalse();
+  }
+
+  private static Koulutus createKoulutus1(
+      TestEntityManager entityManager, KoulutusKokonaisuus koulutusKokonaisuus, Yksilo yksilo) {
+    var koulutus1 = new Koulutus(koulutusKokonaisuus);
+    koulutus1.setNimi(new LocalizedString(Map.of(Kieli.FI, "Koulutus 1")));
+    koulutus1.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.DONE);
+    var tyopaikka = new Tyopaikka(yksilo, ls("Testi"));
+    var toimenkuva = new Toimenkuva(tyopaikka);
+    toimenkuva.setNimi(ls("Toimenkuva"));
+    koulutus1
+        .getOsaamiset()
+        .add(new YksilonOsaaminen(toimenkuva, entityManager.find(Osaaminen.class, 1L)));
+    koulutus1 = entityManager.persist(koulutus1);
+    return koulutus1;
+  }
+
+  private static Koulutus createKoulutus2(
+      TestEntityManager entityManager, KoulutusKokonaisuus koulutusKokonaisuus) {
+    var koulutus2 = new Koulutus(koulutusKokonaisuus);
+    koulutus2.setNimi(new LocalizedString(Map.of(Kieli.FI, "Koulutus 2")));
+    koulutus2.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
+    koulutus2 = entityManager.persist(koulutus2);
+    return koulutus2;
+  }
+
+  @Test
+  void testGetOsaamisetIdentified_emptyResult() {
+    var result = koskiService.getOsaamisetIdentified(user, List.of());
+
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 }
