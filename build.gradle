@@ -65,6 +65,9 @@ dependencies {
 
   implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.3.0')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
+  implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
+  implementation 'org.springframework.cloud:spring-cloud-context'
+  implementation 'org.springframework.cloud:spring-cloud-commons'
 
   implementation 'org.springframework.security:spring-security-saml2-service-provider'
 
@@ -147,7 +150,7 @@ tasks.named('test', Test) {
   testLogging {
     events("passed", "skipped", "failed")
   }
-  maxParallelForks=1
+  maxParallelForks = 1
 }
 
 checkstyle {
