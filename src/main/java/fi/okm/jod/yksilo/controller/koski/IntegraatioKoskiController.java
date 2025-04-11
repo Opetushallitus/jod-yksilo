@@ -17,12 +17,13 @@ import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
+import fi.okm.jod.yksilo.validation.Limits;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +88,10 @@ public class IntegraatioKoskiController {
   @GetMapping("/osaamiset/tunnistus")
   public ResponseEntity<List<KoulutusDto>> osaamisenTunnistusStatusQuery(
       @AuthenticationPrincipal JodUser user,
-      @RequestParam("id") @Parameter(description = "Koulutus ids") @NotEmpty List<UUID> uuids) {
+      @RequestParam("ids")
+          @Parameter(description = "Koulutus ids")
+          @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS)
+          List<UUID> uuids) {
     return ResponseEntity.ok(koskiService.getOsaamisetIdentified(user, uuids));
   }
 }

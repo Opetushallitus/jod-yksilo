@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,12 +34,9 @@ import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.testutil.TestUtil;
-import fi.okm.jod.yksilo.validation.Limits;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -194,18 +190,5 @@ class KoskiServiceTest extends AbstractServiceTest {
 
     assertNotNull(result);
     assertTrue(result.isEmpty());
-  }
-
-  @Test
-  void testGetOsaamisetIdentified_exceedsUuidLimit() {
-    var uuids =
-        Stream.generate(UUID::randomUUID)
-            .limit(Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS + 1)
-            .toList();
-
-    var exception =
-        assertThrows(
-            KoskiServiceException.class, () -> koskiService.getOsaamisetIdentified(user, uuids));
-    assertThat(exception.getMessage()).contains("exceeded");
   }
 }

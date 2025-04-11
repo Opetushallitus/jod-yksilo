@@ -17,7 +17,6 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.profiili.Mapper;
-import fi.okm.jod.yksilo.validation.Limits;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -176,12 +175,7 @@ public class KoskiService {
   @Cacheable(value = "osaamisetIdentified", key = "'user_' + #user.id")
   @Transactional(readOnly = true)
   public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
-    if (uuids.size() > (Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS)) {
-      throw new KoskiServiceException("UUID limit exceeded.");
-    }
-
-    var userId = user.getId();
-    var koulutusList = koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(userId, uuids);
+    var koulutusList = koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(user.getId(), uuids);
     if (koulutusList.isEmpty()) {
       return Collections.emptyList();
     }

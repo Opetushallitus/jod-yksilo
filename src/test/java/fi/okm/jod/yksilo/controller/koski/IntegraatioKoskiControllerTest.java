@@ -41,6 +41,7 @@ import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.ResourceServerException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.testutil.TestUtil;
+import fi.okm.jod.yksilo.validation.Limits;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -65,6 +67,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({
@@ -253,31 +256,40 @@ class IntegraatioKoskiControllerTest {
         .thenReturn(List.of(koulutus1, koulutus2));
 
     var expectedJson =
-        String.format(
-            """
-        [
-            {
-                "id": "%s",
-                "osaamiset": [
-                    "%s"
-                ],
-                "osaamisetOdottaaTunnistusta": false,
-                "osaamisetTunnistusEpaonnistui": false
-            },
-            {
-                "id": "%s",
-                "osaamiset": [],
-                "osaamisetOdottaaTunnistusta": true,
-                "osaamisetTunnistusEpaonnistui": false
-            }
-        ]
-        """,
-            koulutusUUIDs.get(0), osaaminen1.getUri(), koulutusUUIDs.get(1));
+        """
+            [
+                {
+                    "id": "5edaca37-8ca1-4f18-918b-7aa73997c676",
+                    "nimi": {
+                        "fi": "koulutus1"
+                    },
+                    "alkuPvm": "2023-01-01",
+                    "loppuPvm": "2023-12-31",
+                    "osaamiset": [
+                        "http://data.europa.eu/esco/skill/008fa98b-dba6-4abf-909e-04299728e3eb"
+                    ],
+                    "osaamisetOdottaaTunnistusta": false,
+                    "osaamisetTunnistusEpaonnistui": false,
+                    "osasuoritukset": []
+                },
+                {
+                    "id": "842a5528-06ac-455a-8d7e-7a401947b1f7",
+                    "nimi": {
+                        "fi": "koulutus2"
+                    },
+                    "alkuPvm": "2024-01-01",
+                    "osaamiset": [],
+                    "osaamisetOdottaaTunnistusta": true,
+                    "osaamisetTunnistusEpaonnistui": false,
+                    "osasuoritukset": []
+                }
+            ]
+            """;
     mockMvc
         .perform(
             get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY)
-                .param("id", koulutusUUIDs.get(0).toString())
-                .param("id", koulutusUUIDs.get(1).toString())
+                .param("ids", koulutusUUIDs.get(0).toString())
+                .param("ids", koulutusUUIDs.get(1).toString())
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().json(expectedJson));
@@ -288,6 +300,22 @@ class IntegraatioKoskiControllerTest {
   void shouldReturnBadRequest_whenNoIdsProvided() throws Exception {
     mockMvc
         .perform(get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldReturnBadRequest_whenExceedsUuidLimit() throws Exception {
+    var maxAllowedUuids = Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS;
+    var commaSeparatedUuids =
+        StringUtils.join(
+            ',', Stream.generate(UUID::randomUUID).limit(maxAllowedUuids + 1).toList());
+
+    mockMvc
+        .perform(
+            get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("ids", commaSeparatedUuids))
         .andExpect(status().isBadRequest());
   }
 }
