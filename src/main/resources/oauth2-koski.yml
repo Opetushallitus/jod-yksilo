@@ -1,12 +1,5 @@
 ---
 spring:
-  ssl:
-    bundle:
-      pem:
-        koski-ssl-bundle:
-          keystore:
-            certificate: "${jod.koski.client-cert}"
-            private-key: "${jod.koski.client-key}"
   security:
     oauth2:
       client:
@@ -27,8 +20,9 @@ spring:
 jod:
   koski:
     enabled: false
-    client-cert: ../koski/koski-luovutuspalvelu/proxy/test/testca/certs/client.crt
-    client-key: ../koski/koski-luovutuspalvelu/proxy/test/testca/private/client.key
+    certificate:
+      full-chain: ../koski/koski-luovutuspalvelu/proxy/test/testca/certs/client.crt
+      private-key: ../koski/koski-luovutuspalvelu/proxy/test/testca/private/client.key
     oauth2:
       client-id: omadataoauth2sample
       provider:
