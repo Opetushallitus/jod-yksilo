@@ -145,19 +145,12 @@ class KoskiServiceTest extends AbstractServiceTest {
     var result =
         koskiService.getOsaamisetIdentified(user, List.of(koulutus1.getId(), koulutus2.getId()));
 
-    assertEquals(2, result.size());
-    for (var koulutusDto : result) {
-      if (koulutusDto.id().equals(koulutus1.getId())) {
-        assertThat(koulutusDto.osaamiset()).hasSize(1);
-        assertThat(koulutusDto.osaamisetOdottaaTunnistusta()).isFalse();
-        assertThat(koulutusDto.osaamisetTunnistusEpaonnistui()).isFalse();
-
-      } else {
-        assertThat(koulutusDto.osaamiset()).isEmpty();
-        assertThat(koulutusDto.osaamisetOdottaaTunnistusta()).isTrue();
-        assertThat(koulutusDto.osaamisetTunnistusEpaonnistui()).isFalse();
-      }
-    }
+    assertEquals(1, result.size());
+    var koulutusDto = result.getFirst();
+    assertEquals(koulutus1.getId(), koulutusDto.id());
+    assertThat(koulutusDto.osaamiset()).hasSize(1);
+    assertThat(koulutusDto.osaamisetOdottaaTunnistusta()).isFalse();
+    assertThat(koulutusDto.osaamisetTunnistusEpaonnistui()).isFalse();
   }
 
   private static Koulutus createKoulutus1(

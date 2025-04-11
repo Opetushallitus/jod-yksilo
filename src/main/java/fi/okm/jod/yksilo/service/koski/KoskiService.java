@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.profiili.Mapper;
 import java.time.LocalDate;
@@ -174,6 +175,10 @@ public class KoskiService {
   @Transactional(readOnly = true)
   public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
     var koulutusList = koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(user.getId(), uuids);
-    return koulutusList.stream().map(Mapper::mapKoulutus).toList();
+    var statusesToReturn = Set.of(OsaamisenTunnistusStatus.DONE, OsaamisenTunnistusStatus.FAIL);
+    return koulutusList.stream()
+        .filter(k -> statusesToReturn.contains(k.getOsaamisenTunnistusStatus()))
+        .map(Mapper::mapKoulutus)
+        .toList();
   }
 }
