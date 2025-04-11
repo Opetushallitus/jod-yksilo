@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
+import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,13 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
-import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
@@ -45,9 +42,8 @@ import fi.okm.jod.yksilo.validation.Limits;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -64,9 +60,9 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
@@ -95,7 +91,7 @@ class IntegraatioKoskiControllerTest {
 
   @MockitoBean private KoskiOAuth2Service koskiOAuth2Service;
 
-  @MockitoSpyBean private KoskiService koskiService;
+  @MockitoBean private KoskiService koskiService;
 
   @MockitoBean private KoulutusRepository koulutusRepository;
 
@@ -113,6 +109,7 @@ class IntegraatioKoskiControllerTest {
     doAnswer(invocationOnMock -> null)
         .when(koskiOAuth2Service)
         .checkPersonIdMatches(any(JodUser.class), any(JsonNode.class));
+    when(koskiService.getKoulutusData(mockDataInJson)).thenCallRealMethod();
 
     var expectedResponseJson =
         TestUtil.getContentFromFile(GET_EDUCATIONS_DATA_API_RESPONSE, KoskiService.class);
@@ -165,6 +162,7 @@ class IntegraatioKoskiControllerTest {
       ResultMatcher expectedResult, String expectedResponseJson) throws Exception {
     mockMvc
         .perform(get(API_KOSKI_KOULUTUKSET_ENDPOINT))
+        .andDo(MockMvcResultHandlers.print())
         .andExpect(expectedResult)
         .andExpect(content().json(expectedResponseJson));
   }
@@ -230,61 +228,30 @@ class IntegraatioKoskiControllerTest {
         List.of(
             UUID.fromString("5edaca37-8ca1-4f18-918b-7aa73997c676"),
             UUID.fromString("842a5528-06ac-455a-8d7e-7a401947b1f7"));
-    var yksilo = new Yksilo(UUID.nameUUIDFromBytes("test".getBytes()));
 
-    var koulutus1 = mock(Koulutus.class);
-    when(koulutus1.getYksilo()).thenReturn(yksilo);
-    when(koulutus1.getId()).thenReturn(koulutusUUIDs.get(0));
-    when(koulutus1.getNimi()).thenReturn(new LocalizedString(Map.of(Kieli.FI, "koulutus1")));
-    when(koulutus1.getAlkuPvm()).thenReturn(LocalDate.of(2023, 1, 1));
-    when(koulutus1.getLoppuPvm()).thenReturn(LocalDate.of(2023, 12, 31));
-    when(koulutus1.getOsaamisenTunnistusStatus()).thenReturn(OsaamisenTunnistusStatus.DONE);
-    var yksilonOsaaminen1 = mock(YksilonOsaaminen.class);
-    var osaaminen1 = mock(Osaaminen.class);
-    when(osaaminen1.getUri())
-        .thenReturn(
-            URI.create("http://data.europa.eu/esco/skill/008fa98b-dba6-4abf-909e-04299728e3eb"));
-    when(yksilonOsaaminen1.getOsaaminen()).thenReturn(osaaminen1);
-    when(koulutus1.getOsaamiset()).thenReturn(Set.of(yksilonOsaaminen1));
-    var koulutus2 = mock(Koulutus.class);
-    when(koulutus2.getYksilo()).thenReturn(yksilo);
-    when(koulutus2.getId()).thenReturn(koulutusUUIDs.get(1));
-    when(koulutus2.getNimi()).thenReturn(new LocalizedString(Map.of(Kieli.FI, "koulutus2")));
-    when(koulutus2.getAlkuPvm()).thenReturn(LocalDate.of(2024, 1, 1));
-    when(koulutus2.getOsaamisenTunnistusStatus()).thenReturn(OsaamisenTunnistusStatus.WAIT);
-    when(koulutusRepository.findByKokonaisuusYksiloIdAndIdIn(yksilo.getId(), koulutusUUIDs))
+    var koulutus1 =
+        KoulutusDto.builder()
+            .id(koulutusUUIDs.get(0))
+            .nimi(ls("koulutus1"))
+            .osaamiset(
+                Set.of(
+                    URI.create(
+                        "http://data.europa.eu/esco/skill/008fa98b-dba6-4abf-909e-04299728e3eb")))
+            .osaamisetOdottaaTunnistusta(true)
+            .osaamisetTunnistusEpaonnistui(false)
+            .build();
+    var koulutus2 =
+        KoulutusDto.builder()
+            .id(koulutusUUIDs.get(1))
+            .nimi(ls("koulutus2"))
+            .osaamiset(Collections.emptySet())
+            .osaamisetOdottaaTunnistusta(false)
+            .osaamisetTunnistusEpaonnistui(true)
+            .build();
+
+    when(koskiService.getOsaamisetIdentified(any(JodUser.class), eq(koulutusUUIDs)))
         .thenReturn(List.of(koulutus1, koulutus2));
 
-    var expectedJson =
-        """
-            [
-                {
-                    "id": "5edaca37-8ca1-4f18-918b-7aa73997c676",
-                    "nimi": {
-                        "fi": "koulutus1"
-                    },
-                    "alkuPvm": "2023-01-01",
-                    "loppuPvm": "2023-12-31",
-                    "osaamiset": [
-                        "http://data.europa.eu/esco/skill/008fa98b-dba6-4abf-909e-04299728e3eb"
-                    ],
-                    "osaamisetOdottaaTunnistusta": false,
-                    "osaamisetTunnistusEpaonnistui": false,
-                    "osasuoritukset": []
-                },
-                {
-                    "id": "842a5528-06ac-455a-8d7e-7a401947b1f7",
-                    "nimi": {
-                        "fi": "koulutus2"
-                    },
-                    "alkuPvm": "2024-01-01",
-                    "osaamiset": [],
-                    "osaamisetOdottaaTunnistusta": true,
-                    "osaamisetTunnistusEpaonnistui": false,
-                    "osasuoritukset": []
-                }
-            ]
-            """;
     mockMvc
         .perform(
             get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY)
@@ -292,7 +259,23 @@ class IntegraatioKoskiControllerTest {
                 .param("ids", koulutusUUIDs.get(1).toString())
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(content().json(expectedJson));
+        .andExpect(jsonPath("$[0].id").value(koulutus1.id().toString()))
+        .andExpect(
+            jsonPath("$[0].osaamiset[0]").value(koulutus1.osaamiset().iterator().next().toString()))
+        .andExpect(
+            jsonPath("$[0].osaamisetOdottaaTunnistusta")
+                .value(koulutus1.osaamisetOdottaaTunnistusta()))
+        .andExpect(
+            jsonPath("$[0].osaamisetTunnistusEpaonnistui")
+                .value(koulutus1.osaamisetTunnistusEpaonnistui()))
+        .andExpect(jsonPath("$[1].id").value(koulutus2.id().toString()))
+        .andExpect(jsonPath("$[1].osaamiset").isEmpty())
+        .andExpect(
+            jsonPath("$[1].osaamisetOdottaaTunnistusta")
+                .value(koulutus2.osaamisetOdottaaTunnistusta()))
+        .andExpect(
+            jsonPath("$[1].osaamisetTunnistusEpaonnistui")
+                .value(koulutus2.osaamisetTunnistusEpaonnistui()));
   }
 
   @Test
