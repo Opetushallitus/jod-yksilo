@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,7 +122,6 @@ public class KoulutusService {
     return new NotFoundException("Not found");
   }
 
-  @CacheEvict(value = "osaamisetIdentified", key = "'user_' + #koulutus.yksilo.id")
   public void updateOsaamisetTunnistusStatus(
       Koulutus koulutus, OsaamisenTunnistusStatus newStatus, @Nullable Set<URI> newOsaamiset) {
     koulutus.setOsaamisenTunnistusStatus(newStatus);
