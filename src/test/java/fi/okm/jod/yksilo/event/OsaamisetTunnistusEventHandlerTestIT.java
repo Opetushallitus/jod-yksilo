@@ -140,19 +140,50 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
             new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
     result.get(5, TimeUnit.SECONDS); // Wait for execution to be completed.
 
-    verifyOsaamisetUpdated(koulutus1, sageMakerResponse.osaamiset());
+    verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.DONE, sageMakerResponse.osaamiset());
     verify(inferenceService)
         .infer(ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {});
   }
 
-  private void verifyOsaamisetUpdated(Koulutus koulutus, Set<URI> expectedOsaamisetUris) {
+  @Test
+  void shouldSuccessfullyProcessOsaamisetTunnistusEvent_aiDetectNone()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    var koulutus1 = koulutukset.getFirst();
+    var osasuoritukset =
+        Set.of(
+            "Kasvu, kehitys ja oppiminen (AVOIN YO)",
+            "Opetus ja kasvatuksellinen vuorovaikutus (AVOIN YO)");
+    koulutus1.setOsasuoritukset(osasuoritukset);
+
+    var sageMakerRequest =
+        new OsaamisetTunnistusEventHandler.SageMakerRequest(
+            koulutus1.getId(), koulutus1.getNimi().get(Kieli.FI), osasuoritukset);
+
+    var sageMakerResponse =
+        new OsaamisetTunnistusEventHandler.SageMakerResponse(koulutus1.getId(), Set.of());
+
+    when(inferenceService.infer(
+            ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {}))
+        .thenReturn(sageMakerResponse);
+
+    var result =
+        eventHandler.handleOsaamisetTunnistusEvent(
+            new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
+    result.get(5, TimeUnit.SECONDS); // Wait for execution to be completed.
+
+    verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.FAIL, sageMakerResponse.osaamiset());
+    verify(inferenceService)
+        .infer(ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {});
+  }
+
+  private void verifyOsaamisetUpdated(
+      Koulutus koulutus, OsaamisenTunnistusStatus expectedStatus, Set<URI> expectedOsaamisetUris) {
     transactionTemplate.execute(
         status -> {
           var updatedKoulutus = entityManager.find(Koulutus.class, koulutus.getId());
 
           assertNotNull(updatedKoulutus, "Updated koulutus should not be null");
-          assertEquals(
-              OsaamisenTunnistusStatus.DONE, updatedKoulutus.getOsaamisenTunnistusStatus());
+          assertEquals(expectedStatus, updatedKoulutus.getOsaamisenTunnistusStatus());
 
           var actualUris =
               updatedKoulutus.getOsaamiset().stream()

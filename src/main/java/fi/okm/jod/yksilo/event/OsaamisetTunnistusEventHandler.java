@@ -51,7 +51,7 @@ public class OsaamisetTunnistusEventHandler {
     for (var koulutus : koulutukset) {
       try {
         var osaamisetTunnistusResponses = callIdentifyOsaamisetApi(koulutus);
-        koulutusService.updateOsaamisetTunnistusStatus(
+        koulutusService.completeOsaamisetTunnistus(
             koulutus, OsaamisenTunnistusStatus.DONE, osaamisetTunnistusResponses.osaamiset());
 
       } catch (Exception e) {
@@ -60,8 +60,7 @@ public class OsaamisetTunnistusEventHandler {
         } else {
           log.error("Fail to processing OsaamisetTunnistusEvent.", e);
         }
-        koulutusService.updateOsaamisetTunnistusStatus(
-            koulutus, OsaamisenTunnistusStatus.FAIL, null);
+        koulutusService.completeOsaamisetTunnistus(koulutus, OsaamisenTunnistusStatus.FAIL, null);
       }
     }
     return CompletableFuture.completedFuture(null);
