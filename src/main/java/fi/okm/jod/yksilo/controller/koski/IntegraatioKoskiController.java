@@ -90,7 +90,7 @@ public class IntegraatioKoskiController {
       @AuthenticationPrincipal JodUser user,
       @RequestParam("ids")
           @Parameter(description = "Koulutus ids")
-          @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS)
+          @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS)
           List<UUID> uuids) {
     return ResponseEntity.ok(koskiService.getOsaamisetIdentified(user, uuids));
   }

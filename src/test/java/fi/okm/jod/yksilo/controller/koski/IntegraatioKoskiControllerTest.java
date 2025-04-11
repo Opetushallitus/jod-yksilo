@@ -306,7 +306,7 @@ class IntegraatioKoskiControllerTest {
   @Test
   @WithUserDetails("test")
   void shouldReturnBadRequest_whenExceedsUuidLimit() throws Exception {
-    var maxAllowedUuids = Limits.KOULUTUSKOKONAISUUS * Limits.KOULUTUS_PER_KOKONAISUUS;
+    var maxAllowedUuids = Limits.KOULUTUSKOKONAISUUS;
     var commaSeparatedUuids =
         StringUtils.join(
             ',', Stream.generate(UUID::randomUUID).limit(maxAllowedUuids + 1).toList());
