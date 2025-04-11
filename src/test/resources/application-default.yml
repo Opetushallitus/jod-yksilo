@@ -20,6 +20,8 @@ spring:
     aws:
       parameterstore:
         enabled: false
+      secretsmanager:
+        enabled: false
 
 server:
   shutdown: immediate
