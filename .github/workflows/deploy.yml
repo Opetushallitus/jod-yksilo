@@ -16,9 +16,9 @@ on:
         type: choice
         description: 'Environment to deploy to'
         required: true
-        default: 'dev'
+        default: 'development'
         options:
-          - dev
+          - development
           - test
       tag:
         type: string
