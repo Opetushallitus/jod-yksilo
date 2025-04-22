@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.controller.profiili;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class YksiloController {
   private final YksiloService yksiloService;
-  private final ObjectMapper objectMapper;
 
   @GetMapping
   public YksiloCsrfDto get(
