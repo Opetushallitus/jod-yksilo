@@ -14,6 +14,7 @@ import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -152,18 +153,12 @@ class MahdollisuudetControllerTest {
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
+            new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -242,18 +237,12 @@ class MahdollisuudetControllerTest {
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
+            new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(5), 0.78d, TYOMAHDOLLISUUS.name())));
 
     var osaamiset =
         List.of(
@@ -301,18 +290,12 @@ class MahdollisuudetControllerTest {
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
-            new MahdollisuudetController.Response.Suggestion(
-                UUID.randomUUID(), 0.78d, TYOMAHDOLLISUUS.name())));
+            new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(1), 0.89d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(2), 0.79d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(3), 0.98d, TYOMAHDOLLISUUS.name()),
+            new Suggestion(listOfIds.get(4), 0.88d, KOULUTUSMAHDOLLISUUS.name()),
+            new Suggestion(UUID.randomUUID(), 0.78d, TYOMAHDOLLISUUS.name())));
     var osaamiset =
         List.of(
             new OsaaminenDto(
@@ -349,5 +332,72 @@ class MahdollisuudetControllerTest {
                 m ->
                     m.ehdotusMetadata().pisteet() == null
                         && m.ehdotusMetadata().tyyppi() == TYOMAHDOLLISUUS));
+  }
+
+  @Test
+  @WithMockUser
+  void shouldGetMahdollisuudetSuggestionsForPolkuVaihe() throws Exception {
+    var missingOsaamiset = Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+
+    var serviceSuggestions =
+        List.of(
+            new Suggestion(
+                UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"),
+                0.5,
+                "KOULUTUSMAHDOLLISUUS"),
+            new Suggestion(
+                UUID.fromString("ca466237-ce1d-4aca-9f9b-2ed566ef4f94"), 0.33, "TYOMAHDOLLISUUS"));
+    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset))
+        .thenReturn(serviceSuggestions);
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/api/ehdotus/mahdollisuudet/polku")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(missingOsaamiset)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].mahdollisuusId").value(serviceSuggestions.get(0).id().toString()))
+        .andExpect(
+            jsonPath("$[1].mahdollisuusId").value(serviceSuggestions.get(1).id().toString()));
+
+    verify(mahdollisuudetService).getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+  }
+
+  @Test
+  @WithMockUser
+  void shouldReturnEmptyResponseWhenNoSuggestionsFound() throws Exception {
+    var missingOsaamiset = Set.of(URI.create("urn:nonexistent"));
+    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset))
+        .thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/api/ehdotus/mahdollisuudet/polku")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(missingOsaamiset)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+
+    verify(mahdollisuudetService).getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+  }
+
+  @Test
+  @WithMockUser
+  void shouldHandleEmptyMissingOsaamiset() throws Exception {
+    Set<URI> emptyOsaamiset = Collections.emptySet();
+    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(emptyOsaamiset))
+        .thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/api/ehdotus/mahdollisuudet/polku")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(emptyOsaamiset)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
   }
 }

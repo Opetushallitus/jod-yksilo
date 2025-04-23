@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -25,11 +26,13 @@ import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.KoulutusmahdollisuusJakauma;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.TyomahdollisuusJakauma;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -60,7 +63,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
     config = @SqlConfig(separator = ";;;"),
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @DirtiesContext
-@Import({TyomahdollisuusService.class, KoulutusmahdollisuusService.class})
+@Import({
+  TyomahdollisuusService.class,
+  KoulutusmahdollisuusService.class,
+  MahdollisuudetService.class
+})
 @Execution(ExecutionMode.CONCURRENT)
 @ResourceLock("SLOW")
 class MahdollisuusImportTest {
@@ -95,6 +102,7 @@ class MahdollisuusImportTest {
   private static final String TYOMAHDOLLISUUS_JAKAUMA_TYON_JATKUVUUS_KEY = "PERMANENT";
 
   @Autowired private TestEntityManager entityManager;
+  @Autowired private MahdollisuudetService mahdollisuudetService;
 
   @Test
   void shouldImportKoulutusMahdollisuusData_extendedDataset() throws IOException {
@@ -392,5 +400,12 @@ class MahdollisuusImportTest {
     runSqlProcedure(TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Tyomahdollisuus.class, TYOMAHDOLLISUUS_ID);
     assertFalse(entity.isAktiivinen());
+  }
+
+  @Test
+  void shouldGetMahdollisuudetSuggestionsForPolkuVaihe() {
+    var suggestions = mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(Set.of());
+
+    assertThat(suggestions).isEmpty();
   }
 }
