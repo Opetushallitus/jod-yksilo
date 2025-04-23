@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
-import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Response.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
@@ -21,6 +20,8 @@ import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -127,7 +128,7 @@ class MahdollisuudetController {
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
   }
 
-  private List<EhdotusDto> populateEmptyEhdotusDtos(LinkedHashMap<UUID, MahdollisuusTyyppi> ids) {
+  private List<EhdotusDto> populateEmptyEhdotusDtos(Map<UUID, MahdollisuusTyyppi> ids) {
     final var counter = new AtomicInteger(0);
     return ids.entrySet().stream()
         .map(
@@ -153,10 +154,10 @@ class MahdollisuudetController {
 
               // Create and return EhdotusDto
               return new EhdotusDto(
-                  suggestion.id,
+                  suggestion.id(),
                   new EhdotusMetadata(
-                      MahdollisuusTyyppi.valueOf(suggestion.type),
-                      suggestion.score >= 0 ? suggestion.score : null,
+                      MahdollisuusTyyppi.valueOf(suggestion.type()),
+                      suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
                       counter.getAndIncrement()));
@@ -251,7 +252,36 @@ class MahdollisuudetController {
       @Size(max = 1000) Set<@Valid URI> kiinnostukset) {}
 
   @SuppressWarnings("serial")
-  static class Response extends ArrayList<Suggestion> {
-    record Suggestion(UUID id, double score, String type) {}
+  static class Response extends ArrayList<fi.okm.jod.yksilo.controller.ehdotus.Suggestion> {}
+
+  @PostMapping("/polku")
+  @Operation(
+      summary =
+          "Gets suggestions for education and work opportunities for polku ranked suggestions based on missing skills.")
+  public List<EhdotusDto> getMahdollisuudetSuggestionsForPolkuVaihe(
+      @RequestBody
+          @Valid
+          @Size(max = 1000)
+          @Schema(description = "Missing osaamiset that user did not selected that they know.")
+          Set<@Valid URI> missingOsaamiset) {
+    var suggestions =
+        mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+    return populateEhdotusDtos(suggestions);
+  }
+
+  private static List<EhdotusDto> populateEhdotusDtos(List<Suggestion> suggestions) {
+    final var counter = new AtomicInteger(0);
+    return suggestions.stream()
+        .map(
+            entry ->
+                new EhdotusDto(
+                    entry.id(),
+                    new EhdotusMetadata(
+                        MahdollisuusTyyppi.valueOf(entry.type()),
+                        entry.score() >= 0 ? entry.score() : null,
+                        null,
+                        null,
+                        counter.getAndIncrement())))
+        .toList();
   }
 }
