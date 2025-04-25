@@ -48,11 +48,11 @@ public class YksilonSuosikkiService {
             .toList();
   }
 
-  public UUID add(JodUser user, UUID suosionKohdeId, SuosikkiTyyppi tyyppi) {
+  public UUID add(JodUser user, UUID kohdeId, SuosikkiTyyppi tyyppi) {
     var yksilo = yksilot.getReferenceById(user.getId());
 
     return suosikit
-        .findBy(yksilo, tyyppi, suosionKohdeId)
+        .findBy(yksilo, tyyppi, kohdeId)
         .map(YksilonSuosikki::getId)
         .orElseGet(
             () ->
@@ -61,11 +61,11 @@ public class YksilonSuosikkiService {
                         switch (tyyppi) {
                           case TYOMAHDOLLISUUS ->
                               new YksilonSuosikki(
-                                  yksilo, require(tyomahdollisuudet.findById(suosionKohdeId)));
+                                  yksilo, require(tyomahdollisuudet.findById(kohdeId)));
 
                           case KOULUTUSMAHDOLLISUUS ->
                               new YksilonSuosikki(
-                                  yksilo, require(koulutusmahdollisuudet.findById(suosionKohdeId)));
+                                  yksilo, require(koulutusmahdollisuudet.findById(kohdeId)));
                         })
                     .getId());
   }
