@@ -50,7 +50,7 @@ class YksilonSuosikkiController {
   @Operation(summary = "Add a Yksilo's suosikki")
   UUID add(
       @AuthenticationPrincipal JodUser user, @Validated(Add.class) @RequestBody SuosikkiDto dto) {
-    return service.add(user, dto.suosionKohdeId(), dto.tyyppi());
+    return service.add(user, dto.kohdeId(), dto.tyyppi());
   }
 
   @DeleteMapping

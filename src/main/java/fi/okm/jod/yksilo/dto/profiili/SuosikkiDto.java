@@ -21,6 +21,6 @@ import java.util.UUID;
 
 public record SuosikkiDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
-    @NotNull UUID suosionKohdeId,
+    @NotNull UUID kohdeId,
     @NotNull SuosikkiTyyppi tyyppi,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu) {}

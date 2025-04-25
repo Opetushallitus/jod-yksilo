@@ -64,7 +64,7 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
     assertNotNull(suosikki.id());
     assertEquals(newID, suosikki.id());
     assertNotNull(suosikki.luotu());
-    assertEquals(kohdeId, suosikki.suosionKohdeId());
+    assertEquals(kohdeId, suosikki.kohdeId());
     assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.tyyppi());
   }
 
