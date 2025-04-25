@@ -22,6 +22,7 @@ import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -43,6 +44,7 @@ import org.springframework.test.context.jdbc.Sql;
 class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Autowired private PaamaaraService paamaarat;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
+  @Autowired private KoulutusmahdollisuusRepository koulutusmahdollisuudet;
   @Autowired private PolunSuunnitelmaService service;
 
   @Test
@@ -58,6 +60,16 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
         .isEqualTo(result);
     assertThat(result.paamaara().id()).isEqualTo(paamaaraId);
     assertThat(result.paamaara().tavoite()).usingRecursiveComparison().isEqualTo(tavoite);
+  }
+
+  @Test
+  void shouldThrowExceptionWhenAddingSuunnitelmaWithKoulutusmahdollisuusPaamaara() {
+    var paamaaraId = addPaamaara(ls("tavoite"), MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS);
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
+    assertThrows(
+        ServiceValidationException.class,
+        () -> service.add(user, paamaaraId, dto),
+        "Invalid Paamaara");
   }
 
   @Test
@@ -104,13 +116,19 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   }
 
   private UUID addPaamaara(LocalizedString tavoite) {
+    return addPaamaara(tavoite, MahdollisuusTyyppi.TYOMAHDOLLISUUS);
+  }
+
+  private UUID addPaamaara(LocalizedString tavoite, MahdollisuusTyyppi mahdollisuusTyyppi) {
     return paamaarat.add(
         user,
         new PaamaaraDto(
             null,
             PaamaaraTyyppi.PITKA,
-            MahdollisuusTyyppi.TYOMAHDOLLISUUS,
-            tyomahdollisuudet.findAll().getFirst().getId(),
+            mahdollisuusTyyppi,
+            MahdollisuusTyyppi.TYOMAHDOLLISUUS.equals(mahdollisuusTyyppi)
+                ? tyomahdollisuudet.findAll().getFirst().getId()
+                : koulutusmahdollisuudet.findAll().getFirst().getId(),
             tavoite,
             null,
             null));

@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
@@ -50,6 +51,10 @@ public class PolunSuunnitelmaService {
         paamaaraRepository
             .findByYksiloIdAndId(user.getId(), paamaaraId)
             .orElseThrow(PolunSuunnitelmaService::notFound);
+
+    if (MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS.equals(paamaara.getMahdollisuusTyyppi())) {
+      throw new ServiceValidationException("Invalid Paamaara");
+    }
 
     if (suunnitelmaRepository.countByPaamaara(paamaara) >= getSuunnitelmaPerPaamaaraLimit()) {
       throw new ServiceValidationException("Too many Suunnitelmas");
