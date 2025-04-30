@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mockStatic;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
+import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
@@ -38,8 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
-@Sql("/data/osaaminen.sql")
-@Sql("/data/mahdollisuudet-test-data.sql")
+@Sql(
+    value = {"/data/osaaminen.sql", "/data/mahdollisuudet-test-data.sql"},
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Import({
   PolunVaiheService.class,
   PolunSuunnitelmaService.class,
@@ -77,6 +79,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
     var updatedDto =
         new PolunVaiheDto(
             id,
+            PolunVaiheLahde.KAYTTAJA,
             PolunVaiheTyyppi.TYO,
             ls("uusi nimi"),
             ls("uusi kuvaus"),
@@ -142,6 +145,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
     var dto =
         new PolunVaiheDto(
             null,
+            PolunVaiheLahde.EHDOTUS,
             PolunVaiheTyyppi.KOULUTUS,
             ls("nimi"),
             ls("kuvaus"),
@@ -191,6 +195,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
   private PolunVaiheDto createPolunVaiheDto(Set<URI> osaamiset) {
     return new PolunVaiheDto(
         null,
+        PolunVaiheLahde.KAYTTAJA,
         PolunVaiheTyyppi.KOULUTUS,
         ls("nimi"),
         ls("kuvaus"),

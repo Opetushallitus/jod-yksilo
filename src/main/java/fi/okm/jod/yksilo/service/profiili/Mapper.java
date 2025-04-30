@@ -221,6 +221,7 @@ public final class Mapper {
         ? null
         : new PolunVaiheDto(
             entity.getId(),
+            entity.getLahde(),
             entity.getTyyppi(),
             entity.getNimi(),
             entity.getKuvaus(),

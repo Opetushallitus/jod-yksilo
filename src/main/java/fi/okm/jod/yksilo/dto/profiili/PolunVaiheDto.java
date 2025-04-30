@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.dto.profiili;
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.PrintableString;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 public record PolunVaiheDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
+    @NotNull PolunVaiheLahde lahde,
     @NotNull PolunVaiheTyyppi tyyppi,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @PrintableString @Size(max = 10000) LocalizedString kuvaus,

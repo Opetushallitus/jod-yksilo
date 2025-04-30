@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import java.net.URI;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 public record PolunVaiheExportDto(
     UUID id,
+    PolunVaiheLahde lahde,
     PolunVaiheTyyppi tyyppi,
     LocalizedString nimi,
     LocalizedString kuvaus,
