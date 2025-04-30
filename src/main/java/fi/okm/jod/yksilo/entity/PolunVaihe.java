@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Basic;
@@ -54,6 +55,11 @@ public class PolunVaihe {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
   private PolunSuunnitelma polunSuunnitelma;
+
+  @Setter
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private PolunVaiheLahde lahde;
 
   @Setter
   @Column(nullable = false)

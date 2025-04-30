@@ -33,6 +33,9 @@ import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class ExportMapper {
@@ -151,11 +154,17 @@ public final class ExportMapper {
         : new YksilonSuosikkiExportDto(
             entity.getId(),
             entity.getLuotu(),
-            entity.getTyomahdollisuus() != null ? entity.getTyomahdollisuus().getId() : null,
-            entity.getKoulutusmahdollisuus() != null
-                ? entity.getKoulutusmahdollisuus().getId()
-                : null,
+            getTyomahdollisuusId(entity.getTyomahdollisuus()),
+            getKoulutusmahdollisuusId(entity.getKoulutusmahdollisuus()),
             entity.getTyyppi());
+  }
+
+  private static UUID getTyomahdollisuusId(Tyomahdollisuus tyomahdollisuus) {
+    return tyomahdollisuus != null ? tyomahdollisuus.getId() : null;
+  }
+
+  private static UUID getKoulutusmahdollisuusId(Koulutusmahdollisuus koulutusmahdollisuus) {
+    return koulutusmahdollisuus != null ? koulutusmahdollisuus.getId() : null;
   }
 
   public static PaamaaraExportDto mapPaamaara(Paamaara entity) {
@@ -165,13 +174,9 @@ public final class ExportMapper {
             entity.getId(),
             entity.getLuotu(),
             entity.getTyyppi(),
-            entity.getTyomahdollisuus() != null ? entity.getTyomahdollisuus().getId() : null,
-            entity.getKoulutusmahdollisuus() != null
-                ? entity.getKoulutusmahdollisuus().getId()
-                : null,
-            entity.getSuunnitelmat().stream()
-                .map(ExportMapper::mapPolunSuunnitelma)
-                .collect(Collectors.toList()),
+            getTyomahdollisuusId(entity.getTyomahdollisuus()),
+            getKoulutusmahdollisuusId(entity.getKoulutusmahdollisuus()),
+            entity.getSuunnitelmat().stream().map(ExportMapper::mapPolunSuunnitelma).toList(),
             entity.getTavoite());
   }
 
@@ -181,9 +186,7 @@ public final class ExportMapper {
         : new PolunSuunnitelmaExportDto(
             entity.getId(),
             entity.getNimi(),
-            entity.getVaiheet().stream()
-                .map(ExportMapper::mapPolunVaihe)
-                .collect(Collectors.toList()),
+            entity.getVaiheet().stream().map(ExportMapper::mapPolunVaihe).toList(),
             entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()),
             entity.getIgnoredOsaamiset().stream()
                 .map(Osaaminen::getUri)
@@ -195,6 +198,7 @@ public final class ExportMapper {
         ? null
         : new PolunVaiheExportDto(
             entity.getId(),
+            entity.getLahde(),
             entity.getTyyppi(),
             entity.getNimi(),
             entity.getKuvaus(),

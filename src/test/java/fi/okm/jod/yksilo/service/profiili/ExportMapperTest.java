@@ -135,10 +135,6 @@ class ExportMapperTest {
         PolunVaihe.class, PolunVaiheExportDto.class, Set.of("polunSuunnitelma"));
   }
 
-  private void assertMappingCompleteness(Class<?> entityClass, Class<?> dtoClass) {
-    assertMappingCompleteness(entityClass, dtoClass, Set.of());
-  }
-
   private void assertMappingCompleteness(
       Class<?> entityClass, Class<?> dtoClass, Set<String> ignoredGetters) {
     Set<String> entityGetters = getGetterNames(entityClass, ignoredGetters);
