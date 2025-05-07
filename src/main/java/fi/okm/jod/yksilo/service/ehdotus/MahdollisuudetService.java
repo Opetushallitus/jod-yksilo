@@ -13,7 +13,6 @@ import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -51,44 +50,21 @@ public class MahdollisuudetService {
 
   private static final String SQL_OSAAMINEN_SUGGESTIONS_QUERY =
       """
-      WITH mahdollisuus AS (
-        SELECT
-          k.id as id,
-        COUNT(a) as totalMatch,
+      SELECT NEW fi.okm.jod.yksilo.service.ehdotus.OsaamisetSuggestion(
+        k.id,
+        CAST(SIZE(a) AS double) / SIZE(j.arvot) as matchRatio,
+        SIZE(a) as totalMatch,
+        CAST(:missingOsaamisetCount AS int),
         SIZE(j.arvot) as totalOsaamiset,
         'KOULUTUSMAHDOLLISUUS' as tyyppi
+      )
       FROM Koulutusmahdollisuus k
       JOIN k.jakaumat j
       JOIN j.arvot a
-      WHERE k.aktiivinen IS true AND j.tyyppi = :koulutusJakaumaTyyppi
+      WHERE :missingOsaamisetCount > 0 AND k.aktiivinen IS true AND j.tyyppi = :koulutusJakaumaTyyppi
       AND a.arvo IN :missingOsaamiset
       GROUP BY k.id, j.id
-
-      UNION ALL
-
-      SELECT
-        t.id as id,
-        COUNT(a) as totalMatch,
-        SIZE(j.arvot) as totalOsaamiset,
-        'TYOMAHDOLLISUUS' as tyyppi
-      FROM Tyomahdollisuus t
-      JOIN t.jakaumat j
-      JOIN j.arvot a
-      WHERE t.aktiivinen IS true AND j.tyyppi = :tyoJakaumaTyyppi
-      AND a.arvo IN :missingOsaamiset
-      GROUP BY t.id, j.id
-    )
-    SELECT NEW fi.okm.jod.yksilo.service.ehdotus.OsaamisetSuggestion(
-      m.id,
-      CAST(m.totalMatch AS double) / m.totalOsaamiset as matchRatio,
-      m.totalMatch,
-      CAST(:missingOsaamisetCount AS int),
-      m.totalOsaamiset,
-      m.tyyppi
-    )
-    FROM mahdollisuus m
-    WHERE :missingOsaamisetCount > 0
-    ORDER BY matchRatio DESC
+      ORDER BY matchRatio DESC
     """;
 
   private final EntityManager entityManager;
@@ -132,8 +108,8 @@ public class MahdollisuudetService {
   record TypedResult(UUID id, String otsikko, String tyyppi) {}
 
   /**
-   * Retrieves a list of suggestions for opportunities (koulutusmahdollisuudet and
-   * tyomahdollisuudet) based on a set of missing competencies (osaamiset).
+   * Retrieves a list of suggestions for education opportunities (koulutusmahdollisuudet) based on a
+   * set of missing competencies (osaamiset).
    *
    * <p>This method performs a query to find opportunities that match the given missing competencies
    * and calculates a match ratio for each suggestion. Only active opportunities are considered.
@@ -157,7 +133,6 @@ public class MahdollisuudetService {
     return entityManager
         .createQuery(SQL_OSAAMINEN_SUGGESTIONS_QUERY, OsaamisetSuggestion.class)
         .setParameter("koulutusJakaumaTyyppi", KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN)
-        .setParameter("tyoJakaumaTyyppi", TyomahdollisuusJakaumaTyyppi.OSAAMINEN)
         .setParameter("missingOsaamiset", missingOsaamisetStrings)
         .setParameter("missingOsaamisetCount", missingOsaamisetStrings.size())
         .getResultList();

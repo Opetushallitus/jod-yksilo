@@ -46,8 +46,6 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
       UUID.fromString("c74eed41-c729-433e-8d36-4fc7527fe3df");
   private static final UUID tyoIdActive1 =
       UUID.fromString("ca466237-ce1d-4aca-9f9b-2ed566ef4f94"); // Have osaamiset 1 to 3. (3 pc)
-  private static final UUID tyoIdActive2 =
-      UUID.fromString("cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949"); // Have osaamiset 2 and 3. (2 pc)
   private static final UUID tyoIdInactive = UUID.fromString("af34f11f-05b5-434c-963a-df6d89a2149b");
 
   @Autowired private MahdollisuudetService mahdollisuudetService;
@@ -105,13 +103,12 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
     var result =
         mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(matchingMissingOsaamiset);
 
-    var expectedOrderedKeys =
-        List.of(koulutusIdActive1, tyoIdActive1, tyoIdActive2, koulutusIdActive2);
+    var expectedOrderedKeys = List.of(koulutusIdActive1, koulutusIdActive2);
     assertThat(result).isNotEmpty().hasSize(expectedOrderedKeys.size());
     var resultIds = result.stream().map(Suggestion::id).toList();
     assertThat(resultIds)
         .containsExactlyElementsOf(expectedOrderedKeys)
-        .doesNotContain(koulutusIdInactive, tyoIdInactive);
+        .doesNotContain(koulutusIdInactive);
   }
 
   @Test
