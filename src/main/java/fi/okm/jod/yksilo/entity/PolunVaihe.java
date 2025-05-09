@@ -45,6 +45,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Getter
@@ -57,9 +58,10 @@ public class PolunVaihe {
   private PolunSuunnitelma polunSuunnitelma;
 
   @Setter
+  @ColumnDefault("'KAYTTAJA'")
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private PolunVaiheLahde lahde;
+  private PolunVaiheLahde lahde = PolunVaiheLahde.KAYTTAJA;
 
   @Setter
   @Column(nullable = false)
