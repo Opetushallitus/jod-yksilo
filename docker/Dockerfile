@@ -15,10 +15,12 @@ RUN cd /tmp && java -Djarmode=tools -jar /tmp/application.jar extract
 
 FROM baseimage
 
-USER app
-WORKDIR /opt/app
 COPY --from=app --chmod=444 /tmp/application/lib /opt/app/lib
 COPY --from=app --chmod=444 /tmp/application/application.jar /opt/app
+RUN chmod +x /opt/app /opt/app/lib
+
+USER app
+WORKDIR /opt/app
 
 ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=40 -XX:MaxMetaspaceSize=256m"
 ENTRYPOINT ["/bin/bash","-c",\
