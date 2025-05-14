@@ -2,17 +2,16 @@ plugins {
   id 'java'
   id 'jacoco'
 
-  id 'org.springframework.boot' version '3.4.4'
+  id 'org.springframework.boot' version '3.4.5'
   id 'io.spring.dependency-management' version '1.1.7'
 
   id 'checkstyle'
-  id "com.diffplug.spotless" version "7.0.2"
-  id "com.github.spotbugs" version "6.1.7"
+  id "com.diffplug.spotless" version "7.0.3"
+  id "com.github.spotbugs" version "6.1.11"
   id "org.sonarqube" version "6.1.0.5360"
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
   id "com.github.ben-manes.versions" version "0.52.0"
-  id 'org.cyclonedx.bom' version '2.2.0'
 }
 
 group = 'fi.okm.jod'
@@ -75,13 +74,13 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.31.12')
+  implementation platform('software.amazon.awssdk:bom:2.31.42')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
   implementation 'software.amazon.awssdk:cloudwatch'
 
-  implementation 'com.google.guava:guava:33.4.6-jre'
+  implementation 'com.google.guava:guava:33.4.8-jre'
 
   implementation "org.flywaydb:flyway-core"
   implementation "org.flywaydb:flyway-database-postgresql"
@@ -107,7 +106,6 @@ dependencies {
 
   runtimeOnly 'org.postgresql:postgresql'
 
-  annotationProcessor 'org.springframework:spring-context-indexer'
   annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
   annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
   annotationProcessor 'org.projectlombok:lombok'
@@ -154,7 +152,7 @@ tasks.named('test', Test) {
 }
 
 checkstyle {
-  toolVersion = '10.17.0'
+  toolVersion = '10.23.1'
   showViolations = false
 
   def archive = configurations.checkstyle.filter {
@@ -182,7 +180,7 @@ spotless {
 }
 
 jacoco {
-  toolVersion = "0.8.12"
+  toolVersion = "0.8.13"
 }
 
 test.finalizedBy jacocoTestReport
@@ -269,12 +267,11 @@ tasks.named("dependencyUpdates").configure {
   checkConstraints = true
   checkBuildEnvironmentConstraints = true
   rejectVersionIf {
-    it.candidate.version.containsIgnoreCase("alpha") || it.candidate.version.containsIgnoreCase("beta") || it.candidate.version.matches(".*-M\\d+")
+    it.candidate.version.containsIgnoreCase("alpha")
+        || it.candidate.version.containsIgnoreCase("beta")
+        || it.candidate.version.matches(".*-M\\d+")
+        || it.candidate.version.matches(".*-RC\\d+")
   }
-}
-
-cyclonedxBom {
-  includeConfigs = ["runtimeClasspath"]
 }
 
 tasks.register("generateSchemaDocs", JavaExec) {
