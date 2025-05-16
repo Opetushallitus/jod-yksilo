@@ -7,14 +7,13 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.service.ehdotus;
+package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import java.util.UUID;
 
-public record OsaamisetSuggestion(
-    UUID id,
-    double matchRatio,
-    long totalMatch,
-    int totalAmount,
-    long totalOsaamiset,
-    String tyyppi) {}
+public record MahdollisuusDto(UUID id, MahdollisuusTyyppi tyyppi) {
+  public MahdollisuusDto(UUID id, String tyyppi) {
+    this(id, MahdollisuusTyyppi.valueOf(tyyppi));
+  }
+}

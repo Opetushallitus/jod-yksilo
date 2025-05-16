@@ -10,13 +10,14 @@
 package fi.okm.jod.yksilo.service.ehdotus;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.within;
 
-import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import java.net.URI;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Order;
@@ -49,6 +50,7 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
   private static final UUID tyoIdInactive = UUID.fromString("af34f11f-05b5-434c-963a-df6d89a2149b");
 
   @Autowired private MahdollisuudetService mahdollisuudetService;
+  @Autowired private KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
   @SuppressWarnings("java:S2699")
   @Test
@@ -91,7 +93,7 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldGetMahdollisuudetSuggestionsForPolkuVaihe_emptyInput() {
-    var result = mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(Set.of());
+    var result = mahdollisuudetService.getPolkuVaiheSuggestions(Set.of());
     assertThat(result).isEmpty();
   }
 
@@ -100,22 +102,35 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
     var matchingMissingOsaamiset =
         Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
 
-    var result =
-        mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(matchingMissingOsaamiset);
+    var result = mahdollisuudetService.getPolkuVaiheSuggestions(matchingMissingOsaamiset);
+    assertThat(result).hasSize(2);
 
-    var expectedOrderedKeys = List.of(koulutusIdActive1, koulutusIdActive2);
-    assertThat(result).isNotEmpty().hasSize(expectedOrderedKeys.size());
-    var resultIds = result.stream().map(Suggestion::id).toList();
-    assertThat(resultIds)
-        .containsExactlyElementsOf(expectedOrderedKeys)
-        .doesNotContain(koulutusIdInactive);
+    assertThat(result.get(0).mahdollisuusId()).isEqualTo(koulutusIdActive1);
+    assertThat(result.get(1).mahdollisuusId()).isEqualTo(koulutusIdActive2);
+
+    assertPisteet(result.get(0).pisteet(), koulutusIdActive1, matchingMissingOsaamiset);
+    assertPisteet(result.get(1).pisteet(), koulutusIdActive2, matchingMissingOsaamiset);
+  }
+
+  private void assertPisteet(double pisteet, UUID mahdollisuusId, Set<URI> missingOsaamiset) {
+
+    var mahdollisuus = koulutusmahdollisuudet.findById(mahdollisuusId).orElseThrow();
+    var osaamiset =
+        mahdollisuus.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN).getArvot();
+    var matchingOsaamiset =
+        osaamiset.stream()
+            .filter(osaaminen -> missingOsaamiset.contains(URI.create(osaaminen.arvo())))
+            .count();
+    // pisteet = matching missing osaamiset / total osaamiset in KoulutusMahdollisuus (6)
+    var expected = (double) matchingOsaamiset / osaamiset.size();
+    // use approximately equal comparison to account for possible floating point precision issues
+    assertThat(pisteet).isCloseTo(expected, within(0.01));
   }
 
   @Test
   void shouldGetMahdollisuudetSuggestionsForPolkuVaihe_noMatches() {
     var nonMatchingOsaamiset = Set.of(URI.create("nonexistent1"), URI.create("nonexistent2"));
-    var result =
-        mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(nonMatchingOsaamiset);
+    var result = mahdollisuudetService.getPolkuVaiheSuggestions(nonMatchingOsaamiset);
     assertThat(result).isEmpty();
   }
 }

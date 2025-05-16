@@ -404,7 +404,7 @@ class MahdollisuusImportTest {
 
   @Test
   void shouldGetMahdollisuudetSuggestionsForPolkuVaihe() {
-    var suggestions = mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(Set.of());
+    var suggestions = mahdollisuudetService.getPolkuVaiheSuggestions(Set.of());
 
     assertThat(suggestions).isEmpty();
   }
