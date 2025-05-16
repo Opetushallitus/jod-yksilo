@@ -27,6 +27,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
+import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
@@ -341,13 +342,9 @@ class MahdollisuudetControllerTest {
 
     var serviceSuggestions =
         List.of(
-            new Suggestion(
-                UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"),
-                0.5,
-                "KOULUTUSMAHDOLLISUUS"),
-            new Suggestion(
-                UUID.fromString("ca466237-ce1d-4aca-9f9b-2ed566ef4f94"), 0.33, "TYOMAHDOLLISUUS"));
-    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset))
+            new PolunVaiheEhdotusDto(
+                UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"), 0.5, 2));
+    when(mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset))
         .thenReturn(serviceSuggestions);
 
     mockMvc
@@ -357,19 +354,17 @@ class MahdollisuudetControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(missingOsaamiset)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(2))
-        .andExpect(jsonPath("$[0].mahdollisuusId").value(serviceSuggestions.get(0).id().toString()))
+        .andExpect(jsonPath("$.length()").value(1))
         .andExpect(
-            jsonPath("$[1].mahdollisuusId").value(serviceSuggestions.get(1).id().toString()));
-
-    verify(mahdollisuudetService).getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+            jsonPath("$[0].mahdollisuusId")
+                .value(serviceSuggestions.get(0).mahdollisuusId().toString()));
   }
 
   @Test
   @WithMockUser
   void shouldReturnEmptyResponseWhenNoSuggestionsFound() throws Exception {
     var missingOsaamiset = Set.of(URI.create("urn:nonexistent"));
-    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset))
+    when(mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset))
         .thenReturn(Collections.emptyList());
 
     mockMvc
@@ -381,14 +376,14 @@ class MahdollisuudetControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
 
-    verify(mahdollisuudetService).getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+    verify(mahdollisuudetService).getPolkuVaiheSuggestions(missingOsaamiset);
   }
 
   @Test
   @WithMockUser
   void shouldHandleEmptyMissingOsaamiset() throws Exception {
     Set<URI> emptyOsaamiset = Collections.emptySet();
-    when(mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(emptyOsaamiset))
+    when(mahdollisuudetService.getPolkuVaiheSuggestions(emptyOsaamiset))
         .thenReturn(Collections.emptyList());
 
     mockMvc

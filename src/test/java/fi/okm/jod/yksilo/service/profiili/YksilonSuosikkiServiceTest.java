@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -46,7 +47,8 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
 
   @BeforeEach
   void setUp() {
-    tyomahdollisuusIds = tyomahdollisuusRepository.fetchAllIds().stream().toList();
+    tyomahdollisuusIds =
+        tyomahdollisuusRepository.findAll().stream().map(Tyomahdollisuus::getId).toList();
     koulutusmahdollisuusIds =
         koulutusmahdollisuusRepository.findAll().stream().map(Koulutusmahdollisuus::getId).toList();
   }

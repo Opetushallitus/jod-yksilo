@@ -2,10 +2,17 @@
 -- Additional schema definitions
 -- Eventually replaced by a migration tool
 --
-
 ALTER TABLE yksilo
   DROP CONSTRAINT IF EXISTS fk_yksilo_id,
   ADD CONSTRAINT fk_yksilo_id FOREIGN KEY (id) REFERENCES tunnistus.henkilo (yksilo_id)
+;;;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_active_koulutusmahdollisuus ON koulutusmahdollisuus (id)
+  WHERE aktiivinen = true
+;;;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_active_tyomahdollisuus ON tyomahdollisuus (id)
+    WHERE aktiivinen = true
 ;;;
 
 --

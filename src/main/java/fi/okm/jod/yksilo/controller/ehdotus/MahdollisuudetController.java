@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
+import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
@@ -30,10 +31,10 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -140,7 +141,7 @@ class MahdollisuudetController {
   }
 
   private List<EhdotusDto> populateEhdotusDtos(
-      LinkedHashMap<UUID, MahdollisuusTyyppi> ids, Map<UUID, Suggestion> suggestions) {
+      SequencedMap<UUID, MahdollisuusTyyppi> ids, Map<UUID, Suggestion> suggestions) {
     // initialize lexicalIndex counters
     final var counter = new AtomicInteger(0);
     return ids.entrySet().stream()
@@ -264,24 +265,18 @@ class MahdollisuudetController {
           @Size(max = 1000)
           @Schema(description = "Missing osaamiset that user did not selected that they know.")
           Set<@Valid URI> missingOsaamiset) {
-    var suggestions =
-        mahdollisuudetService.getMahdollisuudetSuggestionsForPolkuVaihe(missingOsaamiset);
+    var suggestions = mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset);
     return populateEhdotusDtos(suggestions);
   }
 
-  private static List<EhdotusDto> populateEhdotusDtos(List<Suggestion> suggestions) {
-    final var counter = new AtomicInteger(0);
+  private static List<EhdotusDto> populateEhdotusDtos(List<PolunVaiheEhdotusDto> suggestions) {
     return suggestions.stream()
         .map(
-            entry ->
+            it ->
                 new EhdotusDto(
-                    entry.id(),
+                    it.mahdollisuusId(),
                     new EhdotusMetadata(
-                        MahdollisuusTyyppi.valueOf(entry.type()),
-                        entry.score() >= 0 ? entry.score() : null,
-                        null,
-                        null,
-                        counter.getAndIncrement())))
+                        MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS, it.pisteet(), null, null, 0)))
         .toList();
   }
 }
