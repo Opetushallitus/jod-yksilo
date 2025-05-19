@@ -30,9 +30,7 @@ CREATE TABLE IF NOT EXISTS koulutusmahdollisuus_data.import (
 CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.clear()
   LANGUAGE SQL AS
 $$
-TRUNCATE koulutusmahdollisuus_jakauma CASCADE;
-TRUNCATE koulutus_viite CASCADE;
-TRUNCATE koulutusmahdollisuus CASCADE;
+  UPDATE koulutusmahdollisuus SET aktiivinen = false;
 $$
 ;;;
 
@@ -41,12 +39,7 @@ CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.import()
 BEGIN
   ATOMIC
 
-  -- First, mark all existing records as inactive that are not in the current import
-  UPDATE koulutusmahdollisuus
-  SET aktiivinen = false
-  WHERE id NOT IN (SELECT id FROM koulutusmahdollisuus_data.import) AND aktiivinen = true;
-
-  -- Then perform koulutusmahdollisuus upsert, setting active to true for all records that will be imported
+  -- Then koulutusmahdollisuus upsert, setting active to true for all records that will be imported
   INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi, kesto_mediaani, kesto_maksimi, aktiivinen)
   SELECT id,
          data ->> 'tyyppi',
@@ -181,9 +174,7 @@ CREATE TABLE IF NOT EXISTS tyomahdollisuus_data.import (
 CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.clear()
   LANGUAGE SQL AS
 $$
-TRUNCATE tyomahdollisuus_jakauma CASCADE;
-TRUNCATE tyomahdollisuus_kaannos CASCADE;
-TRUNCATE tyomahdollisuus CASCADE;
+  UPDATE tyomahdollisuus  SET aktiivinen = false;
 $$
 ;;;
 
@@ -191,11 +182,6 @@ CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
   LANGUAGE sql
 BEGIN
   ATOMIC
-
-  -- First, mark all existing records as inactive that are not in the current import
-  UPDATE tyomahdollisuus
-  SET aktiivinen = false
-  WHERE id NOT IN (SELECT id FROM tyomahdollisuus_data.import) AND aktiivinen = true;
 
   -- Then perform tyomahdollisuus upsert, setting active to true for all imported records
   INSERT INTO tyomahdollisuus(id, ammattiryhma, aineisto, aktiivinen)

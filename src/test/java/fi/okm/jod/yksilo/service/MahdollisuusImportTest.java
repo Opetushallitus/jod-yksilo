@@ -77,6 +77,8 @@ class MahdollisuusImportTest {
 
   private static final String KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE =
       "koulutusmahdollisuus_data.import";
+  private static final String KOULUTUSMAHDOLLISUUS_CLEAR_DATA_PROCEDURE =
+      "koulutusmahdollisuus_data.clear";
   private static final String KOULUTUSMAHDOLLISUUS_UPDATE_WITH_EXTENDED_IMPORT_DATA_SQL =
       "/data/mahdollisuudet-koulutus-update-import-data-extended.sql";
   private static final String KOULUTUSMAHDOLLISUUS_UPDATE_WITH_REDUCED_IMPORT_DATA_SQL =
@@ -90,6 +92,7 @@ class MahdollisuusImportTest {
       "http://data.europa.eu/esco/skill/bfe4f330-d595-48c7-ab3c-f309471d6953";
 
   private static final String TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE = "tyomahdollisuus_data.import";
+  private static final String TYOMAHDOLLISUUS_CLEAR_DATA_PROCEDURE = "tyomahdollisuus_data.clear";
   private static final String TYOMAHDOLLISUUS_UPDATE_WITH_EXTENDED_IMPORT_DATA_SQL =
       "/data/mahdollisuudet-tyo-update-import-data-extended.sql";
   private static final String TYOMAHDOLLISUUS_UPDATE_WITH_REDUCED_IMPORT_DATA_SQL =
@@ -117,6 +120,7 @@ class MahdollisuusImportTest {
 
     // Apply update script and re-import that does upsert
     runSqlScript(KOULUTUSMAHDOLLISUUS_UPDATE_WITH_EXTENDED_IMPORT_DATA_SQL);
+    runSqlProcedure(KOULUTUSMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Koulutusmahdollisuus.class, KOULUTUSMAHDOLLISUUS_ID);
     assertNotNull(entity, "Koulutusmahdollisuus should exist after update");
@@ -145,6 +149,7 @@ class MahdollisuusImportTest {
 
     // Delete source of import data and re-import
     runSqlScript(KOULUTUSMAHDOLLISUUS_DELETE_IMPORT_DATA_SQL);
+    runSqlProcedure(KOULUTUSMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Koulutusmahdollisuus.class, KOULUTUSMAHDOLLISUUS_ID);
     assertFalse(entity.isAktiivinen());
@@ -237,6 +242,7 @@ class MahdollisuusImportTest {
 
     // Apply update script and re-import that does upsert
     runSqlScript(KOULUTUSMAHDOLLISUUS_UPDATE_WITH_REDUCED_IMPORT_DATA_SQL);
+    runSqlProcedure(KOULUTUSMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Koulutusmahdollisuus.class, KOULUTUSMAHDOLLISUUS_ID);
     assertNotNull(entity, "Koulutusmahdollisuus should exist after update");
@@ -272,6 +278,7 @@ class MahdollisuusImportTest {
 
     // Delete source of import data and re-import
     runSqlScript(KOULUTUSMAHDOLLISUUS_DELETE_IMPORT_DATA_SQL);
+    runSqlProcedure(KOULUTUSMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Koulutusmahdollisuus.class, KOULUTUSMAHDOLLISUUS_ID);
     assertFalse(entity.isAktiivinen());
@@ -290,6 +297,7 @@ class MahdollisuusImportTest {
 
     // Apply update script and re-import that does upsert
     runSqlScript(TYOMAHDOLLISUUS_UPDATE_WITH_EXTENDED_IMPORT_DATA_SQL);
+    runSqlProcedure(TYOMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Tyomahdollisuus.class, TYOMAHDOLLISUUS_ID);
     assertNotNull(entity, "Should exist after import.");
@@ -311,6 +319,7 @@ class MahdollisuusImportTest {
 
     // Delete source of import data and re-import
     runSqlScript(TYOMAHDOLLISUUS_DELETE_IMPORT_DATA_SQL);
+    runSqlProcedure(TYOMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Tyomahdollisuus.class, TYOMAHDOLLISUUS_ID);
     assertFalse(entity.isAktiivinen());
@@ -374,6 +383,7 @@ class MahdollisuusImportTest {
 
     // Apply update script and re-import that does upsert
     runSqlScript(TYOMAHDOLLISUUS_UPDATE_WITH_REDUCED_IMPORT_DATA_SQL);
+    runSqlProcedure(TYOMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Tyomahdollisuus.class, TYOMAHDOLLISUUS_ID);
     assertNotNull(entity, "Should exist after import.");
@@ -397,6 +407,7 @@ class MahdollisuusImportTest {
 
     // Delete source of import data and re-import
     runSqlScript(TYOMAHDOLLISUUS_DELETE_IMPORT_DATA_SQL);
+    runSqlProcedure(TYOMAHDOLLISUUS_CLEAR_DATA_PROCEDURE);
     runSqlProcedure(TYOMAHDOLLISUUS_IMPORT_DATA_PROCEDURE);
     entity = entityManager.find(Tyomahdollisuus.class, TYOMAHDOLLISUUS_ID);
     assertFalse(entity.isAktiivinen());
