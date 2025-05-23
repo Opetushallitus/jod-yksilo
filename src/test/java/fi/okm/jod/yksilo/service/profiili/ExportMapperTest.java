@@ -72,7 +72,8 @@ class ExportMapperTest {
 
   @Test
   void testYksiloMappingCompleteness() {
-    assertMappingCompleteness(Yksilo.class, YksiloExportDto.class, Set.of("osaamiset"));
+    assertMappingCompleteness(
+        Yksilo.class, YksiloExportDto.class, Set.of("osaamiset", "tapahtumat"));
   }
 
   @Test

@@ -41,7 +41,9 @@ public abstract class AbstractServiceTest {
 
   @BeforeEach
   public void setup() {
-    this.user = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
+    var yksilo = new Yksilo(UUID.randomUUID());
+    yksilo.setTervetuloapolku(true);
+    this.user = new TestJodUser(entityManager.persist(yksilo).getId());
     this.user2 = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
   }
 

@@ -51,6 +51,7 @@ configurations {
 }
 
 dependencies {
+  implementation project(':tmt-profiili-api')
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -86,7 +87,7 @@ dependencies {
   implementation "org.flywaydb:flyway-database-postgresql"
 
   // Logging in JSON format
-  implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+  implementation 'net.logstash.logback:logstash-logback-encoder:8.1'
 
   // Caffeine cache implementation
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.0'
@@ -115,7 +116,6 @@ dependencies {
   testImplementation 'org.springframework.security:spring-security-test'
 
   testImplementation "org.testcontainers:postgresql"
-
   testImplementation 'org.testcontainers:junit-jupiter'
   testImplementation 'org.junit.jupiter:junit-jupiter'
 
