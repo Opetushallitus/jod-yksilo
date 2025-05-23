@@ -1,0 +1,34 @@
+plugins {
+  id 'java-library'
+  id "org.openapi.generator" version "7.13.0"
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+}
+
+openApiGenerate {
+  globalProperties = [
+      modelDocs : "false",
+      apis      : "false",
+      models    : "",
+      modelTests: "false",
+  ]
+  generatorName = "java"
+  inputSpec = "${projectDir}/src/openapi/openapi-profile-external.yaml"
+  outputDir = "${projectDir}/build/generated/sources/openapi"
+  configOptions = [
+      "dateLibrary"            : "java8",
+      "library"                : "restclient",
+      "modelPackage"           : "fi.okm.jod.yksilo.external.tmt.model",
+      "useJakartaEe"           : "true",
+      "hideGenerationTimestamp": "true",
+  ]
+}
+sourceSets.main.java.srcDirs += ["${projectDir}/build/generated/sources/openapi/src/main/java"]
+compileJava.dependsOn tasks.openApiGenerate

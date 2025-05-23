@@ -34,7 +34,7 @@ public class Yksilo {
   @Setter private Boolean tervetuloapolku;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 10)
+  @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -47,10 +47,10 @@ public class Yksilo {
   private Set<Toiminto> toiminnot;
 
   @OneToMany(fetch = FetchType.LAZY)
-  private Set<Osaaminen> osaamisKiinnostukset = new HashSet<>();
+  private Set<Osaaminen> osaamisKiinnostukset;
 
   @OneToMany(fetch = FetchType.LAZY)
-  private Set<Ammatti> ammattiKiinnostukset = new HashSet<>();
+  private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<YksilonSuosikki> suosikit;
@@ -58,8 +58,21 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Paamaara> paamaarat;
 
+  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  private Set<TapahtumaLoki> tapahtumat;
+
   public Yksilo(UUID uuid) {
     this.id = uuid;
+    this.tervetuloapolku = false;
+    this.osaamiset = new HashSet<>();
+    this.tyopaikat = new HashSet<>();
+    this.koulutusKokonaisuudet = new HashSet<>();
+    this.toiminnot = new HashSet<>();
+    this.osaamisKiinnostukset = new HashSet<>();
+    this.ammattiKiinnostukset = new HashSet<>();
+    this.suosikit = new HashSet<>();
+    this.paamaarat = new HashSet<>();
+    this.tapahtumat = new HashSet<>();
   }
 
   protected Yksilo() {
@@ -67,15 +80,21 @@ public class Yksilo {
   }
 
   public boolean getTervetuloapolku() {
-    return tervetuloapolku != null ? tervetuloapolku : false;
+    return tervetuloapolku != null && tervetuloapolku;
   }
 
   public void setOsaamisKiinnostukset(Collection<Osaaminen> entities) {
+    if (osaamisKiinnostukset == null) {
+      osaamisKiinnostukset = new HashSet<>();
+    }
     osaamisKiinnostukset.clear();
     osaamisKiinnostukset.addAll(entities);
   }
 
   public void setAmmattiKiinnostukset(Collection<Ammatti> entities) {
+    if (ammattiKiinnostukset == null) {
+      ammattiKiinnostukset = new HashSet<>();
+    }
     ammattiKiinnostukset.clear();
     ammattiKiinnostukset.addAll(entities);
   }

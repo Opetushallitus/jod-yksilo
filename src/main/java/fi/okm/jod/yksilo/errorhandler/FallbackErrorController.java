@@ -64,7 +64,8 @@ public class FallbackErrorController implements ErrorController {
         && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String uri
         && (uri.startsWith(contextPath + "/login")
             || uri.startsWith(contextPath + "/logout")
-            || uri.startsWith(contextPath + "/oauth2"))) {
+            || uri.startsWith(contextPath + "/oauth2")
+            || uri.contains("/auktorisointi/"))) {
       // Redirect back to the UI application for errors (likely) related to insufficient
       // authentication
       log.info(
