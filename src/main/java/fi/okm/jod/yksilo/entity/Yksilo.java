@@ -9,16 +9,28 @@
 
 package fi.okm.jod.yksilo.entity;
 
+import static fi.okm.jod.yksilo.entity.Translation.merge;
+
+import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
@@ -30,6 +42,12 @@ public class Yksilo {
   @Id
   @Column(updatable = false, nullable = false)
   private UUID id;
+
+  @Getter(AccessLevel.NONE)
+  @ElementCollection
+  @MapKeyEnumerated(EnumType.STRING)
+  @BatchSize(size = 100)
+  private Map<Kieli, Yksilo.Kaannos> kaannos = new EnumMap<>(Kieli.class);
 
   @Setter private Boolean tervetuloapolku;
 
@@ -97,5 +115,39 @@ public class Yksilo {
     }
     ammattiKiinnostukset.clear();
     ammattiKiinnostukset.addAll(entities);
+  }
+
+  public LocalizedString getMuuOsaaminenVapaateksti() {
+    return LocalizedString.of(kaannos, Kaannos::getMuuOsaaminenVapaateksti);
+  }
+
+  public void setMuuOsaaminenVapaateksti(LocalizedString muuOsaaminenVapaateksti) {
+    merge(muuOsaaminenVapaateksti, kaannos, Kaannos::new, Kaannos::setMuuOsaaminenVapaateksti);
+  }
+
+  public LocalizedString getOsaamisKiinnostuksetVapaateksti() {
+    return LocalizedString.of(kaannos, Kaannos::getOsaamisKiinnostuksetVapaateksti);
+  }
+
+  public void setOsaamisKiinnostuksetVapaateksti(LocalizedString osaamisKiinnostuksetVapaateksti) {
+    merge(
+        osaamisKiinnostuksetVapaateksti,
+        kaannos,
+        Kaannos::new,
+        Kaannos::setOsaamisKiinnostuksetVapaateksti);
+  }
+
+  @Embeddable
+  @Data
+  static class Kaannos implements Translation {
+    @Column(length = Integer.MAX_VALUE)
+    String muuOsaaminenVapaateksti;
+
+    @Column(length = Integer.MAX_VALUE)
+    String osaamisKiinnostuksetVapaateksti;
+
+    public boolean isEmpty() {
+      return muuOsaaminenVapaateksti == null && osaamisKiinnostuksetVapaateksti == null;
+    }
   }
 }

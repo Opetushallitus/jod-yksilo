@@ -10,10 +10,14 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.profiili.MuuOsaaminenDto;
 import fi.okm.jod.yksilo.service.profiili.MuuOsaaminenService;
+import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +40,8 @@ public class MuuOsaaminenController {
 
   @GetMapping
   @Operation(summary = "Gets all other osaaminen of the user")
-  Set<URI> findAll(@AuthenticationPrincipal JodUser user) {
-    return service.findAll(user);
+  MuuOsaaminenDto findAll(@AuthenticationPrincipal JodUser user) {
+    return new MuuOsaaminenDto(service.findAll(user), service.getVapaateksti(user));
   }
 
   @PutMapping
@@ -45,5 +49,13 @@ public class MuuOsaaminenController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(@AuthenticationPrincipal JodUser user, @RequestBody Set<@Valid URI> osaamiset) {
     service.update(user, osaamiset);
+  }
+
+  @PutMapping("/vapaateksti")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void updateVapaateksti(
+      @AuthenticationPrincipal JodUser user,
+      @RequestBody @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {
+    service.updateVapaateksti(user, vapaateksti);
   }
 }

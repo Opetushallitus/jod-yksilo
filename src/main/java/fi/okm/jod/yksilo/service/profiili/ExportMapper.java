@@ -63,6 +63,8 @@ public final class ExportMapper {
             entity.getAmmattiKiinnostukset().stream()
                 .map(Ammatti::getUri)
                 .collect(Collectors.toSet()),
+            entity.getMuuOsaaminenVapaateksti(),
+            entity.getOsaamisKiinnostuksetVapaateksti(),
             entity.getSuosikit().stream()
                 .map(ExportMapper::mapYksilonSuosikki)
                 .collect(Collectors.toSet()),

@@ -10,9 +10,13 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.profiili.KiinnostuksetDto;
 import fi.okm.jod.yksilo.service.profiili.KiinnostusService;
+import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +37,9 @@ public class KiinnostusController {
   private final KiinnostusService kiinnostusService;
 
   @GetMapping("/osaamiset")
-  public Set<URI> getOsaamiset(@AuthenticationPrincipal JodUser user) {
-    return kiinnostusService.getOsaamiset(user);
+  public KiinnostuksetDto getOsaamiset(@AuthenticationPrincipal JodUser user) {
+    return new KiinnostuksetDto(
+        kiinnostusService.getOsaamiset(user), kiinnostusService.getVapaateksti(user));
   }
 
   @PutMapping("/osaamiset")
@@ -42,5 +47,13 @@ public class KiinnostusController {
   public void updateOsaamiset(
       @AuthenticationPrincipal JodUser user, @RequestBody Set<@Valid URI> kiinnostukset) {
     kiinnostusService.updateOsaamiset(user, kiinnostukset);
+  }
+
+  @PutMapping("/vapaateksti")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void updateVapaateksti(
+      @AuthenticationPrincipal JodUser user,
+      @RequestBody @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {
+    kiinnostusService.updateVapaateksti(user, vapaateksti);
   }
 }

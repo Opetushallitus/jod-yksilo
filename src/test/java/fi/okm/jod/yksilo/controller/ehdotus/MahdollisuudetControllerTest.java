@@ -75,7 +75,7 @@ class MahdollisuudetControllerTest {
   void whenEmptySkillsShouldReturnEmptySet() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            0.5, Collections.emptySet(), 0.5, Collections.emptySet());
+            Collections.emptySet(), null, 0.5, Collections.emptySet(), null, 0.5, 0.5, 0.5);
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -138,7 +138,14 @@ class MahdollisuudetControllerTest {
   void whenSkillsShouldReturnScores() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            0.5,
+            0.5);
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -222,7 +229,14 @@ class MahdollisuudetControllerTest {
   void ifInferenceReturnsUnknownIdShouldNotCauseNPE() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            0.5,
+            0.5);
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -275,7 +289,14 @@ class MahdollisuudetControllerTest {
   void ifInferenceReturnsMissingIdShouldNotCauseNPE() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            0.5, Set.of(URI.create("http://dymmy")), 0.5, Set.of(URI.create("http://dymmy")));
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            Set.of(URI.create("http://dymmy")),
+            null,
+            0.5,
+            0.5,
+            0.5);
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
