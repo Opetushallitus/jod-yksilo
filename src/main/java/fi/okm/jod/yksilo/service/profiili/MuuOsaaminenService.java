@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.entity.Osaaminen;
@@ -46,6 +47,16 @@ public class MuuOsaaminenService {
     osaaminenService.update(
         getMuuOsaaminen(yksilot.getReferenceById(user.getId())),
         osaaminenService.getOsaamiset(ids));
+  }
+
+  public LocalizedString getVapaateksti(JodUser user) {
+    var yksilo = yksilot.getReferenceById(user.getId());
+    return yksilo.getMuuOsaaminenVapaateksti();
+  }
+
+  public void updateVapaateksti(JodUser user, LocalizedString vapaateksti) {
+    var yksilo = yksilot.getReferenceById(user.getId());
+    yksilo.setMuuOsaaminenVapaateksti(vapaateksti);
   }
 
   void add(Yksilo yksilo, Set<Osaaminen> osaamiset) {

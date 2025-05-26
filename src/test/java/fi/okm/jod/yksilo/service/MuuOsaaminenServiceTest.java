@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.service;
 
+import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,5 +69,13 @@ class MuuOsaaminenServiceTest extends AbstractServiceTest {
     service.update(user, Collections.emptySet());
     var result = service.findAll(user);
     assertEquals(0, result.size());
+  }
+
+  @Test
+  void ShouldUpdateYksilonMuuOsaaminenVapaateksti() {
+    var vapaateksti = ls("Testi vapaateksti");
+    service.updateVapaateksti(user, vapaateksti);
+    simulateCommit();
+    assertThat(service.getVapaateksti(user)).isEqualTo(vapaateksti);
   }
 }

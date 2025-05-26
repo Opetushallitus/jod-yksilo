@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.AmmattiRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
@@ -50,6 +51,16 @@ public class KiinnostusService {
     }
     yksilo.setOsaamisKiinnostukset(osaamisetEntities);
     yksilo.setAmmattiKiinnostukset(ammatitEntities);
+  }
+
+  public LocalizedString getVapaateksti(JodUser user) {
+    var yksilo = getYksilo(user);
+    return yksilo.getOsaamisKiinnostuksetVapaateksti();
+  }
+
+  public void updateVapaateksti(JodUser user, LocalizedString vapaateksti) {
+    var yksilo = getYksilo(user);
+    yksilo.setOsaamisKiinnostuksetVapaateksti(vapaateksti);
   }
 
   private Yksilo getYksilo(JodUser user) {

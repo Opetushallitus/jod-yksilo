@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.dto.profiili.export;
 
+import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
@@ -21,5 +22,7 @@ public record YksiloExportDto(
     Set<ToimintoExportDto> toiminnot,
     Set<URI> osaamisKiinnostukset,
     Set<URI> ammattiKiinnostukset,
+    LocalizedString muuOsaaminenVapaateksti,
+    LocalizedString osaamisKiinnostuksetVapaateksti,
     Set<YksilonSuosikkiExportDto> suosikit,
     Set<PaamaaraExportDto> paamaarat) {}

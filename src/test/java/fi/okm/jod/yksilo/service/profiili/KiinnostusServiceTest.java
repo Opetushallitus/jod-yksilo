@@ -9,8 +9,8 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import java.net.URI;
@@ -32,5 +32,13 @@ class KiinnostusServiceTest extends AbstractServiceTest {
     service.updateOsaamiset(user, kiinnostukset);
     simulateCommit();
     assertThat(service.getOsaamiset(user)).containsAll(kiinnostukset);
+  }
+
+  @Test
+  void testUpdateOsaamisKiinnostuksetVapaateksti() {
+    var vapaateksti = ls("Testi vapaateksti");
+    service.updateVapaateksti(user, vapaateksti);
+    simulateCommit();
+    assertThat(service.getVapaateksti(user)).isEqualTo(vapaateksti);
   }
 }

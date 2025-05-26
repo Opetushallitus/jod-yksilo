@@ -98,6 +98,8 @@ class MahdollisuudetController {
                     ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
                 .collect(Collectors.toSet());
 
+    final var osaamisetText = ehdotus.osaamisetText;
+
     final var kiinnostukset =
         ehdotus.kiinnostukset() == null
             ? Set.<URI>of()
@@ -106,7 +108,12 @@ class MahdollisuudetController {
                     ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
                 .collect(Collectors.toSet());
 
-    if (osaamiset.isEmpty() && kiinnostukset.isEmpty()) {
+    final var kiinnostuksetText = ehdotus.kiinnostuksetText;
+
+    if (osaamiset.isEmpty()
+        && (osaamisetText == null || osaamisetText.isBlank())
+        && kiinnostukset.isEmpty()
+        && (kiinnostuksetText == null || kiinnostuksetText.isBlank())) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
       return populateEmptyEhdotusDtos(mahdollisuusIds);
@@ -123,7 +130,14 @@ class MahdollisuudetController {
     var request =
         new Request(
             new Data(
-                ehdotus.osaamisPainotus, osaamiset, ehdotus.kiinnostusPainotus, kiinnostukset));
+                osaamiset,
+                ehdotus.osaamisetText,
+                ehdotus.osaamisPainotus,
+                kiinnostukset,
+                ehdotus.kiinnostuksetText,
+                ehdotus.kiinnostusPainotus,
+                ehdotus.escoListPainotus,
+                ehdotus.openTextPainotus));
 
     return inferenceService.infer(endpoint, request, new ParameterizedTypeReference<>() {}).stream()
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
@@ -195,10 +209,14 @@ class MahdollisuudetController {
 
   public record Request(Data data) {
     record Data(
-        double osaamisPainotus,
         Set<URI> osaamiset,
+        String osaamisetText,
+        double osaamisPainotus,
+        Set<URI> kiinnostukset,
+        String kiinnostuksetText,
         double kiinnostusPainotus,
-        Set<URI> kiinnostukset) {}
+        double escoListPainotus,
+        double openTextPainotus) {}
   }
 
   /**
@@ -247,10 +265,14 @@ class MahdollisuudetController {
    *     customer related to kiinnostus.
    */
   public record LuoEhdotusDto(
-      double osaamisPainotus,
       @Size(max = 1000) Set<@Valid URI> osaamiset,
+      @Size(max = 10000) String osaamisetText,
+      double osaamisPainotus,
+      @Size(max = 1000) Set<@Valid URI> kiinnostukset,
+      @Size(max = 10000) String kiinnostuksetText,
       double kiinnostusPainotus,
-      @Size(max = 1000) Set<@Valid URI> kiinnostukset) {}
+      double escoListPainotus,
+      double openTextPainotus) {}
 
   @SuppressWarnings("serial")
   static class Response extends ArrayList<fi.okm.jod.yksilo.controller.ehdotus.Suggestion> {}
