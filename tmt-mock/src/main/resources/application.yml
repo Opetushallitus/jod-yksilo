@@ -1,0 +1,10 @@
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: TMT Mock API
+
+logging:
+  level:
+    root: error
+    fi.okm.jod: info

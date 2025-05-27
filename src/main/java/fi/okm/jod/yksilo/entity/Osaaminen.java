@@ -22,13 +22,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
 import java.net.URI;
 import java.util.Map;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
 
 @Entity
 @Getter
 @Immutable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Osaaminen {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Id
@@ -41,6 +44,10 @@ public class Osaaminen {
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
+
+  public Osaaminen(URI uri) {
+    this.uri = uri;
+  }
 
   @Embeddable
   public record Kaannos(

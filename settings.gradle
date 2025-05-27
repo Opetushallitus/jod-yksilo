@@ -1,1 +1,3 @@
 rootProject.name = 'jod-yksilo'
+include 'tmt-profiili-api'
+include 'tmt-mock'

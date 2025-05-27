@@ -20,5 +20,15 @@ services:
       - ./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     labels:
       org.springframework.boot.jdbc.parameters: 'user=yksilo&password=yksilo'
+
+  tmt-mock-api:
+    profiles:
+      - "mock"
+    build:
+      context: ./tmt-mock
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8580:8080"
+
 volumes:
   data:

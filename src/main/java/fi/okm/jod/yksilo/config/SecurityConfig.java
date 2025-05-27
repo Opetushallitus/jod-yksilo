@@ -48,7 +48,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 public class SecurityConfig {
 
   @Bean
-  @SuppressWarnings("java:S4502")
+  @SuppressWarnings({"java:S4502", "java:S5411"})
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       Environment env,
@@ -62,8 +62,7 @@ public class SecurityConfig {
                 || SecurityContextHolder.getContext().getAuthentication() == null;
 
     if (env.matchesProfiles("local")
-        && Boolean.TRUE.equals(
-            env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false))) {
+        && env.getProperty("springdoc.swagger-ui.enabled", Boolean.class, false)) {
       csrfIgnoringRequestMatchers =
           new RequestMatcher[] {
             notAuthenticated,
