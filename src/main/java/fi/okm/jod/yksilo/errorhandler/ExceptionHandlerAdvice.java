@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.errorhandler;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceConflictException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.koski.NoDataException;
@@ -113,6 +114,13 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
+  @ExceptionHandler(ServiceConflictException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      ServiceConflictException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of(ex.getMessage()));
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.CONFLICT, request);
+  }
+
   @ExceptionHandler(ConstraintViolationException.class)
   protected ResponseEntity<Object> handleServiceException(
       ConstraintViolationException ex, WebRequest request) {
@@ -172,11 +180,10 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       ResourceServerException e, WebRequest request) {
 
     var errorCode = ErrorCode.SERVICE_ERROR;
-    if (e.getCause() instanceof HttpClientErrorException clientException) {
-      if (clientException.getStatusCode().is4xxClientError()) {
-        log.debug(e.getMessage());
-        errorCode = ErrorCode.PERMISSION_REQUIRED;
-      }
+    if (e.getCause() instanceof HttpClientErrorException clientException
+        && clientException.getStatusCode().is4xxClientError()) {
+      log.debug(e.getMessage());
+      errorCode = ErrorCode.PERMISSION_REQUIRED;
     }
     var info = errorInfo.of(errorCode, List.of(e.getMessage()));
     return handleExceptionInternal(

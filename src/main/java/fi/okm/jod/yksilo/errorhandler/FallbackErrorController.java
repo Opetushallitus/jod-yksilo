@@ -61,12 +61,10 @@ public class FallbackErrorController implements ErrorController {
 
     var contextPath = request.getContextPath();
     if (status.is4xxClientError()
-        && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String uri
-        && (uri.startsWith(contextPath + "/login")
-            || uri.startsWith(contextPath + "/logout")
-            || uri.startsWith(contextPath + "/oauth2"))) {
+        && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String
+        && "navigate".equalsIgnoreCase(request.getHeader("Sec-Fetch-Mode"))) {
       // Redirect back to the UI application for errors (likely) related to insufficient
-      // authentication
+      // authentication.
       log.info(
           "Authentication failure {}: {}",
           status.value(),
