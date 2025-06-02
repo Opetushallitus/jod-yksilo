@@ -21,6 +21,7 @@ public record PolunVaiheExportDto(
     UUID id,
     PolunVaiheLahde lahde,
     PolunVaiheTyyppi tyyppi,
+    UUID mahdollisuusId,
     LocalizedString nimi,
     LocalizedString kuvaus,
     Set<String> linkit,

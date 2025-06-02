@@ -222,6 +222,7 @@ public final class Mapper {
         : new PolunVaiheDto(
             entity.getId(),
             entity.getLahde(),
+            entity.getMahdollisuusId(),
             entity.getTyyppi(),
             entity.getNimi(),
             entity.getKuvaus(),

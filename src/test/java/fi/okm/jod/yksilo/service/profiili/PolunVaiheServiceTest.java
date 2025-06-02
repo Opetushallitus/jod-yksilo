@@ -80,6 +80,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
         new PolunVaiheDto(
             id,
             PolunVaiheLahde.KAYTTAJA,
+            null,
             PolunVaiheTyyppi.TYO,
             ls("uusi nimi"),
             ls("uusi kuvaus"),
@@ -146,6 +147,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
         new PolunVaiheDto(
             null,
             PolunVaiheLahde.EHDOTUS,
+            UUID.randomUUID(),
             PolunVaiheTyyppi.KOULUTUS,
             ls("nimi"),
             ls("kuvaus"),
@@ -196,6 +198,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
     return new PolunVaiheDto(
         null,
         PolunVaiheLahde.KAYTTAJA,
+        null,
         PolunVaiheTyyppi.KOULUTUS,
         ls("nimi"),
         ls("kuvaus"),
