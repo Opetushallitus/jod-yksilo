@@ -202,6 +202,9 @@ public final class ExportMapper {
             entity.getId(),
             entity.getLahde(),
             entity.getTyyppi(),
+            entity.getKoulutusmahdollisuus() != null
+                ? entity.getKoulutusmahdollisuus().getId()
+                : null,
             entity.getNimi(),
             entity.getKuvaus(),
             entity.getLinkit(),

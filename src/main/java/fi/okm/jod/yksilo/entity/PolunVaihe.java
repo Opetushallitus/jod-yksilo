@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
@@ -63,6 +64,9 @@ public class PolunVaihe {
   @Enumerated(EnumType.STRING)
   private PolunVaiheLahde lahde = PolunVaiheLahde.KAYTTAJA;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Koulutusmahdollisuus koulutusmahdollisuus;
+
   @Setter
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -92,8 +96,9 @@ public class PolunVaihe {
     // For JPA
   }
 
-  public PolunVaihe(PolunSuunnitelma polunSuunnitelma) {
+  public PolunVaihe(PolunSuunnitelma polunSuunnitelma, Koulutusmahdollisuus koulutusmahdollisuus) {
     this.polunSuunnitelma = requireNonNull(polunSuunnitelma);
+    this.koulutusmahdollisuus = koulutusmahdollisuus;
     this.kaannos = new EnumMap<>(Kieli.class);
     this.osaamiset = new HashSet<>();
   }

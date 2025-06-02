@@ -29,6 +29,7 @@ import java.util.UUID;
 public record PolunVaiheDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @NotNull PolunVaiheLahde lahde,
+    UUID mahdollisuusId,
     @NotNull PolunVaiheTyyppi tyyppi,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @PrintableString @Size(max = 10000) LocalizedString kuvaus,
