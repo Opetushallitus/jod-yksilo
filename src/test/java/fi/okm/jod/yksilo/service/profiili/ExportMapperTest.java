@@ -133,7 +133,9 @@ class ExportMapperTest {
   @Test
   void testPolunVaiheMappingCompleteness() {
     assertMappingCompleteness(
-        PolunVaihe.class, PolunVaiheExportDto.class, Set.of("polunSuunnitelma"));
+        PolunVaihe.class,
+        PolunVaiheExportDto.class,
+        Set.of("polunSuunnitelma", "koulutusmahdollisuus"));
   }
 
   private void assertMappingCompleteness(

@@ -14,6 +14,8 @@ import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.PolunVaihe;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
 import fi.okm.jod.yksilo.repository.PolunVaiheRepository;
@@ -34,6 +36,7 @@ public class PolunVaiheService {
   private final OsaaminenRepository osaamisetRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
   private final PolunVaiheRepository vaiheRepository;
+  private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
 
   public UUID add(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
     var suunnitelma =
@@ -41,11 +44,16 @@ public class PolunVaiheService {
             .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, suunnitelmaId)
             .orElseThrow(PolunVaiheService::notFound);
 
+    var koulutusmahdollisuus =
+        dto.mahdollisuusId() != null
+            ? koulutusmahdollisuusRepository.findById(dto.mahdollisuusId()).orElse(null)
+            : null;
+
     if (vaiheRepository.countByPolunSuunnitelma(suunnitelma) >= getVaihePerSuunnitelmaLimit()) {
       throw new ServiceValidationException("Too many Vaihes");
     }
 
-    return add(suunnitelma, dto).getId();
+    return add(suunnitelma, dto, koulutusmahdollisuus).getId();
   }
 
   public void update(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
@@ -66,8 +74,11 @@ public class PolunVaiheService {
     delete(vaihe);
   }
 
-  private PolunVaihe add(PolunSuunnitelma polunSuunnitelma, PolunVaiheDto dto) {
-    var entity = new PolunVaihe(polunSuunnitelma);
+  private PolunVaihe add(
+      PolunSuunnitelma polunSuunnitelma,
+      PolunVaiheDto dto,
+      Koulutusmahdollisuus koulutusmahdollisuus) {
+    var entity = new PolunVaihe(polunSuunnitelma, koulutusmahdollisuus);
     updateEntityFieldFromDtoData(entity, dto);
     entity = vaiheRepository.save(entity);
 
