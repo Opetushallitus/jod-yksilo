@@ -68,19 +68,23 @@ public class PolunVaiheService {
 
   private PolunVaihe add(PolunSuunnitelma polunSuunnitelma, PolunVaiheDto dto) {
     var entity = new PolunVaihe(polunSuunnitelma);
-    updateEntityFieldFromDtoData(entity, dto);
+    updateEntityFieldFromDtoData(entity, dto, true);
     entity = vaiheRepository.save(entity);
 
     return entity;
   }
 
   private void update(PolunVaihe entity, PolunVaiheDto dto) {
-    updateEntityFieldFromDtoData(entity, dto);
+    updateEntityFieldFromDtoData(entity, dto, false);
     vaiheRepository.save(entity);
   }
 
-  private void updateEntityFieldFromDtoData(PolunVaihe entity, PolunVaiheDto dto) {
+  private void updateEntityFieldFromDtoData(
+      PolunVaihe entity, PolunVaiheDto dto, boolean updateMahdollisuusId) {
     entity.setLahde(dto.lahde());
+    if (updateMahdollisuusId) {
+      entity.setMahdollisuusId(dto.mahdollisuusId());
+    }
     entity.setTyyppi(dto.tyyppi());
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());

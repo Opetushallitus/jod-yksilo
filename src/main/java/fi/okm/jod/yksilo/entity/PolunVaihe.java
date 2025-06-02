@@ -63,6 +63,8 @@ public class PolunVaihe {
   @Enumerated(EnumType.STRING)
   private PolunVaiheLahde lahde = PolunVaiheLahde.KAYTTAJA;
 
+  @Setter private UUID mahdollisuusId;
+
   @Setter
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
