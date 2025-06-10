@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -40,7 +41,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     try {
-      redirectStrategy.sendRedirect(request, response, callback != null ? callback : "/");
+      redirectStrategy.sendRedirect(
+          request, response, StringUtils.hasText(callback) ? callback : "/");
     } catch (IOException e) {
       log.error("Failed to redirect", e);
     }
