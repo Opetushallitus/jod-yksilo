@@ -175,6 +175,7 @@ class MahdollisuudetController {
                       suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
+                      null,
                       counter.getAndIncrement()));
             })
         .sorted(
@@ -234,13 +235,14 @@ class MahdollisuudetController {
       @NotNull MahdollisuusTyyppi tyyppi,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
+      @Nullable Long osaamisia,
 
       /** Value from 0 to */
       @Nullable Integer tyollisyysNakyma,
       @NotNull Integer aakkosIndeksi) {
 
     public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi, int order) {
-      return new EhdotusMetadata(tyyppi, null, null, null, order);
+      return new EhdotusMetadata(tyyppi, null, null, null, null, order);
     }
   }
 
@@ -280,7 +282,7 @@ class MahdollisuudetController {
   @PostMapping("/polku")
   @Operation(
       summary =
-          "Gets suggestions for education and work opportunities for polku ranked suggestions based on missing skills.")
+          "Gets suggestions for education opportunities for polku ranked suggestions based on missing skills.")
   public List<EhdotusDto> getMahdollisuudetSuggestionsForPolkuVaihe(
       @RequestBody
           @Valid
@@ -298,7 +300,12 @@ class MahdollisuudetController {
                 new EhdotusDto(
                     it.mahdollisuusId(),
                     new EhdotusMetadata(
-                        MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS, it.pisteet(), null, null, 0)))
+                        MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
+                        it.pisteet(),
+                        null,
+                        it.osaamisia(),
+                        null,
+                        0)))
         .toList();
   }
 }
