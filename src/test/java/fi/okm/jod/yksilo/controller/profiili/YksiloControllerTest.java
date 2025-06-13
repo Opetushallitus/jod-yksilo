@@ -59,7 +59,7 @@ class YksiloControllerTest {
   @Test
   @WithUserDetails("test")
   void shouldReturnUserInformation() throws Exception {
-    when(yksiloService.get(any())).thenReturn(new YksiloDto(true));
+    when(yksiloService.get(any())).thenReturn(new YksiloDto(true, false, false, false));
     mockMvc
         .perform(get("/api/profiili/yksilo").with(csrf()))
         .andExpect(status().isOk())
@@ -78,7 +78,7 @@ class YksiloControllerTest {
   @Test
   @WithUserDetails("test")
   void shouldUpdateUserInformation() throws Exception {
-    var dto = new YksiloDto(true);
+    var dto = new YksiloDto(true, true, true, true);
     mockMvc
         .perform(
             put("/api/profiili/yksilo")

@@ -9,4 +9,8 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
-public record YksiloDto(boolean tervetuloapolku) {}
+public record YksiloDto(
+    boolean tervetuloapolku,
+    boolean lupaLuovuttaaTiedotUlkopuoliselle,
+    boolean lupaArkistoida,
+    boolean lupaKayttaaTekoalynKoulutukseen) {}
