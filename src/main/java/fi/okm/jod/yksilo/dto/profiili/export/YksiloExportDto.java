@@ -17,6 +17,9 @@ import java.util.UUID;
 public record YksiloExportDto(
     UUID id,
     Boolean tervetuloapolku,
+    Boolean lupaLuovuttaaTiedotUlkopuoliselle,
+    Boolean lupaArkistoida,
+    Boolean lupaKayttaaTekoalynKoulutukseen,
     Set<TyopaikkaExportDto> tyopaikat,
     Set<KoulutusKokonaisuusExportDto> koulutusKokonaisuudet,
     Set<ToimintoExportDto> toiminnot,

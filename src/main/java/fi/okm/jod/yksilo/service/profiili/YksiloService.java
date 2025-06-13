@@ -27,12 +27,19 @@ public class YksiloService {
 
   public YksiloDto get(JodUser user) {
     var yksilo = getYksilo(user);
-    return new YksiloDto(yksilo.getTervetuloapolku());
+    return new YksiloDto(
+        yksilo.getTervetuloapolku(),
+        yksilo.getLupaLuovuttaaTiedotUlkopuoliselle(),
+        yksilo.getLupaArkistoida(),
+        yksilo.getLupaKayttaaTekoalynKoulutukseen());
   }
 
   public void update(JodUser user, YksiloDto dto) {
     var yksilo = getYksilo(user);
     yksilo.setTervetuloapolku(dto.tervetuloapolku());
+    yksilo.setLupaLuovuttaaTiedotUlkopuoliselle(dto.lupaLuovuttaaTiedotUlkopuoliselle());
+    yksilo.setLupaArkistoida(dto.lupaArkistoida());
+    yksilo.setLupaKayttaaTekoalynKoulutukseen(dto.lupaKayttaaTekoalynKoulutukseen());
     yksilot.save(yksilo);
   }
 

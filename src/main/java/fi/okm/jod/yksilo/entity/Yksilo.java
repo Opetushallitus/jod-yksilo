@@ -51,6 +51,12 @@ public class Yksilo {
 
   @Setter private Boolean tervetuloapolku;
 
+  @Setter private Boolean lupaLuovuttaaTiedotUlkopuoliselle;
+
+  @Setter private Boolean lupaArkistoida;
+
+  @Setter private Boolean lupaKayttaaTekoalynKoulutukseen;
+
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
@@ -82,6 +88,9 @@ public class Yksilo {
   public Yksilo(UUID uuid) {
     this.id = uuid;
     this.tervetuloapolku = false;
+    this.lupaLuovuttaaTiedotUlkopuoliselle = false;
+    this.lupaArkistoida = false;
+    this.lupaKayttaaTekoalynKoulutukseen = false;
     this.osaamiset = new HashSet<>();
     this.tyopaikat = new HashSet<>();
     this.koulutusKokonaisuudet = new HashSet<>();
@@ -99,6 +108,18 @@ public class Yksilo {
 
   public boolean getTervetuloapolku() {
     return tervetuloapolku != null && tervetuloapolku;
+  }
+
+  public boolean getLupaLuovuttaaTiedotUlkopuoliselle() {
+    return lupaLuovuttaaTiedotUlkopuoliselle != null && lupaLuovuttaaTiedotUlkopuoliselle;
+  }
+
+  public boolean getLupaArkistoida() {
+    return lupaArkistoida != null && lupaArkistoida;
+  }
+
+  public boolean getLupaKayttaaTekoalynKoulutukseen() {
+    return lupaKayttaaTekoalynKoulutukseen != null && lupaKayttaaTekoalynKoulutukseen;
   }
 
   public void setOsaamisKiinnostukset(Collection<Osaaminen> entities) {

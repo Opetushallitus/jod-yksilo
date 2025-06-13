@@ -48,6 +48,9 @@ public final class ExportMapper {
         : new YksiloExportDto(
             entity.getId(),
             entity.getTervetuloapolku(),
+            entity.getLupaLuovuttaaTiedotUlkopuoliselle(),
+            entity.getLupaArkistoida(),
+            entity.getLupaKayttaaTekoalynKoulutukseen(),
             entity.getTyopaikat().stream()
                 .map(ExportMapper::mapTyopaikka)
                 .collect(Collectors.toSet()),

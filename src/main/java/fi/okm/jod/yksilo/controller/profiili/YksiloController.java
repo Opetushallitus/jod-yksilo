@@ -40,12 +40,17 @@ public class YksiloController {
   @GetMapping
   public YksiloCsrfDto get(
       @AuthenticationPrincipal JodUser user, @Parameter(hidden = true) CsrfToken csrfToken) {
+    var yksilo = yksiloService.get(user);
+
     return new YksiloCsrfDto(
         user.givenName(),
         user.familyName(),
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
-        yksiloService.get(user).tervetuloapolku());
+        yksilo.tervetuloapolku(),
+        yksilo.lupaLuovuttaaTiedotUlkopuoliselle(),
+        yksilo.lupaArkistoida(),
+        yksilo.lupaKayttaaTekoalynKoulutukseen());
   }
 
   @GetMapping("/vienti")
@@ -62,7 +67,13 @@ public class YksiloController {
   }
 
   public record YksiloCsrfDto(
-      String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf, boolean tervetuloapolku) {}
+      String etunimi,
+      String sukunimi,
+      @NotNull CsrfTokenDto csrf,
+      boolean tervetuloapolku,
+      boolean lupaLuovuttaaTiedotUlkopuoliselle,
+      boolean lupaArkistoida,
+      boolean lupaKayttaaTekoalynKoulutukseen) {}
 
   public record CsrfTokenDto(
       @NotNull String token, @NotNull String headerName, @NotNull String parameterName) {}
