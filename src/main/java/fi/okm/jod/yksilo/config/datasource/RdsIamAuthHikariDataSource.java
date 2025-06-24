@@ -10,15 +10,19 @@
 package fi.okm.jod.yksilo.config.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zaxxer.hikari.util.Credentials;
 
 public class RdsIamAuthHikariDataSource extends HikariDataSource {
 
   private RdsIamAuthTokenProvider rdsAuthTokenProvider;
 
-  @Autowired
-  public void setAuthTokenProvider(RdsIamAuthTokenProvider rdsAuthTokenProvider) {
+  void setAuthTokenProvider(RdsIamAuthTokenProvider rdsAuthTokenProvider) {
     this.rdsAuthTokenProvider = rdsAuthTokenProvider;
+  }
+
+  @Override
+  public Credentials getCredentials() {
+    return Credentials.of(getUsername(), getPassword());
   }
 
   @Override
