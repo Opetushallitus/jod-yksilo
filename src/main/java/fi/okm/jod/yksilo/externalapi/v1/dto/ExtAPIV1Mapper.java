@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 
@@ -35,5 +36,9 @@ public class ExtAPIV1Mapper {
         koulutusmahdollisuus.getKuvaus(),
         koulutusmahdollisuus.getKesto(),
         koulutusmahdollisuus.isAktiivinen());
+  }
+
+  public static ExtProfiiliDto toProfiiliDto(Yksilo yksilo) {
+    return null;
   }
 }
