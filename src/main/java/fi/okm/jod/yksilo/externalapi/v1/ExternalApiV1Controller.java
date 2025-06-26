@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.externalapi.v1;
 
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
+import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -49,5 +50,16 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
     return service.findKoulutusMahdollisuudet(pageable);
+  }
+
+  @GetMapping("/profiilit")
+  @Operation(
+      summary = "Get all profiilit paged of by page and size",
+      description = "Returns all profiilit basic information in JSON-format.")
+  public SivuDto<ExtProfiiliDto> findProfiilit(
+      @RequestParam(required = false, defaultValue = "0") Integer sivu,
+      @RequestParam(required = false, defaultValue = "10") Integer koko) {
+    Pageable pageable = PageRequest.of(sivu, koko);
+    return service.findYksilot(pageable);
   }
 }
