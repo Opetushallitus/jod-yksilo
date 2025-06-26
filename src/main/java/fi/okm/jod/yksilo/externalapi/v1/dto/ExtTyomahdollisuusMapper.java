@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.externalapi.v1.dto;
 
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 
+/** */
 public class ExtTyomahdollisuusMapper {
   private ExtTyomahdollisuusMapper() {}
 
