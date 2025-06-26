@@ -54,7 +54,6 @@ public class Tyomahdollisuus {
   @Column
   private TyomahdollisuusAineisto aineisto;
 
-  @Getter
   @Column(columnDefinition = "boolean default true")
   private boolean aktiivinen = true;
 
