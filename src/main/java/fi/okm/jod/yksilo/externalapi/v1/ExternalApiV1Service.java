@@ -44,13 +44,13 @@ public class ExternalApiV1Service {
   }
 
   public SivuDto<ExtKoulutusMahdollisuusDto> findKoulutusMahdollisuudet(final Pageable pageable) {
-    final Page<Koulutusmahdollisuus> tyomahdollisuusPage =
+    final Page<Koulutusmahdollisuus> koulutusmahdollisuusPage =
         this.koulutusmahdollisuusRepository.findAll(pageable);
-    final List<ExtKoulutusMahdollisuusDto> tyoMahdollisuusDtoList =
-        tyomahdollisuusPage.stream().map(ExtAPIV1Mapper::toKoulutusMahdollisuusDto).toList();
+    final List<ExtKoulutusMahdollisuusDto> koulutusMahdollisuusDtoList =
+        koulutusmahdollisuusPage.stream().map(ExtAPIV1Mapper::toKoulutusMahdollisuusDto).toList();
     return new SivuDto<>(
-        tyoMahdollisuusDtoList,
-        tyomahdollisuusPage.getTotalElements(),
-        tyomahdollisuusPage.getTotalPages());
+        koulutusMahdollisuusDtoList,
+        koulutusmahdollisuusPage.getTotalElements(),
+        koulutusmahdollisuusPage.getTotalPages());
   }
 }
