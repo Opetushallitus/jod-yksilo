@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
 
-  @Transactional
   public Page<TyomahdollisuusDto> findAll(Pageable pageable) {
     return tyomahdollisuusRepository
         .findAll(
