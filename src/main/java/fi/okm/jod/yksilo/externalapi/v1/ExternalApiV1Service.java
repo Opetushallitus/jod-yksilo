@@ -33,6 +33,9 @@ public class ExternalApiV1Service {
         this.tyomahdollisuusRepository.findAll(pageable);
     final List<ExtTyoMahdollisuusDto> tyoMahdollisuusDtoList =
         tyomahdollisuusPage.stream().map(ExtTyomahdollisuusMapper::toTyoMahdollisuusDto).toList();
-    return new SivuDto<>(tyoMahdollisuusDtoList, pageable.getPageSize(), pageable.getPageNumber());
+    return new SivuDto<>(
+        tyoMahdollisuusDtoList,
+        tyomahdollisuusPage.getTotalElements(),
+        tyomahdollisuusPage.getTotalPages());
   }
 }
