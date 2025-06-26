@@ -9,9 +9,11 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
-import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.*;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** */
 public class ExtAPIV1Mapper {
@@ -39,6 +41,60 @@ public class ExtAPIV1Mapper {
   }
 
   public static ExtProfiiliDto toProfiiliDto(Yksilo yksilo) {
-    return null;
+    Set<ExtYksilonOsaaminenDto> yksilonOsaamiset =
+        yksilo.getOsaamiset().stream()
+            .map(ExtAPIV1Mapper::toYksilonOsaaminen)
+            .collect(Collectors.toSet());
+    Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset =
+        yksilo.getOsaamisKiinnostukset().stream()
+            .map(ExtAPIV1Mapper::toOsaamisKiinnostus)
+            .collect(Collectors.toSet());
+    Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset =
+        yksilo.getAmmattiKiinnostukset().stream()
+            .map(ExtAPIV1Mapper::toAmmattiKiinnostus)
+            .collect(Collectors.toSet());
+    Set<ExtSuosikkiDto> suosikit =
+        yksilo.getSuosikit().stream()
+            .map(ExtAPIV1Mapper::toSuosikkiDto)
+            .collect(Collectors.toSet());
+    Set<ExtPaamaaraDto> paamaarat =
+        yksilo.getPaamaarat().stream()
+            .map(ExtAPIV1Mapper::toPaamaaraDto)
+            .collect(Collectors.toSet());
+    return new ExtProfiiliDto(
+        yksilo.getId(),
+        yksilonOsaamiset,
+        osaamisKiinnostukset,
+        ammattiKiinnostukset,
+        suosikit,
+        paamaarat);
+  }
+
+  private static ExtPaamaaraDto toPaamaaraDto(Paamaara paamaara) {
+    return new ExtPaamaaraDto(
+        paamaara.getTyyppi(),
+        paamaara.getTyomahdollisuus() != null ? paamaara.getTyomahdollisuus().getId() : null,
+        paamaara.getKoulutusmahdollisuus() != null
+            ? paamaara.getKoulutusmahdollisuus().getId()
+            : null);
+  }
+
+  private static ExtSuosikkiDto toSuosikkiDto(YksilonSuosikki yksilonSuosikki) {
+    return new ExtSuosikkiDto(
+        yksilonSuosikki.getTyomahdollisuus().getId(),
+        yksilonSuosikki.getKoulutusmahdollisuus().getId());
+  }
+
+  private static ExtAmmattiKiinnostusDto toAmmattiKiinnostus(Ammatti ammatti) {
+    return new ExtAmmattiKiinnostusDto(ammatti.getUri(), ammatti.getKoodi());
+  }
+
+  private static ExtOsaamisKiinnostusDto toOsaamisKiinnostus(Osaaminen osaaminen) {
+    return new ExtOsaamisKiinnostusDto(osaaminen.getUri());
+  }
+
+  private static ExtYksilonOsaaminenDto toYksilonOsaaminen(YksilonOsaaminen yksilonOsaaminen) {
+    return new ExtYksilonOsaaminenDto(
+        yksilonOsaaminen.getLahde().orElse(null), yksilonOsaaminen.getOsaaminen().getUri());
   }
 }
