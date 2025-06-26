@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
-import fi.okm.jod.yksilo.entity.*;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import java.util.Set;
