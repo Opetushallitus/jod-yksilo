@@ -30,7 +30,7 @@ public class ExternalApiV1Controller {
 
   @GetMapping("/tyomahdollisuudet")
   @Operation(
-      summary = "Get all työmahdollisuudet paged of by page and size or set of ids",
+      summary = "Get all työmahdollisuudet paged of by page and size",
       description = "Returns all työmahdollisuudet basic information in JSON-format.")
   public SivuDto<ExtTyoMahdollisuusDto> findAll(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
