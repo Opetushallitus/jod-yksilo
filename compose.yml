@@ -30,5 +30,11 @@ services:
     ports:
       - "127.0.0.1:8580:8080"
 
+  tmt-osaamissuosittelija-api:
+    build:
+      dockerfile: Dockerfile.osaamissuosittelija
+    ports:
+      - "127.0.0.1:8680:8080"
+
 volumes:
   data:
