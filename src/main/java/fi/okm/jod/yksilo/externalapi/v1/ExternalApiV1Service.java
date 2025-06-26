@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExternalApiV1Service {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
 
-  @Transactional
   public SivuDto<ExtTyoMahdollisuusDto> findTyoMahdollisuudet(final Pageable pageable) {
     final Page<Tyomahdollisuus> tyomahdollisuusPage =
         this.tyomahdollisuusRepository.findAll(pageable);
