@@ -32,7 +32,7 @@ public class ExternalApiV1Controller {
   @Operation(
       summary = "Get all työmahdollisuudet paged of by page and size",
       description = "Returns all työmahdollisuudet basic information in JSON-format.")
-  public SivuDto<ExtTyoMahdollisuusDto> findAll(
+  public SivuDto<ExtTyoMahdollisuusDto> findTyoMahdollisuudet(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
