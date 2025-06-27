@@ -37,6 +37,7 @@ public class ExternalApiV1Service {
         this.tyomahdollisuusRepository.findAll(pageable);
     final List<ExtTyoMahdollisuusDto> tyoMahdollisuusDtoList =
         tyomahdollisuusPage.stream().map(ExtAPIV1Mapper::toTyoMahdollisuusDto).toList();
+
     return new SivuDto<>(
         tyoMahdollisuusDtoList,
         tyomahdollisuusPage.getTotalElements(),
@@ -48,6 +49,7 @@ public class ExternalApiV1Service {
         this.koulutusmahdollisuusRepository.findAll(pageable);
     final List<ExtKoulutusMahdollisuusDto> koulutusMahdollisuusDtoList =
         koulutusmahdollisuusPage.stream().map(ExtAPIV1Mapper::toKoulutusMahdollisuusDto).toList();
+
     return new SivuDto<>(
         koulutusMahdollisuusDtoList,
         koulutusmahdollisuusPage.getTotalElements(),
