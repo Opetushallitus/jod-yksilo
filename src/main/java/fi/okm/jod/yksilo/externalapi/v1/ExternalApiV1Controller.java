@@ -37,7 +37,7 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findTyoMahdollisuudet(pageable);
+    return service.findTyomahdollisuudet(pageable);
   }
 
   @GetMapping("/koulutusmahdollisuudet")
@@ -48,6 +48,6 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findKoulutusMahdollisuudet(pageable);
+    return service.findKoulutusmahdollisuudet(pageable);
   }
 }

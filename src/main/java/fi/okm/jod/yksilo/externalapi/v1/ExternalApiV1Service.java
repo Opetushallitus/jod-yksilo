@@ -32,7 +32,7 @@ public class ExternalApiV1Service {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
 
-  public SivuDto<ExtTyoMahdollisuusDto> findTyoMahdollisuudet(final Pageable pageable) {
+  public SivuDto<ExtTyoMahdollisuusDto> findTyomahdollisuudet(final Pageable pageable) {
     final Page<Tyomahdollisuus> tyomahdollisuusPage =
         this.tyomahdollisuusRepository.findAll(pageable);
     final List<ExtTyoMahdollisuusDto> tyoMahdollisuusDtoList =
@@ -43,7 +43,7 @@ public class ExternalApiV1Service {
         tyomahdollisuusPage.getTotalPages());
   }
 
-  public SivuDto<ExtKoulutusMahdollisuusDto> findKoulutusMahdollisuudet(final Pageable pageable) {
+  public SivuDto<ExtKoulutusMahdollisuusDto> findKoulutusmahdollisuudet(final Pageable pageable) {
     final Page<Koulutusmahdollisuus> koulutusmahdollisuusPage =
         this.koulutusmahdollisuusRepository.findAll(pageable);
     final List<ExtKoulutusMahdollisuusDto> koulutusMahdollisuusDtoList =
