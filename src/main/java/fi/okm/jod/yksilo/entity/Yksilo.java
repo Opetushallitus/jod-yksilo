@@ -20,7 +20,6 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import java.util.Collection;
@@ -37,12 +36,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Yksilo {
-
-  @Id
-  @Column(updatable = false, nullable = false)
-  private UUID id;
-
+public class Yksilo extends JodEntity {
   @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
