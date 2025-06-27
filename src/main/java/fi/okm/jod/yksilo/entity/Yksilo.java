@@ -29,6 +29,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 public class Yksilo extends JodEntity {
+public class Yksilo extends JodEntity {
   @Id
   @Column(name = "id")
   private UUID id;
