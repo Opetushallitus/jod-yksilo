@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
@@ -60,24 +60,27 @@ import org.springframework.web.bind.annotation.RestController;
 class MahdollisuudetController {
 
   private final InferenceService<Request, Response> inferenceService;
-  private final String endpoint;
+  private final Map<Kieli, String> endpoints;
   private final MahdollisuudetService mahdollisuudetService;
   private final OsaaminenService osaaminenService;
   private final AmmattiService ammattiService;
 
+  @ConfigurationProperties("jod.recommendation.mahdollisuus")
+  public record EndpointProperties(Map<Kieli, String> endpoints) {}
+
   MahdollisuudetController(
       InferenceService<Request, Response> inferenceService,
-      @Value("${jod.recommendation.mahdollisuus.endpoint}") String endpoint,
+      EndpointProperties properties,
       MahdollisuudetService mahdollisuudetService,
       OsaaminenService osaaminenService,
       AmmattiService ammattiService) {
     this.inferenceService = inferenceService;
-    this.endpoint = endpoint;
+    this.endpoints = properties.endpoints();
     this.mahdollisuudetService = mahdollisuudetService;
     this.osaaminenService = osaaminenService;
     this.ammattiService = ammattiService;
 
-    log.info("Creating TyomahdollisuudetController, endpoint: {}", endpoint);
+    log.info("Creating MahdollisuudetController, endpoint: {}", endpoints);
   }
 
   @PostMapping
@@ -87,6 +90,11 @@ class MahdollisuudetController {
       @RequestParam(defaultValue = "asc") Sort.Direction sort,
       @RequestBody @Valid LuoEhdotusDto ehdotus) {
     log.info("Creating the suggestions");
+
+    if (endpoints.get(lang) == null) {
+      throw new IllegalArgumentException("Unsupported language: " + lang);
+    }
+
     final var mahdollisuusIds =
         mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(sort, lang);
 
@@ -121,11 +129,11 @@ class MahdollisuudetController {
 
     // fetch kohtaanto results from inference endpoint and populate ehdotus DTOs
     return populateEhdotusDtos(
-        mahdollisuusIds, performInferenceRequest(ehdotus, osaamiset, kiinnostukset));
+        mahdollisuusIds, performInferenceRequest(lang, ehdotus, osaamiset, kiinnostukset));
   }
 
   private Map<UUID, Suggestion> performInferenceRequest(
-      LuoEhdotusDto ehdotus, Set<URI> osaamiset, Set<URI> kiinnostukset) {
+      Kieli lang, LuoEhdotusDto ehdotus, Set<URI> osaamiset, Set<URI> kiinnostukset) {
     // TODO: add language support when supported by kohtaanto inference endpoint
     var request =
         new Request(
@@ -139,7 +147,9 @@ class MahdollisuudetController {
                 ehdotus.escoListPainotus,
                 ehdotus.openTextPainotus));
 
-    return inferenceService.infer(endpoint, request, new ParameterizedTypeReference<>() {}).stream()
+    return inferenceService
+        .infer(endpoints.get(lang), request, new ParameterizedTypeReference<>() {})
+        .stream()
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
   }
 
