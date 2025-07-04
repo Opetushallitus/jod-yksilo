@@ -93,7 +93,10 @@ jod:
     skills:
       baseUrl: ""
     mahdollisuus:
-      endpoint: ""
+      endpoints:
+        fi: ""
+        en: ""
+        sv: ""
   keskustelu:
     endpoint: ""
   ai-tunnistus:

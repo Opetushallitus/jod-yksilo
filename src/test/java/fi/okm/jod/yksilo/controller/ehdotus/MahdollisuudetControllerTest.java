@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
+import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.EndpointProperties;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
@@ -46,6 +47,8 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
@@ -55,7 +58,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @WebMvcTest(value = MahdollisuudetController.class)
-@Import({ErrorInfoFactory.class, MappingConfig.class})
+@Import({
+  ErrorInfoFactory.class,
+  MappingConfig.class,
+})
 @Execution(ExecutionMode.SAME_THREAD)
 class MahdollisuudetControllerTest {
 
@@ -69,6 +75,14 @@ class MahdollisuudetControllerTest {
   @MockitoBean
   private InferenceService<MahdollisuudetController.Request, MahdollisuudetController.Response>
       inferenceService;
+
+  @TestConfiguration
+  static class TestConfig {
+    @Bean
+    EndpointProperties endpointProperties() {
+      return new EndpointProperties(Map.of(Kieli.FI, "fi"));
+    }
+  }
 
   @Test
   @WithMockUser
@@ -138,10 +152,10 @@ class MahdollisuudetControllerTest {
   void whenSkillsShouldReturnScores() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            Set.of(URI.create("http://dymmy")),
+            Set.of(URI.create("urn:osaaminen1")),
             null,
             0.5,
-            Set.of(URI.create("http://dymmy")),
+            Set.of(URI.create("urn:osaaminen2")),
             null,
             0.5,
             0.5,
@@ -171,7 +185,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("http://dummy"),
+                URI.create("urn:osaaminen1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
@@ -262,7 +276,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("http://dummy"),
+                URI.create("urn:osaaminen1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
@@ -321,7 +335,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("http://dummy"),
+                URI.create("urn:osaaminen1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
