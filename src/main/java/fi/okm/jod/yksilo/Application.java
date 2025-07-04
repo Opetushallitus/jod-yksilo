@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 /** Application entrypoint. */
 @EnableAsync
 @SpringBootApplication
-@ConfigurationPropertiesScan("fi.okm.jod.yksilo.config")
+@ConfigurationPropertiesScan("fi.okm.jod.yksilo")
 @EnableCaching
 public class Application {
 
