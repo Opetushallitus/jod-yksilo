@@ -64,6 +64,7 @@ public class TyomahdollisuusService {
             entity.getOtsikko(),
             entity.getTiivistelma(),
             entity.getKuvaus(),
+            entity.getAmmattiryhma(),
             entity.isAktiivinen());
   }
 
@@ -79,6 +80,7 @@ public class TyomahdollisuusService {
             entity.getYleisetVaatimukset(),
             entity.getAmmattiryhma(),
             entity.getAineisto(),
+            entity.isAktiivinen(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
   }
