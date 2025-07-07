@@ -80,6 +80,7 @@ class TyomahdollisuusControllerTest {
                 otsikko,
                 tiivistelma,
                 kuvaus,
+                null,
                 true));
     when(service.findByIds(mockIds)).thenReturn(mockTyomahdolliuudet);
 

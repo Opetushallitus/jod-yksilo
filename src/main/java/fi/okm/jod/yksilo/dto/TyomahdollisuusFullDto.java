@@ -27,6 +27,7 @@ public record TyomahdollisuusFullDto(
     LocalizedString yleisetVaatimukset,
     URI ammattiryhma,
     TyomahdollisuusAineisto aineisto,
+    boolean aktiivinen,
     @Schema(
             propertyNames = TyomahdollisuusJakaumaTyyppi.class,
             additionalPropertiesSchema = JakaumaDto.class)
