@@ -9,15 +9,20 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
-import fi.okm.jod.yksilo.entity.*;
+import fi.okm.jod.yksilo.entity.Ammatti;
+import fi.okm.jod.yksilo.entity.Osaaminen;
+import fi.okm.jod.yksilo.entity.Paamaara;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** */
-public class ExtAPIV1Mapper {
-  private ExtAPIV1Mapper() {}
+/** Mapper class to convert domain entities to external API DTOs . */
+public class ExtApiV1Mapper {
+  private ExtApiV1Mapper() {}
 
   public static ExtTyoMahdollisuusDto toTyoMahdollisuusDto(final Tyomahdollisuus tyomahdollisuus) {
     return new ExtTyoMahdollisuusDto(
@@ -43,23 +48,23 @@ public class ExtAPIV1Mapper {
   public static ExtProfiiliDto toProfiiliDto(Yksilo yksilo) {
     Set<ExtYksilonOsaaminenDto> yksilonOsaamiset =
         yksilo.getOsaamiset().stream()
-            .map(ExtAPIV1Mapper::toYksilonOsaaminen)
+            .map(ExtApiV1Mapper::toYksilonOsaaminen)
             .collect(Collectors.toSet());
     Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset =
         yksilo.getOsaamisKiinnostukset().stream()
-            .map(ExtAPIV1Mapper::toOsaamisKiinnostus)
+            .map(ExtApiV1Mapper::toOsaamisKiinnostus)
             .collect(Collectors.toSet());
     Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset =
         yksilo.getAmmattiKiinnostukset().stream()
-            .map(ExtAPIV1Mapper::toAmmattiKiinnostus)
+            .map(ExtApiV1Mapper::toAmmattiKiinnostus)
             .collect(Collectors.toSet());
     Set<ExtSuosikkiDto> suosikit =
         yksilo.getSuosikit().stream()
-            .map(ExtAPIV1Mapper::toSuosikkiDto)
+            .map(ExtApiV1Mapper::toSuosikkiDto)
             .collect(Collectors.toSet());
     Set<ExtPaamaaraDto> paamaarat =
         yksilo.getPaamaarat().stream()
-            .map(ExtAPIV1Mapper::toPaamaaraDto)
+            .map(ExtApiV1Mapper::toPaamaaraDto)
             .collect(Collectors.toSet());
     return new ExtProfiiliDto(
         yksilo.getId(),
