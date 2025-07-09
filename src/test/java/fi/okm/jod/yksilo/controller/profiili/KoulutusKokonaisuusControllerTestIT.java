@@ -33,12 +33,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SqlConfig(separator = ";;;")
-@Sql(scripts = {"/data/mock-tunnistus.sql", "/schema.sql"})
 @AutoConfigureMockMvc
 class KoulutusKokonaisuusControllerTestIT extends IntegrationTest {
 

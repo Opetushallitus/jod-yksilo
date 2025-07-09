@@ -11,21 +11,20 @@ package fi.okm.jod.yksilo.config.datasource;
 
 import java.net.URI;
 import java.util.Objects;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.rds.RdsUtilities;
 import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest;
 
-@Component
-@Profile("cloud")
 public class RdsIamAuthTokenProvider {
   private final RdsUtilities rdsUtilities;
 
-  public RdsIamAuthTokenProvider(RdsClient rdsClient) {
+  RdsIamAuthTokenProvider(RdsClient rdsClient) {
     this.rdsUtilities = rdsClient.utilities();
   }
 
+  /**
+   * Generates an authentication token for connecting to an RDS instance using IAM authentication.
+   */
   public String generateAuthToken(String jdbcUrl, String username) {
     if (!Objects.requireNonNull(jdbcUrl).startsWith("jdbc:")) {
       throw new IllegalArgumentException("Invalid JDBC URL");

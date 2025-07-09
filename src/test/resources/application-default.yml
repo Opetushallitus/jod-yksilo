@@ -5,6 +5,8 @@ logging:
   exception-conversion-word:
 
 spring:
+  #main:
+  #  lazy-initialization: true
   test:
     context:
       cache:
@@ -12,15 +14,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 3
-  sql:
-    init:
-      mode: never
-  cloud:
-    aws:
-      parameterstore:
-        enabled: false
-      secretsmanager:
-        enabled: false
+      schema: yksilo
 
 server:
   shutdown: immediate

@@ -42,9 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 
-@Sql(value = "/data/osaaminen.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({
   ErrorInfoFactory.class,

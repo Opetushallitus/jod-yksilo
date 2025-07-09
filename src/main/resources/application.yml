@@ -6,9 +6,8 @@ spring:
       enabled: true
   jpa:
     hibernate:
-      ddl-auto: "create" # FIXME: Just for early development without migrations
+      ddl-auto: "validate"
     open-in-view: false
-    defer-datasource-initialization: true # FIXME: Just for early development without migrations
     properties:
       hibernate:
         jdbc:
@@ -22,22 +21,29 @@ spring:
   mvc:
     log-resolved-exception: false
   flyway:
-    enabled: false
+    enabled: true
+    default-schema: yksilo
+    schemas: yksilo,koulutusmahdollisuus_data,tyomahdollisuus_data,esco_data
+    group: true
+    baseline-on-migrate: true
+    out-of-order: true
+    baseline-version: "20250707.250"
+    baseline-description: baseline
   session:
     timeout: 30m
     redis:
       repository-type: default
-  sql:
-    init:
-      mode: always # FIXME: Just for early development without migration
-      separator: ";;;"
   cache:
     type: caffeine
     caffeine:
       spec: initialCapacity=100,maximumSize=500,expireAfterWrite=600s
   cloud:
     aws:
+      cloudwatch:
+        enabled: false
       parameterstore:
+        enabled: false
+      secretsmanager:
         enabled: false
 
 server:

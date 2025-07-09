@@ -31,10 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 
-@Sql(value = "/data/osaaminen.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)
 @Import({KoulutusService.class, YksilonOsaaminenService.class})
 class KoulutusServiceTest extends AbstractServiceTest {
 

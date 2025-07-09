@@ -55,10 +55,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @Sql(
-    scripts = {"/data/mock-tunnistus.sql", "/schema.sql", "/data.sql"},
-    config = @SqlConfig(separator = ";;;"),
-    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(
     scripts = {"/data/mahdollisuudet.sql"},
     config = @SqlConfig(separator = ";;;"),
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
