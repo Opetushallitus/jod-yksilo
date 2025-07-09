@@ -37,10 +37,9 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Yksilo {
-
+public class Yksilo extends JodEntity {
   @Id
-  @Column(updatable = false, nullable = false)
+  @Column(name = "id")
   private UUID id;
 
   @Getter(AccessLevel.NONE)
