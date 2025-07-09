@@ -1,3 +1,9 @@
+buildscript {
+  dependencies {
+    classpath("org.flywaydb:flyway-database-postgresql:11.10.0")
+  }
+}
+
 plugins {
   id 'java'
   id 'jacoco'
@@ -12,6 +18,7 @@ plugins {
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
   id "com.github.ben-manes.versions" version "0.52.0"
+  id "org.flywaydb.flyway" version "11.10.1"
 }
 
 group = 'fi.okm.jod'
@@ -34,6 +41,7 @@ repositories {
 
 ext {
   spotbugsVersion = "4.9.3"
+  setProperty("flyway.version", "11.10.1")
 }
 
 configurations {
@@ -140,10 +148,8 @@ dependencies {
 tasks.named('test', Test) {
   useJUnitPlatform()
   maxHeapSize = "1g"
-  jvmArgs += [
-      '-XX:+EnableDynamicAgentLoading',
-      "-javaagent:${configurations.mockitoAgent.asPath}"
-  ]
+  jvmArgs += ['-XX:+EnableDynamicAgentLoading',
+              "-javaagent:${configurations.mockitoAgent.asPath}"]
   systemProperty('file.encoding', 'UTF-8')
   testLogging {
     events("passed", "skipped", "failed")
@@ -267,10 +273,7 @@ tasks.named("dependencyUpdates").configure {
   checkConstraints = true
   checkBuildEnvironmentConstraints = true
   rejectVersionIf {
-    it.candidate.version.containsIgnoreCase("alpha")
-        || it.candidate.version.containsIgnoreCase("beta")
-        || it.candidate.version.matches(".*-M\\d+")
-        || it.candidate.version.matches(".*-RC\\d+")
+    it.candidate.version.containsIgnoreCase("alpha") || it.candidate.version.containsIgnoreCase("beta") || it.candidate.version.matches(".*-M\\d+") || it.candidate.version.matches(".*-RC\\d+")
   }
 }
 
@@ -311,3 +314,33 @@ tasks.register("generateSchemaDocs", JavaExec) {
     ext.process.destroy()
   }
 }
+
+flyway {
+  defaultSchema = 'yksilo'
+  schemas = ['yksilo', 'koulutusmahdollisuus_data', 'tyomahdollisuus_data', 'esco_data']
+}
+
+tasks.register('validateFlywayMigrationNames') {
+  description = 'Validates that Flyway migration file names follow the pattern V<YYYYMMDD>.<issueid>__description.sql'
+  group = 'verification'
+
+  def migrationDir = file('src/main/resources/db/migration')
+  inputs.dir(migrationDir)
+
+  doLast {
+    def pattern = ~/(R__\d{3}_.*.sql)|(?U:^[VB]\d{4}[01]\d[0-3]\d(\.\d+)+__\w+\.sql)$/
+
+    if (migrationDir.exists()) {
+      migrationDir.listFiles().each { file ->
+        if (file.isFile() && file.name.endsWith('.sql')) {
+          if (!pattern.matcher(file.name).matches()) {
+            throw new GradleException("Invalid migration file name: ${file.name}")
+          }
+        }
+      }
+    }
+  }
+}
+
+check.dependsOn validateFlywayMigrationNames
+test.shouldRunAfter validateFlywayMigrationNames

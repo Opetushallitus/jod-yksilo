@@ -18,10 +18,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
 @Import({KiinnostusService.class})
-@Sql("/data/osaaminen.sql")
 class KiinnostusServiceTest extends AbstractServiceTest {
   @Autowired KiinnostusService service;
 

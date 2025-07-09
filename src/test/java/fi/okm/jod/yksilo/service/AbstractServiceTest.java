@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.util.UUID;
@@ -29,6 +30,8 @@ public abstract class AbstractServiceTest {
   @ServiceConnection
   static final PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
 
+  @Autowired protected YksiloRepository yksiloRepository;
+
   static {
     // Singleton containers are started before the tests and stopped after all tests have been run.
     // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
@@ -41,10 +44,16 @@ public abstract class AbstractServiceTest {
 
   @BeforeEach
   public void setup() {
-    var yksilo = new Yksilo(UUID.randomUUID());
+    var yksilo = new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID()));
     yksilo.setTervetuloapolku(true);
     this.user = new TestJodUser(entityManager.persist(yksilo).getId());
-    this.user2 = new TestJodUser(entityManager.persist(new Yksilo(UUID.randomUUID())).getId());
+    // Create a second user with a different ID for testing purposes
+    this.user2 =
+        new TestJodUser(
+            entityManager
+                .persist(
+                    new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID())))
+                .getId());
   }
 
   /** Simulates commit by flushing and clearing the entity manager. */

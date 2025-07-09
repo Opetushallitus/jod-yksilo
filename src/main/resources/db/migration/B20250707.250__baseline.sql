@@ -1,0 +1,1101 @@
+-- Yksilo Database Baseline
+
+CREATE TABLE yksilo.koulutus_viite (
+  id                      bigint                 NOT NULL,
+  oid                     character varying(255) NOT NULL,
+  koulutusmahdollisuus_id uuid
+);
+
+CREATE TABLE yksilo.koulutus_viite_kaannos (
+  koulutus_viite_id bigint                 NOT NULL,
+  nimi              text                   NOT NULL,
+  kaannos_key       character varying(255) NOT NULL,
+  CONSTRAINT koulutus_viite_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                              ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.koulutusmahdollisuus (
+  id             uuid                   NOT NULL,
+  aktiivinen     boolean DEFAULT true,
+  kesto_minimi   double precision,
+  kesto_mediaani double precision,
+  kesto_maksimi  double precision,
+  tyyppi         character varying(255) NOT NULL,
+  CONSTRAINT koulutusmahdollisuus_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                                       ((ARRAY ['TUTKINTO'::character varying, 'EI_TUTKINTO'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.koulutusmahdollisuus_jakauma (
+  id                      bigint  NOT NULL,
+  maara                   integer NOT NULL,
+  tyhjia                  integer NOT NULL,
+  tyyppi                  character varying(255),
+  koulutusmahdollisuus_id uuid,
+  CONSTRAINT koulutusmahdollisuus_jakauma_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                                               ((ARRAY ['OSAAMINEN'::character varying, 'KOULUTUSALA'::character varying, 'MAKSULLISUUS'::character varying, 'OPETUSTAPA'::character varying, 'AIKA'::character varying, 'KUNTA'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.koulutusmahdollisuus_jakauma_arvot (
+  koulutusmahdollisuus_jakauma_id bigint NOT NULL,
+  arvo                            character varying(255),
+  osuus                           double precision
+);
+
+CREATE TABLE yksilo.koulutusmahdollisuus_kaannos (
+  koulutusmahdollisuus_id uuid                   NOT NULL,
+  otsikko                 text,
+  tiivistelma             text,
+  kuvaus                  text,
+  kaannos_key             character varying(255) NOT NULL,
+  CONSTRAINT koulutusmahdollisuus_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                                    ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.tyomahdollisuus (
+  id           uuid NOT NULL,
+  aineisto     character varying(255),
+  aktiivinen   boolean DEFAULT true,
+  ammattiryhma character varying(255),
+  CONSTRAINT tyomahdollisuus_aineisto_check CHECK (((aineisto)::text = ANY
+                                                    ((ARRAY ['TMT'::character varying, 'AMMATTITIETO'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.tyomahdollisuus_jakauma (
+  id                 bigint  NOT NULL,
+  maara              integer NOT NULL,
+  tyhjia             integer NOT NULL,
+  tyyppi             character varying(255),
+  tyomahdollisuus_id uuid,
+  CONSTRAINT tyomahdollisuus_jakauma_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                                          ((ARRAY ['AMMATTI'::character varying, 'OSAAMINEN'::character varying, 'AJOKORTTI'::character varying, 'KIELITAITO'::character varying, 'KORTIT_JA_LUVAT'::character varying, 'KOULUTUSASTE'::character varying, 'RIKOSREKISTERIOTE'::character varying, 'MATKUSTUSVAATIMUS'::character varying, 'PALKAN_PERUSTE'::character varying, 'PALVELUSSUHDE'::character varying, 'TYOAIKA'::character varying, 'TYON_JATKUVUUS'::character varying, 'KUNTA'::character varying, 'MAAKUNTA'::character varying, 'MAA'::character varying, 'SIJAINTI_JOUSTAVA'::character varying, 'TYOKIELI'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.tyomahdollisuus_jakauma_arvot (
+  tyomahdollisuus_jakauma_id bigint NOT NULL,
+  arvo                       character varying(255),
+  osuus                      double precision
+);
+
+CREATE TABLE yksilo.tyomahdollisuus_kaannos (
+  tyomahdollisuus_id  uuid                   NOT NULL,
+  otsikko             text,
+  tiivistelma         text,
+  kuvaus              text,
+  tehtavat            text,
+  yleiset_vaatimukset text,
+  kaannos_key         character varying(255) NOT NULL,
+  CONSTRAINT tyomahdollisuus_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                               ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.ammatti (
+  id    bigint                 NOT NULL,
+  koodi character varying(255) NOT NULL,
+  uri   character varying(255) NOT NULL
+);
+
+ALTER TABLE yksilo.ammatti
+  ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME yksilo.ammatti_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    );
+
+CREATE TABLE yksilo.ammatti_kaannos (
+  ammatti_id  bigint                 NOT NULL,
+  nimi        text                   NOT NULL,
+  kuvaus      text,
+  kaannos_key character varying(255) NOT NULL,
+  CONSTRAINT ammatti_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                       ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.ammatti_versio (
+  id     integer GENERATED ALWAYS AS (1) STORED NOT NULL,
+  versio bigint                                 NOT NULL
+);
+
+CREATE TABLE yksilo.koulutus (
+  id                         uuid NOT NULL,
+  alku_pvm                   date,
+  loppu_pvm                  date,
+  osaamisen_tunnistus_status character varying(255),
+  kokonaisuus_id             uuid,
+  CONSTRAINT koulutus_osaamisen_tunnistus_status_check CHECK ((
+    (osaamisen_tunnistus_status)::text = ANY
+    ((ARRAY ['WAIT'::character varying, 'DONE'::character varying, 'FAIL'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.koulutus_kaannos (
+  koulutus_id uuid                   NOT NULL,
+  kuvaus      text,
+  nimi        character varying(255) NOT NULL,
+  kaannos_key character varying(255) NOT NULL,
+  CONSTRAINT koulutus_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                        ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.koulutus_kokonaisuus (
+  id        uuid NOT NULL,
+  yksilo_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.koulutus_kokonaisuus_kaannos (
+  koulutus_kokonaisuus_id uuid                   NOT NULL,
+  nimi                    character varying(255) NOT NULL,
+  kaannos_key             character varying(255) NOT NULL,
+  CONSTRAINT koulutus_kokonaisuus_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                                    ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+ALTER TABLE yksilo.koulutus_viite
+  ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME yksilo.koulutus_viite_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    );
+
+ALTER TABLE yksilo.koulutusmahdollisuus_jakauma
+  ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME yksilo.koulutusmahdollisuus_jakauma_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    );
+
+CREATE TABLE yksilo.osaaminen (
+  id  bigint                 NOT NULL,
+  uri character varying(255) NOT NULL
+);
+
+ALTER TABLE yksilo.osaaminen
+  ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME yksilo.osaaminen_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    );
+
+CREATE TABLE yksilo.osaaminen_kaannos (
+  osaaminen_id bigint                 NOT NULL,
+  nimi         text,
+  kuvaus       text,
+  kaannos_key  character varying(255) NOT NULL,
+  CONSTRAINT osaaminen_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                         ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.osaaminen_versio (
+  id     integer GENERATED ALWAYS AS (1) STORED NOT NULL,
+  versio bigint                                 NOT NULL
+);
+
+CREATE TABLE yksilo.paamaara (
+  id                      uuid                        NOT NULL,
+  luotu                   timestamp(6) with time zone NOT NULL,
+  tyyppi                  character varying(255),
+  koulutusmahdollisuus_id uuid,
+  tyomahdollisuus_id      uuid,
+  yksilo_id               uuid                        NOT NULL,
+  CONSTRAINT paamaara_check CHECK (((tyomahdollisuus_id IS NULL) <>
+                                    (koulutusmahdollisuus_id IS NULL))),
+  CONSTRAINT paamaara_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                           ((ARRAY ['LYHYT'::character varying, 'PITKA'::character varying, 'MUU'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.paamaara_kaannos (
+  paamaara_id uuid                   NOT NULL,
+  tavoite     text,
+  kaannos_key character varying(255) NOT NULL,
+  CONSTRAINT paamaara_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                        ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.patevyys (
+  id          uuid NOT NULL,
+  alku_pvm    date,
+  loppu_pvm   date,
+  toiminto_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.patevyys_kaannos (
+  patevyys_id uuid                   NOT NULL,
+  kuvaus      text,
+  nimi        character varying(255) NOT NULL,
+  kaannos_key character varying(255) NOT NULL,
+  CONSTRAINT patevyys_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                        ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.polun_suunnitelma (
+  id          uuid NOT NULL,
+  paamaara_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.polun_suunnitelma_ignored_osaamiset (
+  polun_suunnitelma_id uuid   NOT NULL,
+  ignored_osaamiset_id bigint NOT NULL
+);
+
+CREATE TABLE yksilo.polun_suunnitelma_kaannos (
+  polun_suunnitelma_id uuid                   NOT NULL,
+  nimi                 character varying(255) NOT NULL,
+  kaannos_key          character varying(255) NOT NULL,
+  CONSTRAINT polun_suunnitelma_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                                 ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.polun_suunnitelma_osaamiset (
+  polun_suunnitelma_id uuid   NOT NULL,
+  osaamiset_id         bigint NOT NULL
+);
+
+CREATE TABLE yksilo.polun_vaihe (
+  id                      uuid                                                         NOT NULL,
+  alku_pvm                date,
+  lahde                   character varying(255) DEFAULT 'KAYTTAJA'::character varying NOT NULL,
+  loppu_pvm               date,
+  tyyppi                  character varying(255)                                       NOT NULL,
+  valmis                  boolean                                                      NOT NULL,
+  koulutusmahdollisuus_id uuid,
+  polun_suunnitelma_id    uuid                                                         NOT NULL,
+  CONSTRAINT polun_vaihe_lahde_check CHECK (((lahde)::text = ANY
+                                             ((ARRAY ['EHDOTUS'::character varying, 'KAYTTAJA'::character varying])::text[]))),
+  CONSTRAINT polun_vaihe_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                              ((ARRAY ['KOULUTUS'::character varying, 'TYO'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.polun_vaihe_kaannos (
+  polun_vaihe_id uuid                   NOT NULL,
+  kuvaus         text,
+  nimi           character varying(255) NOT NULL,
+  kaannos_key    character varying(255) NOT NULL,
+  CONSTRAINT polun_vaihe_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                           ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.polun_vaihe_linkit (
+  polun_vaihe_id uuid NOT NULL,
+  linkit         character varying(255)
+);
+
+CREATE TABLE yksilo.polun_vaihe_osaamiset (
+  polun_vaihe_id uuid   NOT NULL,
+  osaamiset_id   bigint NOT NULL
+);
+
+CREATE TABLE yksilo.tapahtuma_loki (
+  id        bigint                      NOT NULL,
+  kuvaus    character varying(255),
+  luotu     timestamp(6) with time zone NOT NULL,
+  muokattu  timestamp(6) with time zone NOT NULL,
+  tapahtuma character varying(255)      NOT NULL,
+  tila      character varying(255)      NOT NULL,
+  tunniste  uuid                        NOT NULL,
+  yksilo_id uuid                        NOT NULL,
+  CONSTRAINT tapahtuma_loki_tapahtuma_check CHECK (((tapahtuma)::text = 'TMT_VIENTI'::text)),
+  CONSTRAINT tapahtuma_loki_tila_check CHECK (((tila)::text = ANY
+                                               ((ARRAY ['KESKEN'::character varying, 'VALMIS'::character varying, 'VIRHE'::character varying])::text[])))
+);
+
+CREATE SEQUENCE yksilo.tapahtuma_loki_seq
+  START WITH 1
+  INCREMENT BY 50
+  NO MINVALUE
+  NO MAXVALUE
+  CACHE 1;
+
+CREATE TABLE yksilo.toimenkuva (
+  id           uuid NOT NULL,
+  alku_pvm     date,
+  loppu_pvm    date,
+  tyopaikka_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.toimenkuva_kaannos (
+  toimenkuva_id uuid                   NOT NULL,
+  kuvaus        text,
+  nimi          character varying(255) NOT NULL,
+  kaannos_key   character varying(255) NOT NULL,
+  CONSTRAINT toimenkuva_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                          ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.toiminto (
+  id        uuid NOT NULL,
+  yksilo_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.toiminto_kaannos (
+  toiminto_id uuid                   NOT NULL,
+  nimi        character varying(255) NOT NULL,
+  kaannos_key character varying(255) NOT NULL,
+  CONSTRAINT toiminto_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                        ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+ALTER TABLE yksilo.tyomahdollisuus_jakauma
+  ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME yksilo.tyomahdollisuus_jakauma_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    );
+
+CREATE TABLE yksilo.tyopaikka (
+  id        uuid NOT NULL,
+  yksilo_id uuid NOT NULL
+);
+
+CREATE TABLE yksilo.tyopaikka_kaannos (
+  tyopaikka_id uuid                   NOT NULL,
+  nimi         character varying(255) NOT NULL,
+  kaannos_key  character varying(255) NOT NULL,
+  CONSTRAINT tyopaikka_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                         ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.yksilo (
+  id                                   uuid NOT NULL,
+  lupa_arkistoida                      boolean,
+  lupa_kayttaa_tekoalyn_koulutukseen   boolean,
+  lupa_luovuttaa_tiedot_ulkopuoliselle boolean,
+  tervetuloapolku                      boolean
+);
+
+CREATE TABLE yksilo.yksilo_ammatti_kiinnostukset (
+  yksilo_id                uuid   NOT NULL,
+  ammatti_kiinnostukset_id bigint NOT NULL
+);
+
+CREATE TABLE yksilo.yksilo_kaannos (
+  yksilo_id                         uuid                   NOT NULL,
+  muu_osaaminen_vapaateksti         text,
+  osaamis_kiinnostukset_vapaateksti text,
+  kaannos_key                       character varying(255) NOT NULL,
+  CONSTRAINT yksilo_kaannos_kaannos_key_check CHECK (((kaannos_key)::text = ANY
+                                                      ((ARRAY ['FI'::character varying, 'SV'::character varying, 'EN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.yksilo_osaamis_kiinnostukset (
+  yksilo_id                uuid   NOT NULL,
+  osaamis_kiinnostukset_id bigint NOT NULL
+);
+
+CREATE TABLE yksilo.yksilon_osaaminen (
+  id            uuid                   NOT NULL,
+  lahde         character varying(255) NOT NULL,
+  koulutus_id   uuid,
+  osaaminen_id  bigint                 NOT NULL,
+  patevyys_id   uuid,
+  toimenkuva_id uuid,
+  yksilo_id     uuid                   NOT NULL,
+  CONSTRAINT yksilon_osaaminen_lahde_check CHECK (((lahde)::text = ANY
+                                                   ((ARRAY ['TOIMENKUVA'::character varying, 'KOULUTUS'::character varying, 'PATEVYYS'::character varying, 'MUU_OSAAMINEN'::character varying])::text[])))
+);
+
+CREATE TABLE yksilo.yksilon_suosikki (
+  id                      uuid                        NOT NULL,
+  luotu                   timestamp(6) with time zone NOT NULL,
+  tyyppi                  character varying(255),
+  koulutusmahdollisuus_id uuid,
+  tyomahdollisuus_id      uuid,
+  yksilo_id               uuid                        NOT NULL,
+  CONSTRAINT yksilon_suosikki_check CHECK ((
+    ((tyomahdollisuus_id IS NULL) OR (koulutusmahdollisuus_id IS NULL)) AND
+    ((((tyyppi)::text = 'TYOMAHDOLLISUUS'::text) AND (tyomahdollisuus_id IS NOT NULL)) OR
+     (((tyyppi)::text = 'KOULUTUSMAHDOLLISUUS'::text) AND
+      (koulutusmahdollisuus_id IS NOT NULL))))),
+  CONSTRAINT yksilon_suosikki_tyyppi_check CHECK (((tyyppi)::text = ANY
+                                                   ((ARRAY ['TYOMAHDOLLISUUS'::character varying, 'KOULUTUSMAHDOLLISUUS'::character varying])::text[])))
+);
+
+ALTER TABLE ONLY yksilo.ammatti_kaannos
+  ADD CONSTRAINT ammatti_kaannos_pkey PRIMARY KEY (ammatti_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.ammatti
+  ADD CONSTRAINT ammatti_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.ammatti_versio
+  ADD CONSTRAINT ammatti_versio_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutus_kaannos
+  ADD CONSTRAINT koulutus_kaannos_pkey PRIMARY KEY (koulutus_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.koulutus_kokonaisuus_kaannos
+  ADD CONSTRAINT koulutus_kokonaisuus_kaannos_pkey PRIMARY KEY (koulutus_kokonaisuus_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.koulutus_kokonaisuus
+  ADD CONSTRAINT koulutus_kokonaisuus_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutus
+  ADD CONSTRAINT koulutus_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutus_viite_kaannos
+  ADD CONSTRAINT koulutus_viite_kaannos_pkey PRIMARY KEY (koulutus_viite_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.koulutus_viite
+  ADD CONSTRAINT koulutus_viite_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_jakauma_arvot
+  ADD CONSTRAINT koulutusmahdollisuus_jakauma_id_arvo UNIQUE (koulutusmahdollisuus_jakauma_id, arvo);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_jakauma
+  ADD CONSTRAINT koulutusmahdollisuus_jakauma_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_kaannos
+  ADD CONSTRAINT koulutusmahdollisuus_kaannos_pkey PRIMARY KEY (koulutusmahdollisuus_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus
+  ADD CONSTRAINT koulutusmahdollisuus_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.osaaminen_kaannos
+  ADD CONSTRAINT osaaminen_kaannos_pkey PRIMARY KEY (osaaminen_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.osaaminen
+  ADD CONSTRAINT osaaminen_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.osaaminen_versio
+  ADD CONSTRAINT osaaminen_versio_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.paamaara_kaannos
+  ADD CONSTRAINT paamaara_kaannos_pkey PRIMARY KEY (paamaara_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.paamaara
+  ADD CONSTRAINT paamaara_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.patevyys_kaannos
+  ADD CONSTRAINT patevyys_kaannos_pkey PRIMARY KEY (patevyys_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.patevyys
+  ADD CONSTRAINT patevyys_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_ignored_osaamiset
+  ADD CONSTRAINT polun_suunnitelma_ignored_osaamiset_pkey PRIMARY KEY (polun_suunnitelma_id, ignored_osaamiset_id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_kaannos
+  ADD CONSTRAINT polun_suunnitelma_kaannos_pkey PRIMARY KEY (polun_suunnitelma_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_osaamiset
+  ADD CONSTRAINT polun_suunnitelma_osaamiset_pkey PRIMARY KEY (polun_suunnitelma_id, osaamiset_id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma
+  ADD CONSTRAINT polun_suunnitelma_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_kaannos
+  ADD CONSTRAINT polun_vaihe_kaannos_pkey PRIMARY KEY (polun_vaihe_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_osaamiset
+  ADD CONSTRAINT polun_vaihe_osaamiset_pkey PRIMARY KEY (polun_vaihe_id, osaamiset_id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe
+  ADD CONSTRAINT polun_vaihe_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.tapahtuma_loki
+  ADD CONSTRAINT tapahtuma_loki_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.toimenkuva_kaannos
+  ADD CONSTRAINT toimenkuva_kaannos_pkey PRIMARY KEY (toimenkuva_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.toimenkuva
+  ADD CONSTRAINT toimenkuva_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.toiminto_kaannos
+  ADD CONSTRAINT toiminto_kaannos_pkey PRIMARY KEY (toiminto_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.toiminto
+  ADD CONSTRAINT toiminto_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_jakauma_arvot
+  ADD CONSTRAINT tyomahdollisuus_jakauma_id_arvo UNIQUE (tyomahdollisuus_jakauma_id, arvo);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_jakauma
+  ADD CONSTRAINT tyomahdollisuus_jakauma_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_kaannos
+  ADD CONSTRAINT tyomahdollisuus_kaannos_pkey PRIMARY KEY (tyomahdollisuus_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus
+  ADD CONSTRAINT tyomahdollisuus_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.tyopaikka_kaannos
+  ADD CONSTRAINT tyopaikka_kaannos_pkey PRIMARY KEY (tyopaikka_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.tyopaikka
+  ADD CONSTRAINT tyopaikka_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.koulutus_viite
+  ADD CONSTRAINT uk2aeoec4t0h110r4hsnu0n83eh UNIQUE (koulutusmahdollisuus_id, oid);
+
+ALTER TABLE ONLY yksilo.osaaminen
+  ADD CONSTRAINT uk74ekhgvq9ocfjqyftv1p7a84c UNIQUE (uri);
+
+ALTER TABLE ONLY yksilo.ammatti
+  ADD CONSTRAINT uk8805oronojd6pxn19g7os0h8o UNIQUE (uri);
+
+ALTER TABLE ONLY yksilo.yksilo_osaamis_kiinnostukset
+  ADD CONSTRAINT ukddclbvvvirbxn1i8a9aqsrfwj UNIQUE (osaamis_kiinnostukset_id);
+
+ALTER TABLE ONLY yksilo.yksilo_ammatti_kiinnostukset
+  ADD CONSTRAINT uknb5xoynnfmo8kkih7ink8sw56 UNIQUE (ammatti_kiinnostukset_id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_jakauma
+  ADD CONSTRAINT ukplnpsauf75yuhjjd7b6adqakk UNIQUE (koulutusmahdollisuus_id, tyyppi);
+
+ALTER TABLE ONLY yksilo.tapahtuma_loki
+  ADD CONSTRAINT ukr9pycw6m1lknpbin1a0kg1w9 UNIQUE (tunniste);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_jakauma
+  ADD CONSTRAINT ukrtfnlemjuxijldc1b010umkyw UNIQUE (tyomahdollisuus_id, tyyppi);
+
+ALTER TABLE ONLY yksilo.yksilo_ammatti_kiinnostukset
+  ADD CONSTRAINT yksilo_ammatti_kiinnostukset_pkey PRIMARY KEY (yksilo_id, ammatti_kiinnostukset_id);
+
+ALTER TABLE ONLY yksilo.yksilo_kaannos
+  ADD CONSTRAINT yksilo_kaannos_pkey PRIMARY KEY (yksilo_id, kaannos_key);
+
+ALTER TABLE ONLY yksilo.yksilo_osaamis_kiinnostukset
+  ADD CONSTRAINT yksilo_osaamis_kiinnostukset_pkey PRIMARY KEY (yksilo_id, osaamis_kiinnostukset_id);
+
+ALTER TABLE ONLY yksilo.yksilo
+  ADD CONSTRAINT yksilo_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT yksilon_osaaminen_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY yksilo.yksilon_suosikki
+  ADD CONSTRAINT yksilon_suosikki_pkey PRIMARY KEY (id);
+
+CREATE INDEX idx2dccbh732ovpgbsga3b6ksda ON yksilo.yksilon_osaaminen USING btree (toimenkuva_id);
+
+CREATE INDEX idx3rq2tm2b28efawaa0jh7ncj17 ON yksilo.yksilon_suosikki USING btree (yksilo_id);
+
+CREATE INDEX idx4976ngbr75ohdwjx3pmdqiov8 ON yksilo.toiminto USING btree (yksilo_id);
+
+CREATE INDEX idx57f1xov2gitp9spj10dtaa0nx ON yksilo.patevyys USING btree (toiminto_id);
+
+CREATE INDEX idxeeodqm15b3gtccegthid3bke4 ON yksilo.polun_suunnitelma USING btree (paamaara_id);
+
+CREATE INDEX idxf0pvoboleo3xlfcujo06fqdu5 ON yksilo.yksilon_osaaminen USING btree (yksilo_id, lahde);
+
+CREATE INDEX idxhqn6r1kki809arcibeiwaoc1j ON yksilo.yksilon_osaaminen USING btree (patevyys_id);
+
+CREATE INDEX idxj2i355vxasyjwif2cklncm8ti ON yksilo.toimenkuva USING btree (tyopaikka_id);
+
+CREATE INDEX idxj71ycyoixld8v1invfa421wn3 ON yksilo.polun_vaihe USING btree (polun_suunnitelma_id);
+
+CREATE INDEX idxn6ljfa6f79nf17v81jbqeqfrq ON yksilo.tyopaikka USING btree (yksilo_id);
+
+CREATE INDEX idxnmogut6tn6xuiqlg6iul614xo ON yksilo.paamaara USING btree (yksilo_id);
+
+CREATE INDEX idxoo5xhk3ocru2on1n491wc7y6c ON yksilo.koulutus_kokonaisuus USING btree (yksilo_id);
+
+CREATE INDEX idxr7yd73qg59jcdbhjmkj79xd8n ON yksilo.yksilon_osaaminen USING btree (koulutus_id);
+
+CREATE UNIQUE INDEX ix_active_koulutusmahdollisuus ON yksilo.koulutusmahdollisuus USING btree (id) WHERE (aktiivinen = true);
+
+CREATE UNIQUE INDEX ix_active_tyomahdollisuus ON yksilo.tyomahdollisuus USING btree (id) WHERE (aktiivinen = true);
+
+ALTER TABLE ONLY yksilo.yksilon_suosikki
+  ADD CONSTRAINT fk19p58ye144iepirpueotvdn19 FOREIGN KEY (tyomahdollisuus_id) REFERENCES yksilo.tyomahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.koulutus_viite_kaannos
+  ADD CONSTRAINT fk1k1m58bj2iy44kyid63ss5f56 FOREIGN KEY (koulutus_viite_id) REFERENCES yksilo.koulutus_viite (id);
+
+ALTER TABLE ONLY yksilo.osaaminen_kaannos
+  ADD CONSTRAINT fk1y7uqanl2ycliy5qug8hvtvmf FOREIGN KEY (osaaminen_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.koulutus
+  ADD CONSTRAINT fk2d9j32yhpfk7cge0bok95mc59 FOREIGN KEY (kokonaisuus_id) REFERENCES yksilo.koulutus_kokonaisuus (id);
+
+ALTER TABLE ONLY yksilo.yksilon_suosikki
+  ADD CONSTRAINT fk2fv7jfq95clrfopg7sh0vqhle FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.toimenkuva_kaannos
+  ADD CONSTRAINT fk36f0npt7bh8q64mf76hx9189i FOREIGN KEY (toimenkuva_id) REFERENCES yksilo.toimenkuva (id);
+
+ALTER TABLE ONLY yksilo.yksilo_ammatti_kiinnostukset
+  ADD CONSTRAINT fk5bfgdp7q4xttsehvi63c3fttl FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_jakauma
+  ADD CONSTRAINT fk5fvxls5o3v1ra3lok8d66cpp0 FOREIGN KEY (tyomahdollisuus_id) REFERENCES yksilo.tyomahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_jakauma
+  ADD CONSTRAINT fk6lbbwlgn5id48bxrug5edjxvy FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.koulutus_kaannos
+  ADD CONSTRAINT fk6v1g472rj1tndmmhtga4j9x60 FOREIGN KEY (koulutus_id) REFERENCES yksilo.koulutus (id);
+
+ALTER TABLE ONLY yksilo.toiminto
+  ADD CONSTRAINT fk7k9uaos8rh8lj8nfg44lyhq9d FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.tapahtuma_loki
+  ADD CONSTRAINT fk7khqp47eht3k692jjb765tlw4 FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma
+  ADD CONSTRAINT fk7td9koaembgy6o5su5xgk0ch4 FOREIGN KEY (paamaara_id) REFERENCES yksilo.paamaara (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_osaamiset
+  ADD CONSTRAINT fk9pp1obscsby46njcew003ps8p FOREIGN KEY (osaamiset_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT fk9ubh7i54fvm75wm1nrbqr2n9 FOREIGN KEY (patevyys_id) REFERENCES yksilo.patevyys (id);
+
+ALTER TABLE ONLY yksilo.patevyys_kaannos
+  ADD CONSTRAINT fkbthd1had59wum98acnokqswg9 FOREIGN KEY (patevyys_id) REFERENCES yksilo.patevyys (id);
+
+ALTER TABLE ONLY yksilo.yksilon_suosikki
+  ADD CONSTRAINT fkdjyeqtm6s9yc4lidwct4p4glt FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe
+  ADD CONSTRAINT fkdvge2fsk931qb1ev2q8387vg1 FOREIGN KEY (polun_suunnitelma_id) REFERENCES yksilo.polun_suunnitelma (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_ignored_osaamiset
+  ADD CONSTRAINT fkeesbbpqnud8xpb2m0bcd4mgmo FOREIGN KEY (ignored_osaamiset_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.paamaara
+  ADD CONSTRAINT fkeo2hdu2fdac72qtbtmxhkrbs6 FOREIGN KEY (tyomahdollisuus_id) REFERENCES yksilo.tyomahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT fkh2opprcy53cstkfe0ii3hkqw FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_kaannos
+  ADD CONSTRAINT fkh3xh7v8w80qge6rbbr0061fl6 FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT fkhqfc18k44tdudclo7utcgxt9j FOREIGN KEY (koulutus_id) REFERENCES yksilo.koulutus (id);
+
+ALTER TABLE ONLY yksilo.yksilo_osaamis_kiinnostukset
+  ADD CONSTRAINT fkhty0rgivr823qcfewtmhaslon FOREIGN KEY (osaamis_kiinnostukset_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_linkit
+  ADD CONSTRAINT fki1i9r7bu8uibfqa67hm7s9301 FOREIGN KEY (polun_vaihe_id) REFERENCES yksilo.polun_vaihe (id);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_kaannos
+  ADD CONSTRAINT fki3vvlw41loh1ld694pary9fff FOREIGN KEY (tyomahdollisuus_id) REFERENCES yksilo.tyomahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.tyopaikka_kaannos
+  ADD CONSTRAINT fki57v5pmpj4cq0flr600p4rga7 FOREIGN KEY (tyopaikka_id) REFERENCES yksilo.tyopaikka (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe
+  ADD CONSTRAINT fkif9shgrbd87prdwddpk9dhjfh FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.koulutus_kokonaisuus_kaannos
+  ADD CONSTRAINT fkiy3b8ifn376texn1biwtfebnx FOREIGN KEY (koulutus_kokonaisuus_id) REFERENCES yksilo.koulutus_kokonaisuus (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_ignored_osaamiset
+  ADD CONSTRAINT fkjdx5y5e8g7jwescaxiu1hbx7e FOREIGN KEY (polun_suunnitelma_id) REFERENCES yksilo.polun_suunnitelma (id);
+
+ALTER TABLE ONLY yksilo.yksilo_kaannos
+  ADD CONSTRAINT fkkcs4ddn8g345184eb5dr2h2r6 FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.toiminto_kaannos
+  ADD CONSTRAINT fkkdlrm77wteyx5l084q4wplx5j FOREIGN KEY (toiminto_id) REFERENCES yksilo.toiminto (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT fkkkw648dm80f6sxsl7wrxng6q6 FOREIGN KEY (osaaminen_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_kaannos
+  ADD CONSTRAINT fkknq6n3e3ja3iu7opusej7g3fo FOREIGN KEY (polun_suunnitelma_id) REFERENCES yksilo.polun_suunnitelma (id);
+
+ALTER TABLE ONLY yksilo.tyomahdollisuus_jakauma_arvot
+  ADD CONSTRAINT fkl70v894tl49wh5bvp5sacqj36 FOREIGN KEY (tyomahdollisuus_jakauma_id) REFERENCES yksilo.tyomahdollisuus_jakauma (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_osaamiset
+  ADD CONSTRAINT fklxml390aw0fdywnmwh1xd6agw FOREIGN KEY (polun_suunnitelma_id) REFERENCES yksilo.polun_suunnitelma (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_kaannos
+  ADD CONSTRAINT fkmorw75lhbqmqfud9p4lqj5hr4 FOREIGN KEY (polun_vaihe_id) REFERENCES yksilo.polun_vaihe (id);
+
+ALTER TABLE ONLY yksilo.paamaara
+  ADD CONSTRAINT fknov7qob56768r4e71chsajt5l FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.yksilo_ammatti_kiinnostukset
+  ADD CONSTRAINT fknt42vhkhhlautr3f6r6bcr4ln FOREIGN KEY (ammatti_kiinnostukset_id) REFERENCES yksilo.ammatti (id);
+
+ALTER TABLE ONLY yksilo.toimenkuva
+  ADD CONSTRAINT fko3q3dotl53kaqkr34ikymey68 FOREIGN KEY (tyopaikka_id) REFERENCES yksilo.tyopaikka (id);
+
+ALTER TABLE ONLY yksilo.patevyys
+  ADD CONSTRAINT fko8rg9v8vpnmlbeom3ekcm255 FOREIGN KEY (toiminto_id) REFERENCES yksilo.toiminto (id);
+
+ALTER TABLE ONLY yksilo.yksilo_osaamis_kiinnostukset
+  ADD CONSTRAINT fkpkf45qeyhh1qcjt90ysjv3301 FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.paamaara_kaannos
+  ADD CONSTRAINT fkpscq7acrnhqruqeitw7puana1 FOREIGN KEY (paamaara_id) REFERENCES yksilo.paamaara (id);
+
+ALTER TABLE ONLY yksilo.polun_vaihe_osaamiset
+  ADD CONSTRAINT fkr21m5hkajtuv13inrgg1omsj2 FOREIGN KEY (polun_vaihe_id) REFERENCES yksilo.polun_vaihe (id);
+
+ALTER TABLE ONLY yksilo.ammatti_kaannos
+  ADD CONSTRAINT fkrgv8po8f24ra4odcnpvuu6708 FOREIGN KEY (ammatti_id) REFERENCES yksilo.ammatti (id);
+
+ALTER TABLE ONLY yksilo.polun_suunnitelma_osaamiset
+  ADD CONSTRAINT fkrmk0pbhitxm5txc5jhhbm64pw FOREIGN KEY (osaamiset_id) REFERENCES yksilo.osaaminen (id);
+
+ALTER TABLE ONLY yksilo.koulutusmahdollisuus_jakauma_arvot
+  ADD CONSTRAINT fks2thiila2mvl92prxf643y1d1 FOREIGN KEY (koulutusmahdollisuus_jakauma_id) REFERENCES yksilo.koulutusmahdollisuus_jakauma (id);
+
+ALTER TABLE ONLY yksilo.koulutus_viite
+  ADD CONSTRAINT fkspmr4j3hqvhtkktbopfce9l2y FOREIGN KEY (koulutusmahdollisuus_id) REFERENCES yksilo.koulutusmahdollisuus (id);
+
+ALTER TABLE ONLY yksilo.paamaara
+  ADD CONSTRAINT fkt7f8v78uc972e5ii73vvdy85k FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.koulutus_kokonaisuus
+  ADD CONSTRAINT fkt7gyv0pbphhkbt9t8tjdaie88 FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.tyopaikka
+  ADD CONSTRAINT fktdsy0vhxud7ofpgou3eawuo0h FOREIGN KEY (yksilo_id) REFERENCES yksilo.yksilo (id);
+
+ALTER TABLE ONLY yksilo.yksilon_osaaminen
+  ADD CONSTRAINT fktf7jkdnoqqmrnyjebkk2ejevo FOREIGN KEY (toimenkuva_id) REFERENCES yksilo.toimenkuva (id);
+
+--
+-- KOULUTUSMAHDOLLISUUS data import
+--
+CREATE TABLE IF NOT EXISTS koulutusmahdollisuus_data.import (
+  data jsonb,
+  id   uuid generated always as ( (data ->> 'id')::uuid ) stored primary key
+);
+
+CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.clear()
+  LANGUAGE SQL
+BEGIN
+  ATOMIC
+  UPDATE koulutusmahdollisuus
+  SET aktiivinen = false;
+END;
+
+CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.import()
+  LANGUAGE SQL
+BEGIN
+  ATOMIC
+
+  -- Then koulutusmahdollisuus upsert, setting active to true for all records that will be imported
+  INSERT INTO koulutusmahdollisuus(id, tyyppi, kesto_minimi, kesto_mediaani, kesto_maksimi,
+                                   aktiivinen)
+  SELECT id,
+         data ->> 'tyyppi',
+         (data ->> 'kestoMinimi')::float(53),
+         (data ->> 'kestoMediaani')::float(53),
+         (data ->> 'kestoMaksimi')::float(53),
+         true -- Set aktiivinen to true for all imported records
+  FROM koulutusmahdollisuus_data.import
+  ON CONFLICT (id) DO UPDATE SET tyyppi         = EXCLUDED.tyyppi,
+                                 kesto_minimi   = EXCLUDED.kesto_minimi,
+                                 kesto_mediaani = EXCLUDED.kesto_mediaani,
+                                 kesto_maksimi  = EXCLUDED.kesto_maksimi,
+                                 aktiivinen     = true;
+  -- Ensure updated records are marked as active
+
+  -- Upsert translations
+  WITH translation_data AS (SELECT d.id,
+                                   upper(x.key) as kaannos_key,
+                                   x.value      AS otsikko,
+                                   y.value      AS tiivistelma,
+                                   z.value      AS kuvaus
+                            FROM koulutusmahdollisuus_data.import d,
+                                 jsonb_each_text(data -> 'otsikko') x
+                                   LEFT JOIN LATERAL jsonb_each_text(data -> 'tiivistelma') y
+                                             ON (x.key = y.key)
+                                   LEFT JOIN LATERAL jsonb_each_text(data -> 'kuvaus') z
+                                             ON x.key = z.key)
+  INSERT
+  INTO koulutusmahdollisuus_kaannos(koulutusmahdollisuus_id, kaannos_key, otsikko, tiivistelma,
+                                    kuvaus)
+  SELECT id, kaannos_key, otsikko, tiivistelma, kuvaus
+  FROM translation_data
+  ON CONFLICT (koulutusmahdollisuus_id, kaannos_key) DO UPDATE SET otsikko     = EXCLUDED.otsikko,
+                                                                   tiivistelma = EXCLUDED.tiivistelma,
+                                                                   kuvaus      = EXCLUDED.kuvaus;
+
+  -- Delete related koulutus_viite_kaannos records first
+  DELETE
+  FROM koulutus_viite_kaannos
+  WHERE koulutus_viite_id IN (SELECT kv.id
+                              FROM koulutus_viite kv
+                              WHERE kv.koulutusmahdollisuus_id IN
+                                    (SELECT id FROM koulutusmahdollisuus_data.import));
+
+  -- Delete parent koulutus_viite records
+  DELETE
+  FROM koulutus_viite
+  WHERE koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import);
+
+  -- Insert new references
+  WITH koulutukset AS (SELECT DISTINCT d.id, k.oid, k.nimi
+                       FROM koulutusmahdollisuus_data.import d,
+                            jsonb_to_recordset(data -> 'koulutukset') AS k(oid varchar, nimi jsonb)),
+       viitteet AS (
+         INSERT INTO koulutus_viite (oid, koulutusmahdollisuus_id)
+           SELECT oid, id
+           FROM koulutukset
+           RETURNING id, oid, koulutusmahdollisuus_id),
+       translation_keys AS (SELECT v.id         as koulutus_viite_id,
+                                   upper(x.key) as kaannos_key,
+                                   x.value      as nimi
+                            FROM viitteet v
+                                   JOIN koulutukset k
+                                        ON (v.koulutusmahdollisuus_id = k.id AND v.oid = k.oid),
+                                 jsonb_each_text(k.nimi) x)
+  INSERT
+  INTO koulutus_viite_kaannos(koulutus_viite_id, kaannos_key, nimi)
+  SELECT koulutus_viite_id, kaannos_key, nimi
+  FROM translation_keys;
+
+  -- Delete koulutusmahdollisuus_jakauma_arvot first
+  DELETE
+  FROM koulutusmahdollisuus_jakauma_arvot
+  WHERE koulutusmahdollisuus_jakauma_id IN (SELECT kmj.id
+                                            FROM koulutusmahdollisuus_jakauma kmj
+                                            WHERE kmj.koulutusmahdollisuus_id IN
+                                                  (SELECT id FROM koulutusmahdollisuus_data.import));
+
+  -- Delete parent koulutusmahdollisuus_jakauma records
+  DELETE
+  FROM koulutusmahdollisuus_jakauma
+  WHERE koulutusmahdollisuus_id IN (SELECT id FROM koulutusmahdollisuus_data.import);
+
+  -- Insert new jakauma records
+  WITH paths AS (SELECT n, p::jsonpath
+                 FROM (values ('OSAAMINEN', '$.osaamiset'),
+                              ('KOULUTUSALA', '$.koulutusalaJakauma'),
+                              ('MAKSULLISUUS', '$.maksullisuusJakauma'),
+                              ('OPETUSTAPA', '$.opetustapaJakauma'),
+                              ('AIKA', '$.aikaJakauma'),
+                              ('KUNTA', '$.kuntaJakauma')) AS x(n, p)),
+       jakaumat AS (
+         INSERT INTO koulutusmahdollisuus_jakauma (koulutusmahdollisuus_id, tyyppi, maara, tyhjia)
+           SELECT d.id,
+                  p.n,
+                  (jsonb_path_query_first(d.data, p.p) -> 'kokonaismaara')::int,
+                  (jsonb_path_query_first(d.data, p.p) -> 'tyhjienMaara')::int
+           FROM koulutusmahdollisuus_data.import d,
+                paths p
+           WHERE jsonb_path_exists(d.data, p.p)
+           RETURNING id, koulutusmahdollisuus_id, tyyppi),
+       distribution_values AS (SELECT j.id             as koulutusmahdollisuus_jakauma_id,
+                                      x.arvo           as arvo,
+                                      x.prosenttiOsuus as osuus
+                               FROM paths p
+                                      JOIN jakaumat j ON (p.n = j.tyyppi)
+                                      JOIN koulutusmahdollisuus_data.import d
+                                           ON (j.koulutusmahdollisuus_id = d.id),
+                                    jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53)))
+  INSERT
+  INTO koulutusmahdollisuus_jakauma_arvot(koulutusmahdollisuus_jakauma_id, arvo, osuus)
+  SELECT koulutusmahdollisuus_jakauma_id, arvo, osuus
+  FROM distribution_values;
+END;
+
+--
+-- TYÖMAHDOLLISUUS data import
+--
+CREATE TABLE IF NOT EXISTS tyomahdollisuus_data.import (
+  data jsonb not null,
+  id   uuid generated always as ( (data ->> 'id')::uuid ) stored primary key
+);
+
+CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.clear()
+  LANGUAGE SQL
+BEGIN
+  ATOMIC
+  UPDATE tyomahdollisuus
+  SET aktiivinen = false;
+END;
+
+CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
+  LANGUAGE sql
+BEGIN
+  ATOMIC
+
+  INSERT INTO tyomahdollisuus(id, ammattiryhma, aineisto, aktiivinen)
+  SELECT i.id,
+         i.data ->> 'ammattiryhma',
+         i.data ->> 'aineisto',
+         true
+  FROM tyomahdollisuus_data.import i
+  ON CONFLICT (id) DO UPDATE SET ammattiryhma = EXCLUDED.ammattiryhma,
+                                 aineisto     = EXCLUDED.aineisto,
+                                 aktiivinen   = true;
+  DELETE
+  FROM tyomahdollisuus_kaannos
+  WHERE tyomahdollisuus_id IN (SELECT id FROM tyomahdollisuus_data.import);
+
+  INSERT INTO tyomahdollisuus_kaannos(tyomahdollisuus_id, kaannos_key, otsikko,
+                                      tiivistelma,
+                                      kuvaus,
+                                      tehtavat,
+                                      yleiset_vaatimukset)
+  SELECT d.id,
+         CASE WHEN o.key = 'se' THEN 'SV' ELSE upper(o.key) END,
+         o.value                                                AS nimi,
+         t.value                                                AS tiivistelma,
+         k.value                                                AS kuvaus,
+         (SELECT string_agg(elem, E'\n')
+          FROM jsonb_array_elements_text(tt.value::jsonb) elem) AS tehtavat,
+         yv.value                                               AS yleiset_vaatimukset
+  FROM tyomahdollisuus_data.import d,
+       jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenOtsikko') o
+         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenTiivistelma') t
+                   ON (o.key = t.key)
+         LEFT JOIN LATERAL jsonb_each_text(d.data -> 'perustiedot' -> 'tyomahdollisuudenKuvaus') k
+                   ON o.key = k.key
+         LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data,
+                                                                  '$.perustiedot.tyomahdollisuudenTehtavat ? (@ != null)')) tt
+                   ON o.key = tt.key
+         LEFT JOIN LATERAL jsonb_each_text(jsonb_path_query_first(d.data,
+                                                                  '$.perustiedot.tyomahdollisuudenYleisetVaatimukset ? (@ != null)')) yv
+                   ON o.key = yv.key;
+
+  DELETE
+  FROM tyomahdollisuus_jakauma_arvot
+  WHERE tyomahdollisuus_jakauma_id IN (SELECT id
+                                       FROM tyomahdollisuus_jakauma
+                                       WHERE tyomahdollisuus_id IN
+                                             (SELECT id FROM tyomahdollisuus_data.import));
+
+  DELETE
+  FROM tyomahdollisuus_jakauma
+  WHERE tyomahdollisuus_id IN (SELECT id FROM tyomahdollisuus_data.import);
+
+  WITH paths AS (SELECT n, p::jsonpath
+                 FROM (values ('OSAAMINEN', '$.osaamisvaatimukset.osaamiset'),
+                              ('AMMATTI', '$.osaamisvaatimukset.ammatit'),
+                              ('AJOKORTTI', '$.osaamisvaatimukset.ajokorttiJakauma'),
+                              ('KIELITAITO', '$.osaamisvaatimukset.kielitaitoJakauma'),
+                              ('KORTIT_JA_LUVAT', '$.osaamisvaatimukset.kortitJaLuvatJakauma'),
+                              ('KOULUTUSASTE', '$.osaamisvaatimukset.koulutusasteJakauma'),
+                              ('RIKOSREKISTERIOTE',
+                               '$.osaamisvaatimukset.rikosrekisterioteJakauma'),
+                              ('MATKUSTUSVAATIMUS', '$.perustiedot.matkustamisvaatimusJakauma'),
+                              ('PALKAN_PERUSTE', '$.perustiedot.palkanPerusteJakauma'),
+                              ('PALVELUSSUHDE', '$.perustiedot.palvelussuhdeJakauma'),
+                              ('TYOAIKA', '$.perustiedot.tyoaikaJakauma'),
+                              ('TYON_JATKUVUUS', '$.perustiedot.tyonJatkuvuusJakauma'),
+                              ('KUNTA', '$.sijainti.kuntaJakauma'),
+                              ('MAAKUNTA', '$.sijainti.maakuntaJakauma'),
+                              ('MAA', '$.sijainti.maaJakauma'),
+                              ('SIJAINTI_JOUSTAVA', '$.sijainti.sijaintiJoustavaJakauma'),
+                              ('TYOKIELI', '$.tyokieletJakauma')) AS x(n, p)),
+       jakaumat AS (
+         INSERT INTO tyomahdollisuus_jakauma (tyomahdollisuus_id, tyyppi, maara, tyhjia)
+           SELECT d.id,
+                  p.n,
+                  (jsonb_path_query_first(d.data, p.p) -> 'kokonaismaara')::int,
+                  (jsonb_path_query_first(d.data, p.p) -> 'tyhjienMaara')::int
+           FROM tyomahdollisuus_data.import d,
+                paths p
+           WHERE jsonb_path_exists(d.data, p.p)
+           RETURNING id, tyomahdollisuus_id, tyyppi),
+       distribution_values AS (SELECT j.id             as tyomahdollisuus_jakauma_id,
+                                      x.arvo           as arvo,
+                                      x.prosenttiOsuus as osuus
+                               FROM paths p
+                                      JOIN jakaumat j ON (p.n = j.tyyppi)
+                                      JOIN tyomahdollisuus_data.import d
+                                           ON (j.tyomahdollisuus_id = d.id),
+                                    jsonb_to_recordset(jsonb_path_query_first(d.data, p.p) -> 'arvot') as x(arvo text, prosenttiOsuus float(53)))
+  INSERT
+  INTO tyomahdollisuus_jakauma_arvot(tyomahdollisuus_jakauma_id, arvo, osuus)
+  SELECT tyomahdollisuus_jakauma_id, arvo, osuus
+  FROM distribution_values;
+END;
+
+--
+-- ESCO DATA import
+--
+CREATE TABLE IF NOT EXISTS esco_data.skills (
+  conceptUri     text not null,
+  lang           text not null default current_setting('esco.lang'),
+  preferredLabel text not null,
+  description    text,
+  conceptType    text,
+  skillType      text,
+  reuseLevel     text,
+  altLabels      text,
+  hiddenLabels   text,
+  status         text,
+  modifiedDate   text,
+  scopeNote      text,
+  definition     text,
+  inScheme       text,
+  primary key (conceptUri, lang)
+);
+
+CREATE TABLE IF NOT EXISTS esco_data.occupations (
+  conceptType             text not null,
+  conceptUri              text not null,
+  lang                    text not null default current_setting('esco.lang'),
+  iscoGroup               text,
+  preferredLabel          text not null,
+  altLabels               text,
+  hiddenLabels            text,
+  status                  text,
+  modifiedDate            text,
+  regulatedProfessionNote text,
+  scopeNote               text,
+  definition              text,
+  inScheme                text,
+  description             text,
+  code                    text not null,
+  primary key (conceptUri, lang)
+);
+
+CREATE OR REPLACE PROCEDURE esco_data.import_osaaminen()
+  LANGUAGE SQL AS
+$$
+INSERT INTO osaaminen(uri)
+SELECT DISTINCT conceptUri
+FROM esco_data.skills
+ON CONFLICT(uri) DO NOTHING;
+
+INSERT INTO osaaminen_kaannos (osaaminen_id, kaannos_key, kuvaus, nimi)
+SELECT o.id, upper(s.lang), s.description, s.preferredLabel
+FROM osaaminen o
+       JOIN esco_data.skills s on (o.uri = s.conceptUri)
+ON CONFLICT(osaaminen_id, kaannos_key)
+  DO UPDATE SET kuvaus = excluded.kuvaus,
+                nimi   = excluded.nimi;
+
+INSERT INTO osaaminen_versio AS v (versio)
+VALUES (1)
+ON CONFLICT (id) DO UPDATE SET versio = v.versio + 1;
+$$
+;
+
+CREATE OR REPLACE PROCEDURE esco_data.import_ammatti()
+  LANGUAGE SQL AS
+$$
+INSERT INTO ammatti(uri, koodi)
+SELECT DISTINCT conceptUri, code
+FROM esco_data.occupations
+ON CONFLICT(uri) DO NOTHING;
+
+INSERT INTO ammatti_kaannos (ammatti_id, kaannos_key, kuvaus, nimi)
+SELECT a.id, upper(o.lang), o.description, o.preferredLabel
+FROM ammatti a
+       JOIN esco_data.occupations o on (a.uri = o.conceptUri)
+ON CONFLICT(ammatti_id, kaannos_key)
+  DO UPDATE SET kuvaus = excluded.kuvaus,
+                nimi   = excluded.nimi;
+
+INSERT INTO ammatti_versio AS v (versio)
+VALUES (1)
+ON CONFLICT (id) DO UPDATE SET versio = v.versio + 1;
+$$
+;

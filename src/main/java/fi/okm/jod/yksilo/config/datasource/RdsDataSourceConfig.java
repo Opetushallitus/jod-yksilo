@@ -16,6 +16,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.services.rds.RdsClient;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(
@@ -34,5 +35,10 @@ public class RdsDataSourceConfig {
     var dataSource = builder.url(properties.getUrl()).username(properties.getUsername()).build();
     dataSource.setAuthTokenProvider(rdsAuthTokenProvider);
     return dataSource;
+  }
+
+  @Bean
+  RdsIamAuthTokenProvider rdsAuthTokenProvider(RdsClient rdsClient) {
+    return new RdsIamAuthTokenProvider(rdsClient);
   }
 }

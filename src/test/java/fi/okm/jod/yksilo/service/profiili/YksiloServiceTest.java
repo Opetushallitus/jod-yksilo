@@ -24,11 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
 
-@Sql(
-    scripts = {"/data/mock-tunnistus.sql"},
-    config = @SqlConfig(separator = ";;;"))
 @Sql(scripts = {"/data/mahdollisuudet-test-data.sql"})
 @Import({YksiloService.class, PaamaaraService.class})
 class YksiloServiceTest extends AbstractServiceTest {

@@ -25,6 +25,7 @@ import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
 import jakarta.persistence.EntityManager;
@@ -46,19 +47,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @TestPropertySource(
-    properties = "jod.ai-tunnistus.osaamiset.endpoint=http://mylocalhost/invocations")
-@Sql(value = "/data/osaaminen.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+    properties =
+        "jod.ai-tunnistus.osaamiset.endpoint=" + OsaamisetTunnistusEventHandlerTestIT.ENDPOINT_URL)
 class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
 
-  private static final String ENDPOINT_URL = "http://mylocalhost/invocations";
+  static final String ENDPOINT_URL = "http://localhost/invocations";
 
   @Autowired private OsaamisetTunnistusEventHandler eventHandler;
   @Autowired private PlatformTransactionManager transactionManager;
+  @Autowired private YksiloRepository yksiloRepository;
 
   @PersistenceContext private EntityManager entityManager;
 
@@ -77,7 +78,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
     transactionTemplate = new TransactionTemplate(transactionManager);
     transactionTemplate.execute(
         status -> {
-          var yksiloUser = new Yksilo(UUID.randomUUID());
+          var yksiloUser =
+              new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID()));
           entityManager.persist(yksiloUser);
           user = new TestJodUser(yksiloUser.getId());
 

@@ -5,19 +5,6 @@ mkdir -p ./tmp/data
 mkdir -p ./.run
 ESCO_VERSION="1.2.0"
 
-# Parse command-line options
-while getopts "esco:" opt; do
-  case ${opt} in
-    esco )
-      ESCO_VERSION=$OPTARG
-      ;;
-    \? )
-      echo "Usage: cmd [-esco 1.2.0]"
-      exit 1
-      ;;
-  esac
-done
-
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
@@ -38,10 +25,13 @@ if [[ -z $DB ]]; then
   STARTED=true
 fi
 
-echo -e "NOTE: Creating database schema. Errors about 'relation X does not exist' can be ignored.\n"
-{ echo '\set VERBOSITY terse'; cat ./src/main/resources/schema.sql; } \
-     | docker exec -i -e PGPASSWORD=yksilo -e PGOPTIONS='--client-min-messages=warning' "$DB" psql -q -f - -U yksilo yksilo
-echo "NOTE: Importing data"
+echo -e "Creating database schema"
+host=$(docker compose ps postgres --format '{{.Ports}}')
+host=${host%-\>*}
+./gradlew -q flywayMigrate -Pflyway.user=yksilo -Pflyway.password=yksilo \
+  -P"flyway.url=jdbc:postgresql://$host/yksilo"
+
+echo "Importing data"
 (
   cd ./tmp/data
 
@@ -80,6 +70,12 @@ echo "NOTE: Importing data"
       -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "\COPY ${mahdollisuus}_data.import(data) FROM STDIN (FORMAT text)"
   done
+
+  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
+    -c "CALL esco_data.import_osaaminen();" \
+    -c "CALL esco_data.import_ammatti();" \
+    -c "CALL tyomahdollisuus_data.import();" \
+    -c "CALL koulutusmahdollisuus_data.import();"
 )
 
 if [[ $STARTED == true ]]; then

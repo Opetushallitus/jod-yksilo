@@ -9,17 +9,23 @@ spring:
       - aws-secretsmanager:${jod.koski.certificate-secret-arn}?prefix=jod.koski.certificate.
   cloud:
     aws:
+      cloudwatch:
+        enabled: true
       parameterstore:
+        enabled: true
         reload:
           period: 7m
           strategy: refresh
-        enabled: true
       secretsmanager:
+        enabled: true
         reload:
           strategy: refresh
           period: 31m
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
+  jpa:
+    hibernate:
+      ddl-auto: "none"
 server:
   forward-headers-strategy: none
   shutdown: graceful
