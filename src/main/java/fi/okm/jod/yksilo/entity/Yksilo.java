@@ -29,7 +29,6 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 public class Yksilo extends JodEntity {
-public class Yksilo extends JodEntity {
   @Id
   @Column(name = "id")
   private UUID id;
@@ -37,6 +36,7 @@ public class Yksilo extends JodEntity {
   @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
+  @BatchSize(size = 100)
   private Map<Kieli, Yksilo.Kaannos> kaannos = new EnumMap<>(Kieli.class);
 
   @Setter private Boolean tervetuloapolku;
@@ -61,19 +61,15 @@ public class Yksilo extends JodEntity {
   private Set<Toiminto> toiminnot;
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "kiinnostuneet")
-  @BatchSize(size = 100)
   private Set<Osaaminen> osaamisKiinnostukset;
 
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "kiinnostuneet")
-  @BatchSize(size = 100)
   private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 100)
   private Set<YksilonSuosikki> suosikit;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 100)
   private Set<Paamaara> paamaarat;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
