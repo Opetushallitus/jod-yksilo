@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
-import fi.okm.jod.yksilo.externalapi.v1.dto.ExtAPIV1Mapper;
+import fi.okm.jod.yksilo.externalapi.v1.dto.ExtApiV1Mapper;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
@@ -40,7 +40,7 @@ public class ExternalApiV1Service {
     final Page<Tyomahdollisuus> tyomahdollisuusPage =
         this.tyomahdollisuusRepository.findAll(pageable);
     final List<ExtTyoMahdollisuusDto> tyoMahdollisuusDtoList =
-        tyomahdollisuusPage.stream().map(ExtAPIV1Mapper::toTyoMahdollisuusDto).toList();
+        tyomahdollisuusPage.stream().map(ExtApiV1Mapper::toTyoMahdollisuusDto).toList();
 
     return new SivuDto<>(
         tyoMahdollisuusDtoList,
@@ -52,7 +52,7 @@ public class ExternalApiV1Service {
     final Page<Koulutusmahdollisuus> koulutusmahdollisuusPage =
         this.koulutusmahdollisuusRepository.findAll(pageable);
     final List<ExtKoulutusMahdollisuusDto> koulutusMahdollisuusDtoList =
-        koulutusmahdollisuusPage.stream().map(ExtAPIV1Mapper::toKoulutusMahdollisuusDto).toList();
+        koulutusmahdollisuusPage.stream().map(ExtApiV1Mapper::toKoulutusMahdollisuusDto).toList();
 
     return new SivuDto<>(
         koulutusMahdollisuusDtoList,
@@ -63,7 +63,7 @@ public class ExternalApiV1Service {
   public SivuDto<ExtProfiiliDto> findYksilot(final Pageable pageable) {
     final Page<Yksilo> yksiloPage = this.yksiloRepository.findAll(pageable);
     final List<ExtProfiiliDto> profiiliDtoList =
-        yksiloPage.stream().map(ExtAPIV1Mapper::toProfiiliDto).toList();
+        yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
   }

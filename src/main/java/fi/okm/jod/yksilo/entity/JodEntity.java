@@ -10,38 +10,23 @@
 package fi.okm.jod.yksilo.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * Super-luokka tässä repositoriossa oleville entityille. Tarkoituksena on, että kaikki
- * entity-luokat perisivät tulevaisuudessä tämän. Mahdollistaa yhtenäiset id:t ja sen ettei kaikille
- * entityille toteutettavaa logiikka ei tarvitse toistaa
- */
 @Getter
 @Setter
 @ToString(callSuper = true)
 @MappedSuperclass
 public abstract class JodEntity {
 
-  @Id
-  @GeneratedValue
-  @Column(name = "id")
-  protected UUID id;
-
-  @Column(name = "created_at", updatable = false, nullable = false)
+  @Column(updatable = false, nullable = false)
   @CreationTimestamp
-  private Instant createdAt;
+  private Instant luotu;
 
-  @Column(name = "modified_at")
-  @UpdateTimestamp
-  private Instant modifiedAt;
+  @UpdateTimestamp private Instant muokattu;
 }
