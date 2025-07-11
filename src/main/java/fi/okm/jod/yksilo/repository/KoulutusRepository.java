@@ -16,11 +16,15 @@ import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface KoulutusRepository
     extends JpaRepository<Koulutus, UUID>, OsaamisenLahdeRepository<Koulutus> {
@@ -43,4 +47,14 @@ public interface KoulutusRepository
 
   List<Koulutus> findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
       UUID id, List<UUID> uuids, Set<OsaamisenTunnistusStatus> statusesToReturn);
+
+  @Query(
+      """
+      UPDATE Koulutus k SET k.osaamisenTunnistusStatus = 'FAIL'
+      WHERE k.osaamisenTunnistusStatus = 'WAIT'
+      AND k.luotu < :maxAge
+      """)
+  @Modifying
+  @Transactional
+  void clearPendingTunnistus(Instant maxAge);
 }

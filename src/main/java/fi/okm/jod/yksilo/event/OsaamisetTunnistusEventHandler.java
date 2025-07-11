@@ -12,12 +12,15 @@ package fi.okm.jod.yksilo.event;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.service.ServiceOverloadedException;
+import fi.okm.jod.yksilo.service.ServiceUnavailableException;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import java.net.URI;
+import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -30,63 +33,111 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class OsaamisetTunnistusEventHandler {
 
+  // how long we will retry processing until we give up
+  private static final int MAX_RETRY_WAIT_TIME = 600;
+  public static final int MIN_BACKOFF = 5;
+  public static final int MAX_BACKOFF = 60;
+
   private final KoulutusService koulutusService;
   private final String aiTunnistusOsaamisetEndpoint;
   private final InferenceService<SageMakerRequest, SageMakerResponse> inferenceService;
+  private final Semaphore semaphore;
 
   public OsaamisetTunnistusEventHandler(
       KoulutusService koulutusService,
       @Value("${jod.ai-tunnistus.osaamiset.endpoint}") String aiTunnistusOsaamisetEndpoint,
+      @Value("${jod.ai-tunnistus.osaamiset.max-concurrent-requests:10}") int maxConcurrentRequests,
       InferenceService<SageMakerRequest, SageMakerResponse> inferenceService) {
+    if (maxConcurrentRequests <= 0) {
+      throw new IllegalArgumentException("maxConcurrentRequests must be greater than 0");
+    }
+
     this.koulutusService = koulutusService;
     this.aiTunnistusOsaamisetEndpoint = aiTunnistusOsaamisetEndpoint;
     this.inferenceService = inferenceService;
+    this.semaphore = new Semaphore(maxConcurrentRequests);
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Async
-  public CompletableFuture<Void> handleOsaamisetTunnistusEvent(OsaamisetTunnistusEvent event) {
-    log.debug("Osaamiset tunnistus event: {}", event);
-    var koulutukset = event.koulutukset();
-    for (var koulutus : koulutukset) {
-      try {
-        var osaamisetTunnistusResponses = callIdentifyOsaamisetApi(koulutus);
-        koulutusService.completeOsaamisetTunnistus(
-            koulutus, OsaamisenTunnistusStatus.DONE, osaamisetTunnistusResponses.osaamiset());
+  public void handleOsaamisetTunnistusEvent(OsaamisetTunnistusEvent event) {
+    doHandleOsaamisetTunnistusEvent(event);
+  }
 
-      } catch (Exception e) {
-        if (e instanceof IdentifyOsaamisetException) {
-          log.error(e.getMessage(), e);
-        } else {
-          log.error("Fail to processing OsaamisetTunnistusEvent.", e);
+  @SuppressWarnings({"java:S2142", "java:S3776", "java:S1141"})
+  void doHandleOsaamisetTunnistusEvent(OsaamisetTunnistusEvent event) {
+
+    log.info("Processing OsaamisetTunnistusEvent for user {}", event.jodUser().getId());
+
+    var interrupted = false;
+    var koulutukset = new ArrayDeque<>(event.koulutukset());
+
+    try {
+      var backoff = 0;
+      var waitTime = 0;
+
+      while (!koulutukset.isEmpty() && !interrupted && waitTime < MAX_RETRY_WAIT_TIME) {
+        semaphore.acquire();
+        var koulutus = koulutukset.pop();
+        try {
+          // Limit concurrent processing to avoid overwhelming the AI service
+          // Using a semaphore is OK given we are using virtual threads
+          var osaamiset = inferOsaamiset(koulutus);
+          waitTime = backoff = 0; // Reset backoff and wait time on success
+          koulutusService.completeOsaamisetTunnistus(
+              koulutus, OsaamisenTunnistusStatus.DONE, osaamiset);
+        } catch (ServiceOverloadedException | ServiceUnavailableException e) {
+          koulutukset.push(koulutus);
+          backoff = backoff == 0 ? MIN_BACKOFF : Math.min(backoff * 2, MAX_BACKOFF);
+          log.warn(
+              "Inference service overloaded or temporarily unavailable, retrying {} (backOff={}, waitTime={})",
+              koulutus.getId(),
+              backoff,
+              waitTime);
+        } catch (Exception e) {
+          log.error("Failed to process OsaamisetTunnistusEvent", e);
+          if (Thread.interrupted()) {
+            interrupted = true;
+          }
+          koulutusService.completeOsaamisetTunnistus(koulutus, OsaamisenTunnistusStatus.FAIL, null);
+        } finally {
+          semaphore.release();
         }
+
+        if (backoff > 0 && !interrupted) {
+          // sleeping is ok given we are using virtual threads and this is an asynchronous handler
+          waitTime += backoff;
+          Thread.sleep(backoff * 1000L);
+        }
+      }
+    } catch (InterruptedException e) {
+      interrupted = true;
+    }
+
+    try {
+      for (Koulutus koulutus : koulutukset) {
+        log.warn("Failed to process OsaamisetTunnistusEvent for koulutus {} ", koulutus.getId());
         koulutusService.completeOsaamisetTunnistus(koulutus, OsaamisenTunnistusStatus.FAIL, null);
       }
-    }
-    return CompletableFuture.completedFuture(null);
-  }
-
-  private SageMakerResponse callIdentifyOsaamisetApi(Koulutus koulutus) {
-    try {
-      var request =
-          new SageMakerRequest(
-              koulutus.getId(), koulutus.getNimi().get(Kieli.FI), koulutus.getOsasuoritukset());
-
-      return inferenceService.infer(
-          aiTunnistusOsaamisetEndpoint, request, new ParameterizedTypeReference<>() {});
-
-    } catch (Exception e) {
-      throw new IdentifyOsaamisetException("Error calling OsaamisetTunnistus AI API.", e);
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt(); // Restore interrupted status
+        log.warn("OsaamisetTunnistusEvent processing was interrupted.");
+      }
     }
   }
 
-  record SageMakerRequest(UUID id, String nimi, Set<String> osasuoritukset) {}
+  private Set<URI> inferOsaamiset(Koulutus koulutus) {
+    var request =
+        new SageMakerRequest(
+            koulutus.getId(), koulutus.getNimi().get(Kieli.FI), koulutus.getOsasuoritukset());
 
-  record SageMakerResponse(UUID id, Set<URI> osaamiset) {}
-
-  private static class IdentifyOsaamisetException extends RuntimeException {
-    public IdentifyOsaamisetException(String message, Exception exception) {
-      super(message, exception);
-    }
+    return inferenceService
+        .infer(aiTunnistusOsaamisetEndpoint, request, new ParameterizedTypeReference<>() {})
+        .osaamiset();
   }
+
+  public record SageMakerRequest(UUID id, String nimi, Set<String> osasuoritukset) {}
+
+  public record SageMakerResponse(UUID id, Set<URI> osaamiset) {}
 }
