@@ -20,11 +20,14 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,6 +112,7 @@ public class KoulutusService {
     entity.setLoppuPvm(dto.loppuPvm());
     koulutukset.save(entity);
     if (dto.osaamiset() != null) {
+      entity.setOsaamisenTunnistusStatus(null);
       osaamiset.update(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
@@ -116,10 +120,6 @@ public class KoulutusService {
   void delete(Koulutus koulutus) {
     osaamiset.deleteAll(koulutus.getOsaamiset());
     koulutukset.delete(koulutus);
-  }
-
-  static NotFoundException notFound() {
-    return new NotFoundException("Not found");
   }
 
   public void completeOsaamisetTunnistus(
@@ -133,5 +133,16 @@ public class KoulutusService {
       osaamiset.add(koulutus, osaamiset.getOsaamiset(newOsaamiset));
     }
     koulutukset.save(koulutus);
+  }
+
+  @Scheduled(fixedDelay = 30, initialDelay = 1, timeUnit = TimeUnit.MINUTES)
+  void clearPendingTunnistus() {
+    // Clear pending tunnistus statuses
+    // This is a temporary fix to ensure that no waiting statuses are left forever.
+    koulutukset.clearPendingTunnistus(Instant.now().minusSeconds(1800));
+  }
+
+  static NotFoundException notFound() {
+    return new NotFoundException("Not found");
   }
 }

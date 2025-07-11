@@ -96,7 +96,9 @@ class ExportMapperTest {
   @Test
   void testKoulutusMappingCompleteness() {
     assertMappingCompleteness(
-        Koulutus.class, KoulutusExportDto.class, Set.of("yksilo", "kokonaisuus"));
+        Koulutus.class,
+        KoulutusExportDto.class,
+        Set.of("yksilo", "kokonaisuus", "luotu", "muokattu"));
   }
 
   @Test

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+  <!-- do not require Javadoc for now -->
+  <suppress checks="MissingJavadocMethod"/>
+  <suppress checks="MissingJavadocType"/>
+  <suppress checks="MissingJavadocPackage"/>
+  <!-- not compatible with Spotless -->
+  <suppress checks="Indentation"/>
+  <suppress checks="LineLength"/>
+</suppressions>

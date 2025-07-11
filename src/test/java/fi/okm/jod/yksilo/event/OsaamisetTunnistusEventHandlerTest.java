@@ -18,7 +18,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.Koulutus;
@@ -26,7 +25,10 @@ import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
+import fi.okm.jod.yksilo.service.profiili.KoulutusService;
+import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -37,14 +39,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.NoOpTaskScheduler;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -52,8 +58,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @TestPropertySource(
     properties =
-        "jod.ai-tunnistus.osaamiset.endpoint=" + OsaamisetTunnistusEventHandlerTestIT.ENDPOINT_URL)
-class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
+        "jod.ai-tunnistus.osaamiset.endpoint=" + OsaamisetTunnistusEventHandlerTest.ENDPOINT_URL)
+@Import({
+  OsaamisetTunnistusEventHandler.class,
+  KoulutusService.class,
+  YksilonOsaaminenService.class
+})
+class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
 
   static final String ENDPOINT_URL = "http://localhost/invocations";
 
@@ -68,6 +79,14 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
           OsaamisetTunnistusEventHandler.SageMakerRequest,
           OsaamisetTunnistusEventHandler.SageMakerResponse>
       inferenceService;
+
+  @TestConfiguration
+  static class TestConfig {
+    @Bean
+    TaskScheduler taskScheduler() {
+      return new NoOpTaskScheduler();
+    }
+  }
 
   private TransactionTemplate transactionTemplate;
   private TestJodUser user;
@@ -113,8 +132,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
   }
 
   @Test
-  void shouldSuccessfullyProcessOsaamisetTunnistusEvent()
-      throws ExecutionException, InterruptedException, TimeoutException {
+  @Execution(ExecutionMode.SAME_THREAD)
+  void shouldSuccessfullyProcessOsaamisetTunnistusEvent() {
     var osaaminen1 = "urn:osaaminen1";
     var osaaminen2 = "urn:osaaminen2";
 
@@ -137,10 +156,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
             ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {}))
         .thenReturn(sageMakerResponse);
 
-    var result =
-        eventHandler.handleOsaamisetTunnistusEvent(
-            new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
-    result.get(5, TimeUnit.SECONDS); // Wait for execution to be completed.
+    eventHandler.doHandleOsaamisetTunnistusEvent(
+        new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
 
     verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.DONE, sageMakerResponse.osaamiset());
     verify(inferenceService)
@@ -148,8 +165,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
   }
 
   @Test
-  void shouldSuccessfullyProcessOsaamisetTunnistusEvent_aiDetectNone()
-      throws ExecutionException, InterruptedException, TimeoutException {
+  @Execution(ExecutionMode.SAME_THREAD)
+  void shouldSuccessfullyProcessOsaamisetTunnistusEvent_aiDetectNone() {
     var koulutus1 = koulutukset.getFirst();
     var osasuoritukset =
         Set.of(
@@ -168,10 +185,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
             ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {}))
         .thenReturn(sageMakerResponse);
 
-    var result =
-        eventHandler.handleOsaamisetTunnistusEvent(
-            new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
-    result.get(5, TimeUnit.SECONDS); // Wait for execution to be completed.
+    eventHandler.doHandleOsaamisetTunnistusEvent(
+        new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
 
     verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.FAIL, sageMakerResponse.osaamiset());
     verify(inferenceService)
@@ -203,8 +218,8 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
   }
 
   @Test
-  void shouldHandleApiErrorsGracefully()
-      throws ExecutionException, InterruptedException, TimeoutException {
+  @Execution(ExecutionMode.SAME_THREAD)
+  void shouldHandleApiErrorsGracefully() {
     when(inferenceService.infer(
             eq(ENDPOINT_URL),
             any(OsaamisetTunnistusEventHandler.SageMakerRequest.class),
@@ -213,9 +228,7 @@ class OsaamisetTunnistusEventHandlerTestIT extends IntegrationTest {
                     OsaamisetTunnistusEventHandler.SageMakerResponse>() {})))
         .thenThrow(new RuntimeException("Internal Server error"));
 
-    var result =
-        eventHandler.handleOsaamisetTunnistusEvent(new OsaamisetTunnistusEvent(user, koulutukset));
-    result.get(5, TimeUnit.SECONDS); // Wait for execution to be completed.
+    eventHandler.doHandleOsaamisetTunnistusEvent(new OsaamisetTunnistusEvent(user, koulutukset));
 
     verify(inferenceService, times(koulutukset.size()))
         .infer(
