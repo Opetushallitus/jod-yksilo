@@ -24,7 +24,9 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 import software.amazon.awssdk.services.sagemakerruntime.model.InvokeEndpointRequest;
+import software.amazon.awssdk.services.sagemakerruntime.model.ModelNotReadyException;
 import software.amazon.awssdk.services.sagemakerruntime.model.SageMakerRuntimeException;
+import software.amazon.awssdk.services.sagemakerruntime.model.ServiceUnavailableException;
 
 @Component
 @Profile("cloud")
@@ -81,6 +83,10 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       }
     } catch (IOException e) {
       throw new ServiceException("Invoking SageMaker failed", e);
+    } catch (ModelNotReadyException | ServiceUnavailableException e) {
+      log.warn("SageMaker service unavailable: {}", e.getMessage());
+      throw new fi.okm.jod.yksilo.service.ServiceUnavailableException(
+          "SageMaker model not ready or service unavailable", e);
     } catch (SageMakerRuntimeException e) {
       if ("ThrottlingException".equals(e.awsErrorDetails().errorCode())) {
         throw new ServiceOverloadedException("SageMaker is throttling requests", e);
