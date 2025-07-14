@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
+import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 
@@ -36,6 +37,8 @@ public class AwsConfig {
     return SageMakerRuntimeClient.builder()
         .credentialsProvider(credentialsProvider)
         .region(regionProvider.getRegion())
+        .overrideConfiguration(
+            c -> c.retryStrategy(StandardRetryStrategy.builder().maxAttempts(4).build()))
         .build();
   }
 }

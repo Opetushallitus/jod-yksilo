@@ -32,6 +32,7 @@ import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -72,6 +74,13 @@ public class Koulutus implements OsaamisenLahde {
   @Enumerated(EnumType.STRING)
   private OsaamisenTunnistusStatus osaamisenTunnistusStatus; // null = No need for tunnistus.
 
+  @Column(nullable = false, updatable = false)
+  private Instant luotu;
+
+  @Column(nullable = false)
+  @UpdateTimestamp
+  private Instant muokattu;
+
   @Setter @Transient private Set<String> osasuoritukset;
 
   protected Koulutus() {
@@ -82,6 +91,8 @@ public class Koulutus implements OsaamisenLahde {
     this.kokonaisuus = requireNonNull(kokonaisuus);
     this.kaannos = new EnumMap<>(Kieli.class);
     this.osaamiset = new HashSet<>();
+    this.luotu = Instant.now();
+    this.muokattu = Instant.now();
   }
 
   public LocalizedString getNimi() {
