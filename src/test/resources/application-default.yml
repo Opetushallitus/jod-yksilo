@@ -7,10 +7,6 @@ logging:
 spring:
   #main:
   #  lazy-initialization: true
-  test:
-    context:
-      cache:
-        maxSize: 16
   datasource:
     hikari:
       maximum-pool-size: 3
