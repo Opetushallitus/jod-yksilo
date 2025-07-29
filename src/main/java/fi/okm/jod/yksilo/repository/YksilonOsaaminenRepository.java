@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.util.Collection;
 import java.util.List;
@@ -29,13 +30,6 @@ public interface YksilonOsaaminenRepository extends JpaRepository<YksilonOsaamin
         ? findAllByYksiloId(yksiloId, sort)
         : findAllByYksiloIdAndLahde(yksiloId, lahde, sort);
   }
-
-  @Query(
-      "SELECT yo FROM YksilonOsaaminen yo JOIN FETCH yo.osaaminen o WHERE yo.yksilo.id IN :yksilot")
-  List<YksilonOsaaminen> fetchOsaamisetYksilonOsaamiset(List<UUID> yksilot);
-
-  @Query("SELECT yo FROM YksilonOsaaminen yo WHERE yo.yksilo.id IN :yksilot")
-  List<YksilonOsaaminen> fetchYksilonOsaamiset(List<UUID> yksilot);
 
   @EntityGraph(attributePaths = "osaaminen")
   List<YksilonOsaaminen> findAllByYksiloId(UUID yksiloId, Sort sort);
