@@ -32,12 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExternalApiV1Service {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
-  private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
-  private final AmmattiRepository ammattiRepository;
   private final YksiloRepository yksiloRepository;
-  private final OsaaminenRepository osaaminenRepository;
-  private final YksilonSuosikkiRepository suosikkiRepository;
-  private final PaamaaraRepository paamaaraRepository;
 
   @Transactional
   public SivuDto<ExtTyoMahdollisuusDto> findTyomahdollisuudet(final Pageable pageable) {
@@ -73,4 +68,5 @@ public class ExternalApiV1Service {
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
   }
+
 }
