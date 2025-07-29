@@ -25,9 +25,6 @@ public interface YksilonSuosikkiRepository extends JpaRepository<YksilonSuosikki
 
   List<YksilonSuosikki> findByYksiloAndTyyppi(Yksilo yksilo, SuosikkiTyyppi tyyppi);
 
-  @Query("SELECT ys FROM YksilonSuosikki ys WHERE ys.yksilo.id IN :yksilot")
-  List<YksilonSuosikki> fetchYksilonSuosikit(List<UUID> yksilot);
-
   @Query(
       """
       SELECT ys FROM YksilonSuosikki ys WHERE
