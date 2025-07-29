@@ -31,6 +31,9 @@ public interface YksilonOsaaminenRepository extends JpaRepository<YksilonOsaamin
         : findAllByYksiloIdAndLahde(yksiloId, lahde, sort);
   }
 
+  @Query("SELECT yo FROM YksilonOsaaminen yo WHERE yo.yksilo IN :yksilot")
+  List<YksilonOsaaminen> fetchYksilonOsaamiset(List<Yksilo> yksilot);
+
   @EntityGraph(attributePaths = "osaaminen")
   List<YksilonOsaaminen> findAllByYksiloId(UUID yksiloId, Sort sort);
 
