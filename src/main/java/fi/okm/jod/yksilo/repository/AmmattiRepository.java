@@ -41,6 +41,9 @@ public interface AmmattiRepository extends Repository<Ammatti, Long> {
 
   List<Ammatti> findByUriIn(Collection<URI> uri);
 
+  @Query("SELECT a FROM Ammatti a JOIN a.kiinnostuneet y WHERE y IN :yksilot")
+  List<YksilonOsaaminen> fetchAmmattiKiinnostukset(List<Yksilo> yksilot);
+
   @Transactional(readOnly = true)
   default Versioned<Map<URI, AmmattiDto>> refreshAll(
       @Nullable Versioned<Map<URI, AmmattiDto>> previous) {
