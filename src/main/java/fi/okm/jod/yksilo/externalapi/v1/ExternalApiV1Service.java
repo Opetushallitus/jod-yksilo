@@ -17,9 +17,7 @@ import fi.okm.jod.yksilo.externalapi.v1.dto.ExtApiV1Mapper;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
-import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
-import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
-import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.repository.*;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,13 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Bisneslogiikka External API V1 */
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ExternalApiV1Service {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
+  private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
   private final YksiloRepository yksiloRepository;
+  private final OsaaminenRepository osaaminenRepository;
 
+  @Transactional
   public SivuDto<ExtTyoMahdollisuusDto> findTyomahdollisuudet(final Pageable pageable) {
     final Page<Tyomahdollisuus> tyomahdollisuusPage =
         this.tyomahdollisuusRepository.findAll(pageable);
@@ -48,6 +48,7 @@ public class ExternalApiV1Service {
         tyomahdollisuusPage.getTotalPages());
   }
 
+  @Transactional
   public SivuDto<ExtKoulutusMahdollisuusDto> findKoulutusmahdollisuudet(final Pageable pageable) {
     final Page<Koulutusmahdollisuus> koulutusmahdollisuusPage =
         this.koulutusmahdollisuusRepository.findAll(pageable);
@@ -66,5 +67,11 @@ public class ExternalApiV1Service {
         yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
+  }
+
+  public void fetchYksilot(Page<Yksilo> yksilot) {
+    List<Yksilo> yksiloLista = yksilot.stream().toList();
+    this.yksilonOsaaminenRepository.fetchYksilonOsaamiset(yksiloLista);
+    this.osaaminenRepository.fetchOsaamisKiinnostukset(yksiloLista);
   }
 }

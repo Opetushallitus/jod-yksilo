@@ -13,13 +13,10 @@ import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Osaaminen_;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.SequencedMap;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +52,9 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
 
   @Query("SELECT v.versio FROM OsaaminenVersio v WHERE v.id = 1")
   long currentVersion();
+
+  @Query("SELECT o FROM Osaaminen o JOIN o.kiinnostuneet y WHERE y IN :yksilot")
+  List<YksilonOsaaminen> fetchOsaamisKiinnostukset(List<Yksilo> yksilot);
 
   @Transactional(readOnly = true)
   default Versioned<Map<URI, OsaaminenDto>> refreshAll(
