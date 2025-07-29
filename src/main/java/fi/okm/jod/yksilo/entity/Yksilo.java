@@ -63,7 +63,7 @@ public class Yksilo extends JodEntity {
   @ManyToMany(fetch = FetchType.LAZY, mappedBy = "kiinnostuneet")
   private Set<Osaaminen> osaamisKiinnostukset;
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @ManyToMany(fetch = FetchType.LAZY, mappedBy = "kiinnostuneet")
   private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

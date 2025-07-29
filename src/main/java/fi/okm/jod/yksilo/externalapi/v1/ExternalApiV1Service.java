@@ -32,8 +32,11 @@ public class ExternalApiV1Service {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
   private final YksilonOsaaminenRepository yksilonOsaaminenRepository;
+  private final AmmattiRepository ammattiRepository;
   private final YksiloRepository yksiloRepository;
   private final OsaaminenRepository osaaminenRepository;
+  private final YksilonSuosikkiRepository suosikkiRepository;
+  private final PaamaaraRepository paamaaraRepository;
 
   @Transactional
   public SivuDto<ExtTyoMahdollisuusDto> findTyomahdollisuudet(final Pageable pageable) {
@@ -61,17 +64,22 @@ public class ExternalApiV1Service {
         koulutusmahdollisuusPage.getTotalPages());
   }
 
+  @Transactional
   public SivuDto<ExtProfiiliDto> findYksilot(final Pageable pageable) {
     final Page<Yksilo> yksiloPage = this.yksiloRepository.findAll(pageable);
+    this.fetchCollections(yksiloPage);
     final List<ExtProfiiliDto> profiiliDtoList =
         yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
   }
 
-  public void fetchYksilot(Page<Yksilo> yksilot) {
+  public void fetchCollections(Page<Yksilo> yksilot) {
     List<Yksilo> yksiloLista = yksilot.stream().toList();
     this.yksilonOsaaminenRepository.fetchYksilonOsaamiset(yksiloLista);
     this.osaaminenRepository.fetchOsaamisKiinnostukset(yksiloLista);
+    this.ammattiRepository.fetchAmmattiKiinnostukset(yksiloLista);
+    this.suosikkiRepository.fetchYksilonSuosikit(yksiloLista);
+    this.paamaaraRepository.fetchByYksilot(yksiloLista);
   }
 }
