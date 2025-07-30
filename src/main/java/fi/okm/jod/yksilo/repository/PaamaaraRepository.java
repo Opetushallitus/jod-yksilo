@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +22,7 @@ public interface PaamaaraRepository extends JpaRepository<Paamaara, UUID> {
   List<Paamaara> findAllByYksilo(Yksilo yksilo);
 
   @Query("SELECT p FROM Paamaara p WHERE p.yksilo IN :yksilot")
-  List<YksilonSuosikki> fetchByYksilot(List<Yksilo> yksilot);
+  List<Paamaara> fetchByYksilot(List<UUID> yksilot);
 
   int deleteByYksiloAndId(Yksilo yksilo, UUID id);
 

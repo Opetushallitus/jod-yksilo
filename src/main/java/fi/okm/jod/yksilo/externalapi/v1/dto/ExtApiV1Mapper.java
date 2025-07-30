@@ -100,6 +100,6 @@ public class ExtApiV1Mapper {
 
   private static ExtYksilonOsaaminenDto toYksilonOsaaminen(YksilonOsaaminen yksilonOsaaminen) {
     return new ExtYksilonOsaaminenDto(
-        yksilonOsaaminen.getLahde().orElse(null), yksilonOsaaminen.getOsaaminen().getUri());
+        yksilonOsaaminen.getLahdeTyyppi(), yksilonOsaaminen.getOsaaminen().getUri());
   }
 }

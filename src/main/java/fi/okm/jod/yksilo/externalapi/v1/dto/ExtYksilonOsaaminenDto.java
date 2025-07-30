@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
-import fi.okm.jod.yksilo.domain.OsaamisenLahde;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import java.net.URI;
 
-public record ExtYksilonOsaaminenDto(OsaamisenLahde lahde, URI uri) {}
+public record ExtYksilonOsaaminenDto(OsaamisenLahdeTyyppi lahde, URI uri) {}
