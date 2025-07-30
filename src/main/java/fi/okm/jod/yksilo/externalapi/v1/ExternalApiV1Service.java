@@ -68,5 +68,4 @@ public class ExternalApiV1Service {
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
   }
-
 }
