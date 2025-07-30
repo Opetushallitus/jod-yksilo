@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.repository;
 import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.entity.Ammatti;
-import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
 import java.util.*;
@@ -41,8 +40,8 @@ public interface AmmattiRepository extends Repository<Ammatti, Long> {
 
   List<Ammatti> findByUriIn(Collection<URI> uri);
 
-  @Query("SELECT a FROM Ammatti a JOIN a.kiinnostuneet y WHERE y IN :yksilot")
-  List<YksilonOsaaminen> fetchAmmattiKiinnostukset(List<Yksilo> yksilot);
+  @Query("SELECT a FROM Ammatti a JOIN FETCH a.kiinnostuneet y WHERE y.id IN :yksilot")
+  List<YksilonOsaaminen> fetchAmmattiKiinnostukset(List<UUID> yksilot);
 
   @Transactional(readOnly = true)
   default Versioned<Map<URI, AmmattiDto>> refreshAll(

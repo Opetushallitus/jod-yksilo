@@ -64,11 +64,9 @@ public class ExternalApiV1Service {
   @Transactional
   public SivuDto<ExtProfiiliDto> findYksilot(final Pageable pageable) {
     final Page<Yksilo> yksiloPage = this.yksiloRepository.findAll(pageable);
-
     final List<ExtProfiiliDto> profiiliDtoList =
         yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
   }
-
 }
