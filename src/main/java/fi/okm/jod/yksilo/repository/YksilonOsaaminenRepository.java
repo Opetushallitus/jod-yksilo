@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
-import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.util.Collection;
 import java.util.List;

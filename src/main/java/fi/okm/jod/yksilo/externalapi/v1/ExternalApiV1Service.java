@@ -68,19 +68,9 @@ public class ExternalApiV1Service {
   @Transactional
   public SivuDto<ExtProfiiliDto> findYksilot(final Pageable pageable) {
     final Page<Yksilo> yksiloPage = this.yksiloRepository.findAll(pageable);
-    this.fetchCollections(yksiloPage);
     final List<ExtProfiiliDto> profiiliDtoList =
         yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(
         profiiliDtoList, yksiloPage.getTotalElements(), yksiloPage.getTotalPages());
-  }
-
-  public void fetchCollections(Page<Yksilo> yksilot) {
-    List<Yksilo> yksiloLista = yksilot.stream().toList();
-    this.yksilonOsaaminenRepository.fetchYksilonOsaamiset(yksiloLista);
-    this.osaaminenRepository.fetchOsaamisKiinnostukset(yksiloLista);
-    this.ammattiRepository.fetchAmmattiKiinnostukset(yksiloLista);
-    this.suosikkiRepository.fetchYksilonSuosikit(yksiloLista);
-    this.paamaaraRepository.fetchByYksilot(yksiloLista);
   }
 }

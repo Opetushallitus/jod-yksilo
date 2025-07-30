@@ -12,6 +12,8 @@ package fi.okm.jod.yksilo.repository;
 import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.entity.Ammatti;
+import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Function;

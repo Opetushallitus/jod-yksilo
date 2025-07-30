@@ -13,8 +13,6 @@ import fi.okm.jod.yksilo.domain.Versioned;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Osaaminen_;
-import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Function;
