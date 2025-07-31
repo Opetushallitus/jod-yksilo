@@ -41,8 +41,13 @@ public class Osaaminen {
   @ManyToMany
   @JoinTable(
       name = "yksilo_osaamis_kiinnostukset",
-      joinColumns = @JoinColumn(name = "yksilo_id"),
-      inverseJoinColumns = @JoinColumn(name = "osaamis_kiinnostukset_id"))
+      inverseJoinColumns =
+          @JoinColumn(name = "yksilo_id", referencedColumnName = "id", columnDefinition = "uuid"),
+      joinColumns =
+          @JoinColumn(
+              name = "osaamis_kiinnostukset_id",
+              referencedColumnName = "id",
+              columnDefinition = "bigint"))
   private Set<Yksilo> kiinnostuneet;
 
   public Osaaminen(URI uri) {
