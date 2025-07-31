@@ -63,25 +63,17 @@ public class Yksilo extends JodEntity {
   @ManyToMany
   @JoinTable(
       name = "yksilo_osaamis_kiinnostukset",
-      joinColumns =
-          @JoinColumn(name = "yksilo_id", referencedColumnName = "id", columnDefinition = "uuid"),
+      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
       inverseJoinColumns =
-          @JoinColumn(
-              name = "osaamis_kiinnostukset_id",
-              referencedColumnName = "id",
-              columnDefinition = "bigint"))
+          @JoinColumn(name = "osaamis_kiinnostukset_id", columnDefinition = "bigint"))
   private Set<Osaaminen> osaamisKiinnostukset;
 
   @ManyToMany
   @JoinTable(
       name = "yksilo_ammatti_kiinnostukset",
-      joinColumns =
-          @JoinColumn(name = "yksilo_id", referencedColumnName = "id", columnDefinition = "uuid"),
+      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
       inverseJoinColumns =
-          @JoinColumn(
-              name = "ammatti_kiinnostukset_id",
-              referencedColumnName = "id",
-              columnDefinition = "bigint"))
+          @JoinColumn(name = "ammatti_kiinnostukset_id", columnDefinition = "bigint"))
   private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
