@@ -11,10 +11,17 @@ package fi.okm.jod.yksilo.entity;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MapKeyEnumerated;
 import java.net.URI;
 import java.util.Map;
-import java.util.Set;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
@@ -37,9 +44,6 @@ public class Ammatti {
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
-
-  @ManyToMany(mappedBy = "ammattiKiinnostukset")
-  private Set<Yksilo> kiinnostuneet;
 
   @Embeddable
   public record Kaannos(
