@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import jakarta.persistence.*;
 import java.net.URI;
 import java.util.Map;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,13 +36,6 @@ public class Osaaminen {
   @MapKeyEnumerated(EnumType.STRING)
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
-
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "yksilo_osaamis_kiinnostukset",
-      joinColumns = @JoinColumn(name = "osaamis_kiinnostukset_id"),
-      inverseJoinColumns = @JoinColumn(name = "yksilo_id"))
-  private Set<Yksilo> kiinnostuneet;
 
   public Osaaminen(URI uri) {
     this.uri = uri;
