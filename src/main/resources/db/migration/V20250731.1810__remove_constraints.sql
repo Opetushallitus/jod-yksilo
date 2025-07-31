@@ -1,1 +1,3 @@
+ALTER TABLE yksilo_ammatti_kiinnostukset DROP CONSTRAINT uknb5xoynnfmo8kkih7ink8sw56;
+ALTER TABLE yksilo_osaamis_kiinnostukset DROP CONSTRAINT ukddclbvvvirbxn1i8a9aqsrfwj;
 DROP INDEX IF EXISTS uknb5xoynnfmo8kkih7ink8sw56, ukddclbvvvirbxn1i8a9aqsrfwj;
