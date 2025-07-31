@@ -38,16 +38,7 @@ public class Ammatti {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany
-  @JoinTable(
-      name = "yksilo_ammatti_kiinnostukset",
-      inverseJoinColumns =
-          @JoinColumn(name = "yksilo_id", referencedColumnName = "id", columnDefinition = "uuid"),
-      joinColumns =
-          @JoinColumn(
-              name = "ammatti_kiinnostukset_id",
-              referencedColumnName = "id",
-              columnDefinition = "bigint"))
+  @ManyToMany(mappedBy = "ammattiKiinnostukset")
   private Set<Yksilo> kiinnostuneet;
 
   @Embeddable
