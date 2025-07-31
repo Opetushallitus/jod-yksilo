@@ -38,13 +38,6 @@ public class Osaaminen {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "yksilo_osaamis_kiinnostukset",
-      joinColumns = @JoinColumn(name = "osaamis_kiinnostukset_id"),
-      inverseJoinColumns = @JoinColumn(name = "yksilo_id"))
-  private Set<Yksilo> kiinnostuneet;
-
   public Osaaminen(URI uri) {
     this.uri = uri;
   }

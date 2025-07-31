@@ -38,13 +38,6 @@ public class Ammatti {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "yksilo_ammatti_kiinnostukset",
-      joinColumns = @JoinColumn(name = "ammatti_kiinnostukset_id"),
-      inverseJoinColumns = @JoinColumn(name = "yksilo_id"))
-  private Set<Yksilo> kiinnostuneet;
-
   @Embeddable
   public record Kaannos(
       @Column(length = Integer.MAX_VALUE, nullable = false) String nimi,

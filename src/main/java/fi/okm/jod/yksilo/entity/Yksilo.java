@@ -73,20 +73,10 @@ public class Yksilo extends JodEntity {
   private Set<Toiminto> toiminnot;
 
   @ManyToMany
-  @JoinTable(
-      name = "yksilo_osaamis_kiinnostukset",
-      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
-      inverseJoinColumns =
-          @JoinColumn(name = "osaamis_kiinnostukset_id", columnDefinition = "bigint"))
   @BatchSize(size = 100)
   private Set<Osaaminen> osaamisKiinnostukset;
 
   @ManyToMany
-  @JoinTable(
-      name = "yksilo_ammatti_kiinnostukset",
-      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
-      inverseJoinColumns =
-          @JoinColumn(name = "ammatti_kiinnostukset_id", columnDefinition = "bigint"))
   @BatchSize(size = 100)
   private Set<Ammatti> ammattiKiinnostukset;
 
