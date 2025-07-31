@@ -38,11 +38,11 @@ public class Ammatti {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany(fetch = FetchType.LAZY)
+  @ManyToMany
   @JoinTable(
       name = "yksilo_ammatti_kiinnostukset",
-      joinColumns = @JoinColumn(name = "ammatti_kiinnostukset_id"),
-      inverseJoinColumns = @JoinColumn(name = "yksilo_id"))
+      joinColumns = @JoinColumn(name = "yksilo_id"),
+      inverseJoinColumns = @JoinColumn(name = "ammatti_kiinnostukset_id"))
   private Set<Yksilo> kiinnostuneet;
 
   @Embeddable
