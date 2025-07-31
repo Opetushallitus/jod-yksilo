@@ -38,9 +38,6 @@ public class Osaaminen {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany(mappedBy = "osaamisKiinnostukset")
-  private Set<Yksilo> kiinnostuneet;
-
   public Osaaminen(URI uri) {
     this.uri = uri;
   }
