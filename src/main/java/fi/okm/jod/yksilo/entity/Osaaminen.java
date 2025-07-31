@@ -38,16 +38,7 @@ public class Osaaminen {
   @BatchSize(size = 1000)
   private Map<Kieli, Kaannos> kaannos;
 
-  @ManyToMany
-  @JoinTable(
-      name = "yksilo_osaamis_kiinnostukset",
-      inverseJoinColumns =
-          @JoinColumn(name = "yksilo_id", referencedColumnName = "id", columnDefinition = "uuid"),
-      joinColumns =
-          @JoinColumn(
-              name = "osaamis_kiinnostukset_id",
-              referencedColumnName = "id",
-              columnDefinition = "bigint"))
+  @ManyToMany(mappedBy = "osaamisKiinnostukset")
   private Set<Yksilo> kiinnostuneet;
 
   public Osaaminen(URI uri) {
