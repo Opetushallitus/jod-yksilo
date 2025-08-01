@@ -63,7 +63,7 @@ $$
         FOR i IN 1..paamaarien_maara
           LOOP
             SELECT id INTO paamaara_id from (select id, row_number() OVER (ORDER BY id) as rivi from koulutusmahdollisuus) as ir where rivi = (i+20);
-            INSERT INTO paamaara(id, luotu, koulutusmahdollisuus_id, yksilo_id) VALUES (gen_random_uuid(), now(), suosikki_id, yid);
+            INSERT INTO paamaara(id, luotu, koulutusmahdollisuus_id, yksilo_id) VALUES (gen_random_uuid(), now(), paamaara_id, yid);
           END LOOP;
 
 
