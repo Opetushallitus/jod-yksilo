@@ -21,8 +21,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
@@ -73,21 +71,9 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
-  @ManyToMany
-  @JoinTable(
-      name = "yksilo_osaamis_kiinnostukset",
-      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
-      inverseJoinColumns =
-          @JoinColumn(name = "osaamis_kiinnostukset_id", columnDefinition = "bigint"))
-  private Set<Osaaminen> osaamisKiinnostukset;
+  @ManyToMany private Set<Osaaminen> osaamisKiinnostukset;
 
-  @ManyToMany
-  @JoinTable(
-      name = "yksilo_ammatti_kiinnostukset",
-      joinColumns = @JoinColumn(name = "yksilo_id", columnDefinition = "uuid"),
-      inverseJoinColumns =
-          @JoinColumn(name = "ammatti_kiinnostukset_id", columnDefinition = "bigint"))
-  private Set<Ammatti> ammattiKiinnostukset;
+  @ManyToMany private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<YksilonSuosikki> suosikit;
