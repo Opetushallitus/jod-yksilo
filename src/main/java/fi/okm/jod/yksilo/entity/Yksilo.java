@@ -47,7 +47,7 @@ public class Yksilo extends JodEntity {
   @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 100)
+  @BatchSize(size = 1000)
   private Map<Kieli, Yksilo.Kaannos> kaannos = new EnumMap<>(Kieli.class);
 
   @Setter private Boolean tervetuloapolku;
@@ -59,7 +59,7 @@ public class Yksilo extends JodEntity {
   @Setter private Boolean lupaKayttaaTekoalynKoulutukseen;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 100)
+  @BatchSize(size = 1000)
   private Set<YksilonOsaaminen> osaamiset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -72,17 +72,19 @@ public class Yksilo extends JodEntity {
   private Set<Toiminto> toiminnot;
 
   @ManyToMany
-  @BatchSize(size = 100)
+  @BatchSize(size = 1000)
   private Set<Osaaminen> osaamisKiinnostukset;
 
   @ManyToMany
-  @BatchSize(size = 100)
+  @BatchSize(size = 1000)
   private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @BatchSize(size = 1000)
   private Set<YksilonSuosikki> suosikit;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @BatchSize(size = 1000)
   private Set<Paamaara> paamaarat;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
