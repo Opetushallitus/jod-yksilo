@@ -78,7 +78,7 @@ public class PatevyysService {
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
     var patevyys = patevyydet.save(entity);
-    if (dto.osaamiset() != null) {
+    if (!dto.osaamiset().isEmpty()) {
       osaamiset.add(patevyys, osaamiset.getOsaamiset(dto.osaamiset()));
     }
     return patevyys;
@@ -90,8 +90,8 @@ public class PatevyysService {
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
     patevyydet.save(entity);
-    if (dto.osaamiset() != null) {
-      osaamiset.update(entity, osaamiset.getOsaamiset(dto.osaamiset()));
+    if (!dto.osaamiset().isEmpty()) {
+      osaamiset.updateOsaamisetForOsaamisenLahde(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
 

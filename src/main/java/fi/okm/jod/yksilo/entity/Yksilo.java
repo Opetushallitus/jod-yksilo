@@ -21,8 +21,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -37,10 +39,9 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Yksilo {
-
+public class Yksilo extends JodEntity {
   @Id
-  @Column(updatable = false, nullable = false)
+  @Column(name = "id")
   private UUID id;
 
   @Getter(AccessLevel.NONE)
@@ -70,10 +71,12 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @ManyToMany
+  @BatchSize(size = 100)
   private Set<Osaaminen> osaamisKiinnostukset;
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @ManyToMany
+  @BatchSize(size = 100)
   private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -104,6 +107,10 @@ public class Yksilo {
 
   protected Yksilo() {
     // For JPA
+  }
+
+  public void yksiloUpdated() {
+    this.muokattu = Instant.now();
   }
 
   public boolean getTervetuloapolku() {

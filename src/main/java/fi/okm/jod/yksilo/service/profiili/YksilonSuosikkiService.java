@@ -55,19 +55,24 @@ public class YksilonSuosikkiService {
         .findBy(yksilo, tyyppi, kohdeId)
         .map(YksilonSuosikki::getId)
         .orElseGet(
-            () ->
-                suosikit
-                    .save(
-                        switch (tyyppi) {
-                          case TYOMAHDOLLISUUS ->
-                              new YksilonSuosikki(
-                                  yksilo, require(tyomahdollisuudet.findById(kohdeId)));
+            () -> {
+              final UUID id =
+                  suosikit
+                      .save(
+                          switch (tyyppi) {
+                            case TYOMAHDOLLISUUS ->
+                                new YksilonSuosikki(
+                                    yksilo, require(tyomahdollisuudet.findById(kohdeId)));
 
-                          case KOULUTUSMAHDOLLISUUS ->
-                              new YksilonSuosikki(
-                                  yksilo, require(koulutusmahdollisuudet.findById(kohdeId)));
-                        })
-                    .getId());
+                            case KOULUTUSMAHDOLLISUUS ->
+                                new YksilonSuosikki(
+                                    yksilo, require(koulutusmahdollisuudet.findById(kohdeId)));
+                          })
+                      .getId();
+              yksilo.yksiloUpdated();
+              this.yksilot.save(yksilo);
+              return id;
+            });
   }
 
   public void delete(JodUser user, UUID id) {

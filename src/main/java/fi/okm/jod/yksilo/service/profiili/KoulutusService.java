@@ -99,7 +99,7 @@ public class KoulutusService {
         odottaaOsaamisetTunnistusta == null ? null : OsaamisenTunnistusStatus.WAIT);
     entity.setOsasuoritukset(dto.osasuoritukset());
     entity = koulutukset.save(entity);
-    if (dto.osaamiset() != null) {
+    if (!dto.osaamiset().isEmpty()) {
       osaamiset.add(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
     return entity;
@@ -111,9 +111,9 @@ public class KoulutusService {
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
     koulutukset.save(entity);
-    if (dto.osaamiset() != null) {
+    if (!dto.osaamiset().isEmpty()) {
       entity.setOsaamisenTunnistusStatus(null);
-      osaamiset.update(entity, osaamiset.getOsaamiset(dto.osaamiset()));
+      osaamiset.updateOsaamisetForOsaamisenLahde(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
 

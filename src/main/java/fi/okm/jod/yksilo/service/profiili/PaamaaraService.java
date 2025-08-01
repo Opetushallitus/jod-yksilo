@@ -68,7 +68,11 @@ public class PaamaaraService {
     if (paamaarat.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
       throw new ServiceValidationException("Too many Paamaara");
     }
-    return paamaarat.save(paamaara).getId();
+
+    final UUID id = paamaarat.save(paamaara).getId();
+    yksilo.yksiloUpdated();
+    this.yksilot.save(yksilo);
+    return id;
   }
 
   public void delete(JodUser user, UUID id) {

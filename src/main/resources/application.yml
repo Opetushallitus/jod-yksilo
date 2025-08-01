@@ -5,11 +5,15 @@ spring:
     virtual:
       enabled: true
   jpa:
+    show-sql: true
+
     hibernate:
       ddl-auto: "validate"
+
     open-in-view: false
     properties:
       hibernate:
+        format_sql: true
         jdbc:
           batch_size: 20
         order_inserts: true
@@ -81,11 +85,14 @@ springdoc:
 
 logging:
   level:
+    org.hibernate.SQL: DEBUG
+
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     fi.okm.jod: DEBUG
     sql: DEBUG
     #org.hibernate.orm.jdbc.batch: TRACE
-    org:
-      springframework:
+    org.hibernate.orm.jdbc.bind: trace
+    springframework:
         web:
           servlet:
             PageNotFound: off
