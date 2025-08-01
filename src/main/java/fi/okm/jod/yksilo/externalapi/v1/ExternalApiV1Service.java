@@ -18,6 +18,7 @@ import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import fi.okm.jod.yksilo.repository.*;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -61,8 +62,9 @@ public class ExternalApiV1Service {
   }
 
   @Transactional
-  public SivuDto<ExtProfiiliDto> findYksilot(final Pageable pageable) {
-    final Page<Yksilo> yksiloPage = this.yksiloRepository.findAll(pageable);
+  public SivuDto<ExtProfiiliDto> findYksilot(final Instant modifiedAfter, final Pageable pageable) {
+    final Page<Yksilo> yksiloPage =
+        this.yksiloRepository.findAllModifiedAfter(modifiedAfter, pageable);
     final List<ExtProfiiliDto> profiiliDtoList =
         yksiloPage.stream().map(ExtApiV1Mapper::toProfiiliDto).toList();
     return new SivuDto<>(

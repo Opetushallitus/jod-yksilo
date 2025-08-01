@@ -51,9 +51,6 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
   @Query("SELECT v.versio FROM OsaaminenVersio v WHERE v.id = 1")
   long currentVersion();
 
-  @Query("SELECT o FROM Osaaminen o JOIN FETCH o.kiinnostuneet y WHERE y.id IN :yksilot")
-  List<Osaaminen> fetchOsaamisKiinnostukset(List<UUID> yksilot);
-
   @Transactional(readOnly = true)
   default Versioned<Map<URI, OsaaminenDto>> refreshAll(
       @Nullable Versioned<Map<URI, OsaaminenDto>> previous) {

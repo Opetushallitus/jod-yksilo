@@ -14,9 +14,11 @@ import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -58,8 +60,10 @@ public class ExternalApiV1Controller {
       description = "Returns all profiilit basic information in JSON-format.")
   public SivuDto<ExtProfiiliDto> findProfiilit(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
-      @RequestParam(required = false, defaultValue = "10") Integer koko) {
+      @RequestParam(required = false, defaultValue = "10") Integer koko,
+      @RequestParam("muokattuJalkeen") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+          Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findYksilot(pageable);
+    return service.findYksilot(modifiedAfter, pageable);
   }
 }
