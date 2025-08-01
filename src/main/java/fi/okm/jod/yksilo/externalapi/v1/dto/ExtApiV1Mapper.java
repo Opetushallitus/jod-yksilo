@@ -86,8 +86,12 @@ public class ExtApiV1Mapper {
 
   private static ExtSuosikkiDto toSuosikkiDto(YksilonSuosikki yksilonSuosikki) {
     return new ExtSuosikkiDto(
-        yksilonSuosikki.getTyomahdollisuus().getId(),
-        yksilonSuosikki.getKoulutusmahdollisuus().getId());
+        yksilonSuosikki.getTyomahdollisuus() != null
+            ? yksilonSuosikki.getTyomahdollisuus().getId()
+            : null,
+        yksilonSuosikki.getKoulutusmahdollisuus() != null
+            ? yksilonSuosikki.getKoulutusmahdollisuus().getId()
+            : null);
   }
 
   private static ExtAmmattiKiinnostusDto toAmmattiKiinnostus(Ammatti ammatti) {
