@@ -18,7 +18,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.Nullable;
 
 public interface YksilonOsaaminenRepository extends JpaRepository<YksilonOsaaminen, UUID> {
@@ -29,13 +28,6 @@ public interface YksilonOsaaminenRepository extends JpaRepository<YksilonOsaamin
         ? findAllByYksiloId(yksiloId, sort)
         : findAllByYksiloIdAndLahde(yksiloId, lahde, sort);
   }
-
-  @Query(
-      "SELECT yo FROM YksilonOsaaminen yo JOIN FETCH yo.osaaminen o WHERE yo.yksilo.id IN :yksilot")
-  List<YksilonOsaaminen> fetchOsaamisetYksilonOsaamiset(List<UUID> yksilot);
-
-  @Query("SELECT yo FROM YksilonOsaaminen yo WHERE yo.yksilo.id IN :yksilot")
-  List<YksilonOsaaminen> fetchYksilonOsaamiset(List<UUID> yksilot);
 
   @EntityGraph(attributePaths = "osaaminen")
   List<YksilonOsaaminen> findAllByYksiloId(UUID yksiloId, Sort sort);

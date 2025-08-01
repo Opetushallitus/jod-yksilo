@@ -15,14 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 public interface PaamaaraRepository extends JpaRepository<Paamaara, UUID> {
 
   List<Paamaara> findAllByYksilo(Yksilo yksilo);
-
-  @Query("SELECT p FROM Paamaara p WHERE p.yksilo IN :yksilot")
-  List<Paamaara> fetchByYksilot(List<UUID> yksilot);
 
   int deleteByYksiloAndId(Yksilo yksilo, UUID id);
 
