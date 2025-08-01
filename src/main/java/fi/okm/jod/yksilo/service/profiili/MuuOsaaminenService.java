@@ -44,7 +44,7 @@ public class MuuOsaaminenService {
   }
 
   public void update(JodUser user, Set<URI> ids) {
-    osaaminenService.update(
+    osaaminenService.updateOsaamisetForOsaamisenLahde(
         getMuuOsaaminen(yksilot.getReferenceById(user.getId())),
         osaaminenService.getOsaamiset(ids));
   }

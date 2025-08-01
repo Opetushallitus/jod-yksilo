@@ -61,7 +61,8 @@ public class ExternalApiV1Controller {
   public SivuDto<ExtProfiiliDto> findProfiilit(
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko,
-      @RequestParam("muokattuJalkeen") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+      @RequestParam(name = "muokattuJalkeen", required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
           Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);
     return service.findYksilot(modifiedAfter, pageable);

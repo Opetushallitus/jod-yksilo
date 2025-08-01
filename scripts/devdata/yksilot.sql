@@ -5,13 +5,13 @@ $$
     kid UUID;
     aid UUID;
     osaamis_kiinnostus_id BIGINT;
-    yksiloiden_maara BIGINT = 1;
-    osaamis_kiinnostusten_maara BIGINT = 1;
+    yksiloiden_maara BIGINT = 100;
+    osaamis_kiinnostusten_maara BIGINT = 7;
 
   BEGIN
     FOR i IN 1..yksiloiden_maara
       LOOP
-        SELECT tunnistus.generate_yksilo_id(concat('MOCK:use56r18756456764433', i::text)) INTO yid;
+        SELECT tunnistus.generate_yksilo_id(concat('MOCK:use56r14548756456764433', i::text)) INTO yid;
         --IF EXISTS(SELECT yid FROM YKSILO) THEN
         --    RETURN;
         --END IF;

@@ -24,6 +24,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -106,6 +107,10 @@ public class Yksilo extends JodEntity {
 
   protected Yksilo() {
     // For JPA
+  }
+
+  public void yksiloUpdated() {
+    this.muokattu = Instant.now();
   }
 
   public boolean getTervetuloapolku() {

@@ -76,6 +76,8 @@ echo "Importing data"
     -c "CALL esco_data.import_ammatti();" \
     -c "CALL tyomahdollisuus_data.import();" \
     -c "CALL koulutusmahdollisuus_data.import();"
+
+  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo < devdata/yksilot.sql
 )
 
 if [[ $STARTED == true ]]; then
