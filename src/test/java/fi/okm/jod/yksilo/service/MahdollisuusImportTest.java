@@ -69,7 +69,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class MahdollisuusImportTest {
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
+  static PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgreSqlContainer();
 
   private static final String KOULUTUSMAHDOLLISUUS_IMPORT_DATA_PROCEDURE =
       "koulutusmahdollisuus_data.import";

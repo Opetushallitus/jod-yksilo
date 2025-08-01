@@ -204,7 +204,7 @@ class MahdollisuudetController {
   }
 
   /**
-   * These trend values will become more precise as the definition becomes more precise
+   * These trend values will become more precise as the definition becomes more precise.
    *
    * <h2>constant:</h2>
    *
@@ -232,7 +232,7 @@ class MahdollisuudetController {
 
   /**
    * This record describes metadata related to the proposal, based on which the proposals can be
-   * sorted or filtered
+   * sorted or filtered.
    *
    * @param pisteet The points indicate the suitability of this proposal with a value of 1.0 ... 0,
    *     where 1 is 100% suitability.
@@ -247,7 +247,7 @@ class MahdollisuudetController {
       @Nullable Trendi trendi,
       @Nullable Long osaamisia,
 
-      /** Value from 0 to */
+      /* Value from 0 to */
       @Nullable Integer tyollisyysNakyma,
       @NotNull Integer aakkosIndeksi) {
 
@@ -258,7 +258,7 @@ class MahdollisuudetController {
 
   /**
    * This record models a proposal by including a reference to an opportunity that contains more
-   * detailed information about the opportunity. For example: {@link TyomahdollisuusDto}
+   * detailed information about the opportunity. For example: {@link TyomahdollisuusDto}.
    *
    * @param mahdollisuusId Opportunity ID
    * @param ehdotusMetadata Proposal metadata
@@ -266,7 +266,7 @@ class MahdollisuudetController {
   public record EhdotusDto(UUID mahdollisuusId, EhdotusMetadata ehdotusMetadata) {}
 
   /**
-   * This record models the create ehdotus request where
+   * This record models the create ehdotus request.
    *
    * @param osaamisPainotus This is the emphasis of osaamiset (skills related to know how).
    * @param osaamiset This is the list of skills ESCO URIs which are considered as skills of the

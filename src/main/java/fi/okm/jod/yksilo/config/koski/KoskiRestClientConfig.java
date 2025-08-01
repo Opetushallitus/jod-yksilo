@@ -28,7 +28,7 @@ import org.springframework.security.oauth2.core.http.converter.OAuth2AccessToken
 import org.springframework.web.client.RestClient;
 
 @Slf4j
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @Configuration(proxyBeanMethods = false)
 public class KoskiRestClientConfig {
 
@@ -58,7 +58,7 @@ public class KoskiRestClientConfig {
 
   @Bean(OAUTH2_RESTCLIENT_ID)
   @RefreshScope
-  public RestClient koskiRestClientOAuth2(RestClient.Builder builder, SslBundle koskiSslBundle) {
+  public RestClient koskiRestClientOauth2(RestClient.Builder builder, SslBundle koskiSslBundle) {
     var messageConverters =
         List.of(
             new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter());

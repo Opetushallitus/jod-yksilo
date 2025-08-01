@@ -159,7 +159,7 @@ tasks.named('test', Test) {
 
 checkstyle {
   toolVersion = '10.26.1'
-  showViolations = false
+  showViolations = true
 
   def archive = configurations.checkstyle.filter {
     it.name.startsWith("checkstyle")
@@ -168,6 +168,12 @@ checkstyle {
   configDirectory = file("${rootProject.rootDir}/gradle/config/checkstyle")
   configProperties = [
       'org.checkstyle.google.suppressionfilter.config': "${rootProject.rootDir}/gradle/config/checkstyle/suppressions.xml",
+  ]
+}
+
+checkstyleMain {
+  configProperties += [
+      'org.checkstyle.google.severity': 'error',
   ]
 }
 

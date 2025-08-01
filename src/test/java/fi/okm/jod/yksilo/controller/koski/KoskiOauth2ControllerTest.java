@@ -11,16 +11,21 @@ package fi.okm.jod.yksilo.controller.koski;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
-import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
+import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +45,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
-@Import({ErrorInfoFactory.class, KoskiOAuth2Config.class, TestKoskiOAuth2Config.class})
-@WebMvcTest(KoskiOAuth2Controller.class)
+@Import({ErrorInfoFactory.class, KoskiOauth2Config.class, TestKoskiOauth2Config.class})
+@WebMvcTest(KoskiOauth2Controller.class)
 @Execution(ExecutionMode.SAME_THREAD)
-class KoskiOAuth2ControllerTest {
+class KoskiOauth2ControllerTest {
 
   private static final String REGISTRATION_ID = "koski";
   private static final String PERSON_ID = "241001B765F";
@@ -56,14 +61,14 @@ class KoskiOAuth2ControllerTest {
   private static final String EXPECTED_CANCEL_REDIRECT = CALLBACK_PATH + "?koski=cancel";
   private static final String EXPECTED_AUTHORIZED_REDIRECT = CALLBACK_PATH + "?koski=authorized";
 
-  @MockitoBean private KoskiOAuth2Service koskiOAuth2Service;
+  @MockitoBean private KoskiOauth2Service koskiOauth2Service;
 
   @Autowired private MockMvc mockMvc;
 
   @Test
   @WithUserDetails(PERSON_ID)
-  void shouldRedirectToOAuth2Url_whenCallbackExists() throws Exception {
-    when(koskiOAuth2Service.getRegistrationId()).thenReturn(REGISTRATION_ID);
+  void shouldRedirectToOauth2Url_whenCallbackExists() throws Exception {
+    when(koskiOauth2Service.getRegistrationId()).thenReturn(REGISTRATION_ID);
 
     var fullCallbackUrlWithParameters =
         "http://localhost:8080/koski/fi/omat-sivuni/osaamiseni/koulutukseni?callback="
@@ -85,7 +90,7 @@ class KoskiOAuth2ControllerTest {
 
   @Test
   @WithUserDetails(PERSON_ID)
-  void shouldNotRedirectToOAuth2Url_whenCallbackIsMissing() throws Exception {
+  void shouldNotRedirectToOauth2Url_whenCallbackIsMissing() throws Exception {
     mockMvc.perform(get("/oauth2/authorize/koski")).andExpect(status().isBadRequest());
   }
 
@@ -97,21 +102,21 @@ class KoskiOAuth2ControllerTest {
   @Test
   @WithUserDetails(PERSON_ID)
   void shouldRedirectToLandingPage_whenUserGivesPermissionNoCallbackUrl() throws Exception {
-    prepareOAuth2Client();
+    prepareOauth2Client();
 
     mockMvc
         .perform(get(OAUTH2_CALLBACK_API_ENDPOINT))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl(EXPECTED_CALLBACK_URL_MISSING_REDIRECT));
 
-    verifyNoInteractions(koskiOAuth2Service);
+    verifyNoInteractions(koskiOauth2Service);
   }
 
   @Test
   @WithUserDetails(PERSON_ID)
   void shouldRedirectToSavedUrlWithErrorCode_whenUserGivesPermissionButErrorOccurs()
       throws Exception {
-    prepareOAuth2Client();
+    prepareOauth2Client();
 
     var queryMap =
         new LinkedMultiValueMap<>(
@@ -123,35 +128,35 @@ class KoskiOAuth2ControllerTest {
 
     performCallback(EXPECTED_ERROR_REDIRECT, queryMap);
 
-    verify(koskiOAuth2Service, never())
+    verify(koskiOauth2Service, never())
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verifyNoMoreInteractions(koskiOAuth2Service);
+    verifyNoMoreInteractions(koskiOauth2Service);
   }
 
   @Test
   @WithUserDetails(PERSON_ID)
   void shouldRedirectToSavedUrlWithCancelCode_whenUserDidNotGivePermission() throws Exception {
-    prepareOAuth2Client();
-    when(koskiOAuth2Service.getAuthorizedClient(
+    prepareOauth2Client();
+    when(koskiOauth2Service.getAuthorizedClient(
             any(Authentication.class), any(HttpServletRequest.class)))
         .thenReturn(null);
 
     performCallback(EXPECTED_CANCEL_REDIRECT);
 
-    verify(koskiOAuth2Service)
+    verify(koskiOauth2Service)
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verifyNoMoreInteractions(koskiOAuth2Service);
+    verifyNoMoreInteractions(koskiOauth2Service);
   }
 
   @Test
   @WithUserDetails(PERSON_ID)
   void shouldRedirectToSavedUrlWithOkAuthorizedCode_whenUserGivesPermission() throws Exception {
-    prepareOAuth2Client();
+    prepareOauth2Client();
     performCallback(EXPECTED_AUTHORIZED_REDIRECT);
 
-    verify(koskiOAuth2Service)
+    verify(koskiOauth2Service)
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verifyNoMoreInteractions(koskiOAuth2Service);
+    verifyNoMoreInteractions(koskiOauth2Service);
   }
 
   private void performCallback(String expectedRedirectUrl) throws Exception {
@@ -172,10 +177,10 @@ class KoskiOAuth2ControllerTest {
         .andExpect(redirectedUrl(expectedRedirectUrl));
   }
 
-  private void prepareOAuth2Client() {
-    var oAuth2AuthorizedClient = mock(OAuth2AuthorizedClient.class);
-    when(koskiOAuth2Service.getAuthorizedClient(
+  private void prepareOauth2Client() {
+    var oauth2AuthorizedClient = mock(OAuth2AuthorizedClient.class);
+    when(koskiOauth2Service.getAuthorizedClient(
             any(Authentication.class), any(HttpServletRequest.class)))
-        .thenReturn(oAuth2AuthorizedClient);
+        .thenReturn(oauth2AuthorizedClient);
   }
 }

@@ -58,13 +58,13 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   void testAdd() throws AssertionFailure {
 
     final UUID kohdeId = tyomahdollisuusIds.getFirst();
-    var newID = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newId = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
     var suosikit = service.findAll(user, null);
 
     assertEquals(1L, suosikit.size());
     var suosikki = suosikit.getFirst();
     assertNotNull(suosikki.id());
-    assertEquals(newID, suosikki.id());
+    assertEquals(newId, suosikki.id());
     assertNotNull(suosikki.luotu());
     assertEquals(kohdeId, suosikki.kohdeId());
     assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.tyyppi());
@@ -73,9 +73,9 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   @Test
   @WithMockUser()
   void testAddingSameAgain() throws AssertionFailure {
-    var newID1 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    assertEquals(newID1, newID2);
+    var newId1 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newId2 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    assertEquals(newId1, newId2);
     var suosikit = service.findAll(user, null);
     assertEquals(1L, suosikit.size());
   }
@@ -83,19 +83,19 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   @Test
   @WithMockUser()
   void testDelete() throws AssertionFailure {
-    var newID1 = service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID3 =
+    final var newId1 = service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    final var newId2 = service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    final var newId3 =
         service.add(user, koulutusmahdollisuusIds.get(0), SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS);
     var suosikitBeforeDelete = service.findAll(user, null);
     assertEquals(3L, suosikitBeforeDelete.size());
-    service.delete(user, newID2);
+    service.delete(user, newId2);
     var suosikitAfterDelete = service.findAll(user, null);
     assertEquals(2L, suosikitAfterDelete.size());
     var ids = suosikitAfterDelete.stream().map(SuosikkiDto::id).toList();
-    assertTrue(ids.contains(newID1), "result contains new ID 1");
-    assertTrue(ids.contains(newID3), "result contains new ID 2");
-    assertFalse(ids.contains(newID2), "result does not contain removed ID");
+    assertTrue(ids.contains(newId1), "result contains new ID 1");
+    assertTrue(ids.contains(newId3), "result contains new ID 2");
+    assertFalse(ids.contains(newId2), "result does not contain removed ID");
   }
 
   @Test
