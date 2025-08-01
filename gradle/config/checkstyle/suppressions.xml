@@ -10,4 +10,6 @@
   <!-- not compatible with Spotless -->
   <suppress checks="Indentation"/>
   <suppress checks="LineLength"/>
+  <suppress checks="OverloadMethodsDeclarationOrder"/>
+  <suppress checks="EmptyLineSeparator"/>
 </suppressions>

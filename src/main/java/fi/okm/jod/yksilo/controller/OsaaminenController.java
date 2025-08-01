@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.controller;
 
-import static fi.okm.jod.yksilo.controller.ETags.weakETagOf;
+import static fi.okm.jod.yksilo.controller.Etags.weakEtagOf;
 
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
@@ -42,7 +42,7 @@ class OsaaminenController {
       @RequestParam(required = false, defaultValue = "10") @Max(1000) int koko,
       @RequestParam(required = false) Set<URI> uri) {
 
-    var etag = weakETagOf(osaamiset.currentVersion());
+    var etag = weakEtagOf(osaamiset.currentVersion());
     SivuDto<OsaaminenDto> body;
 
     if (request.checkNotModified(etag)) {
@@ -51,7 +51,7 @@ class OsaaminenController {
       var result =
           (uri == null) ? osaamiset.findAll(sivu, koko) : osaamiset.findBy(sivu, koko, uri);
       body = result.payload();
-      etag = weakETagOf(result.version());
+      etag = weakEtagOf(result.version());
     }
 
     return ResponseEntity.ok()

@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.controller;
 
-import static fi.okm.jod.yksilo.controller.ETags.weakETagOf;
+import static fi.okm.jod.yksilo.controller.Etags.weakEtagOf;
 
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
@@ -42,7 +42,7 @@ class AmmattiController {
       @RequestParam(required = false, defaultValue = "10") @Max(1000) int koko,
       @RequestParam(required = false) Set<URI> uri) {
 
-    var etag = weakETagOf(ammatit.currentVersion());
+    var etag = weakEtagOf(ammatit.currentVersion());
     SivuDto<AmmattiDto> body;
 
     if (request.checkNotModified(etag)) {
@@ -50,7 +50,7 @@ class AmmattiController {
     } else {
       var result = (uri == null) ? ammatit.findAll(sivu, koko) : ammatit.findBy(sivu, koko, uri);
       body = result.payload();
-      etag = weakETagOf(result.version());
+      etag = weakEtagOf(result.version());
     }
 
     return ResponseEntity.ok()

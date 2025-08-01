@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.externalapi.v1;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
-import fi.okm.jod.yksilo.externalapi.v1.dto.ExtAPIV1Mapper;
+import fi.okm.jod.yksilo.externalapi.v1.dto.ExtApiV1Mapper;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
@@ -24,7 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Bisneslogiikka External API V1 */
+/** Bisneslogiikka External API V1. */
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class ExternalApiV1Service {
     final Page<Tyomahdollisuus> tyomahdollisuusPage =
         this.tyomahdollisuusRepository.findAll(pageable);
     final List<ExtTyoMahdollisuusDto> tyoMahdollisuusDtoList =
-        tyomahdollisuusPage.stream().map(ExtAPIV1Mapper::toTyoMahdollisuusDto).toList();
+        tyomahdollisuusPage.stream().map(ExtApiV1Mapper::toTyoMahdollisuusDto).toList();
 
     return new SivuDto<>(
         tyoMahdollisuusDtoList,
@@ -48,7 +48,7 @@ public class ExternalApiV1Service {
     final Page<Koulutusmahdollisuus> koulutusmahdollisuusPage =
         this.koulutusmahdollisuusRepository.findAll(pageable);
     final List<ExtKoulutusMahdollisuusDto> koulutusMahdollisuusDtoList =
-        koulutusmahdollisuusPage.stream().map(ExtAPIV1Mapper::toKoulutusMahdollisuusDto).toList();
+        koulutusmahdollisuusPage.stream().map(ExtApiV1Mapper::toKoulutusMahdollisuusDto).toList();
 
     return new SivuDto<>(
         koulutusMahdollisuusDtoList,

@@ -61,13 +61,17 @@ class OpenApiConfig {
   }
 
   private static String capitalize(String str) {
-    if (str == null || str.isEmpty()) return str;
+    if (str == null || str.isEmpty()) {
+      return str;
+    }
     var first = str.substring(0, 1).toUpperCase(Locale.ROOT);
     return str.length() == 1 ? first : first + str.substring(1);
   }
 
   private static String uncapitalize(String str) {
-    if (str == null || str.isEmpty()) return str;
+    if (str == null || str.isEmpty()) {
+      return str;
+    }
     var first = str.substring(0, 1).toLowerCase(Locale.ROOT);
     return str.length() == 1 ? first : first + str.substring(1);
   }

@@ -35,7 +35,7 @@ public class TestUtil {
     }
   }
 
-  public static PostgreSQLContainer<?> createPostgresSQLContainer() {
+  public static PostgreSQLContainer<?> createPostgreSqlContainer() {
     return new PostgreSQLContainer<>(TestUtil.POSTGRES_VERSION)
         .withEnv("LANG", "en_US.UTF-8")
         .withEnv("LC_ALL", "en_US.UTF-8");

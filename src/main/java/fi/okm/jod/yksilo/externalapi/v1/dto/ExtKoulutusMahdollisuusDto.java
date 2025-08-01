@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import java.util.UUID;
 
-/** Tiedot mitä koulutusmahdollisuudesta palautetaan ulkoisen rajapinnan v1-versiossa */
+/** Tiedot mitä koulutusmahdollisuudesta palautetaan ulkoisen rajapinnan v1-versiossa. */
 public record ExtKoulutusMahdollisuusDto(
     UUID id,
     LocalizedString otsikko,

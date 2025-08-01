@@ -28,7 +28,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class AbstractServiceTest {
 
   @ServiceConnection
-  static final PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgresSQLContainer();
+  static final PostgreSQLContainer<?> postgreSQLContainer = TestUtil.createPostgreSqlContainer();
 
   @Autowired protected YksiloRepository yksiloRepository;
 
