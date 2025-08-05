@@ -100,7 +100,7 @@ public class KoulutusService {
     entity.setOsasuoritukset(dto.osasuoritukset());
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
-      osaamiset.add(entity, osaamiset.getOsaamiset(dto.osaamiset()));
+      osaamiset.addLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
     return entity;
   }
@@ -113,7 +113,7 @@ public class KoulutusService {
     koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       entity.setOsaamisenTunnistusStatus(null);
-      osaamiset.update(entity, osaamiset.getOsaamiset(dto.osaamiset()));
+      osaamiset.updateLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
 
@@ -130,7 +130,7 @@ public class KoulutusService {
       koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.FAIL);
 
     } else if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
-      osaamiset.add(koulutus, osaamiset.getOsaamiset(newOsaamiset));
+      osaamiset.addLahteenOsaamiset(koulutus, osaamiset.getOsaamiset(newOsaamiset));
     }
     koulutukset.save(koulutus);
   }

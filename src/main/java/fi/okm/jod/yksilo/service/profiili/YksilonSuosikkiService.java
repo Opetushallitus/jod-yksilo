@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
@@ -48,32 +49,45 @@ public class YksilonSuosikkiService {
             .toList();
   }
 
+  /**
+   * Adds a new suosikki if matching suosikki does not exist
+   *
+   * @param user user
+   * @param kohdeId kohdeId
+   * @param tyyppi tyyppi
+   * @return Id of the added or existing suosikki
+   */
   public UUID add(JodUser user, UUID kohdeId, SuosikkiTyyppi tyyppi) {
     var yksilo = yksilot.getReferenceById(user.getId());
-
     return suosikit
         .findBy(yksilo, tyyppi, kohdeId)
         .map(YksilonSuosikki::getId)
-        .orElseGet(
-            () ->
-                suosikit
-                    .save(
-                        switch (tyyppi) {
-                          case TYOMAHDOLLISUUS ->
-                              new YksilonSuosikki(
-                                  yksilo, require(tyomahdollisuudet.findById(kohdeId)));
+        .orElseGet(() -> saveNewSuosikki(yksilo, kohdeId, tyyppi));
+  }
 
-                          case KOULUTUSMAHDOLLISUUS ->
-                              new YksilonSuosikki(
-                                  yksilo, require(koulutusmahdollisuudet.findById(kohdeId)));
-                        })
-                    .getId());
+  private UUID saveNewSuosikki(final Yksilo yksilo, UUID kohdeId, SuosikkiTyyppi tyyppi) {
+    final YksilonSuosikki yksilonSuosikki = createSuosikki(yksilo, kohdeId, tyyppi);
+    yksilo.updated();
+    return suosikit.save(yksilonSuosikki).getId();
+  }
+
+  private YksilonSuosikki createSuosikki(
+      final Yksilo yksilo, final UUID kohdeId, final SuosikkiTyyppi tyyppi) {
+    return switch (tyyppi) {
+      case TYOMAHDOLLISUUS ->
+          new YksilonSuosikki(yksilo, require(tyomahdollisuudet.findById(kohdeId)));
+      case KOULUTUSMAHDOLLISUUS ->
+          new YksilonSuosikki(yksilo, require(koulutusmahdollisuudet.findById(kohdeId)));
+    };
   }
 
   public void delete(JodUser user, UUID id) {
-    if (suosikit.deleteByYksiloAndId(yksilot.getReferenceById(user.getId()), id) == 0) {
+    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
+    if (suosikit.deleteByYksiloAndId(yksilo, id) == 0) {
       throw new NotFoundException("Suosikki not found");
     }
+    yksilo.updated();
+    this.yksilot.save(yksilo);
   }
 
   private static <T> T require(Optional<T> entity) {

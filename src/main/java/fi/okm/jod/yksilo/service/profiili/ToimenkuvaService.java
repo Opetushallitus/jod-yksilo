@@ -83,7 +83,7 @@ public class ToimenkuvaService {
     entity.setLoppuPvm(dto.loppuPvm());
     var toimenkuva = toimenkuvat.save(entity);
     if (dto.osaamiset() != null) {
-      osaamiset.add(toimenkuva, osaamiset.getOsaamiset(dto.osaamiset()));
+      osaamiset.addLahteenOsaamiset(toimenkuva, osaamiset.getOsaamiset(dto.osaamiset()));
     }
     return toimenkuva;
   }
@@ -95,7 +95,7 @@ public class ToimenkuvaService {
     entity.setLoppuPvm(dto.loppuPvm());
     toimenkuvat.save(entity);
     if (dto.osaamiset() != null) {
-      osaamiset.update(entity, osaamiset.getOsaamiset(dto.osaamiset()));
+      osaamiset.updateLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
 

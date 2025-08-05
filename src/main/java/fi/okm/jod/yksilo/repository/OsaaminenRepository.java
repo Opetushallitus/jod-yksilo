@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.SequencedMap;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,20 +37,6 @@ public interface OsaaminenRepository extends Repository<Osaaminen, Long> {
   Page<Osaaminen> findAll(Pageable page);
 
   Set<Osaaminen> findByUriIn(Collection<URI> uri);
-
-  @Transactional(readOnly = true)
-  default SequencedMap<URI, OsaaminenDto> loadAll() {
-    final var map =
-        findAll(Sort.by("id"))
-            .map(it -> new OsaaminenDto(it.getUri(), it.getNimi(), it.getKuvaus()))
-            .collect(
-                Collectors.toMap(
-                    OsaaminenDto::uri,
-                    Function.identity(),
-                    (existing, replacement) -> existing,
-                    LinkedHashMap::new));
-    return Collections.unmodifiableSequencedMap(map);
-  }
 
   @Query("SELECT v.versio FROM OsaaminenVersio v WHERE v.id = 1")
   long currentVersion();

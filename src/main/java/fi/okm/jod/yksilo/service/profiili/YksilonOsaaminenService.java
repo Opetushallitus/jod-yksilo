@@ -19,6 +19,7 @@ import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.OsaamisenLahdeRepository;
+import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
@@ -42,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class YksilonOsaaminenService {
 
   private final YksilonOsaaminenRepository repository;
+  private final YksiloRepository yksiloRepository;
   private final OsaaminenRepository osaamisetRepository;
   private final List<OsaamisenLahdeRepository<?>> lahteet;
 
@@ -72,9 +74,12 @@ public class YksilonOsaaminenService {
   }
 
   public void delete(JodUser user, Set<UUID> ids) {
-    if (repository.deleteByYksiloIdAndIdIn(user.getId(), ids) != ids.size()) {
+    final var yksilo = yksiloRepository.getReferenceById(user.getId());
+    if (repository.deleteByYksiloIdAndIdIn(yksilo.getId(), ids) != ids.size()) {
       throw new NotFoundException("Not found");
     }
+    yksilo.updated();
+    this.yksiloRepository.save(yksilo);
   }
 
   Set<Osaaminen> getOsaamiset(Set<URI> ids) {
@@ -85,12 +90,12 @@ public class YksilonOsaaminenService {
     return osaamiset;
   }
 
-  void add(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
-    update(lahde, osaamiset, false);
+  void addLahteenOsaamiset(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
+    updateLahteenOsaamiset(lahde, osaamiset, false);
   }
 
-  void update(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
-    update(lahde, osaamiset, true);
+  void updateLahteenOsaamiset(OsaamisenLahde lahde, Set<Osaaminen> osaamiset) {
+    updateLahteenOsaamiset(lahde, osaamiset, true);
   }
 
   void deleteAll(Set<YksilonOsaaminen> osaamiset) {
@@ -101,7 +106,8 @@ public class YksilonOsaaminenService {
    * Update osaamiset for a given OsaamisenLahde. Filters duplicates and optinally removes Osaaminen
    * not present in the updated set.
    */
-  private void update(OsaamisenLahde lahde, Set<Osaaminen> updated, boolean remove) {
+  private void updateLahteenOsaamiset(
+      OsaamisenLahde lahde, Set<Osaaminen> updated, boolean removeOldOsaamiset) {
     var updatedOsaaminen = new HashSet<>(updated);
     var deleted = new ArrayList<YksilonOsaaminen>();
 
@@ -110,7 +116,7 @@ public class YksilonOsaaminenService {
       if (updatedOsaaminen.contains(o.getOsaaminen())) {
         // filter out duplicates
         updatedOsaaminen.remove(o.getOsaaminen());
-      } else if (remove) {
+      } else if (removeOldOsaamiset) {
         i.remove();
         deleted.add(o);
       }
@@ -122,5 +128,7 @@ public class YksilonOsaaminenService {
         .addAll(
             repository.saveAll(
                 updatedOsaaminen.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
+    lahde.getYksilo().updated();
+    this.yksiloRepository.save(lahde.getYksilo());
   }
 }

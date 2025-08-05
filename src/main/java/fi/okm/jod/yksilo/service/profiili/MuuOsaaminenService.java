@@ -44,7 +44,7 @@ public class MuuOsaaminenService {
   }
 
   public void update(JodUser user, Set<URI> ids) {
-    osaaminenService.update(
+    osaaminenService.updateLahteenOsaamiset(
         getMuuOsaaminen(yksilot.getReferenceById(user.getId())),
         osaaminenService.getOsaamiset(ids));
   }
@@ -60,7 +60,7 @@ public class MuuOsaaminenService {
   }
 
   void add(Yksilo yksilo, Set<Osaaminen> osaamiset) {
-    osaaminenService.add(getMuuOsaaminen(yksilo), osaamiset);
+    osaaminenService.addLahteenOsaamiset(getMuuOsaaminen(yksilo), osaamiset);
   }
 
   private MuuOsaaminen getMuuOsaaminen(Yksilo yksilo) {

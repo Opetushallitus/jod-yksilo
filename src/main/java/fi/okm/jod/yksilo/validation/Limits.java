@@ -18,6 +18,10 @@ public final class Limits {
   public static final int KOULUTUSKOKONAISUUS = 1_000;
   public static final int SUUNNITELMA_PER_PAAMAARA = 1_000;
   public static final int VAIHE_PER_SUUNNITELMA = 1_000;
+  public static final int SIVUN_MAKSIMI_KOKO = 1000;
+
+  /** The maximum size to include in an in query, basically the maximum for @BatchSize-annotation */
+  public static final int MAX_IN_SIZE = 10000;
 
   private Limits() {}
 }
