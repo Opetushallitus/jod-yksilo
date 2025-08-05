@@ -51,6 +51,8 @@ public class KiinnostusService {
     }
     yksilo.setOsaamisKiinnostukset(osaamisetEntities);
     yksilo.setAmmattiKiinnostukset(ammatitEntities);
+    yksilo.updated();
+    this.yksilot.save(yksilo);
   }
 
   public LocalizedString getVapaateksti(JodUser user) {

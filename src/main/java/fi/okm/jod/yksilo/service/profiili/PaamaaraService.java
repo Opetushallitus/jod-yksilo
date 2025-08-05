@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
 import fi.okm.jod.yksilo.entity.Paamaara;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.PaamaaraRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
@@ -68,13 +69,18 @@ public class PaamaaraService {
     if (paamaarat.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
       throw new ServiceValidationException("Too many Paamaara");
     }
+
+    yksilo.updated();
     return paamaarat.save(paamaara).getId();
   }
 
   public void delete(JodUser user, UUID id) {
+    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
     if (paamaarat.deleteByYksiloAndId(yksilot.getReferenceById(user.getId()), id) == 0) {
       throw new NotFoundException("Paamaara not found");
     }
+    yksilo.updated();
+    this.yksilot.save(yksilo);
   }
 
   public void update(JodUser user, PaamaaraDto dto) {

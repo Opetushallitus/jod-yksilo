@@ -10,8 +10,11 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -28,4 +31,8 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @Query(value = "SELECT k.uri FROM Yksilo y JOIN y.ammattiKiinnostukset k WHERE y = :yksilo")
   Set<String> findAmmattiKiinnostukset(Yksilo yksilo);
+
+  @Query(
+      value = "SELECT y FROM Yksilo y WHERE y.muokattu > :muokattuJalkeen ORDER BY y.muokattu ASC")
+  Page<Yksilo> findAllModifiedAfter(Instant muokattuJalkeen, Pageable pageable);
 }

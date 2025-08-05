@@ -5,6 +5,7 @@ mkdir -p ./tmp/data
 mkdir -p ./.run
 ESCO_VERSION="1.2.0"
 
+
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
@@ -33,6 +34,9 @@ host=${host%-\>*}
 
 echo "Importing data"
 (
+
+  SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+  SQLFILE="$SCRIPT_DIR/devdata/yksilot.sql"
   cd ./tmp/data
 
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
@@ -70,12 +74,13 @@ echo "Importing data"
       -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "\COPY ${mahdollisuus}_data.import(data) FROM STDIN (FORMAT text)"
   done
-
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
     -c "CALL esco_data.import_osaaminen();" \
     -c "CALL esco_data.import_ammatti();" \
     -c "CALL tyomahdollisuus_data.import();" \
     -c "CALL koulutusmahdollisuus_data.import();"
+
+  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo < "$SQLFILE"
 )
 
 if [[ $STARTED == true ]]; then

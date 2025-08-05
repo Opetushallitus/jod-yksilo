@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.entity;
 
 import static fi.okm.jod.yksilo.entity.Translation.merge;
+import static fi.okm.jod.yksilo.validation.Limits.MAX_IN_SIZE;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -24,6 +25,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -38,8 +40,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-public class Yksilo {
-
+public class Yksilo extends JodEntity {
   @Id
   @Column(updatable = false, nullable = false)
   private UUID id;
@@ -47,7 +48,7 @@ public class Yksilo {
   @Getter(AccessLevel.NONE)
   @ElementCollection
   @MapKeyEnumerated(EnumType.STRING)
-  @BatchSize(size = 100)
+  @BatchSize(size = MAX_IN_SIZE)
   private Map<Kieli, Yksilo.Kaannos> kaannos = new EnumMap<>(Kieli.class);
 
   @Setter private Boolean tervetuloapolku;
@@ -59,7 +60,7 @@ public class Yksilo {
   @Setter private Boolean lupaKayttaaTekoalynKoulutukseen;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  @BatchSize(size = 100)
+  @BatchSize(size = MAX_IN_SIZE)
   private Set<YksilonOsaaminen> osaamiset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -71,14 +72,20 @@ public class Yksilo {
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<Toiminto> toiminnot;
 
-  @ManyToMany private Set<Osaaminen> osaamisKiinnostukset;
+  @ManyToMany
+  @BatchSize(size = MAX_IN_SIZE)
+  private Set<Osaaminen> osaamisKiinnostukset;
 
-  @ManyToMany private Set<Ammatti> ammattiKiinnostukset;
+  @ManyToMany
+  @BatchSize(size = MAX_IN_SIZE)
+  private Set<Ammatti> ammattiKiinnostukset;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @BatchSize(size = MAX_IN_SIZE)
   private Set<YksilonSuosikki> suosikit;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @BatchSize(size = MAX_IN_SIZE)
   private Set<Paamaara> paamaarat;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -103,6 +110,10 @@ public class Yksilo {
 
   protected Yksilo() {
     // For JPA
+  }
+
+  public void updated() {
+    this.muokattu = Instant.now();
   }
 
   public boolean getTervetuloapolku() {
