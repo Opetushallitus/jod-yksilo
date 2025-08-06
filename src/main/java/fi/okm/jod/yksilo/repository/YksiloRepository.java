@@ -33,6 +33,7 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
   Set<String> findAmmattiKiinnostukset(Yksilo yksilo);
 
   @Query(
-      value = "SELECT y FROM Yksilo y WHERE y.muokattu > :muokattuJalkeen ORDER BY y.muokattu ASC")
+      value =
+          "SELECT y FROM Yksilo y WHERE y.muokattu > :muokattuJalkeen ORDER BY y.muokattu ASC, y.id")
   Page<Yksilo> findAllModifiedAfter(Instant muokattuJalkeen, Pageable pageable);
 }

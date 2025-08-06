@@ -29,7 +29,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-@Sql(value = {"/data/koulutusmahdollisuudet.sql", "/data/tyomahdollisuudet.sql"})
+@Sql(value = {"/scripts/external-api/koulutusmahdollisuudet.sql", "/data/tyomahdollisuudet.sql"})
 @Import(MahdollisuudetService.class)
 class MahdollisuudetServiceTest extends AbstractServiceTest {
 
