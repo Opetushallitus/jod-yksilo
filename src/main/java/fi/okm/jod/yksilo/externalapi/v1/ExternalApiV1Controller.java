@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/external-api/v1")
 @RequiredArgsConstructor
 public class ExternalApiV1Controller {
+  public static final String EXT_API_V1_PATH = "/external-api/v1";
 
   private final ExternalApiV1Service service;
 
