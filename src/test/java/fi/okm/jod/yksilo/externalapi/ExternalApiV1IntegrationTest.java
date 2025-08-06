@@ -16,6 +16,8 @@ import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -33,11 +35,12 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
   @Autowired private TestRestTemplate testRestTemplate;
 
   @Sql(
-      scripts = {"/data/ext_api_setup.sql"},
+      scripts = {"/data/add_10_yksiloa.sql"},
       executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(
       scripts = {"/data/cleanup.sql"},
       executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  @Execution(ExecutionMode.SAME_THREAD)
   @Test
   void getProfiilit200() {
     String profiilitUrlWithParams =
@@ -55,12 +58,29 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
     assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
     final SivuDto<ExtProfiiliDto> profiiliSivu = response.getBody();
     final ExtProfiiliDto testProfile = profiiliSivu.sisalto().getFirst();
-    // check that collections contain members that ext_api_setup.sql added
+    // check that collections contain members that add_10_yksiloa.sql added
     assertEquals(10, profiiliSivu.maara());
     assertEquals(5, profiiliSivu.sisalto().size());
     assertEquals(4, testProfile.osaamisKiinnostukset().size());
     assertEquals(5, testProfile.ammattiKiinnostukset().size());
     assertEquals(13, testProfile.suosikit().size());
     assertEquals(8, testProfile.paamaarat().size());
+  }
+
+  @Test
+  void getProfiilit400TooBigPageSize() {
+    String profiilitUrlWithParams =
+        UriComponentsBuilder.fromPath(EXT_API_V1_PATH + "/profiilit")
+            .queryParam("sivu", "0")
+            .queryParam("koko", "5000")
+            .encode()
+            .toUriString();
+    final ResponseEntity<SivuDto<ExtProfiiliDto>> response =
+        this.testRestTemplate.exchange(
+            profiilitUrlWithParams,
+            HttpMethod.GET,
+            new HttpEntity<>(new HttpHeaders()),
+            new ParameterizedTypeReference<>() {});
+    assertEquals(HttpStatusCode.valueOf(400), response.getStatusCode());
   }
 }

@@ -9,13 +9,18 @@
 
 package fi.okm.jod.yksilo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.testutil.TestUtil;
+import java.io.UnsupportedEncodingException;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -24,6 +29,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @Execution(ExecutionMode.CONCURRENT)
 @ResourceLock("SLOW")
 public abstract class IntegrationTest {
+
+  @Autowired protected ObjectMapper objectMapper;
+
   @ServiceConnection
   private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
       TestUtil.createPostgresSQLContainer();
@@ -36,5 +44,11 @@ public abstract class IntegrationTest {
     // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
     POSTGRES_CONTAINER.start();
     REDIS_CONTAINER.start();
+  }
+
+  protected <T> T getResponse(MvcResult result, Class<T> clazz)
+      throws UnsupportedEncodingException, JsonProcessingException {
+    final String json = result.getResponse().getContentAsString();
+    return this.objectMapper.readValue(json, clazz);
   }
 }
