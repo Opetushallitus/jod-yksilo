@@ -18,20 +18,15 @@ import java.net.URI;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Sql("/data/ammatti.sql")
 @Import({AmmattiService.class})
-@Execution(ExecutionMode.SAME_THREAD)
 class AmmattiServiceTest extends AbstractServiceTest {
   @Autowired private AmmattiRepository repository;
   @Autowired private TestEntityManager entityManager;
@@ -71,7 +66,6 @@ class AmmattiServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void shouldReloadCacheIfVersionChanges() {
 
     var result = service.findAll(0, 10);
