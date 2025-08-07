@@ -35,7 +35,7 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
   @Autowired private TestRestTemplate testRestTemplate;
 
   @Sql(
-      scripts = {"/data/add_10_yksiloa.sql"},
+      scripts = {"/data/cleanup.sql", "/data/add_10_yksiloa.sql"},
       executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(
       scripts = {"/data/cleanup.sql"},
