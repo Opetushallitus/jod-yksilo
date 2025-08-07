@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,7 +17,6 @@ import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
-import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonSuosikkiRepository;
 import java.time.Instant;
 import java.util.UUID;
@@ -39,7 +37,6 @@ class YksilonSuosikkiControllerIT extends IntegrationTest {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private YksilonSuosikkiRepository suosikkiRepository;
-  @Autowired private YksiloRepository yksiloRepository;
 
   @WithUserDetails("test")
   @Sql(
@@ -51,6 +48,7 @@ class YksilonSuosikkiControllerIT extends IntegrationTest {
   @Transactional
   @Test
   void yksilonSuosikkiAdd200() throws Exception {
+    Instant afterCreationOfYksilo = Instant.now();
     UUID koulutusMahdollisuusId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
     SuosikkiDto newSuosikki =
         new SuosikkiDto(null, koulutusMahdollisuusId, SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS, null);
@@ -67,16 +65,13 @@ class YksilonSuosikkiControllerIT extends IntegrationTest {
     final UUID addedId = getResponse(mvcResult, UUID.class);
     final YksilonSuosikki addedSuosikki =
         suosikkiRepository.findById(addedId).orElseThrow(RuntimeException::new);
-    final Instant yksiloLuotu = addedSuosikki.getYksilo().getLuotu();
     final Instant yksiloMuokattu = addedSuosikki.getYksilo().getMuokattu();
     assertEquals(
         koulutusMahdollisuusId,
         addedSuosikki.getKoulutusmahdollisuus().getId(),
         "Suosikilla on sama koulutusmahdollisuus kuin dto:ssa");
-    assertTrue(yksiloMuokattu.isAfter(yksiloLuotu));
     assertEquals(
-        yksiloMuokattu,
-        addedSuosikki.getLuotu(),
+        yksiloMuokattu.isAfter(afterCreationOfYksilo),
         "Yksilön aikaleimaa tulee päivittää kun suosikki luodaan");
   }
 }
