@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.controller.profiili;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -70,7 +71,7 @@ class YksilonSuosikkiControllerIT extends IntegrationTest {
         koulutusMahdollisuusId,
         addedSuosikki.getKoulutusmahdollisuus().getId(),
         "Suosikilla on sama koulutusmahdollisuus kuin dto:ssa");
-    assertEquals(
+    assertTrue(
         yksiloMuokattu.isAfter(afterCreationOfYksilo),
         "Yksilön aikaleimaa tulee päivittää kun suosikki luodaan");
   }
