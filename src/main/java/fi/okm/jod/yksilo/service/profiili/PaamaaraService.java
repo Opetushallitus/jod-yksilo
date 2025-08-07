@@ -84,11 +84,14 @@ public class PaamaaraService {
   }
 
   public void update(JodUser user, PaamaaraDto dto) {
+    final Yksilo yksilo = yksilot.getReferenceById(user.getId());
     var paamaara =
         paamaarat
-            .findByYksiloAndId(yksilot.getReferenceById(user.getId()), dto.id())
+            .findByYksiloAndId(yksilo, dto.id())
             .orElseThrow(() -> new NotFoundException("Paamaara not found"));
     paamaara.setTyyppi(dto.tyyppi());
     paamaara.setTavoite(dto.tavoite());
+    yksilo.updated();
+    this.paamaarat.save(paamaara);
   }
 }

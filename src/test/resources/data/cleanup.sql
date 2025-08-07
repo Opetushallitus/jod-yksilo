@@ -1,5 +1,3 @@
--- Cleanup always whole database between sets.
--- There should be no data that is common between all tests
 DELETE
 FROM osaaminen
 WHERE uri NOT IN
