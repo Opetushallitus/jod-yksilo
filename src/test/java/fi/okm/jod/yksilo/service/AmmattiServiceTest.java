@@ -22,31 +22,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 @Sql("/data/ammatti.sql")
 @Import({AmmattiService.class})
 class AmmattiServiceTest extends AbstractServiceTest {
   @Autowired private AmmattiRepository repository;
   @Autowired private TestEntityManager entityManager;
-  @Autowired private PlatformTransactionManager transactionManager;
 
   private AmmattiService service;
   private TestTicker ticker;
-  private TransactionTemplate transactionTemplate;
 
   @BeforeEach
   @Override
   public void setup() {
     ticker = new TestTicker();
     service = new AmmattiService(repository, ticker, Runnable::run);
-    transactionTemplate = new TransactionTemplate(transactionManager);
-  }
-
-  @Override
-  public void simulateCommit() {
-    // NOP
   }
 
   @Test
@@ -72,22 +62,19 @@ class AmmattiServiceTest extends AbstractServiceTest {
     assertEquals(1, result.version());
     var maara = result.payload().maara();
 
-    transactionTemplate.execute(
-        status -> {
-          entityManager
-              .getEntityManager()
-              .createNativeQuery("UPDATE ammatti_versio SET versio = versio + 1")
-              .executeUpdate();
+    entityManager
+        .getEntityManager()
+        .createNativeQuery("UPDATE ammatti_versio SET versio = versio + 1")
+        .executeUpdate();
 
-          entityManager
-              .getEntityManager()
-              .createNativeQuery(
-                  "INSERT INTO ammatti (id, uri, koodi) VALUES (8, 'urn:ammatti8', 'koodi8')")
-              .executeUpdate();
+    entityManager
+        .getEntityManager()
+        .createNativeQuery(
+            "INSERT INTO ammatti (id, uri, koodi) VALUES (8, 'urn:ammatti8', 'koodi8')")
+        .executeUpdate();
 
-          entityManager.flush();
-          return null;
-        });
+    entityManager.flush();
+
     ticker.set(AmmattiService.CACHE_DURATION.toNanos() + 1);
     result = service.findAll(0, 10);
     assertEquals(2, result.version());
