@@ -33,9 +33,6 @@ class KiinnostusServiceTest extends AbstractServiceTest {
   @Sql(
       scripts = {"/data/ammatti.sql"},
       executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(
-      scripts = {"/data/cleanup.sql"},
-      executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Test
   void addKiinnostukset200() {
     Instant afterCreationBeforeUpdate = Instant.now();
