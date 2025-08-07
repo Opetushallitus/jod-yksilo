@@ -21,9 +21,11 @@ import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
+import fi.okm.jod.yksilo.repository.YksilonSuosikkiRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.hibernate.AssertionFailure;
@@ -40,6 +42,7 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
 
   @Autowired YksilonSuosikkiService service;
   @Autowired TyomahdollisuusRepository tyomahdollisuusRepository;
+  @Autowired YksilonSuosikkiRepository suosikkiRepository;
   @Autowired KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
 
   private List<UUID> tyomahdollisuusIds;
@@ -56,18 +59,23 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   @Test
   @WithMockUser
   void testAdd() throws AssertionFailure {
-
+    Instant afterCreationOfYksilo = Instant.now();
+    System.out.println("Moi");
     final UUID kohdeId = tyomahdollisuusIds.getFirst();
     var newID = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var suosikit = service.findAll(user, null);
-
+    var yksilo = this.yksiloRepository.getReferenceById(this.user.getId());
+    var suosikit = suosikkiRepository.findByYksilo(yksilo);
     assertEquals(1L, suosikit.size());
     var suosikki = suosikit.getFirst();
-    assertNotNull(suosikki.id());
-    assertEquals(newID, suosikki.id());
-    assertNotNull(suosikki.luotu());
-    assertEquals(kohdeId, suosikki.kohdeId());
-    assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.tyyppi());
+    assertNotNull(suosikki.getId());
+    assertEquals(newID, suosikki.getId());
+    assertNotNull(suosikki.getLuotu());
+    assertEquals(kohdeId, suosikki.getTyomahdollisuus().getId());
+    assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.getTyyppi());
+    final Instant yksiloMuokattu = yksilo.getMuokattu();
+    assertTrue(
+        yksiloMuokattu.isAfter(afterCreationOfYksilo),
+        "Yksilön aikaleimaa tulee päivittää kun suosikki luodaan");
   }
 
   @Test
