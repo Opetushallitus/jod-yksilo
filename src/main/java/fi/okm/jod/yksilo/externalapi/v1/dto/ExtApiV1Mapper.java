@@ -17,12 +17,7 @@ import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /** */
@@ -50,15 +45,7 @@ public class ExtApiV1Mapper {
         koulutusmahdollisuus.isAktiivinen());
   }
 
-  public static byte[] uuidToBytes(UUID uuid) {
-    ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-    buffer.putLong(uuid.getMostSignificantBits());
-    buffer.putLong(uuid.getLeastSignificantBits());
-    return buffer.array();
-  }
-
   public static ExtProfiiliDto toProfiiliDto(Yksilo yksilo) {
-    String id = hashedId(yksilo.getId());
     Set<ExtYksilonOsaaminenDto> yksilonOsaamiset =
         yksilo.getOsaamiset().stream()
             .map(ExtApiV1Mapper::toYksilonOsaaminenDto)
@@ -80,18 +67,12 @@ public class ExtApiV1Mapper {
             .map(ExtApiV1Mapper::toPaamaaraDto)
             .collect(Collectors.toSet());
     return new ExtProfiiliDto(
-        id, yksilonOsaamiset, osaamisKiinnostukset, ammattiKiinnostukset, suosikit, paamaarat);
-  }
-
-  private static String hashedId(UUID id) {
-    byte[] idBytes = uuidToBytes(id);
-    try {
-      final byte[] digest = MessageDigest.getInstance("SHA-256").digest(idBytes);
-      return HexFormat.of().formatHex(digest);
-    } catch (NoSuchAlgorithmException e) {
-      // This should not happen since we know SHA-256 algorithm exists
-      throw new RuntimeException(e);
-    }
+        yksilo.getId(),
+        yksilonOsaamiset,
+        osaamisKiinnostukset,
+        ammattiKiinnostukset,
+        suosikit,
+        paamaarat);
   }
 
   private static ExtPaamaaraDto toPaamaaraDto(Paamaara paamaara) {

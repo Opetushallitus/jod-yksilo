@@ -10,9 +10,10 @@
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
 import java.util.Set;
+import java.util.UUID;
 
 public record ExtProfiiliDto(
-    String id,
+    UUID id,
     Set<ExtYksilonOsaaminenDto> yksilonOsaamiset,
     Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset,
     Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset,
