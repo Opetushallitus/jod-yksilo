@@ -65,6 +65,7 @@ public class TyomahdollisuusService {
             entity.getTiivistelma(),
             entity.getKuvaus(),
             entity.getAmmattiryhma(),
+            entity.getAineisto(),
             entity.isAktiivinen());
   }
 
