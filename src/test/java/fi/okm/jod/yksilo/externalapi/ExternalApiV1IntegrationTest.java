@@ -13,12 +13,14 @@ import static fi.okm.jod.yksilo.externalapi.v1.ExternalApiV1Controller.EXT_API_V
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fi.okm.jod.yksilo.IntegrationTest;
+import fi.okm.jod.yksilo.config.ApiKeyFilter;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -29,10 +31,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Execution(ExecutionMode.SAME_THREAD)
 /** Integration tests for external API */
 class ExternalApiV1IntegrationTest extends IntegrationTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
+
+  @Value("${apiKey}")
+  private String apiKey;
 
   @Sql(
       scripts = {"/data/cleanup.sql", "/data/add_10_yksiloa.sql"},
@@ -49,11 +55,12 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
             .queryParam("koko", "5")
             .encode()
             .toUriString();
+
     final ResponseEntity<SivuDto<ExtProfiiliDto>> response =
         this.testRestTemplate.exchange(
             profiilitUrlWithParams,
             HttpMethod.GET,
-            new HttpEntity<>(new HttpHeaders()),
+            new HttpEntity<>(headersWithAuthentication()),
             new ParameterizedTypeReference<>() {});
     assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
     final SivuDto<ExtProfiiliDto> profiiliSivu = response.getBody();
@@ -79,8 +86,38 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
         this.testRestTemplate.exchange(
             profiilitUrlWithParams,
             HttpMethod.GET,
-            new HttpEntity<>(new HttpHeaders()),
+            new HttpEntity<>(headersWithAuthentication()),
             new ParameterizedTypeReference<>() {});
     assertEquals(HttpStatusCode.valueOf(400), response.getStatusCode());
+  }
+
+  @Sql(
+      scripts = {"/data/cleanup.sql", "/data/add_10_yksiloa.sql"},
+      executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(
+      scripts = {"/data/cleanup.sql"},
+      executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  @Test
+  void unauthorized401IfNoApiKey() {
+    String profiilitUrlWithParams =
+        UriComponentsBuilder.fromPath(EXT_API_V1_PATH + "/profiilit")
+            .queryParam("sivu", "0")
+            .queryParam("koko", "5")
+            .encode()
+            .toUriString();
+
+    final ResponseEntity<String> response =
+        this.testRestTemplate.exchange(
+            profiilitUrlWithParams,
+            HttpMethod.GET,
+            new HttpEntity<>(new HttpHeaders()),
+            String.class);
+    assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+  }
+
+  private HttpHeaders headersWithAuthentication() {
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add(ApiKeyFilter.API_KEY_HEADER_NAME, this.apiKey);
+    return httpHeaders;
   }
 }
