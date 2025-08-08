@@ -22,10 +22,11 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 public class JodAuthenticationProperties {
 
   private final String provider;
-  private final Map<URI, PersonIdentifier> supportedMethods;
+  private final Map<URI, PersonIdentifierType> supportedMethods;
 
   @ConstructorBinding
-  JodAuthenticationProperties(String provider, Map<PersonIdentifier, List<URI>> supportedMethods) {
+  JodAuthenticationProperties(
+      String provider, Map<PersonIdentifierType, List<URI>> supportedMethods) {
     this.provider = provider;
     // Reversing the map is intentional: PersonIdentifier -> URI is easier to override
     // using SSM parameters, but URI -> PersonIdentifier is more convenient to use

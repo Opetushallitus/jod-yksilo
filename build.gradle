@@ -152,7 +152,7 @@ tasks.named('test', Test) {
               "-javaagent:${configurations.mockitoAgent.asPath}"]
   systemProperty('file.encoding', 'UTF-8')
   testLogging {
-    events("passed", "skipped", "failed")
+    events("skipped", "failed")
   }
   maxParallelForks = 1
 }

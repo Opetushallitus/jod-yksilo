@@ -12,10 +12,14 @@ package fi.okm.jod.yksilo.config.suomifi;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
+import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import jakarta.servlet.http.HttpSession;
 import java.net.URI;
-import java.util.Optional;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -39,10 +43,12 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   private final YksiloRepository yksilot;
   private final Converter<ResponseToken, Saml2Authentication> converter;
   private final JodAuthenticationProperties authenticationProperties;
+  private final HttpSession session;
 
   public ResponseTokenConverter(
       YksiloRepository yksilot,
       PlatformTransactionManager transactionManager,
+      HttpSession session,
       JodAuthenticationProperties authenticationProperties) {
     this.converter = OpenSaml4AuthenticationProvider.createDefaultResponseAuthenticationConverter();
     this.yksilot = yksilot;
@@ -52,6 +58,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     template.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
     this.transactionTemplate = template;
     this.authenticationProperties = authenticationProperties;
+    this.session = session;
   }
 
   @Override
@@ -80,10 +87,16 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
         throw new BadCredentialsException("Unsupported authentication method: " + level);
       }
 
-      var userId =
-          resolveUser(
-              getPersonId(principal, pid)
-                  .orElseThrow(() -> new BadCredentialsException("Invalid person identifier")));
+      // the language user has selected in the UI
+      var selectedLanguage =
+          switch (session.getAttribute(SessionLoginAttribute.LANG.getKey())) {
+            case String s when s.equals("fi") -> Kieli.FI;
+            case String s when s.equals("sv") -> Kieli.SV;
+            case String s when s.equals("en") -> Kieli.EN;
+            default -> null;
+          };
+
+      var userId = upsertUser(principal, selectedLanguage, pid);
 
       return new Saml2Authentication(
           new JodSaml2Principal(
@@ -99,18 +112,38 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     throw new BadCredentialsException("Invalid response token");
   }
 
-  private UUID resolveUser(String personId) {
-
+  /* package private for testing */
+  UUID upsertUser(
+      Saml2AuthenticatedPrincipal principal, Kieli selectedLanguage, PersonIdentifierType pid) {
+    var personId = principal.<String>getFirstAttribute(pid.getAttribute().getUri());
+    if (personId == null) {
+      throw new BadCredentialsException("Invalid person identifier");
+    }
     return transactionTemplate.execute(
         status -> {
-          var id = yksilot.findIdByHenkiloId(personId);
-          return yksilot.findById(id).orElseGet(() -> yksilot.save(new Yksilo(id))).getId();
-        });
-  }
+          var id = yksilot.findIdByHenkiloId(pid.asQualifiedIdentifier(personId));
+          var yksilo = yksilot.findById(id).orElseGet(() -> new Yksilo(id));
 
-  private static Optional<String> getPersonId(
-      Saml2AuthenticatedPrincipal principal, PersonIdentifier identifier) {
-    return Optional.ofNullable(principal.getFirstAttribute(identifier.getAttribute().getUri()))
-        .map(value -> identifier.name() + ":" + value);
+          yksilo.setValittuKieli(selectedLanguage);
+
+          switch (pid) {
+            case FIN -> {
+              var personIdentifier = FinnishPersonIdentifier.of(personId);
+              yksilo.setSyntymavuosi(personIdentifier.getBirthYear());
+              yksilo.setSukupuoli(personIdentifier.getGender());
+              yksilo.setKotikunta(
+                  principal.getFirstAttribute(Attribute.KOTIKUNTA_KUNTANUMERO.getUri()));
+            }
+            case EIDAS -> {
+              var birthDate = principal.<String>getFirstAttribute(Attribute.DATE_OF_BIRTH.getUri());
+              yksilo.setSyntymavuosi(
+                  birthDate == null ? null : LocalDate.parse(birthDate).getYear());
+            }
+            default ->
+                throw new BadCredentialsException("Unsupported person identifier type: " + pid);
+          }
+          yksilot.save(yksilo);
+          return id;
+        });
   }
 }

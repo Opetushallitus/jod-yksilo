@@ -5,8 +5,8 @@ logging:
   exception-conversion-word:
 
 spring:
-  #main:
-  #  lazy-initialization: true
+  main:
+    lazy-initialization: true
   datasource:
     hikari:
       maximum-pool-size: 3

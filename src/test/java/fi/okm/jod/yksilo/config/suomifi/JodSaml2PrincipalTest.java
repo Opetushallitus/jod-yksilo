@@ -27,9 +27,9 @@ class JodSaml2PrincipalTest {
         finAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.FIN.getAttribute().getUri(),
+                    PersonIdentifierType.FIN.getAttribute().getUri(),
                     List.of(finAttributeValue),
-                    PersonIdentifier.EIDAS.getAttribute().getUri(),
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
                     List.of(eidasAttributeValue)))
             .getPersonId());
 
@@ -37,23 +37,25 @@ class JodSaml2PrincipalTest {
         finAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.EIDAS.getAttribute().getUri(),
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
                     List.of(eidasAttributeValue),
-                    PersonIdentifier.FIN.getAttribute().getUri(),
+                    PersonIdentifierType.FIN.getAttribute().getUri(),
                     List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
         finAttributeValue,
         createJodSaml2User(
-                Map.of(PersonIdentifier.FIN.getAttribute().getUri(), List.of(finAttributeValue)))
+                Map.of(
+                    PersonIdentifierType.FIN.getAttribute().getUri(), List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
         eidasAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.EIDAS.getAttribute().getUri(), List.of(eidasAttributeValue)))
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
+                    List.of(eidasAttributeValue)))
             .getPersonId());
   }
 
