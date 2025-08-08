@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,6 +35,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
@@ -46,6 +48,18 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
+
+  @Value("${apiKey}")
+  private String apiKey;
+
+  @Bean
+  @Order(2)
+  public SecurityFilterChain externalApiFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher("/external-api/**")
+        .addFilterBefore(new ApiKeyFilter(this.apiKey), UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
+    return http.build();
+  }
 
   @Bean
   @SuppressWarnings({"java:S4502", "java:S5411"})
