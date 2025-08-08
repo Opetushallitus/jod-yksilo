@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
@@ -81,6 +82,7 @@ class TyomahdollisuusControllerTest {
                 tiivistelma,
                 kuvaus,
                 null,
+                TyomahdollisuusAineisto.TMT,
                 true));
     when(service.findByIds(mockIds)).thenReturn(mockTyomahdolliuudet);
 
