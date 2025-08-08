@@ -10,10 +10,10 @@
 package fi.okm.jod.yksilo.controller.koski;
 
 import com.codahale.metrics.Clock;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
+import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
@@ -36,19 +36,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @Slf4j
 @RestController
 @RequestMapping("/api/integraatiot/koski")
 @Tag(name = "integraatiot-koski")
 public class IntegraatioKoskiController {
 
-  private final KoskiOAuth2Service koskiOAuth2Service;
+  private final KoskiOauth2Service koskiOauth2Service;
   private final KoskiService koskiService;
 
   public IntegraatioKoskiController(
-      KoskiOAuth2Service koskiOAuth2Service, KoskiService koskiService) {
-    this.koskiOAuth2Service = koskiOAuth2Service;
+      KoskiOauth2Service koskiOauth2Service, KoskiService koskiService) {
+    this.koskiOauth2Service = koskiOauth2Service;
     this.koskiService = koskiService;
   }
 
@@ -59,7 +59,7 @@ public class IntegraatioKoskiController {
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response) {
-    var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
+    var authorizedClient = koskiOauth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
       throw new PermissionRequiredException(jodUser.getId());
     }
@@ -67,20 +67,20 @@ public class IntegraatioKoskiController {
     try {
       var clock = Clock.defaultClock();
       long startTime = clock.getTime();
-      var dataInJson = koskiOAuth2Service.fetchDataFromResourceServer(authorizedClient);
+      var dataInJson = koskiOauth2Service.fetchDataFromResourceServer(authorizedClient);
       long duration = clock.getTime() - startTime;
       if (duration > 1_000) {
         log.warn(
             "Fetching data from Koski's opintopolku took {} ms, which longer than expected (1s).",
             duration);
       }
-      koskiOAuth2Service.checkPersonIdMatches(jodUser, dataInJson);
+      koskiOauth2Service.checkPersonIdMatches(jodUser, dataInJson);
 
       var educationHistories = koskiService.getKoulutusData(dataInJson);
       return ResponseEntity.ok(educationHistories);
 
     } catch (WrongPersonException e) {
-      koskiOAuth2Service.unauthorize(authentication, request, response);
+      koskiOauth2Service.unauthorize(authentication, request, response);
       throw e;
     }
   }

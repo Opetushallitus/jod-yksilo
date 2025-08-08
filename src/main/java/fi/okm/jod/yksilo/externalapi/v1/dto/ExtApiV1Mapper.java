@@ -20,7 +20,6 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** */
 public class ExtApiV1Mapper {
   private ExtApiV1Mapper() {}
 

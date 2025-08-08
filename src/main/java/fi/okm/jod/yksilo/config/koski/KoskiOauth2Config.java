@@ -19,13 +19,13 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @ConditionalOnProperty(name = "jod.koski.enabled", havingValue = "true")
 @Configuration(proxyBeanMethods = false)
-public class KoskiOAuth2Config {
+public class KoskiOauth2Config {
 
   private static final String REGISTRATION_ID = "koski";
 
   private final String resourceServer;
 
-  public KoskiOAuth2Config(@Value("${jod.koski.resource-server.url}") String resourceServer) {
+  public KoskiOauth2Config(@Value("${jod.koski.resource-server.url}") String resourceServer) {
     this.resourceServer = resourceServer;
   }
 

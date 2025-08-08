@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.service.koski;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @Service
 @Slf4j
 public class KoskiService {

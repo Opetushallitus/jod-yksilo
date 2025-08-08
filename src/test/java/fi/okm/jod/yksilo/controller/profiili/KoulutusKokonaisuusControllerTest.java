@@ -36,7 +36,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
-class KoulutusKokonaisuusControllerTestIT extends IntegrationTest {
+class KoulutusKokonaisuusControllerTest extends IntegrationTest {
 
   @MockitoBean private OsaamisetTunnistusEventHandler eventHandler;
 

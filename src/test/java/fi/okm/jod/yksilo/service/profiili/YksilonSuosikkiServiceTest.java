@@ -59,31 +59,32 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   @Test
   @WithMockUser
   void testAdd() throws AssertionFailure {
-    Instant afterCreationOfYksilo = Instant.now();
-    System.out.println("Moi");
-    final UUID kohdeId = tyomahdollisuusIds.getFirst();
-    var newID = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var afterCreationOfYksilo = Instant.now();
+    var kohdeId = tyomahdollisuusIds.getFirst();
+
+    var newId = service.add(user, kohdeId, SuosikkiTyyppi.TYOMAHDOLLISUUS);
     var yksilo = this.yksiloRepository.getReferenceById(this.user.getId());
     var suosikit = suosikkiRepository.findByYksilo(yksilo);
+
     assertEquals(1L, suosikit.size());
     var suosikki = suosikit.getFirst();
     assertNotNull(suosikki.getId());
-    assertEquals(newID, suosikki.getId());
+    assertEquals(newId, suosikki.getId());
     assertNotNull(suosikki.getLuotu());
     assertEquals(kohdeId, suosikki.getTyomahdollisuus().getId());
     assertEquals(SuosikkiTyyppi.TYOMAHDOLLISUUS, suosikki.getTyyppi());
-    final Instant yksiloMuokattu = yksilo.getMuokattu();
+
     assertTrue(
-        yksiloMuokattu.isAfter(afterCreationOfYksilo),
+        yksilo.getMuokattu().isAfter(afterCreationOfYksilo),
         "Yksilön aikaleimaa tulee päivittää kun suosikki luodaan");
   }
 
   @Test
   @WithMockUser()
   void testAddingSameAgain() throws AssertionFailure {
-    var newID1 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    assertEquals(newID1, newID2);
+    var newId1 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    var newId2 = service.add(user, tyomahdollisuusIds.getFirst(), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    assertEquals(newId1, newId2);
     var suosikit = service.findAll(user, null);
     assertEquals(1L, suosikit.size());
   }
@@ -91,19 +92,19 @@ class YksilonSuosikkiServiceTest extends AbstractServiceTest {
   @Test
   @WithMockUser()
   void testDelete() throws AssertionFailure {
-    var newID1 = service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID2 = service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
-    var newID3 =
+    final var newId1 = service.add(user, tyomahdollisuusIds.get(0), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    final var newId2 = service.add(user, tyomahdollisuusIds.get(1), SuosikkiTyyppi.TYOMAHDOLLISUUS);
+    final var newId3 =
         service.add(user, koulutusmahdollisuusIds.get(0), SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS);
     var suosikitBeforeDelete = service.findAll(user, null);
     assertEquals(3L, suosikitBeforeDelete.size());
-    service.delete(user, newID2);
+    service.delete(user, newId2);
     var suosikitAfterDelete = service.findAll(user, null);
     assertEquals(2L, suosikitAfterDelete.size());
     var ids = suosikitAfterDelete.stream().map(SuosikkiDto::id).toList();
-    assertTrue(ids.contains(newID1), "result contains new ID 1");
-    assertTrue(ids.contains(newID3), "result contains new ID 2");
-    assertFalse(ids.contains(newID2), "result does not contain removed ID");
+    assertTrue(ids.contains(newId1), "result contains new ID 1");
+    assertTrue(ids.contains(newId3), "result contains new ID 2");
+    assertFalse(ids.contains(newId2), "result does not contain removed ID");
   }
 
   @Test

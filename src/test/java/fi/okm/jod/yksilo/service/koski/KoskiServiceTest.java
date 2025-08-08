@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
-import fi.okm.jod.yksilo.controller.koski.TestKoskiOAuth2Config;
+import fi.okm.jod.yksilo.controller.koski.TestKoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.Koulutus;
@@ -46,8 +46,8 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({
   ErrorInfoFactory.class,
-  KoskiOAuth2Config.class,
-  TestKoskiOAuth2Config.class,
+  KoskiOauth2Config.class,
+  TestKoskiOauth2Config.class,
   KoskiService.class,
   MappingConfig.class,
   ObjectMapper.class,

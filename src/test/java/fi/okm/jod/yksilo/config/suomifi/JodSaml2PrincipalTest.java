@@ -20,40 +20,40 @@ class JodSaml2PrincipalTest {
 
   @Test
   void testGetPersonId() {
-    var FIN_ATTRIBUTE_VALUE = "hetu";
-    var EIDAS_ATTRIBUTE_VALUE = "eidas-id";
+    var finAttributeValue = "hetu";
+    var eidasAttributeValue = "eidas-id";
 
     assertEquals(
-        FIN_ATTRIBUTE_VALUE,
+        finAttributeValue,
         createJodSaml2User(
                 Map.of(
                     PersonIdentifier.FIN.getAttribute().getUri(),
-                    List.of(FIN_ATTRIBUTE_VALUE),
+                    List.of(finAttributeValue),
                     PersonIdentifier.EIDAS.getAttribute().getUri(),
-                    List.of(EIDAS_ATTRIBUTE_VALUE)))
+                    List.of(eidasAttributeValue)))
             .getPersonId());
 
     assertEquals(
-        FIN_ATTRIBUTE_VALUE,
+        finAttributeValue,
         createJodSaml2User(
                 Map.of(
                     PersonIdentifier.EIDAS.getAttribute().getUri(),
-                    List.of(EIDAS_ATTRIBUTE_VALUE),
+                    List.of(eidasAttributeValue),
                     PersonIdentifier.FIN.getAttribute().getUri(),
-                    List.of(FIN_ATTRIBUTE_VALUE)))
+                    List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
-        FIN_ATTRIBUTE_VALUE,
+        finAttributeValue,
         createJodSaml2User(
-                Map.of(PersonIdentifier.FIN.getAttribute().getUri(), List.of(FIN_ATTRIBUTE_VALUE)))
+                Map.of(PersonIdentifier.FIN.getAttribute().getUri(), List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
-        EIDAS_ATTRIBUTE_VALUE,
+        eidasAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.EIDAS.getAttribute().getUri(), List.of(EIDAS_ATTRIBUTE_VALUE)))
+                    PersonIdentifier.EIDAS.getAttribute().getUri(), List.of(eidasAttributeValue)))
             .getPersonId());
   }
 

@@ -7,7 +7,13 @@
   <suppress checks="MissingJavadocMethod"/>
   <suppress checks="MissingJavadocType"/>
   <suppress checks="MissingJavadocPackage"/>
+
   <!-- not compatible with Spotless -->
   <suppress checks="Indentation"/>
   <suppress checks="LineLength"/>
+  <suppress checks="EmptyLineSeparator"/>
+
+  <!-- other suppressions -->
+  <suppress checks="OverloadMethodsDeclarationOrder"/>
+  <suppress checks="VariableDeclarationUsageDistance"/>
 </suppressions>

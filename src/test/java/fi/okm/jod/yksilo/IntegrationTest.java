@@ -34,7 +34,7 @@ public abstract class IntegrationTest {
 
   @ServiceConnection
   private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
-      TestUtil.createPostgresSQLContainer();
+      TestUtil.createPostgreSqlContainer();
 
   @ServiceConnection
   private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();

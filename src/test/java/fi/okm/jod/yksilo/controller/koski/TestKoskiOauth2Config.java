@@ -22,7 +22,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.web.client.RestClient;
 
 @TestConfiguration
-public class TestKoskiOAuth2Config {
+public class TestKoskiOauth2Config {
 
   @Bean
   public RestClient.Builder restClientBuilder() {

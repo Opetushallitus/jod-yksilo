@@ -150,7 +150,7 @@ class MahdollisuudetControllerTest {
   @Test
   @WithMockUser
   void whenSkillsShouldReturnScores() throws Exception {
-    var luoEhdotusDto =
+    final var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
             Set.of(URI.create("urn:osaaminen1")),
             null,
@@ -240,8 +240,8 @@ class MahdollisuudetControllerTest {
 
   @Test
   @WithMockUser
-  void ifInferenceReturnsUnknownIdShouldNotCauseNPE() throws Exception {
-    var luoEhdotusDto =
+  void ifInferenceReturnsUnknownIdShouldNotCauseNpe() throws Exception {
+    final var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
             Set.of(URI.create("http://dymmy")),
             null,
@@ -300,8 +300,8 @@ class MahdollisuudetControllerTest {
 
   @Test
   @WithMockUser
-  void ifInferenceReturnsMissingIdShouldNotCauseNPE() throws Exception {
-    var luoEhdotusDto =
+  void ifInferenceReturnsMissingIdShouldNotCauseNpe() throws Exception {
+    final var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
             Set.of(URI.create("http://dymmy")),
             null,

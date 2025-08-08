@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.net.URI;
 import java.util.UUID;
 
-/** Tiedot mitä työmahdollisuudesta palautetaan ulkoisen rajapinnan v1-versiossa */
+/** Tiedot mitä työmahdollisuudesta palautetaan ulkoisen rajapinnan v1-versiossa. */
 public record ExtTyoMahdollisuusDto(
     UUID id,
     LocalizedString otsikko,

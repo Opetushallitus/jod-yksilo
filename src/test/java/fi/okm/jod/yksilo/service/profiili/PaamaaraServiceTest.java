@@ -11,7 +11,9 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;

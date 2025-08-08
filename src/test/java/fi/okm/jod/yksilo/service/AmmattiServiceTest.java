@@ -60,7 +60,7 @@ class AmmattiServiceTest extends AbstractServiceTest {
 
     var result = service.findAll(0, 10);
     assertEquals(1, result.version());
-    var maara = result.payload().maara();
+    final var maara = result.payload().maara();
 
     entityManager
         .getEntityManager()

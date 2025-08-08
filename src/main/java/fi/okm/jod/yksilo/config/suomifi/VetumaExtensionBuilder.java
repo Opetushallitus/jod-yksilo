@@ -93,6 +93,7 @@ class VetumaExtensionBuilder {
 
   @Setter
   @Getter
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static class LG extends AbstractXMLObject {
     private final String lang;
 
