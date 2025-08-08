@@ -13,7 +13,6 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -86,5 +85,5 @@ public class Tyopaikka {
   }
 
   @Embeddable
-  public record Kaannos(@Basic(optional = false) String nimi) {}
+  public record Kaannos(@NotNull String nimi) {}
 }

@@ -12,13 +12,17 @@ package fi.okm.jod.yksilo.config.suomifi;
 import lombok.Getter;
 
 @Getter
-enum PersonIdentifier {
+enum PersonIdentifierType {
   FIN(Attribute.NATIONAL_IDENTIFICATION_NUMBER),
   EIDAS(Attribute.PERSON_IDENTIFIER);
 
   private final Attribute attribute;
 
-  PersonIdentifier(Attribute attribute) {
+  PersonIdentifierType(Attribute attribute) {
     this.attribute = attribute;
+  }
+
+  public String asQualifiedIdentifier(String personId) {
+    return name() + ":" + personId;
   }
 }

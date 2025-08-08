@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.dto.profiili.export;
 
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.Sukupuoli;
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +22,11 @@ public record YksiloExportDto(
     Boolean lupaLuovuttaaTiedotUlkopuoliselle,
     Boolean lupaArkistoida,
     Boolean lupaKayttaaTekoalynKoulutukseen,
+    Integer syntymavuosi,
+    Sukupuoli sukupuoli,
+    String kotikunta,
+    String aidinkieli,
+    Kieli valittuKieli,
     Set<TyopaikkaExportDto> tyopaikat,
     Set<KoulutusKokonaisuusExportDto> koulutusKokonaisuudet,
     Set<ToimintoExportDto> toiminnot,
