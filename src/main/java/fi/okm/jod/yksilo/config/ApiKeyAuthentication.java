@@ -31,4 +31,17 @@ public final class ApiKeyAuthentication extends AbstractAuthenticationToken {
   public Object getPrincipal() {
     return apiKey; // API key as the authenticated principal
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof ApiKeyAuthentication aka) {
+      return super.equals(obj) && aka.apiKey.equals(this.apiKey);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode() + apiKey.hashCode();
+  }
 }
