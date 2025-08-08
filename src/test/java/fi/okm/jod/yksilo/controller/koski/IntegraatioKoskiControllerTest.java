@@ -25,13 +25,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
-import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
+import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.NoDataException;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
@@ -68,8 +68,8 @@ import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({
   ErrorInfoFactory.class,
-  KoskiOAuth2Config.class,
-  TestKoskiOAuth2Config.class,
+  KoskiOauth2Config.class,
+  TestKoskiOauth2Config.class,
   KoskiService.class,
   MappingConfig.class
 })
@@ -89,7 +89,7 @@ class IntegraatioKoskiControllerTest {
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockitoBean private KoskiOAuth2Service koskiOAuth2Service;
+  @MockitoBean private KoskiOauth2Service koskiOauth2Service;
 
   @MockitoBean private KoskiService koskiService;
 
@@ -100,14 +100,14 @@ class IntegraatioKoskiControllerTest {
   @WithUserDetails("test")
   @Test
   void shouldReturnEducationDataWhenAuthorized() throws Exception {
-    var mockAuthorizedClient = prepareOAuth2Client();
+    var mockAuthorizedClient = prepareOauth2Client();
     var mockDataInJson =
         objectMapper.readTree(
             TestUtil.getContentFromFile(EDUCATIONS_HISTORY_KOSKI_RESPONSE, KoskiService.class));
-    when(koskiOAuth2Service.fetchDataFromResourceServer(mockAuthorizedClient))
+    when(koskiOauth2Service.fetchDataFromResourceServer(mockAuthorizedClient))
         .thenReturn(mockDataInJson);
     doAnswer(invocationOnMock -> null)
-        .when(koskiOAuth2Service)
+        .when(koskiOauth2Service)
         .checkPersonIdMatches(any(JodUser.class), any(JsonNode.class));
     when(koskiService.getKoulutusData(mockDataInJson)).thenCallRealMethod();
 
@@ -115,38 +115,38 @@ class IntegraatioKoskiControllerTest {
         TestUtil.getContentFromFile(GET_EDUCATIONS_DATA_API_RESPONSE, KoskiService.class);
     performGetEducationsDataFromKoski(status().isOk(), expectedResponseJson);
 
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(mockAuthorizedClient);
+    verify(koskiOauth2Service).fetchDataFromResourceServer(mockAuthorizedClient);
     verify(koskiService).getKoulutusData(mockDataInJson);
   }
 
   @Test
   @WithUserDetails("test")
-  void shouldReturnForbidden_whenNotAuthorizedWithKoskiOAuth() throws Exception {
+  void shouldReturnForbidden_whenNotAuthorizedWithKoskiOauth() throws Exception {
     var expectedResponseJson =
         """
         {"errorCode":"PERMISSION_REQUIRED","errorDetails":["Permission was not given or it is missing."]}
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
 
-    verify(koskiOAuth2Service)
+    verify(koskiOauth2Service)
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
-    verifyNoMoreInteractions(koskiOAuth2Service);
+    verifyNoMoreInteractions(koskiOauth2Service);
     verifyNoInteractions(koskiService);
   }
 
-  private OAuth2AuthorizedClient prepareOAuth2Client() {
-    var oAuth2AuthorizedClient = mock(OAuth2AuthorizedClient.class);
-    when(koskiOAuth2Service.getAuthorizedClient(
+  private OAuth2AuthorizedClient prepareOauth2Client() {
+    var oauth2AuthorizedClient = mock(OAuth2AuthorizedClient.class);
+    when(koskiOauth2Service.getAuthorizedClient(
             any(Authentication.class), any(HttpServletRequest.class)))
-        .thenReturn(oAuth2AuthorizedClient);
-    return oAuth2AuthorizedClient;
+        .thenReturn(oauth2AuthorizedClient);
+    return oauth2AuthorizedClient;
   }
 
   @WithUserDetails("test")
   @Test
   void shouldReturnForbidden_whenTokenExpired() throws Exception {
-    var oAuth2AuthorizedClient = prepareOAuth2Client();
-    when(koskiOAuth2Service.fetchDataFromResourceServer(oAuth2AuthorizedClient))
+    var oauth2AuthorizedClient = prepareOauth2Client();
+    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
         .thenThrow(new PermissionRequiredException("Token expired."));
 
     var expectedResponseJson =
@@ -155,7 +155,7 @@ class IntegraatioKoskiControllerTest {
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
 
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
+    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   private void performGetEducationsDataFromKoski(
@@ -170,8 +170,8 @@ class IntegraatioKoskiControllerTest {
   @WithUserDetails("test")
   @Test
   void shouldReturnInternalServerError_whenFetchingDataFails() throws Exception {
-    var oAuth2AuthorizedClient = prepareOAuth2Client();
-    when(koskiOAuth2Service.fetchDataFromResourceServer(oAuth2AuthorizedClient))
+    var oauth2AuthorizedClient = prepareOauth2Client();
+    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
         .thenThrow(new ResourceServerException("Fail to get data from Koski resource server."));
 
     var expectedResponseJson =
@@ -180,14 +180,14 @@ class IntegraatioKoskiControllerTest {
         """;
     performGetEducationsDataFromKoski(status().isInternalServerError(), expectedResponseJson);
 
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
+    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   @WithUserDetails("test")
   @Test
   void shouldReturnWrongPersonError_whenPersonalIdDoesNotMatch() throws Exception {
-    var oAuth2AuthorizedClient = prepareOAuth2Client();
-    when(koskiOAuth2Service.fetchDataFromResourceServer(oAuth2AuthorizedClient))
+    var oauth2AuthorizedClient = prepareOauth2Client();
+    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
         .thenThrow(new WrongPersonException(UUID.randomUUID()));
 
     var expectedResponseJson =
@@ -196,7 +196,7 @@ class IntegraatioKoskiControllerTest {
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
 
-    verify(koskiOAuth2Service)
+    verify(koskiOauth2Service)
         .unauthorize(
             any(Authentication.class),
             any(HttpServletRequest.class),
@@ -206,8 +206,8 @@ class IntegraatioKoskiControllerTest {
   @WithUserDetails("test")
   @Test
   void shouldReturnNoDataError_whenUserHaveNoDataInKoski() throws Exception {
-    var oAuth2AuthorizedClient = prepareOAuth2Client();
-    when(koskiOAuth2Service.fetchDataFromResourceServer(oAuth2AuthorizedClient))
+    var oauth2AuthorizedClient = prepareOauth2Client();
+    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
         .thenThrow(
             new NoDataException(
                 "omadataoauth2-error-94996a6c-a856-4dfd-8aee-da7edd578fe1: Oppijaa 1.2.246.562.24.51212001781 ei löydy tai käyttäjällä ei ole oikeuksia tietojen katseluun."));
@@ -218,20 +218,20 @@ class IntegraatioKoskiControllerTest {
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
 
-    verify(koskiOAuth2Service).fetchDataFromResourceServer(oAuth2AuthorizedClient);
+    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   @WithUserDetails("test")
   @Test
   void shouldReturnOsaamisetIdentified_whenValidRequestProvided() throws Exception {
-    var koulutusUUIDs =
+    var koulutusUuids =
         List.of(
             UUID.fromString("5edaca37-8ca1-4f18-918b-7aa73997c676"),
             UUID.fromString("842a5528-06ac-455a-8d7e-7a401947b1f7"));
 
     var koulutus1 =
         KoulutusDto.builder()
-            .id(koulutusUUIDs.get(0))
+            .id(koulutusUuids.get(0))
             .nimi(ls("koulutus1"))
             .osaamiset(
                 Set.of(
@@ -242,21 +242,21 @@ class IntegraatioKoskiControllerTest {
             .build();
     var koulutus2 =
         KoulutusDto.builder()
-            .id(koulutusUUIDs.get(1))
+            .id(koulutusUuids.get(1))
             .nimi(ls("koulutus2"))
             .osaamiset(Collections.emptySet())
             .osaamisetOdottaaTunnistusta(false)
             .osaamisetTunnistusEpaonnistui(true)
             .build();
 
-    when(koskiService.getOsaamisetIdentified(any(JodUser.class), eq(koulutusUUIDs)))
+    when(koskiService.getOsaamisetIdentified(any(JodUser.class), eq(koulutusUuids)))
         .thenReturn(List.of(koulutus1, koulutus2));
 
     mockMvc
         .perform(
             get(API_OSAAMISEN_TUNNISTUS_STATUS_QUERY)
-                .param("ids", koulutusUUIDs.get(0).toString())
-                .param("ids", koulutusUUIDs.get(1).toString())
+                .param("ids", koulutusUuids.get(0).toString())
+                .param("ids", koulutusUuids.get(1).toString())
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].id").value(koulutus1.id().toString()))

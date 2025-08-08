@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.service.koski;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,16 +31,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Slf4j
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @Service
-public class KoskiOAuth2Service {
+public class KoskiOauth2Service {
 
-  private final KoskiOAuth2Config koskiConfig;
+  private final KoskiOauth2Config koskiConfig;
   private final OAuth2AuthorizedClientRepository authorizedClientRepository;
   private final RestClient restClient;
 
-  public KoskiOAuth2Service(
-      KoskiOAuth2Config koskiConfig,
+  public KoskiOauth2Service(
+      KoskiOauth2Config koskiConfig,
       OAuth2AuthorizedClientRepository authorizedClientRepository,
       @Qualifier(KoskiRestClientConfig.RESTCLIENT_ID) RestClient restClient) {
     this.koskiConfig = koskiConfig;

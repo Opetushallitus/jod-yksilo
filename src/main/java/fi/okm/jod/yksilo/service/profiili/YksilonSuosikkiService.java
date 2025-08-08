@@ -50,7 +50,7 @@ public class YksilonSuosikkiService {
   }
 
   /**
-   * Adds a new suosikki if matching suosikki does not exist
+   * Adds a new suosikki if matching suosikki does not exist.
    *
    * @param user user
    * @param kohdeId kohdeId

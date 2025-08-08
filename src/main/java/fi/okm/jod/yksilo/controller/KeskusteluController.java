@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +22,11 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/api/keskustelut")
@@ -76,11 +81,11 @@ public class KeskusteluController {
         response.sessionId(), response.data().kiinnostukset(), response.data().response());
   }
 
-  public record Request(String message, String language_code) {}
+  public record Request(String message, @JsonProperty("language_code") String languageCode) {}
 
   public record Response(Set<Kiinnostus> kiinnostukset, String response) {}
 
-  public record Kiinnostus(URI esco_uri, String kuvaus) {}
+  public record Kiinnostus(@JsonProperty("esco_uri") URI escoUri, String kuvaus) {}
 
   public record ResponseWithId(UUID id, Set<Kiinnostus> kiinnostukset, String vastaus) {}
 }

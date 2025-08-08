@@ -69,7 +69,7 @@ class MuuOsaaminenServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void ShouldUpdateYksilonMuuOsaaminenVapaateksti() {
+  void shouldUpdateYksilonMuuOsaaminenVapaateksti() {
     var vapaateksti = ls("Testi vapaateksti");
     service.updateVapaateksti(user, vapaateksti);
     simulateCommit();

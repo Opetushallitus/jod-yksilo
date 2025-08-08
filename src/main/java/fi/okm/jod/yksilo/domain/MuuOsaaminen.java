@@ -14,7 +14,7 @@ import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.util.Set;
 import java.util.UUID;
 
-/** This OsaamisenLahde has no separate database entity */
+/** This OsaamisenLahde has no separate database entity. */
 public record MuuOsaaminen(Yksilo yksilo, Set<YksilonOsaaminen> osaamiset)
     implements OsaamisenLahde {
   @Override

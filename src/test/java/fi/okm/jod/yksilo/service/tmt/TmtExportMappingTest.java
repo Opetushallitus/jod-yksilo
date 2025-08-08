@@ -10,7 +10,9 @@
 package fi.okm.jod.yksilo.service.tmt;
 
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.entity.Koulutus;

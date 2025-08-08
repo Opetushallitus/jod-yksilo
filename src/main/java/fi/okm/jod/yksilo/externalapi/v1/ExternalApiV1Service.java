@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Bisneslogiikka External API V1 */
+/** Bisneslogiikka External API V1. */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

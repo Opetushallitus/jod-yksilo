@@ -10,9 +10,9 @@
 package fi.okm.jod.yksilo.controller.koski;
 
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
-import fi.okm.jod.yksilo.config.koski.KoskiOAuth2Config;
+import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.service.koski.KoskiOAuth2Service;
+import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,20 +29,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @RestController
 @RequestMapping("/oauth2")
 @Hidden
-public class KoskiOAuth2Controller {
+public class KoskiOauth2Controller {
 
-  private final KoskiOAuth2Service koskiOAuth2Service;
+  private final KoskiOauth2Service koskiOauth2Service;
 
-  public KoskiOAuth2Controller(KoskiOAuth2Service koskiOAuth2Service) {
-    this.koskiOAuth2Service = koskiOAuth2Service;
+  public KoskiOauth2Controller(KoskiOauth2Service koskiOauth2Service) {
+    this.koskiOauth2Service = koskiOauth2Service;
   }
 
   @GetMapping("/authorize/koski")
-  public void redirectToOAuth2AuthorizationUrl(
+  public void redirectToOauth2AuthorizationUrl(
       HttpServletRequest request, HttpServletResponse response, @RequestParam URI callback)
       throws IOException {
     var callbackPath = callback.getPath();
@@ -59,7 +59,7 @@ public class KoskiOAuth2Controller {
     return UriComponentsBuilder.fromUriString(
             request.getContextPath()
                 + "/oauth2/authorization/"
-                + koskiOAuth2Service.getRegistrationId())
+                + koskiOauth2Service.getRegistrationId())
         .queryParam("locale", language)
         .toUriString();
   }
@@ -75,7 +75,7 @@ public class KoskiOAuth2Controller {
    * @param jodUser {@link JodUser} JOD logged in user.
    */
   @GetMapping("/response/koski")
-  public void oAuth2DoneCallbackEndpoint(
+  public void oauth2DoneCallbackEndpoint(
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response,
@@ -106,7 +106,7 @@ public class KoskiOAuth2Controller {
       response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "error"));
       return;
     }
-    var authorizedClient = koskiOAuth2Service.getAuthorizedClient(authentication, request);
+    var authorizedClient = koskiOauth2Service.getAuthorizedClient(authentication, request);
     if (authorizedClient == null) {
       handleUserDidNotGivePermission(response, jodUser, callbackUrl);
       return;

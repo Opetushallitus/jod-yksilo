@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-/** Mock controller */
+/** Service for creating suggestions for Osaaminen using an external recommendation service. */
 @Service
 @Slf4j
 @Transactional(readOnly = true)

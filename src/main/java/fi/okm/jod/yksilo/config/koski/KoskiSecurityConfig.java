@@ -34,7 +34,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
-@ConditionalOnBean(KoskiOAuth2Config.class)
+@ConditionalOnBean(KoskiOauth2Config.class)
 @Configuration
 public class KoskiSecurityConfig {
 

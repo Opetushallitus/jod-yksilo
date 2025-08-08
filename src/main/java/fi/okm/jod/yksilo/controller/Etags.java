@@ -9,12 +9,12 @@
 
 package fi.okm.jod.yksilo.controller;
 
-public final class ETags {
-  private ETags() {
+public final class Etags {
+  private Etags() {
     // utility class
   }
 
-  public static String weakETagOf(long version) {
+  public static String weakEtagOf(long version) {
     return "W/\"" + version + "\"";
   }
 }

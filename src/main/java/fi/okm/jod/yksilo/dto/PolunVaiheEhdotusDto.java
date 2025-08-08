@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.dto;
 import java.util.UUID;
 
 /**
- * A suggestion for a path step
+ * A suggestion for a path step.
  *
  * @param mahdollisuusId mahdollisuus id
  * @param pisteet score or how good the match is (0-1)
