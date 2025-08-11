@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.externalapi.v1.dto.ExtKoulutusMahdollisuusDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.Max;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,10 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "10")
           @Max(value = SIVUN_MAKSIMI_KOKO, message = "Sivun maksimikoko on 1000")
           Integer koko,
-      @RequestParam(name = "muokattuJalkeen", required = false)
+      @Parameter(
+              description = "Only get profiles modified after this timestamp",
+              example = "2025-07-03T09:00:00Z")
+          @RequestParam(name = "muokattuJalkeen", required = false)
           @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
           Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);

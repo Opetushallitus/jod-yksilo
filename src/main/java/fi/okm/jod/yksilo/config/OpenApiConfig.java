@@ -16,6 +16,7 @@ import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
 @Slf4j
 class OpenApiConfig {
+
+  @Bean
+  public GroupedOpenApi yksiloApi() {
+    return GroupedOpenApi.builder().group("Yksilo API").pathsToMatch("/api/**").build();
+  }
+
+  @Bean
+  public GroupedOpenApi externalApi() {
+    return GroupedOpenApi.builder().group("External API").pathsToMatch("/external-api/**").build();
+  }
 
   /** Creates OpenAPI documentation bean. */
   @Bean
