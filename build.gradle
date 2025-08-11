@@ -88,6 +88,7 @@ dependencies {
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
   implementation 'software.amazon.awssdk:cloudwatch'
+  implementation 'software.amazon.awssdk:s3'
 
   implementation 'com.google.guava:guava:33.4.8-jre'
 

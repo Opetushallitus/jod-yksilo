@@ -16,6 +16,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.rds.RdsClient;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 
 @Configuration
@@ -39,6 +40,15 @@ public class AwsConfig {
         .region(regionProvider.getRegion())
         .overrideConfiguration(
             c -> c.retryStrategy(StandardRetryStrategy.builder().maxAttempts(4).build()))
+        .build();
+  }
+
+  @Bean
+  public S3Client s3Client(
+      AwsCredentialsProvider credentialsProvider, AwsRegionProvider regionProvider) {
+    return S3Client.builder()
+        .region(regionProvider.getRegion())
+        .credentialsProvider(credentialsProvider) // set your region
         .build();
   }
 }
