@@ -33,14 +33,21 @@ class OpenApiConfig {
 
   @Bean
   public GroupedOpenApi yksiloApi() {
-    return GroupedOpenApi.builder().group("JOD Yksilo API").pathsToMatch("/api/**").build();
+    return GroupedOpenApi.builder()
+        .group("Yksilo")
+        .pathsToMatch("/api/**")
+        .addOpenApiCustomizer(openApi())
+        .addOperationCustomizer(operationCustomizer())
+        .build();
   }
 
   @Bean
   public GroupedOpenApi externalApi() {
     return GroupedOpenApi.builder()
-        .group("JOD External API")
+        .group("External")
         .pathsToMatch("/external-api/**")
+        .addOpenApiCustomizer(openApi())
+        .addOperationCustomizer(operationCustomizer())
         .build();
   }
 
