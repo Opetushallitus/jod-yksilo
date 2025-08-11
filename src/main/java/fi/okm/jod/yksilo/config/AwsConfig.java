@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -47,7 +48,7 @@ public class AwsConfig {
   public S3Client s3Client(
       AwsCredentialsProvider credentialsProvider, AwsRegionProvider regionProvider) {
     return S3Client.builder()
-        .region(regionProvider.getRegion())
+        .region(Region.EU_NORTH_1)
         .credentialsProvider(credentialsProvider) // set your region
         .build();
   }
