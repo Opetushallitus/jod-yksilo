@@ -17,6 +17,7 @@ import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtTyoMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 /** Yksilö-backendin ulkoiset rajapinnat. */
 @RestController
 @RequestMapping("/external-api/v1")
+@Tag(name = "Ulkoinen rajapinta v1", description = "Ulkoinen rajapinta v1")
 @RequiredArgsConstructor
 public class ExternalApiV1Controller {
   public static final String EXT_API_V1_PATH = "/external-api/v1";
