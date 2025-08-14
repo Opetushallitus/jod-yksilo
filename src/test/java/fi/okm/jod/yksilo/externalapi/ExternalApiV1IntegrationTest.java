@@ -111,7 +111,7 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
             HttpMethod.GET,
             new HttpEntity<>(new HttpHeaders()),
             String.class);
-    assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+    assertEquals(HttpStatusCode.valueOf(403), response.getStatusCode());
   }
 
   private HttpHeaders headersWithAuthentication() {
