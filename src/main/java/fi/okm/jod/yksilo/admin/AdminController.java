@@ -9,9 +9,18 @@
 
 package fi.okm.jod.yksilo.admin;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import fi.okm.jod.yksilo.admin.dto.FullKoulutusData;
+import fi.okm.jod.yksilo.admin.dto.RawKoulutusMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,27 +35,58 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 @RequiredArgsConstructor
 public class AdminController {
 
-  @Autowired private ObjectMapper objectMapper;
+  private ObjectMapper objectMapper;
 
-  @Autowired private final S3Client s3Client;
+  private final S3Client s3Client;
+
+  @Autowired
+  public AdminController(final ObjectMapper objectMapper, final S3Client s3Client) {
+    this.objectMapper = objectMapper;
+    this.s3Client = s3Client;
+  }
 
   @GetMapping("/koulutusmahdollisuudet")
   @Operation(
       summary = "Get all profiilit paged of by page and size",
       description = "Returns all profiilit basic information in JSON-format.")
   public Object getKoulutusMahdollisuudet() throws Exception {
-    return this.getJsonFromS3(
-        "jod-devin-data",
-        "koulutusmahdollisuudet/full_json_lines_koulutusmahdollisuus.json",
-        Object.class);
+    List<FullKoulutusData> fullKoulutusData =
+        this.getCsvFromS3(
+            "jod-devin-data",
+            "results/koulutus_cluster_with_individual_koulutukset_all_cols.csv",
+            FullKoulutusData.class);
+
+    List<RawKoulutusMahdollisuusDto> koulutusMahdollisuudet =
+        this.getJsonFromS3(
+            "jod-devin-data", "koulutusmahdollisuudet/json_koulutusmahdollisuus.json");
+    return AdminMapper.toKoulutusMahdollisuusResponses(koulutusMahdollisuudet, fullKoulutusData);
   }
 
-  public <T> T getJsonFromS3(String bucketName, String key, Class<T> valueType) throws Exception {
+  public List<RawKoulutusMahdollisuusDto> getJsonFromS3(final String bucketName, final String key)
+      throws Exception {
     GetObjectRequest getObjectRequest =
         GetObjectRequest.builder().bucket(bucketName).key(key).build();
 
     try (InputStream inputStream = s3Client.getObject(getObjectRequest)) {
-      return objectMapper.readValue(inputStream, valueType);
+      objectMapper.configure(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature(), true);
+      List<RawKoulutusMahdollisuusDto> mahdollisuudet =
+          objectMapper.readValue(
+              inputStream, new TypeReference<List<RawKoulutusMahdollisuusDto>>() {});
+      return mahdollisuudet;
+    }
+  }
+
+  public <T> List<T> getCsvFromS3(String bucketName, String key, Class<T> valueType)
+      throws Exception {
+    GetObjectRequest getObjectRequest =
+        GetObjectRequest.builder().bucket(bucketName).key(key).build();
+    try (Reader inputStream = new InputStreamReader(s3Client.getObject(getObjectRequest))) {
+      CsvToBean<T> csvToBean =
+          new CsvToBeanBuilder<T>(inputStream)
+              .withType(valueType)
+              .withIgnoreLeadingWhiteSpace(true)
+              .build();
+      return csvToBean.parse();
     }
   }
 }

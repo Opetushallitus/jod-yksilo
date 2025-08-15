@@ -15,12 +15,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** TODO */
-public record RawKoulutusMahdollisuusDto(
+/** Koulutusmahdollisuus that is returned to frontend */
+public record KoulutusMahdollisuusResponseDto(
     UUID id,
     Instant luomisaika,
     LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
     KoulutusmahdollisuusTyyppi tyyppi,
-    List<RawKoulutusDto> koulutukset) {}
+    List<KoulutusResponseDto> koulutukset) {}

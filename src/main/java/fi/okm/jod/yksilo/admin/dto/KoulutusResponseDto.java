@@ -9,18 +9,9 @@
 
 package fi.okm.jod.yksilo.admin.dto;
 
-import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 /** TODO */
-public record RawKoulutusMahdollisuusDto(
-    UUID id,
-    Instant luomisaika,
-    LocalizedString otsikko,
-    LocalizedString tiivistelma,
-    LocalizedString kuvaus,
-    KoulutusmahdollisuusTyyppi tyyppi,
-    List<RawKoulutusDto> koulutukset) {}
+public record KoulutusResponseDto(
+    String oid, LocalizedString nimi, List<String> koulutusAlat, List<String> koulutusKoodit) {}
