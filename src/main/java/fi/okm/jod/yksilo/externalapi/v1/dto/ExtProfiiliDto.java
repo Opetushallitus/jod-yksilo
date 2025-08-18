@@ -9,11 +9,18 @@
 
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
+import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.Sukupuoli;
 import java.util.Set;
 import java.util.UUID;
 
 public record ExtProfiiliDto(
     UUID id,
+    Integer syntymavuosi,
+    Sukupuoli sukupuoli,
+    String kotikunta,
+    String aidinkieli,
+    Kieli valittuKieli,
     Set<ExtYksilonOsaaminenDto> yksilonOsaamiset,
     Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset,
     Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset,

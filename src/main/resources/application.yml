@@ -83,7 +83,6 @@ logging:
   level:
     fi.okm.jod: DEBUG
     sql: DEBUG
-    #org.hibernate.orm.jdbc.batch: TRACE
     org:
       springframework:
         web:

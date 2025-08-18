@@ -9,29 +9,66 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
+import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.time.LocalDate;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class YksiloService {
   private final YksiloRepository yksilot;
 
   public YksiloDto get(JodUser user) {
     var yksilo = getYksilo(user);
+
+    var sukupuoli = yksilo.getSukupuoli();
+    var syntymavuosi = yksilo.getSyntymavuosi();
+    var kotikunta = yksilo.getKotikunta();
+    var tunnisteTyyppi = (PersonIdentifierType) null;
+
+    if (!yksilo.getTervetuloapolku()) {
+      if (getNationalPersonIdentifier(user) instanceof FinnishPersonIdentifier id) {
+        tunnisteTyyppi = PersonIdentifierType.FIN;
+        sukupuoli = id.getGender();
+        syntymavuosi = id.getBirthYear();
+        kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
+      } else if (user.getAttribute(Attribute.PERSON_IDENTIFIER).isPresent()) {
+        tunnisteTyyppi = PersonIdentifierType.EIDAS;
+        syntymavuosi =
+            user.getAttribute(Attribute.DATE_OF_BIRTH)
+                .map(it -> LocalDate.parse(it).getYear())
+                .orElse(null);
+      }
+    }
+
     return new YksiloDto(
+        tunnisteTyyppi,
         yksilo.getTervetuloapolku(),
         yksilo.getLupaLuovuttaaTiedotUlkopuoliselle(),
         yksilo.getLupaArkistoida(),
-        yksilo.getLupaKayttaaTekoalynKoulutukseen());
+        yksilo.getLupaKayttaaTekoalynKoulutukseen(),
+        syntymavuosi,
+        sukupuoli,
+        kotikunta,
+        yksilo.getAidinkieli(),
+        yksilo.getValittuKieli());
   }
 
   public void update(JodUser user, YksiloDto dto) {
@@ -40,16 +77,54 @@ public class YksiloService {
     yksilo.setLupaLuovuttaaTiedotUlkopuoliselle(dto.lupaLuovuttaaTiedotUlkopuoliselle());
     yksilo.setLupaArkistoida(dto.lupaArkistoida());
     yksilo.setLupaKayttaaTekoalynKoulutukseen(dto.lupaKayttaaTekoalynKoulutukseen());
+
+    yksilo.setAidinkieli(dto.aidinkieli());
+    yksilo.setValittuKieli(dto.valittuKieli());
+
+    if (getNationalPersonIdentifier(user) instanceof FinnishPersonIdentifier id) {
+
+      yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), id.getBirthYear()));
+      yksilo.setSukupuoli(validate(dto.sukupuoli(), id.getGender()));
+      var kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
+      yksilo.setKotikunta(validate(dto.kotikunta(), kotikunta));
+
+    } else if (user.getAttribute(Attribute.PERSON_IDENTIFIER).isPresent()) {
+
+      var syntymavuosi =
+          user.getAttribute(Attribute.DATE_OF_BIRTH)
+              .map(it -> LocalDate.parse(it).getYear())
+              .orElse(null);
+      yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), syntymavuosi));
+      yksilo.setSukupuoli(dto.sukupuoli());
+      if (dto.kotikunta() != null) {
+        throw new ServiceValidationException("Kotikunta not supported eIDAS users");
+      }
+    }
     yksilot.save(yksilo);
+  }
+
+  private static <T> T validate(T value, T expected) {
+    if (value != null && !Objects.equals(value, expected)) {
+      throw new ServiceValidationException("Changing attribute value is not allowed");
+    }
+    return value;
+  }
+
+  private static FinnishPersonIdentifier getNationalPersonIdentifier(JodUser user) {
+    return user.getAttribute(Attribute.NATIONAL_IDENTIFICATION_NUMBER)
+        .map(FinnishPersonIdentifier::of)
+        .orElse(null);
   }
 
   public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
+    log.info("AUDIT: Deleted user {} profile", value("userId", user.getId()));
   }
 
   public YksiloExportDto export(JodUser user) {
     var yksilo = getYksilo(user);
+    log.info("AUDIT: Exported user {} profile", value("userId", user.getId()));
     return ExportMapper.mapYksilo(yksilo);
   }
 

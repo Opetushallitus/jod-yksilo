@@ -51,6 +51,11 @@ public final class ExportMapper {
             entity.getLupaLuovuttaaTiedotUlkopuoliselle(),
             entity.getLupaArkistoida(),
             entity.getLupaKayttaaTekoalynKoulutukseen(),
+            entity.getSyntymavuosi(),
+            entity.getSukupuoli(),
+            entity.getKotikunta(),
+            entity.getAidinkieli(),
+            entity.getValittuKieli(),
             entity.getTyopaikat().stream()
                 .map(ExportMapper::mapTyopaikka)
                 .collect(Collectors.toSet()),

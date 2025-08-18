@@ -9,6 +9,9 @@
 
 package fi.okm.jod.yksilo.config;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
+import fi.okm.jod.yksilo.domain.JodUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -31,6 +34,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
   public void onAuthenticationSuccess(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     String callback = null;
+
+    if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
+      log.info("AUDIT: User {} logged in", value("userId", user.getId()));
+    }
+
     if (request.getSession(false) instanceof HttpSession s) {
       callback = (String) s.getAttribute(SessionLoginAttribute.CALLBACK.getKey());
 

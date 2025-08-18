@@ -55,6 +55,7 @@ logging:
   level:
     root: INFO
     fi.okm.jod: INFO
+    sql: INFO
 
 management:
   endpoints:

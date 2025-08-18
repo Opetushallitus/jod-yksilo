@@ -31,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.util.UriComponentsBuilder;
 
-/** Integration tests for external API */
 class ExternalApiV1IntegrationTest extends IntegrationTest {
 
   @Autowired private TestRestTemplate testRestTemplate;

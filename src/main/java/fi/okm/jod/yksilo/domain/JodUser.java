@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.domain;
 
+import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface JodUser {
@@ -19,4 +21,8 @@ public interface JodUser {
   String familyName();
 
   String getPersonId();
+
+  default Optional<String> getAttribute(Attribute attribute) {
+    return Optional.empty();
+  }
 }
