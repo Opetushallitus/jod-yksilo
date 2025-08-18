@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import fi.okm.jod.yksilo.admin.dto.FullKoulutusData;
+import fi.okm.jod.yksilo.admin.dto.KoulutusMahdollisuusResponseDto;
 import fi.okm.jod.yksilo.admin.dto.RawKoulutusMahdollisuusDto;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.InputStream;
@@ -49,17 +50,17 @@ public class AdminController {
   @Operation(
       summary = "Get all profiilit paged of by page and size",
       description = "Returns all profiilit basic information in JSON-format.")
-  public Object getKoulutusMahdollisuudet() throws Exception {
-    List<FullKoulutusData> fullKoulutusData =
-        this.getCsvFromS3(
-            "jod-devin-data",
-            "results/koulutus_cluster_with_individual_koulutukset_all_cols.csv",
-            FullKoulutusData.class);
+  public List<KoulutusMahdollisuusResponseDto> getKoulutusMahdollisuudet() throws Exception {
 
     List<RawKoulutusMahdollisuusDto> koulutusMahdollisuudet =
         this.getJsonFromS3(
             "jod-devin-data", "koulutusmahdollisuudet/json_koulutusmahdollisuus.json");
-    return AdminMapper.toKoulutusMahdollisuusResponses(koulutusMahdollisuudet, fullKoulutusData);
+    List<FullKoulutusData> koulutukset =
+        this.getCsvFromS3(
+            "jod-devin-data",
+            "results/koulutus_cluster_with_individual_koulutukset_all_cols.csv",
+            FullKoulutusData.class);
+    return AdminMapper.toKoulutusMahdollisuusResponses(koulutusMahdollisuudet, koulutukset);
   }
 
   public List<RawKoulutusMahdollisuusDto> getJsonFromS3(final String bucketName, final String key)

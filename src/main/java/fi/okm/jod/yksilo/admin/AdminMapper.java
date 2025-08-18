@@ -16,7 +16,7 @@ import fi.okm.jod.yksilo.admin.dto.RawKoulutusDto;
 import fi.okm.jod.yksilo.admin.dto.RawKoulutusMahdollisuusDto;
 import java.util.List;
 
-/** TODO */
+/** */
 public class AdminMapper {
   private AdminMapper() {}
 

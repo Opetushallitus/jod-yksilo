@@ -22,5 +22,7 @@ public record RawKoulutusMahdollisuusDto(
     LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
+    // osaamiset puuttuu
     KoulutusmahdollisuusTyyppi tyyppi,
+    RawOsaamiset osaamiset,
     List<RawKoulutusDto> koulutukset) {}
