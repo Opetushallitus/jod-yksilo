@@ -14,9 +14,11 @@ import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ProfileDeletionHandler implements LogoutHandler {
   private final YksiloService yksiloService;
@@ -24,9 +26,9 @@ public class ProfileDeletionHandler implements LogoutHandler {
   @Override
   public void logout(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-    if ("true".equals(request.getParameter("deletion"))) {
-      var principal = (JodUser) authentication.getPrincipal();
-      yksiloService.delete(principal);
+    if ("true".equals(request.getParameter("deletion"))
+        && authentication.getPrincipal() instanceof JodUser user) {
+      yksiloService.delete(user);
     }
   }
 }

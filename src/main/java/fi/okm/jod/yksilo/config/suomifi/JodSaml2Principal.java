@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,8 +65,8 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
   @JsonIgnore
   @Override
   public String getPersonId() {
-    return getAttribute(PersonIdentifier.FIN.getAttribute())
-        .orElse(getAttribute(PersonIdentifier.EIDAS.getAttribute()).orElse(null));
+    return getAttribute(PersonIdentifierType.FIN.getAttribute())
+        .orElse(getAttribute(PersonIdentifierType.EIDAS.getAttribute()).orElse(null));
   }
 
   @JsonIgnore

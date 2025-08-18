@@ -53,6 +53,17 @@ public class YksiloController {
         yksilo.lupaKayttaaTekoalynKoulutukseen());
   }
 
+  @GetMapping("/tiedot-ja-luvat")
+  public YksiloDto getTiedotJaLuvat(@AuthenticationPrincipal JodUser user) {
+    return yksiloService.get(user);
+  }
+
+  @PutMapping("/tiedot-ja-luvat")
+  public void updateTiedotJaLuvat(
+      @AuthenticationPrincipal JodUser user, @RequestBody @Valid YksiloDto dto) {
+    yksiloService.update(user, dto);
+  }
+
   @GetMapping("/vienti")
   public ResponseEntity<YksiloExportDto> export(@AuthenticationPrincipal JodUser user) {
     return ResponseEntity.ok()

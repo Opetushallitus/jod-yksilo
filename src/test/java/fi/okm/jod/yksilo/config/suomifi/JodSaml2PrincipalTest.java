@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.config.suomifi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,9 +28,9 @@ class JodSaml2PrincipalTest {
         finAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.FIN.getAttribute().getUri(),
+                    PersonIdentifierType.FIN.getAttribute().getUri(),
                     List.of(finAttributeValue),
-                    PersonIdentifier.EIDAS.getAttribute().getUri(),
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
                     List.of(eidasAttributeValue)))
             .getPersonId());
 
@@ -37,23 +38,25 @@ class JodSaml2PrincipalTest {
         finAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.EIDAS.getAttribute().getUri(),
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
                     List.of(eidasAttributeValue),
-                    PersonIdentifier.FIN.getAttribute().getUri(),
+                    PersonIdentifierType.FIN.getAttribute().getUri(),
                     List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
         finAttributeValue,
         createJodSaml2User(
-                Map.of(PersonIdentifier.FIN.getAttribute().getUri(), List.of(finAttributeValue)))
+                Map.of(
+                    PersonIdentifierType.FIN.getAttribute().getUri(), List.of(finAttributeValue)))
             .getPersonId());
 
     assertEquals(
         eidasAttributeValue,
         createJodSaml2User(
                 Map.of(
-                    PersonIdentifier.EIDAS.getAttribute().getUri(), List.of(eidasAttributeValue)))
+                    PersonIdentifierType.EIDAS.getAttribute().getUri(),
+                    List.of(eidasAttributeValue)))
             .getPersonId());
   }
 

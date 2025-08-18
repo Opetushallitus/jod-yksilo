@@ -9,10 +9,15 @@
 
 package fi.okm.jod.yksilo.testutil;
 
+import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
+import java.util.Optional;
 import java.util.UUID;
 
 public record TestJodUser(UUID id) implements JodUser {
+  private static final FinnishPersonIdentifier personIdentifier =
+      FinnishPersonIdentifier.of("010199-9986");
 
   @Override
   public UUID getId() {
@@ -31,7 +36,16 @@ public record TestJodUser(UUID id) implements JodUser {
 
   @Override
   public String getPersonId() {
-    return familyName();
+    return personIdentifier.asString();
+  }
+
+  @Override
+  public Optional<String> getAttribute(Attribute attribute) {
+    return switch (attribute) {
+      case NATIONAL_IDENTIFICATION_NUMBER -> Optional.of(personIdentifier.asString());
+      case KOTIKUNTA_KUNTANUMERO -> Optional.of("200");
+      default -> Optional.empty();
+    };
   }
 
   public static JodUser of(String uuid) {

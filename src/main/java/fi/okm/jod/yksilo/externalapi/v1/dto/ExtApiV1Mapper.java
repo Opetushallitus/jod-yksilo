@@ -17,7 +17,6 @@ import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExtApiV1Mapper {
@@ -45,28 +44,33 @@ public class ExtApiV1Mapper {
   }
 
   public static ExtProfiiliDto toProfiiliDto(Yksilo yksilo) {
-    Set<ExtYksilonOsaaminenDto> yksilonOsaamiset =
+    var yksilonOsaamiset =
         yksilo.getOsaamiset().stream()
             .map(ExtApiV1Mapper::toYksilonOsaaminenDto)
             .collect(Collectors.toSet());
-    Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset =
+    var osaamisKiinnostukset =
         yksilo.getOsaamisKiinnostukset().stream()
             .map(ExtApiV1Mapper::toOsaamisKiinnostusDto)
             .collect(Collectors.toSet());
-    Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset =
+    var ammattiKiinnostukset =
         yksilo.getAmmattiKiinnostukset().stream()
             .map(ExtApiV1Mapper::toAmmattiKiinnostusDto)
             .collect(Collectors.toSet());
-    Set<ExtSuosikkiDto> suosikit =
+    var suosikit =
         yksilo.getSuosikit().stream()
             .map(ExtApiV1Mapper::toSuosikkiDto)
             .collect(Collectors.toSet());
-    Set<ExtPaamaaraDto> paamaarat =
+    var paamaarat =
         yksilo.getPaamaarat().stream()
             .map(ExtApiV1Mapper::toPaamaaraDto)
             .collect(Collectors.toSet());
     return new ExtProfiiliDto(
         yksilo.getId(),
+        yksilo.getSyntymavuosi(),
+        yksilo.getSukupuoli(),
+        yksilo.getKotikunta(),
+        yksilo.getAidinkieli(),
+        yksilo.getValittuKieli(),
         yksilonOsaamiset,
         osaamisKiinnostukset,
         ammattiKiinnostukset,

@@ -7,6 +7,12 @@ repositories {
   mavenCentral()
 }
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
 dependencies {
   implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'

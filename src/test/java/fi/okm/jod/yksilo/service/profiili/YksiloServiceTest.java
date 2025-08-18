@@ -14,12 +14,17 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
+import fi.okm.jod.yksilo.domain.Sukupuoli;
 import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -33,7 +38,7 @@ class YksiloServiceTest extends AbstractServiceTest {
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @Test
-  void delete() {
+  void shouldDeleteUserProfile() {
     paamaaraService.add(
         user,
         new PaamaaraDto(
@@ -48,5 +53,32 @@ class YksiloServiceTest extends AbstractServiceTest {
     assertDoesNotThrow(() -> service.delete(user));
     assertEquals(0, paamaaraService.findAll(user).size());
     assertThrows(NotFoundException.class, () -> service.get(user));
+  }
+
+  @Test
+  void shouldUpdateTiedot() {
+    var tiedot =
+        new YksiloDto(
+            null,
+            true,
+            true,
+            true,
+            true,
+            1999,
+            Sukupuoli.NAINEN,
+            user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).get(),
+            "fi",
+            Kieli.EN);
+    service.update(user, tiedot);
+    assertEquals(tiedot, service.get(user));
+  }
+
+  @Test
+  void shouldNotChangeIdentificationAttributes() {
+    shouldUpdateTiedot();
+
+    var tiedot =
+        new YksiloDto(null, true, true, true, true, 2000, Sukupuoli.MIES, "200", "fi", Kieli.EN);
+    assertThrows(ServiceValidationException.class, () -> service.update(user, tiedot));
   }
 }

@@ -14,12 +14,14 @@ import static fi.okm.jod.yksilo.validation.Limits.MAX_IN_SIZE;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.Sukupuoli;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
@@ -33,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
@@ -90,6 +92,20 @@ public class Yksilo extends JodEntity {
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<TapahtumaLoki> tapahtumat;
+
+  // Demographic information
+  @Setter private Integer syntymavuosi;
+
+  @Setter
+  @Enumerated(EnumType.STRING)
+  private Sukupuoli sukupuoli;
+
+  @Setter private String kotikunta;
+  @Setter private String aidinkieli;
+
+  @Setter
+  @Enumerated(EnumType.STRING)
+  private Kieli valittuKieli;
 
   public Yksilo(UUID uuid) {
     this.id = uuid;
@@ -169,7 +185,9 @@ public class Yksilo extends JodEntity {
   }
 
   @Embeddable
-  @Data
+  @Getter
+  @Setter
+  @EqualsAndHashCode
   static class Kaannos implements Translation {
     @Column(length = Integer.MAX_VALUE)
     String muuOsaaminenVapaateksti;

@@ -103,7 +103,7 @@ public class SecurityConfig {
                         "/api/keskustelut/**")
                     .permitAll()
                     .anyRequest()
-                    .authenticated())
+                    .hasRole(JodRole.USER.name()))
         .exceptionHandling(
             exceptionHandling -> {
               exceptionHandling.authenticationEntryPoint(

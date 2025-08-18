@@ -1,3 +1,8 @@
 jod:
   external-api:
     apiKey: "9g43fg49873gr97gtd3d343f7g3497gf"
+
+logging:
+  level:
+    sql: DEBUG
+    fi.okm.jod: DEBUG
