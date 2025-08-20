@@ -7,7 +7,7 @@ spring:
       # the secret arn needs to be provided statically (e.g. as env variable), it can not be read from the parameter store
       # the dot at the end of the prefix is intentional
       - aws-secretsmanager:${jod.koski.certificate-secret-arn}?prefix=jod.koski.certificate.
-      - aws-secretsmanager:${jod.external-api.secret-arn}?prefix=jod.external-api.
+      - aws-secretsmanager:${jod.external-api.api-key-secret-arn}?prefix=jod.external-api.
   cloud:
     aws:
       cloudwatch:
@@ -51,7 +51,9 @@ springdoc:
     enabled: false
 
 logging:
-  config: classpath:logback-cloud.xml
+  structured:
+    format:
+      console: logstash
   level:
     root: INFO
     fi.okm.jod: INFO
