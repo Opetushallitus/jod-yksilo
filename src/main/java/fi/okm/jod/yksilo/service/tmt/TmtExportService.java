@@ -9,8 +9,6 @@
 
 package fi.okm.jod.yksilo.service.tmt;
 
-import static net.logstash.logback.argument.StructuredArguments.value;
-
 import fi.okm.jod.yksilo.config.tmt.TmtAuthorizationRepository.AccessToken;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -131,28 +129,34 @@ public class TmtExportService {
           .retrieve()
           .toBodilessEntity();
       tapahtuma.setTila(Tila.VALMIS);
-      log.info("Successfully exported TMT profile for user {}", value("user", jodUser.getId()));
+      log.atInfo()
+          .addKeyValue("userId", jodUser.getId())
+          .log("Successfully exported TMT profile for user {}", jodUser.getId());
     } catch (HttpClientErrorException.BadRequest e) {
-      log.error(
-          "TMT export for user {} failed, invalid profile data: {}",
-          value("user", jodUser.getId()),
-          e.getMessage());
+      log.atError()
+          .addKeyValue("userId", jodUser.getId())
+          .log(
+              "TMT export for user {} failed, invalid profile data: {}",
+              jodUser.getId(),
+              e.getMessage());
       throw new ServiceValidationException("TMT export failed: Invalid profile data", e);
     } catch (HttpClientErrorException.Forbidden e) {
-      log.error(
-          "TMT export for user {} failed, access denied: {}",
-          value("user", jodUser.getId()),
-          e.getMessage());
+      log.atError()
+          .addKeyValue("userId", jodUser.getId())
+          .log("TMT export for user {} failed, access denied: {}", jodUser.getId(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } catch (HttpClientErrorException.Unauthorized e) {
-      log.error(
-          "TMT export for user {} failed, unauthorized (token expired?): {}",
-          value("user", jodUser.getId()),
-          e.getMessage());
+      log.atError()
+          .addKeyValue("userId", jodUser.getId())
+          .log(
+              "TMT export for user {} failed, unauthorized (token expired?): {}",
+              jodUser.getId(),
+              e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } catch (RestClientException e) {
-      log.error(
-          "TMT export for user {} failed: {}", value("user", jodUser.getId()), e.getMessage());
+      log.atError()
+          .addKeyValue("userId", jodUser.getId())
+          .log("TMT export for user {} failed: {}", jodUser.getId(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } finally {
       tapahtumat.saveAndFlush(tapahtuma);

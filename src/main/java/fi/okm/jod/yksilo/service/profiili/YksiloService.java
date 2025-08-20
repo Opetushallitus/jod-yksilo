@@ -9,8 +9,6 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
-import static net.logstash.logback.argument.StructuredArguments.value;
-
 import fi.okm.jod.yksilo.config.suomifi.Attribute;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -35,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class YksiloService {
   private final YksiloRepository yksilot;
 
+  @Transactional(readOnly = true)
   public YksiloDto get(JodUser user) {
     var yksilo = getYksilo(user);
 
@@ -119,13 +118,17 @@ public class YksiloService {
   public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
-    log.info("AUDIT: Deleted user {} profile", value("userId", user.getId()));
+    log.atInfo()
+        .addKeyValue("userId", user.getId())
+        .log("AUDIT: Deleted user {} profile", user.getId());
   }
 
   public YksiloExportDto export(JodUser user) {
-    var yksilo = getYksilo(user);
-    log.info("AUDIT: Exported user {} profile", value("userId", user.getId()));
-    return ExportMapper.mapYksilo(yksilo);
+    var exportDto = ExportMapper.mapYksilo(getYksilo(user));
+    log.atInfo()
+        .addKeyValue("userId", user.getId())
+        .log("AUDIT: Exported user {} profile", user.getId());
+    return exportDto;
   }
 
   private Yksilo getYksilo(JodUser user) {

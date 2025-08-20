@@ -9,9 +9,6 @@
 
 package fi.okm.jod.yksilo.controller.tmt;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
-import static net.logstash.logback.argument.StructuredArguments.value;
-
 import fi.okm.jod.yksilo.config.tmt.InvalidTokenException;
 import fi.okm.jod.yksilo.config.tmt.TmtAuthorizationRepository;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
@@ -80,10 +77,10 @@ public class TmtExportController {
             .queryParam("redirectUrl", responseUri.toString())
             .build()
             .toUri();
-    log.info(
-        "Requesting authorization for user {} profile export",
-        value(USER_ID, user.getId()),
-        kv(EXPORT_ID, authorizationRequest.id()));
+    log.atInfo()
+        .addKeyValue(USER_ID, user.getId())
+        .addKeyValue(EXPORT_ID, authorizationRequest.id())
+        .log("Requesting authorization for user {} profile export", user.getId());
     return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
   }
 
@@ -98,10 +95,10 @@ public class TmtExportController {
       try {
         authorizationRepository.clearAuthorizationRequest();
         authorizationRepository.saveAccessToken(authorizationRequest, token);
-        log.info(
-            "Received TMT authorization for user {} profile export",
-            value(USER_ID, user.getId()),
-            kv(EXPORT_ID, authorizationRequest.id()));
+        log.atInfo()
+            .addKeyValue(USER_ID, user.getId())
+            .addKeyValue(EXPORT_ID, authorizationRequest.id())
+            .log("Received TMT authorization for user {} profile export", user.getId());
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
             .location(
                 UriComponentsBuilder.fromPath(authorizationRequest.callback())
@@ -110,11 +107,10 @@ public class TmtExportController {
                     .toUri())
             .build();
       } catch (InvalidTokenException e) {
-        log.error(
-            "Received invalid access token for user {}",
-            value(USER_ID, user.getId()),
-            kv(EXPORT_ID, authorizationRequest.id()),
-            e);
+        log.atError()
+            .addKeyValue(USER_ID, user.getId())
+            .addKeyValue(EXPORT_ID, authorizationRequest.id())
+            .log("Received invalid access token for user {}", user.getId(), e);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
             .location(
                 UriComponentsBuilder.fromPath(authorizationRequest.callback())
@@ -148,7 +144,9 @@ public class TmtExportController {
     if (accessToken != null) {
       authorizationRepository.clearAccessToken();
       MDC.put(EXPORT_ID, accessToken.id().toString());
-      log.info("Exporting profile for user {}", value(USER_ID, user.getId()));
+      log.atInfo()
+          .addKeyValue(USER_ID, user.getId())
+          .log("Exporting profile for user {}", user.getId());
       service.export(user, accessToken);
     } else {
       log.error("Access token not found");
