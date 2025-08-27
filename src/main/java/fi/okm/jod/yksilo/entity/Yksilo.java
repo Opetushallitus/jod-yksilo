@@ -82,6 +82,7 @@ public class Yksilo extends JodEntity {
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = MAX_IN_SIZE)
+  // jotain
   private Set<YksilonSuosikki> suosikit;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
