@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +27,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @ConditionalOnBean(Saml2LoginConfig.class)
 @Hidden
 class LoginController {
+  @Value("${jod.saml2.relying-party.registration-id}")
+  private String registrationId;
 
-  public static final String REDIRECT_URI = "/saml2/authenticate/jodsuomifi";
+  public static final String REDIRECT_URI = "/saml2/authenticate/{registrationId}";
 
   @GetMapping("/login")
   void login(
@@ -44,6 +47,7 @@ class LoginController {
       request.getSession().setAttribute(CALLBACK.getKey(), callback.getPath());
     }
 
-    response.sendRedirect(request.getContextPath() + REDIRECT_URI);
+    response.sendRedirect(
+        request.getContextPath() + REDIRECT_URI.replace("{registrationId}", registrationId));
   }
 }

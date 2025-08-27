@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.config.suomifi;
 
+import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import fi.okm.jod.yksilo.config.LoginSuccessHandler;
@@ -20,12 +22,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.opensaml.saml.saml2.core.NameIDType;
+import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.ssl.pem.PemContent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -36,8 +42,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.saml2.core.Saml2X509Credential;
+import org.springframework.security.saml2.core.Saml2X509Credential.Saml2X509CredentialType;
 import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
+import org.springframework.security.saml2.provider.service.registration.InMemoryRelyingPartyRegistrationRepository;
+import org.springframework.security.saml2.provider.service.registration.OpenSamlAssertingPartyDetails;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
+import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
 import org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2AuthenticationRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.logout.OpenSaml4LogoutRequestResolver;
@@ -55,6 +68,67 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 public class Saml2LoginConfig {
   private final VetumaExtensionBuilder vetumaExtensionBuilder = new VetumaExtensionBuilder();
   private final YksiloService yksiloService;
+
+  @Bean
+  RelyingPartyRegistrationRepository relyingPartyRegistrationRepository(
+      RelyingPartyProperties properties) {
+
+    // missing:
+    // - metadata signature validation (or loading from a trusted source)
+    // - making the repository refreshable (to support metadata and credential rotation)
+
+    var metadata =
+        (OpenSamlAssertingPartyDetails)
+            RelyingPartyRegistrations.fromMetadataLocation(properties.getIdpMetadataUri())
+                .build()
+                .getAssertingPartyMetadata();
+
+    var descriptor = metadata.getEntityDescriptor().getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
+
+    var slo = getRedirectionEndpoint(descriptor.getSingleLogoutServices());
+    var sso = getRedirectionEndpoint(descriptor.getSingleSignOnServices());
+
+    // we want to use redirect binding, the default is arbitrary depending on the order in
+    // the metadata descriptor
+    metadata =
+        metadata
+            .mutate()
+            .singleSignOnServiceBinding(Saml2MessageBinding.REDIRECT)
+            .singleSignOnServiceLocation(requireNonNull(sso.getLocation()))
+            .singleLogoutServiceBinding(Saml2MessageBinding.REDIRECT)
+            .singleLogoutServiceLocation(requireNonNull(slo.getLocation()))
+            .singleLogoutServiceResponseLocation(
+                requireNonNullElse(slo.getResponseLocation(), slo.getLocation()))
+            .build();
+
+    var cert = PemContent.of(properties.getCertificate());
+    var key = PemContent.of(properties.getPrivateKey());
+
+    var samlCredential =
+        new Saml2X509Credential(
+            key.getPrivateKey(),
+            cert.getCertificates().getFirst(),
+            Saml2X509CredentialType.DECRYPTION,
+            Saml2X509CredentialType.SIGNING);
+
+    return new InMemoryRelyingPartyRegistrationRepository(
+        RelyingPartyRegistration.withAssertingPartyMetadata(metadata)
+            .registrationId(properties.getRegistrationId())
+            .nameIdFormat(NameIDType.TRANSIENT)
+            .assertionConsumerServiceBinding(Saml2MessageBinding.POST)
+            .singleLogoutServiceLocation("{baseUrl}/logout/saml2/slo/{registrationId}")
+            .singleLogoutServiceBinding(Saml2MessageBinding.POST)
+            .signingX509Credentials(credentials -> credentials.add(samlCredential))
+            .decryptionX509Credentials(credentials -> credentials.add(samlCredential))
+            .build());
+  }
+
+  private static <T extends Endpoint> T getRedirectionEndpoint(Collection<T> endpoints) {
+    return endpoints.stream()
+        .filter(s -> s.getBinding().equals(SAMLConstants.SAML2_REDIRECT_BINDING_URI))
+        .findAny()
+        .orElseThrow();
+  }
 
   @Bean
   @SuppressWarnings("java:S4502")
@@ -175,6 +249,7 @@ public class Saml2LoginConfig {
 
   static class AuthenticationEventHandler
       implements AuthenticationFailureHandler, LogoutSuccessHandler {
+
     private final RedirectStrategy redirectStrategy;
 
     public AuthenticationEventHandler(RedirectStrategy redirectStrategy) {
