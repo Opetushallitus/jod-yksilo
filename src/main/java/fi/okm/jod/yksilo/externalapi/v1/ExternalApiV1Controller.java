@@ -52,7 +52,7 @@ public class ExternalApiV1Controller {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtTyoMahdollisuusDto> tyomahdollisuudet =
         service.findTyomahdollisuudet(pageable);
-    log.info("Ext API: Successfully fetched {} tyomahdollisuutta", tyomahdollisuudet.maara());
+    log.info("Successfully fetched {} tyomahdollisuutta", tyomahdollisuudet.maara());
     return tyomahdollisuudet;
   }
 
@@ -66,8 +66,7 @@ public class ExternalApiV1Controller {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtKoulutusMahdollisuusDto> koulutusmahdollisuudet =
         service.findKoulutusmahdollisuudet(pageable);
-    log.info(
-        "Ext API: Successfully fetched {} koulutusmahdollisuutta", koulutusmahdollisuudet.maara());
+    log.info("Successfully fetched {} koulutusmahdollisuutta", koulutusmahdollisuudet.maara());
     return koulutusmahdollisuudet;
   }
 
@@ -88,7 +87,7 @@ public class ExternalApiV1Controller {
           Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtProfiiliDto> yksilot = service.findYksilot(modifiedAfter, pageable);
-    log.info("Ext API:Successfully fetched {} profiilia", yksilot.maara());
+    log.info("Successfully fetched {} profiilia", yksilot.maara());
     return yksilot;
   }
 }
