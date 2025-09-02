@@ -7,9 +7,8 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.externalapi.v1;
+package fi.okm.jod.yksilo.externalapi;
 
-import fi.okm.jod.yksilo.config.ApiKeyFilter;
 import fi.okm.jod.yksilo.config.JodRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +35,8 @@ public class ExternalApiConfig {
   @Order(2)
   public SecurityFilterChain externalApiFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher("/external-api/**")
-        .addFilterBefore(new ApiKeyFilter(this.apiKey), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(
+            new ExtApiKeyFilter(this.apiKey), UsernamePasswordAuthenticationFilter.class)
         .csrf(csrf -> csrf.disable())
         .requestCache(rc -> rc.disable())
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

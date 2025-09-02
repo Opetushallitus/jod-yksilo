@@ -13,7 +13,6 @@ import static fi.okm.jod.yksilo.externalapi.v1.ExternalApiV1Controller.EXT_API_V
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fi.okm.jod.yksilo.IntegrationTest;
-import fi.okm.jod.yksilo.config.ApiKeyFilter;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.externalapi.v1.dto.ExtProfiiliDto;
 import org.junit.jupiter.api.Test;
@@ -115,7 +114,7 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
 
   private HttpHeaders headersWithAuthentication() {
     HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(ApiKeyFilter.API_KEY_HEADER_NAME, this.apiKey);
+    httpHeaders.add(ExtApiKeyFilter.API_KEY_HEADER_NAME, this.apiKey);
     return httpHeaders;
   }
 }
