@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ExternalApiV1Controller {
   public static final String EXT_API_V1_PATH = "/external-api/v1";
+  Logger log = LoggerFactory.getLogger(ExternalApiV1Controller.class);
 
   private final ExternalApiV1Service service;
 
@@ -47,7 +50,10 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findTyomahdollisuudet(pageable);
+    final SivuDto<ExtTyoMahdollisuusDto> tyomahdollisuudet =
+        service.findTyomahdollisuudet(pageable);
+    log.info("Ext API: Successfully fetched {} tyomahdollisuutta", tyomahdollisuudet.maara());
+    return tyomahdollisuudet;
   }
 
   @GetMapping("/koulutusmahdollisuudet")
@@ -58,7 +64,11 @@ public class ExternalApiV1Controller {
       @RequestParam(required = false, defaultValue = "0") Integer sivu,
       @RequestParam(required = false, defaultValue = "10") Integer koko) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findKoulutusmahdollisuudet(pageable);
+    final SivuDto<ExtKoulutusMahdollisuusDto> koulutusmahdollisuudet =
+        service.findKoulutusmahdollisuudet(pageable);
+    log.info(
+        "Ext API: Successfully fetched {} koulutusmahdollisuutta", koulutusmahdollisuudet.maara());
+    return koulutusmahdollisuudet;
   }
 
   @GetMapping("/profiilit")
@@ -77,6 +87,8 @@ public class ExternalApiV1Controller {
           @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
           Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);
-    return service.findYksilot(modifiedAfter, pageable);
+    final SivuDto<ExtProfiiliDto> yksilot = service.findYksilot(modifiedAfter, pageable);
+    log.info("Ext API:Successfully fetched {} profiilia", yksilot.maara());
+    return yksilot;
   }
 }

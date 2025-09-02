@@ -7,8 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config;
+package fi.okm.jod.yksilo.externalapi;
 
+import fi.okm.jod.yksilo.config.ApiKeyAuthentication;
+import fi.okm.jod.yksilo.config.JodRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,13 +23,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-public class ApiKeyFilter extends OncePerRequestFilter {
+public class ExtApiKeyFilter extends OncePerRequestFilter {
 
   public static final String API_KEY_HEADER_NAME = "Jod-Ext-Api-Key";
   private final String expectedApiKey;
 
   // Constructor takes the expected API key as parameter
-  public ApiKeyFilter(String expectedApiKey) {
+  public ExtApiKeyFilter(String expectedApiKey) {
     this.expectedApiKey = Objects.requireNonNull(expectedApiKey, "Api key should not be null");
   }
 
