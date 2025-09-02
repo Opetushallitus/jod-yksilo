@@ -21,8 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,9 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/external-api/v1")
 @Tag(name = "Ulkoinen rajapinta v1", description = "Ulkoinen rajapinta v1")
 @RequiredArgsConstructor
+@Slf4j
 public class ExternalApiV1Controller {
   public static final String EXT_API_V1_PATH = "/external-api/v1";
-  Logger log = LoggerFactory.getLogger(ExternalApiV1Controller.class);
 
   private final ExternalApiV1Service service;
 
@@ -52,7 +51,7 @@ public class ExternalApiV1Controller {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtTyoMahdollisuusDto> tyomahdollisuudet =
         service.findTyomahdollisuudet(pageable);
-    log.info("Successfully fetched {} tyomahdollisuutta", tyomahdollisuudet.maara());
+    log.info("Successfully fetched {} tyomahdollisuus objects", tyomahdollisuudet.maara());
     return tyomahdollisuudet;
   }
 
@@ -66,7 +65,8 @@ public class ExternalApiV1Controller {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtKoulutusMahdollisuusDto> koulutusmahdollisuudet =
         service.findKoulutusmahdollisuudet(pageable);
-    log.info("Successfully fetched {} koulutusmahdollisuutta", koulutusmahdollisuudet.maara());
+    log.info(
+        "Successfully fetched {} koulutusmahdollisuus objects", koulutusmahdollisuudet.maara());
     return koulutusmahdollisuudet;
   }
 
@@ -87,7 +87,7 @@ public class ExternalApiV1Controller {
           Instant modifiedAfter) {
     Pageable pageable = PageRequest.of(sivu, koko);
     final SivuDto<ExtProfiiliDto> yksilot = service.findYksilot(modifiedAfter, pageable);
-    log.info("Successfully fetched {} profiilia", yksilot.maara());
+    log.info("Successfully fetched {} profiili objects", yksilot.maara());
     return yksilot;
   }
 }
