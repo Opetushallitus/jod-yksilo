@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -38,8 +39,8 @@ class AmmattiController {
   @GetMapping
   ResponseEntity<SivuDto<AmmattiDto>> find(
       WebRequest request,
-      @RequestParam(required = false, defaultValue = "0") int sivu,
-      @RequestParam(required = false, defaultValue = "10") @Max(1000) int koko,
+      @RequestParam(required = false, defaultValue = "0") @Min(0) int sivu,
+      @RequestParam(required = false, defaultValue = "10") @Min(1) @Max(1000) int koko,
       @RequestParam(required = false) Set<URI> uri) {
 
     var etag = weakEtagOf(ammatit.currentVersion());
