@@ -51,3 +51,7 @@ spotless {
      '''.stripIndent()
   }
 }
+
+bootRun {
+  enabled = false
+}
