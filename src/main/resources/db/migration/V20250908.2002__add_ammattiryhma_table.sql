@@ -7,5 +7,6 @@ CREATE TABLE yksilo.ammattiryhma
   alin_desiili_palkka INT
 );
 
-CREATE INDEX ar_esco_uri ON ammattiryhma (esco_uri);
+CREATE UNIQUE INDEX ar_esco_uri ON ammattiryhma (esco_uri);
+
 
