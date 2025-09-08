@@ -10,8 +10,8 @@
 package fi.okm.jod.yksilo.controller;
 
 import fi.okm.jod.yksilo.dto.SivuDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

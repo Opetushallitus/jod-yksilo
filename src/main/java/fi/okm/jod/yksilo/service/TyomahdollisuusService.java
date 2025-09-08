@@ -11,10 +11,13 @@ package fi.okm.jod.yksilo.service;
 
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
-import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusFullDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.PalkkaDataDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
+import fi.okm.jod.yksilo.entity.Ammattiryhma;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
+import fi.okm.jod.yksilo.repository.AmmattiryhmaRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TyomahdollisuusService {
   private final TyomahdollisuusRepository tyomahdollisuusRepository;
+  private final AmmattiryhmaRepository ammattiryhmaRepository;
 
   public Page<TyomahdollisuusDto> findAll(Pageable pageable) {
     return tyomahdollisuusRepository
@@ -50,10 +54,15 @@ public class TyomahdollisuusService {
   }
 
   public TyomahdollisuusFullDto get(UUID id) {
-    return mapFull(
+    Tyomahdollisuus tyomahdollisuus =
         tyomahdollisuusRepository
             .findById(id)
-            .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus")));
+            .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus"));
+    Ammattiryhma ammattiryhma =
+        tyomahdollisuus.getAmmattiryhma() != null
+            ? this.ammattiryhmaRepository.findByEscoUri(tyomahdollisuus.getAmmattiryhma())
+            : null;
+    return mapFull(tyomahdollisuus, ammattiryhma);
   }
 
   private static TyomahdollisuusDto map(Tyomahdollisuus entity) {
@@ -69,7 +78,9 @@ public class TyomahdollisuusService {
             entity.isAktiivinen());
   }
 
-  private static TyomahdollisuusFullDto mapFull(Tyomahdollisuus entity) {
+  private static TyomahdollisuusFullDto mapFull(
+      final Tyomahdollisuus entity, final Ammattiryhma ammattiryhma) {
+
     return entity == null
         ? null
         : new TyomahdollisuusFullDto(
@@ -80,9 +91,21 @@ public class TyomahdollisuusService {
             entity.getTehtavat(),
             entity.getYleisetVaatimukset(),
             entity.getAmmattiryhma(),
+            mapPalkkaData(ammattiryhma),
             entity.getAineisto(),
             entity.isAktiivinen(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
+  }
+
+  private static PalkkaDataDto mapPalkkaData(final Ammattiryhma ammattiryhma) {
+    if (ammattiryhma == null) {
+      return null;
+    }
+    return new PalkkaDataDto(
+        ammattiryhma.getMuokattu(),
+        ammattiryhma.getMediaaniPalkka(),
+        ammattiryhma.getYlinDesiiliPalkka(),
+        ammattiryhma.getAlinDesiiliPalkka());
   }
 }
