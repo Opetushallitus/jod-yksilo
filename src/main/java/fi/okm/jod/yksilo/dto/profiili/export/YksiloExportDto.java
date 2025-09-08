@@ -10,9 +10,7 @@
 package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.Sukupuoli;
-import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,9 +28,7 @@ public record YksiloExportDto(
     Set<TyopaikkaExportDto> tyopaikat,
     Set<KoulutusKokonaisuusExportDto> koulutusKokonaisuudet,
     Set<ToimintoExportDto> toiminnot,
-    Set<URI> osaamisKiinnostukset,
-    Set<URI> ammattiKiinnostukset,
-    LocalizedString muuOsaaminenVapaateksti,
-    LocalizedString osaamisKiinnostuksetVapaateksti,
+    MuuOsaaminenExportDto muuOsaaminen,
+    KiinnostuksetExportDto kiinnostukset,
     Set<YksilonSuosikkiExportDto> suosikit,
     Set<PaamaaraExportDto> paamaarat) {}

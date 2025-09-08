@@ -9,8 +9,11 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.export.KiinnostuksetExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.KoulutusExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.KoulutusKokonaisuusExportDto;
+import fi.okm.jod.yksilo.dto.profiili.export.MuuOsaaminenExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PaamaaraExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PatevyysExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PolunSuunnitelmaExportDto;
@@ -65,14 +68,20 @@ public final class ExportMapper {
             entity.getToiminnot().stream()
                 .map(ExportMapper::mapToiminto)
                 .collect(Collectors.toSet()),
-            entity.getOsaamisKiinnostukset().stream()
-                .map(Osaaminen::getUri)
-                .collect(Collectors.toSet()),
-            entity.getAmmattiKiinnostukset().stream()
-                .map(Ammatti::getUri)
-                .collect(Collectors.toSet()),
-            entity.getMuuOsaaminenVapaateksti(),
-            entity.getOsaamisKiinnostuksetVapaateksti(),
+            new MuuOsaaminenExportDto(
+                entity.getMuuOsaaminenVapaateksti(),
+                entity.getOsaamiset().stream()
+                    .filter(yo -> OsaamisenLahdeTyyppi.MUU_OSAAMINEN.equals(yo.getLahdeTyyppi()))
+                    .map(yo -> yo.getOsaaminen().getUri())
+                    .collect(Collectors.toSet())),
+            new KiinnostuksetExportDto(
+                entity.getOsaamisKiinnostuksetVapaateksti(),
+                entity.getOsaamisKiinnostukset().stream()
+                    .map(Osaaminen::getUri)
+                    .collect(Collectors.toSet()),
+                entity.getAmmattiKiinnostukset().stream()
+                    .map(Ammatti::getUri)
+                    .collect(Collectors.toSet())),
             entity.getSuosikit().stream()
                 .map(ExportMapper::mapYksilonSuosikki)
                 .collect(Collectors.toSet()),
