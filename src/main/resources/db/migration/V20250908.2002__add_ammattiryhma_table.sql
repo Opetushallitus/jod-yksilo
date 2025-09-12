@@ -1,0 +1,11 @@
+CREATE TABLE yksilo.ammattiryhma
+(
+  esco_uri            CHARACTER VARYING(255) NOT NULL PRIMARY KEY ,
+  luotu    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  muokattu TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  data     jsonb NOT NULL
+);
+
+CREATE UNIQUE INDEX ar_esco_uri ON ammattiryhma (esco_uri);
+
+

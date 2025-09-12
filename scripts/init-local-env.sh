@@ -7,6 +7,7 @@ ESCO_VERSION="1.2.0"
 
 
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
+  aws s3 cp s3://${DEV_BUCKET}/ammattiryhma/ammattiryhma.csv ./tmp/data
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/Dockerfile.osaamissuosittelija .
@@ -33,10 +34,13 @@ host=${host%-\>*}
   -P"flyway.url=jdbc:postgresql://$host/yksilo"
 
 echo "Importing data"
+# shellcheck disable=SC1009
 (
 
   SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-  SQLFILE="$SCRIPT_DIR/devdata/yksilot.sql"
+  YKSILOT_SQLFILE="$SCRIPT_DIR/devdata/yksilot.sql"
+  AMMATTIRYHMA_CSV="$SCRIPT_DIR/../tmp/data/ammattiryhma.csv"
+  AMMATTIRYHMAT_SQLFILE="$SCRIPT_DIR/devdata/ammattiryhma.sql"
   cd ./tmp/data
 
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
@@ -48,7 +52,6 @@ echo "Importing data"
       -c "SET esco.lang=${lang}" \
       -c "\COPY esco_data.skills(conceptType,conceptUri,skillType,reuseLevel,preferredLabel,altLabels,hiddenLabels,status,modifiedDate,scopeNote,definition,inScheme,description) FROM STDIN (FORMAT CSV, HEADER true)"
   done
-
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "TRUNCATE TABLE esco_data.occupations"
 
@@ -74,13 +77,17 @@ echo "Importing data"
       -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "\COPY ${mahdollisuus}_data.import(data) FROM STDIN (FORMAT text)"
   done
+
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
     -c "CALL esco_data.import_osaaminen();" \
     -c "CALL esco_data.import_ammatti();" \
     -c "CALL tyomahdollisuus_data.import();" \
     -c "CALL koulutusmahdollisuus_data.import();"
 
-  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo < "$SQLFILE"
+
+  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo < "$YKSILOT_SQLFILE"
+  docker cp "$AMMATTIRYHMA_CSV" $DB:/ammattiryhma.csv
+  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo  < "$AMMATTIRYHMAT_SQLFILE"
 )
 
 if [[ $STARTED == true ]]; then

@@ -21,7 +21,7 @@ import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
-import fi.okm.jod.yksilo.dto.TyomahdollisuusDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import java.util.List;

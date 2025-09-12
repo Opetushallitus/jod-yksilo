@@ -7,28 +7,19 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto;
+package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
-import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.Map;
 import java.util.UUID;
 
-public record TyomahdollisuusFullDto(
+public record TyomahdollisuusDto(
     @NotNull UUID id,
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
-    LocalizedString tehtavat,
-    LocalizedString yleisetVaatimukset,
     URI ammattiryhma,
     TyomahdollisuusAineisto aineisto,
-    boolean aktiivinen,
-    @Schema(
-            propertyNames = TyomahdollisuusJakaumaTyyppi.class,
-            additionalPropertiesSchema = JakaumaDto.class)
-        Map<TyomahdollisuusJakaumaTyyppi, JakaumaDto> jakaumat) {}
+    boolean aktiivinen) {}

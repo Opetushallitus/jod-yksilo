@@ -137,9 +137,6 @@ $$
 
               END LOOP;
           END LOOP;
-
-
-
       END LOOP;
 
   END
