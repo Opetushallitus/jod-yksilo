@@ -10,10 +10,9 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Ammattiryhma;
-import java.net.URI;
-import java.util.UUID;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AmmattiryhmaRepository extends JpaRepository<Ammattiryhma, UUID> {
-  Ammattiryhma findByEscoUri(URI ammattiryhma);
+public interface AmmattiryhmaRepository extends JpaRepository<Ammattiryhma, String> {
+  Optional<Ammattiryhma> findByEscoUri(String ammattiryhma);
 }

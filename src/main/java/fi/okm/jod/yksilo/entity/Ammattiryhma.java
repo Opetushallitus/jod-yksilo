@@ -9,14 +9,15 @@
 
 package fi.okm.jod.yksilo.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.net.URI;
+import java.util.Optional;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Ammattiryhma-table is populated every night by lambda-function. Lambda-function gets all
@@ -26,16 +27,39 @@ import org.hibernate.annotations.Immutable;
 @Getter
 @Immutable
 public class Ammattiryhma extends JodEntity {
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+
   @Id
-  private Long id;
-
   @Column(unique = true, nullable = false)
-  private URI escoUri;
+  private String escoUri;
 
-  @Column private Integer mediaaniPalkka;
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(columnDefinition = "jsonb")
+  private JsonNode data;
 
-  @Column private Integer ylinDesiiliPalkka;
+  public Integer getMediaaniPalkka() {
+    return getPropertyFromPalkkaus("mediaani");
+  }
 
-  @Column private Integer alinDesiiliPalkka;
+  public Integer getYlinDesiiliPalkka() {
+    return getPropertyFromPalkkaus("ylinDesiili");
+  }
+
+  public Integer getAlinDesiiliPalkka() {
+    return getPropertyFromPalkkaus("alinDesiili");
+  }
+
+  public Integer getPropertyFromPalkkaus(String propertyName) {
+    final Optional<JsonNode> palkkaus = getPalkkausObject();
+    if (palkkaus.isPresent()) {
+      final Optional<JsonNode> palkkaProperty = palkkaus.get().optional(propertyName);
+      if (palkkaProperty.isPresent()) {
+        return palkkaProperty.get().asInt();
+      }
+    }
+    return null;
+  }
+
+  private Optional<JsonNode> getPalkkausObject() {
+    return data.optional("palkkaus");
+  }
 }

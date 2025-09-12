@@ -19,8 +19,10 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.AmmattiryhmaRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -58,11 +60,17 @@ public class TyomahdollisuusService {
         tyomahdollisuusRepository
             .findById(id)
             .orElseThrow(() -> new NotFoundException("Unknown tyomahdollisuus"));
-    Ammattiryhma ammattiryhma =
-        tyomahdollisuus.getAmmattiryhma() != null
-            ? this.ammattiryhmaRepository.findByEscoUri(tyomahdollisuus.getAmmattiryhma())
-            : null;
+    Ammattiryhma ammattiryhma = getAmmattiryhma(tyomahdollisuus.getAmmattiryhma());
     return mapFull(tyomahdollisuus, ammattiryhma);
+  }
+
+  private Ammattiryhma getAmmattiryhma(final URI escoUri) {
+    if (escoUri == null) {
+      return null;
+    }
+    Optional<Ammattiryhma> ammattiryhma =
+        this.ammattiryhmaRepository.findByEscoUri(escoUri.toString());
+    return ammattiryhma.orElse(null);
   }
 
   private static TyomahdollisuusDto map(Tyomahdollisuus entity) {

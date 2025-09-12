@@ -9,10 +9,11 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 
 public record PalkkaDataDto(
-    Instant tiedotHaettu,
+    @NotNull Instant tiedotHaettu,
     Integer mediaaniPalkka,
     Integer ylinDesiiliPalkka,
     Integer alinDesiiliPalkka) {}

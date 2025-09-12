@@ -137,31 +137,6 @@ $$
 
               END LOOP;
           END LOOP;
-
-        WITH NumberedRows AS (
-          SELECT
-                ROW_NUMBER() OVER (ORDER BY ammattiryhma) AS rn,
-                ammattiryhma
-          FROM tyomahdollisuus
-          WHERE ammattiryhma IS NOT NULL
-          GROUP BY ammattiryhma
-        )
-        INSERT INTO ammattiryhma (
-          id, esco_uri, mediaani_palkka, ylin_desiili_palkka, alin_desiili_palkka
-        )
-        SELECT
-          rn + (SELECT COALESCE(MAX(id), 0) FROM ammattiryhma),
-          ammattiryhma,
-          rn + 3300,
-          rn + 4500,
-          rn + 2000
-        FROM NumberedRows n
-        WHERE NOT EXISTS (
-          SELECT 1
-          FROM ammattiryhma a
-          WHERE a.esco_uri = n.ammattiryhma
-        );
-
       END LOOP;
 
   END
