@@ -86,8 +86,6 @@ echo "Importing data"
 
 
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo < "$YKSILOT_SQLFILE"
-  echo "$AMMATTIRYHMA_CSV"
-  echo "$AMMATTIRYHMAT_SQLFILE"
   docker cp "$AMMATTIRYHMA_CSV" $DB:/ammattiryhma.csv
   docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo  < "$AMMATTIRYHMAT_SQLFILE"
 )
