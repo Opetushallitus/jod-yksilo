@@ -24,6 +24,7 @@ public record YksiloExportDto(
     String kotikunta,
     String aidinkieli,
     Kieli valittuKieli,
+    String email,
     Set<TyopaikkaExportDto> tyopaikat,
     Set<KoulutusKokonaisuusExportDto> koulutusKokonaisuudet,
     Set<ToimintoExportDto> toiminnot,

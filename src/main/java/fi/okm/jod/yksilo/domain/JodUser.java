@@ -22,6 +22,8 @@ public interface JodUser {
 
   String getPersonId();
 
+  String getQualifiedPersonId();
+
   default Optional<String> getAttribute(Attribute attribute) {
     return Optional.empty();
   }

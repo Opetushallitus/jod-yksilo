@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.config.suomifi.Attribute;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -41,6 +42,7 @@ public class YksiloService {
     var syntymavuosi = yksilo.getSyntymavuosi();
     var kotikunta = yksilo.getKotikunta();
     var tunnisteTyyppi = (PersonIdentifierType) null;
+    var email = yksilot.getEmail(user.getQualifiedPersonId()).orElse(null);
 
     if (!yksilo.getTervetuloapolku()) {
       if (getNationalPersonIdentifier(user) instanceof FinnishPersonIdentifier id) {
@@ -48,6 +50,7 @@ public class YksiloService {
         sukupuoli = id.getGender();
         syntymavuosi = id.getBirthYear();
         kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
+        email = user.getAttribute(Attribute.MAIL).orElse(null);
       } else if (user.getAttribute(Attribute.PERSON_IDENTIFIER).isPresent()) {
         tunnisteTyyppi = PersonIdentifierType.EIDAS;
         syntymavuosi =
@@ -66,7 +69,8 @@ public class YksiloService {
         sukupuoli,
         kotikunta,
         yksilo.getAidinkieli(),
-        yksilo.getValittuKieli());
+        yksilo.getValittuKieli(),
+        email);
   }
 
   public void update(JodUser user, YksiloDto dto) {
@@ -97,7 +101,13 @@ public class YksiloService {
         throw new ServiceValidationException("Kotikunta not supported eIDAS users");
       }
     }
+    yksilot.updateEmail(user.getQualifiedPersonId(), dto.email());
     yksilot.save(yksilo);
+
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .addKeyValue("userId", user.getId())
+        .log("Updated user {} attributes", user.getId());
   }
 
   private static <T> T validate(T value, T expected) {
@@ -117,15 +127,19 @@ public class YksiloService {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
     log.atInfo()
+        .addMarker(LogMarker.AUDIT)
         .addKeyValue("userId", user.getId())
-        .log("AUDIT: Deleted user {} profile", user.getId());
+        .log("Deleted user {} profile", user.getId());
   }
 
   public YksiloExportDto export(JodUser user) {
-    var exportDto = ExportMapper.mapYksilo(getYksilo(user));
+    var exportDto =
+        ExportMapper.mapYksilo(
+            getYksilo(user), yksilot.getEmail(user.getQualifiedPersonId()).orElse(null));
     log.atInfo()
+        .addMarker(LogMarker.AUDIT)
         .addKeyValue("userId", user.getId())
-        .log("AUDIT: Exported user {} profile", user.getId());
+        .log("Exported user {} profile", user.getId());
     return exportDto;
   }
 

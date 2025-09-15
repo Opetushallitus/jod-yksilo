@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config;
 
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,8 +36,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
       log.atInfo()
+          .addMarker(LogMarker.AUDIT)
           .addKeyValue("userId", user.getId())
-          .log("AUDIT: User {} logged in", user.getId());
+          .log("User {} logged in", user.getId());
     }
 
     if (request.getSession(false) instanceof HttpSession s) {

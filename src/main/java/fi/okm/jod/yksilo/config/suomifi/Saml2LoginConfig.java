@@ -16,6 +16,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import fi.okm.jod.yksilo.config.LoginSuccessHandler;
 import fi.okm.jod.yksilo.config.ProfileDeletionHandler;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -267,7 +268,9 @@ public class Saml2LoginConfig {
       var queryParam = "";
       if (exception != null) {
         queryParam = "?error=AUTHENTICATION_FAILURE";
-        log.warn("Authentication failure: {}", exception.getMessage());
+        log.atWarn()
+            .addMarker(LogMarker.AUDIT)
+            .log("Authentication failure: {}", exception.getMessage());
       }
       redirectStrategy.sendRedirect(request, response, "/" + queryParam);
     }
