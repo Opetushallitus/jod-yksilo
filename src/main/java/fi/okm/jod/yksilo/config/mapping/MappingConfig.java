@@ -10,6 +10,8 @@
 package fi.okm.jod.yksilo.config.mapping;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -19,6 +21,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MappingConfig {
+
+  // limits for acceptable JSON input sizes
+  public static final long MAX_DOC_LEN = 1024L * 1024L;
+  public static final int MAX_STRING_LEN = 32 * 1024;
+  public static final int MAX_NAME_LEN = 256;
+
   @Bean
   Jackson2ObjectMapperBuilderCustomizer customizer() {
     return builder ->
@@ -27,6 +35,15 @@ public class MappingConfig {
                 SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
                 MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             .serializationInclusion(JsonInclude.Include.NON_ABSENT)
-            .mixIn(LocalizedString.class, LocalizedStringMixin.class);
+            .mixIn(LocalizedString.class, LocalizedStringMixin.class)
+            .factory(
+                JsonFactory.builder()
+                    .streamReadConstraints(
+                        StreamReadConstraints.builder()
+                            .maxNameLength(MAX_NAME_LEN)
+                            .maxStringLength(MAX_STRING_LEN)
+                            .maxDocumentLength(MAX_DOC_LEN)
+                            .build())
+                    .build());
   }
 }
