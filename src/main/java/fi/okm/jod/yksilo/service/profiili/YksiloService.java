@@ -61,7 +61,6 @@ public class YksiloService {
         tunnisteTyyppi,
         yksilo.getTervetuloapolku(),
         yksilo.getLupaLuovuttaaTiedotUlkopuoliselle(),
-        yksilo.getLupaArkistoida(),
         yksilo.getLupaKayttaaTekoalynKoulutukseen(),
         syntymavuosi,
         sukupuoli,
@@ -74,7 +73,6 @@ public class YksiloService {
     var yksilo = getYksilo(user);
     yksilo.setTervetuloapolku(dto.tervetuloapolku());
     yksilo.setLupaLuovuttaaTiedotUlkopuoliselle(dto.lupaLuovuttaaTiedotUlkopuoliselle());
-    yksilo.setLupaArkistoida(dto.lupaArkistoida());
     yksilo.setLupaKayttaaTekoalynKoulutukseen(dto.lupaKayttaaTekoalynKoulutukseen());
 
     yksilo.setAidinkieli(dto.aidinkieli());

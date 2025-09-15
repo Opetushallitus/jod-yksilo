@@ -52,7 +52,6 @@ public final class ExportMapper {
             entity.getId(),
             entity.getTervetuloapolku(),
             entity.getLupaLuovuttaaTiedotUlkopuoliselle(),
-            entity.getLupaArkistoida(),
             entity.getLupaKayttaaTekoalynKoulutukseen(),
             entity.getSyntymavuosi(),
             entity.getSukupuoli(),

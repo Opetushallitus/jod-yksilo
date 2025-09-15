@@ -49,7 +49,6 @@ public class YksiloController {
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
         yksilo.tervetuloapolku(),
         yksilo.lupaLuovuttaaTiedotUlkopuoliselle(),
-        yksilo.lupaArkistoida(),
         yksilo.lupaKayttaaTekoalynKoulutukseen());
   }
 
@@ -83,7 +82,6 @@ public class YksiloController {
       @NotNull CsrfTokenDto csrf,
       boolean tervetuloapolku,
       boolean lupaLuovuttaaTiedotUlkopuoliselle,
-      boolean lupaArkistoida,
       boolean lupaKayttaaTekoalynKoulutukseen) {}
 
   public record CsrfTokenDto(

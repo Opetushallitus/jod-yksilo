@@ -19,7 +19,6 @@ public record YksiloDto(
     @Schema(accessMode = Schema.AccessMode.READ_ONLY) PersonIdentifierType tunnisteTyyppi,
     boolean tervetuloapolku,
     boolean lupaLuovuttaaTiedotUlkopuoliselle,
-    boolean lupaArkistoida,
     boolean lupaKayttaaTekoalynKoulutukseen,
     Integer syntymavuosi,
     Sukupuoli sukupuoli,

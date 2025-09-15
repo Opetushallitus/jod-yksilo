@@ -18,7 +18,6 @@ public record YksiloExportDto(
     UUID id,
     boolean tervetuloapolku,
     boolean lupaLuovuttaaTiedotUlkopuoliselle,
-    boolean lupaArkistoida,
     boolean lupaKayttaaTekoalynKoulutukseen,
     Integer syntymavuosi,
     Sukupuoli sukupuoli,
