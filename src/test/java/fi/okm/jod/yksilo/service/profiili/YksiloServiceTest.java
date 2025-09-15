@@ -63,7 +63,6 @@ class YksiloServiceTest extends AbstractServiceTest {
             true,
             true,
             true,
-            true,
             1999,
             Sukupuoli.NAINEN,
             user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).get(),
@@ -77,8 +76,7 @@ class YksiloServiceTest extends AbstractServiceTest {
   void shouldNotChangeIdentificationAttributes() {
     shouldUpdateTiedot();
 
-    var tiedot =
-        new YksiloDto(null, true, true, true, true, 2000, Sukupuoli.MIES, "200", "fi", Kieli.EN);
+    var tiedot = new YksiloDto(null, true, true, true, 2000, Sukupuoli.MIES, "200", "fi", Kieli.EN);
     assertThrows(ServiceValidationException.class, () -> service.update(user, tiedot));
   }
 }
