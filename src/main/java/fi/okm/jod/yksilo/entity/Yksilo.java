@@ -57,8 +57,6 @@ public class Yksilo extends JodEntity {
 
   @Setter private Boolean lupaLuovuttaaTiedotUlkopuoliselle;
 
-  @Setter private Boolean lupaArkistoida;
-
   @Setter private Boolean lupaKayttaaTekoalynKoulutukseen;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -111,7 +109,6 @@ public class Yksilo extends JodEntity {
     this.id = uuid;
     this.tervetuloapolku = false;
     this.lupaLuovuttaaTiedotUlkopuoliselle = false;
-    this.lupaArkistoida = false;
     this.lupaKayttaaTekoalynKoulutukseen = false;
     this.osaamiset = new HashSet<>();
     this.tyopaikat = new HashSet<>();
@@ -138,10 +135,6 @@ public class Yksilo extends JodEntity {
 
   public boolean getLupaLuovuttaaTiedotUlkopuoliselle() {
     return lupaLuovuttaaTiedotUlkopuoliselle != null && lupaLuovuttaaTiedotUlkopuoliselle;
-  }
-
-  public boolean getLupaArkistoida() {
-    return lupaArkistoida != null && lupaArkistoida;
   }
 
   public boolean getLupaKayttaaTekoalynKoulutukseen() {
