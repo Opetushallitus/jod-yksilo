@@ -11,12 +11,14 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.Nullable;
 
 public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
@@ -25,6 +27,12 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @Query(value = "SELECT tunnistus.remove_yksilo_id(:yksiloId)", nativeQuery = true)
   void removeId(UUID yksiloId);
+
+  @Query(value = "SELECT tunnistus.update_yksilo_email(:henkiloId, :email)", nativeQuery = true)
+  void updateEmail(String henkiloId, @Nullable String email);
+
+  @Query(value = "SELECT tunnistus.read_yksilo_email(:henkiloId)", nativeQuery = true)
+  Optional<String> getEmail(String henkiloId);
 
   @Query(value = "SELECT k.uri FROM Yksilo y JOIN y.osaamisKiinnostukset k WHERE y = :yksilo")
   Set<String> findOsaamisKiinnostukset(Yksilo yksilo);

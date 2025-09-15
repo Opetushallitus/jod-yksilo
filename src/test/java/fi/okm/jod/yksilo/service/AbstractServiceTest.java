@@ -9,11 +9,11 @@
 
 package fi.okm.jod.yksilo.service;
 
+import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.testutil.TestJodUser;
 import fi.okm.jod.yksilo.testutil.TestUtil;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +44,19 @@ public abstract class AbstractServiceTest {
 
   @BeforeEach
   public void setup() {
-    var yksilo = new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID()));
+    var id1 = FinnishPersonIdentifier.of("010199-9986");
+    var id2 = FinnishPersonIdentifier.of("010199-9997");
+
+    var yksilo = new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + id1.asString()));
     yksilo.setTervetuloapolku(true);
-    this.user = new TestJodUser(entityManager.persist(yksilo).getId());
+    this.user = new TestJodUser(entityManager.persist(yksilo).getId(), id1);
     // Create a second user with a different ID for testing purposes
     this.user2 =
         new TestJodUser(
             entityManager
-                .persist(
-                    new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID())))
-                .getId());
+                .persist(new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + id2.asString())))
+                .getId(),
+            id2);
   }
 
   /** Simulates commit by flushing and clearing the entity manager. */

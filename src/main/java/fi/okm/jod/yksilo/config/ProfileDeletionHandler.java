@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config;
 
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,9 +27,14 @@ public class ProfileDeletionHandler implements LogoutHandler {
   @Override
   public void logout(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-    if ("true".equals(request.getParameter("deletion"))
-        && authentication.getPrincipal() instanceof JodUser user) {
-      yksiloService.delete(user);
+    if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
+      if ("true".equals(request.getParameter("deletion"))) {
+        yksiloService.delete(user);
+      }
+      log.atInfo()
+          .addMarker(LogMarker.AUDIT)
+          .addKeyValue("userId", user.getId())
+          .log("User {} logged out", user.getId());
     }
   }
 }

@@ -20,7 +20,7 @@ $$
   BEGIN
     FOR yksilo_index IN 1..yksiloiden_maara
       LOOP
-        SELECT tunnistus.generate_yksilo_id(concat('MOCKuser_testdata', yksilo_index::text)) INTO yid;
+        SELECT tunnistus.generate_yksilo_id(concat('MOCK:user_testdata', yksilo_index::text)) INTO yid;
 
 
         INSERT INTO yksilo(id) VALUES (yid) ON CONFLICT DO NOTHING;

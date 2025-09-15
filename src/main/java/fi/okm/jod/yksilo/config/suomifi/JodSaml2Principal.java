@@ -70,6 +70,17 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
   }
 
   @JsonIgnore
+  @Override
+  public String getQualifiedPersonId() {
+    return getAttribute(PersonIdentifierType.FIN.getAttribute())
+        .map(PersonIdentifierType.FIN::asQualifiedIdentifier)
+        .orElse(
+            getAttribute(PersonIdentifierType.EIDAS.getAttribute())
+                .map(PersonIdentifierType.EIDAS::asQualifiedIdentifier)
+                .orElse(null));
+  }
+
+  @JsonIgnore
   public Optional<String> getAttribute(Attribute attribute) {
     return Optional.ofNullable(getFirstAttribute(attribute.getUri()));
   }

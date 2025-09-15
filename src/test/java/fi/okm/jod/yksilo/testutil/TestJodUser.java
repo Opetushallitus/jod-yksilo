@@ -15,9 +15,10 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import java.util.Optional;
 import java.util.UUID;
 
-public record TestJodUser(UUID id) implements JodUser {
-  private static final FinnishPersonIdentifier personIdentifier =
-      FinnishPersonIdentifier.of("010199-9986");
+public record TestJodUser(UUID id, FinnishPersonIdentifier personIdentifier) implements JodUser {
+  public TestJodUser(UUID id) {
+    this(id, FinnishPersonIdentifier.of("010199-9986"));
+  }
 
   @Override
   public UUID getId() {
@@ -48,7 +49,8 @@ public record TestJodUser(UUID id) implements JodUser {
     };
   }
 
-  public static JodUser of(String uuid) {
-    return new TestJodUser(UUID.fromString(uuid));
+  @Override
+  public String getQualifiedPersonId() {
+    return "TEST:" + getPersonId();
   }
 }

@@ -45,7 +45,7 @@ public final class ExportMapper {
 
   private ExportMapper() {}
 
-  public static YksiloExportDto mapYksilo(Yksilo entity) {
+  public static YksiloExportDto mapYksilo(Yksilo entity, String email) {
     return entity == null
         ? null
         : new YksiloExportDto(
@@ -58,6 +58,7 @@ public final class ExportMapper {
             entity.getKotikunta(),
             entity.getAidinkieli(),
             entity.getValittuKieli(),
+            email,
             entity.getTyopaikat().stream()
                 .map(ExportMapper::mapTyopaikka)
                 .collect(Collectors.toSet()),

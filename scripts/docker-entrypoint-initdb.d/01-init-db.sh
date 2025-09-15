@@ -13,7 +13,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     CREATE SCHEMA IF NOT EXISTS tunnistus AUTHORIZATION tunnistus;
     REVOKE ALL ON SCHEMA tunnistus FROM public;
     SET LOCAL ROLE tunnistus;
-    CREATE TABLE IF NOT EXISTS henkilo(yksilo_id UUID PRIMARY KEY, henkilo_id VARCHAR(300) NOT NULL UNIQUE);
+    CREATE TABLE IF NOT EXISTS henkilo(
+      yksilo_id UUID PRIMARY KEY, henkilo_id VARCHAR(300) NOT NULL UNIQUE,
+      email VARCHAR(254),
+      luotu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      muokattu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
 
     CREATE OR REPLACE FUNCTION generate_yksilo_id(henkilo_id VARCHAR(300)) RETURNS UUID AS $$
     DECLARE
@@ -25,15 +30,26 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
       END IF;
       RETURN id;
     END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
-    REVOKE ALL ON FUNCTION generate_yksilo_id FROM public;
-    GRANT EXECUTE ON FUNCTION generate_yksilo_id TO yksilo;
+
+    CREATE OR REPLACE FUNCTION read_yksilo_email(henkilo_id VARCHAR(300)) RETURNS VARCHAR(254) AS $$
+      DECLARE
+        email VARCHAR(254);
+      BEGIN
+        SELECT h.email INTO email FROM henkilo h WHERE h.henkilo_id = $1;
+        RETURN email;
+      END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+
+    CREATE OR REPLACE FUNCTION update_yksilo_email(henkilo_id VARCHAR(300), email VARCHAR(254)) RETURNS VOID AS $$
+      BEGIN
+        UPDATE henkilo SET email = $2, muokattu = CURRENT_TIMESTAMP WHERE henkilo.henkilo_id = $1;
+      END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
 
     CREATE OR REPLACE FUNCTION remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS $$
             DELETE FROM henkilo WHERE yksilo_id = $1 RETURNING yksilo_id
             $$ LANGUAGE SQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
-    REVOKE ALL ON FUNCTION remove_yksilo_id FROM public;
-    GRANT EXECUTE ON FUNCTION remove_yksilo_id TO yksilo;
 
+    REVOKE ALL ON FUNCTION generate_yksilo_id, update_yksilo_email, remove_yksilo_id, read_yksilo_email FROM public;
+    GRANT EXECUTE ON FUNCTION generate_yksilo_id, update_yksilo_email, remove_yksilo_id, read_yksilo_email TO yksilo;
     GRANT REFERENCES(yksilo_id) ON henkilo TO yksilo;
     GRANT USAGE ON SCHEMA tunnistus TO yksilo;
 

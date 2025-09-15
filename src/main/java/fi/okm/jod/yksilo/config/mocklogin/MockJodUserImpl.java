@@ -96,4 +96,10 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   public String getPersonId() {
     return username;
   }
+
+  @Override
+  @JsonIgnore
+  public String getQualifiedPersonId() {
+    return "MOCK:" + username;
+  }
 }
