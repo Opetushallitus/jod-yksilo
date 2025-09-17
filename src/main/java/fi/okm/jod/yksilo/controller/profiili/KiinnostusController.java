@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KiinnostuksetDto;
 import fi.okm.jod.yksilo.service.profiili.KiinnostusService;
-import fi.okm.jod.yksilo.validation.PrintableString;
+import fi.okm.jod.yksilo.validation.FreeText;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -53,7 +53,7 @@ public class KiinnostusController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void updateVapaateksti(
       @AuthenticationPrincipal JodUser user,
-      @RequestBody @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {
+      @RequestBody @Size(max = 10000) @FreeText LocalizedString vapaateksti) {
     kiinnostusService.updateVapaateksti(user, vapaateksti);
   }
 }
