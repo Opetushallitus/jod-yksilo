@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.profiili;
 
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/profiili/paamaarat/{id}/suunnitelmat/{suunnitelmaId}/vaiheet")
 @RequiredArgsConstructor
 @Tag(name = "profiili/paamaarat")
+@FeatureRequired(Feature.POLKU)
 public class PolunVaiheController {
   private final PolunVaiheService service;
 

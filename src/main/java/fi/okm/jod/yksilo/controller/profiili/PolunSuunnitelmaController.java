@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.profiili;
 
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/profiili/paamaarat/{id}/suunnitelmat")
 @RequiredArgsConstructor
 @Tag(name = "profiili/paamaarat")
+@FeatureRequired(Feature.POLKU)
 public class PolunSuunnitelmaController {
   private final PolunSuunnitelmaService service;
 

@@ -10,6 +10,8 @@
 package fi.okm.jod.yksilo.controller.koski;
 
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
@@ -33,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping("/oauth2")
 @Hidden
+@FeatureRequired(Feature.KOSKI)
 public class KoskiOauth2Controller {
 
   private final KoskiOauth2Service koskiOauth2Service;

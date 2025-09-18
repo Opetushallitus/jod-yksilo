@@ -25,6 +25,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.DispatcherServlet;
 
 /** Fallback error controller for errors that are not handled elsewhere. */
 @RestController
@@ -48,7 +49,7 @@ public class FallbackErrorController implements ErrorController {
       status = HttpStatus.FORBIDDEN;
       errorCode = ErrorCode.ACCESS_DENIED;
     } else {
-      exception = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+      exception = getException(request);
       if (exception instanceof AuthenticationException) {
         status = HttpStatus.FORBIDDEN;
         errorCode = ErrorCode.AUTHENTICATION_FAILURE;
@@ -92,6 +93,14 @@ public class FallbackErrorController implements ErrorController {
         .header("Cache-Control", "private, no-cache, no-store, stale-if-error=0")
         .header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
         .body(new ErrorInfo(errorCode, tracer.currentSpan(), List.of(status.name())));
+  }
+
+  private static Throwable getException(HttpServletRequest request) {
+    var exception = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+    if (exception == null) {
+      exception = (Throwable) request.getAttribute(DispatcherServlet.EXCEPTION_ATTRIBUTE);
+    }
+    return exception;
   }
 
   private HttpStatus getStatus(HttpServletRequest request) {

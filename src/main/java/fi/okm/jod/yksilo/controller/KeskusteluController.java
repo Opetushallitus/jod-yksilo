@@ -10,6 +10,8 @@
 package fi.okm.jod.yksilo.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/keskustelut")
 @Slf4j
-@Tag(name = "keskustelut", description = "Keskustelut (POC)")
+@Tag(name = "keskustelut", description = "Keskustelut")
+@FeatureRequired(Feature.VIRTUAALIOHJAAJA)
 public class KeskusteluController {
 
   private final InferenceService<Request, Response> inferenceService;
