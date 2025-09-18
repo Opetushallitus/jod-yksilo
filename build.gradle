@@ -18,7 +18,7 @@ plugins {
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
   id "com.github.ben-manes.versions" version "0.52.0"
-  id "org.flywaydb.flyway" version "11.11.2"
+  id "org.flywaydb.flyway" version "11.12.0"
 }
 
 group = 'fi.okm.jod'
@@ -41,7 +41,7 @@ repositories {
 
 ext {
   spotbugsVersion = "4.9.4"
-  setProperty("flyway.version", "11.11.2")
+  setProperty("flyway.version", "11.12.0")
 }
 
 configurations {
@@ -68,6 +68,7 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-validation'
   implementation 'org.springframework.boot:spring-boot-starter-cache'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+  implementation 'org.springframework.boot:spring-boot-starter-aop'
 
   implementation 'org.springframework.session:spring-session-data-redis'
 
@@ -83,7 +84,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.32.31')
+  implementation platform('software.amazon.awssdk:bom:2.33.10')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -103,8 +104,8 @@ dependencies {
   implementation 'org.bouncycastle:bcprov-jdk18on:1.81'
 
   // OpenAPI API description and Swagger UI
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.11'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.13'
+  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'

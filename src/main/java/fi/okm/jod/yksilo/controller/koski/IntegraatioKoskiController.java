@@ -10,6 +10,8 @@
 package fi.okm.jod.yksilo.controller.koski;
 
 import com.codahale.metrics.Clock;
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/integraatiot/koski")
 @Tag(name = "integraatiot-koski")
+@FeatureRequired(Feature.KOSKI)
 public class IntegraatioKoskiController {
 
   private final KoskiOauth2Service koskiOauth2Service;
