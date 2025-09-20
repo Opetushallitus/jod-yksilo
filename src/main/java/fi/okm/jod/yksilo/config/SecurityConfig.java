@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.config;
 
+import fi.okm.jod.yksilo.domain.JodUser;
+import jakarta.servlet.Filter;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +21,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,9 +34,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.CacheControlConfig;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
@@ -122,19 +127,35 @@ public class SecurityConfig {
               headers.cacheControl(CacheControlConfig::disable);
               headers.addHeaderWriter(new CacheControlHeadersWriter());
             })
-        .addFilterBefore(
-            (request, response, chain) -> {
-              if (request instanceof HttpServletRequest req
-                  && req.getSession(false) instanceof HttpSession session
-                  && (System.currentTimeMillis() - session.getCreationTime())
-                      > sessionMaxDuration.toMillis()) {
-                req.logout();
-                throw new AccessDeniedException("Session maximum duration exceeded");
-              }
-              chain.doFilter(request, response);
-            },
-            AuthorizationFilter.class)
+        .addFilterAfter(mdcFilter, AnonymousAuthenticationFilter.class)
+        .addFilterBefore(sessionDurationFilter(sessionMaxDuration), AuthorizationFilter.class)
         .build();
+  }
+
+  @SuppressWarnings("try")
+  private static final Filter mdcFilter =
+      (request, response, chain) -> {
+        if (SecurityContextHolder.getContext().getAuthentication() instanceof Authentication auth
+            && auth.getPrincipal() instanceof JodUser user) {
+          try (var ignored = MDC.putCloseable("userId", user.getId().toString())) {
+            chain.doFilter(request, response);
+          }
+        } else {
+          chain.doFilter(request, response);
+        }
+      };
+
+  private static Filter sessionDurationFilter(Duration sessionMaxDuration) {
+    return (request, response, chain) -> {
+      if (request instanceof HttpServletRequest req
+          && req.getSession(false) instanceof HttpSession session
+          && (System.currentTimeMillis() - session.getCreationTime())
+              > sessionMaxDuration.toMillis()) {
+        req.logout();
+        throw new AccessDeniedException("Session maximum duration exceeded");
+      }
+      chain.doFilter(request, response);
+    };
   }
 
   static final class CacheControlHeadersWriter implements HeaderWriter {

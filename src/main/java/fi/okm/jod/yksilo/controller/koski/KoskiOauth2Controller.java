@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -53,7 +54,6 @@ public class KoskiOauth2Controller {
         .getSession()
         .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackPath);
     var authorizationUrl = getAuthorizationUrl(request);
-    log.debug("Redirect user to {}, callback: {}", authorizationUrl, callbackPath);
     response.sendRedirect(authorizationUrl);
   }
 
@@ -86,9 +86,8 @@ public class KoskiOauth2Controller {
       @RequestParam(name = "error", required = false) String error,
       @RequestParam(name = "error_description", required = false) String errorDescription)
       throws IOException {
-    log.trace("Got callback response from Koski Authorization server.");
     if (jodUser == null) {
-      log.trace("User is NOT logged in. Redirect to landing page.");
+      log.warn("User is NOT logged in. Redirect to landing page.");
       response.sendRedirect(request.getContextPath() + "/");
       return;
     }
@@ -102,10 +101,8 @@ public class KoskiOauth2Controller {
         handleUserDidNotGivePermission(response, jodUser, callbackUrl);
         return;
       }
-      // This happens when network is not okay. For example server IP is not in allow the Koski
-      // list.
       log.error(
-          "Koski OAuth2 authorize failed. Error: {}, description: {}", error, errorDescription);
+          "Koski OAuth2 authorization failed. Error: {}, description: {}", error, errorDescription);
       response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "error"));
       return;
     }
@@ -114,14 +111,20 @@ public class KoskiOauth2Controller {
       handleUserDidNotGivePermission(response, jodUser, callbackUrl);
       return;
     }
-    log.debug("Permission was given by the user id: {}", jodUser.getId());
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .addKeyValue("userId", jodUser.getId())
+        .log("User {} authorized Koski import", jodUser.getId());
     request.getSession().removeAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey());
     response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "authorized"));
   }
 
   private static void handleUserDidNotGivePermission(
       HttpServletResponse response, JodUser jodUser, Object callbackUrl) throws IOException {
-    log.debug("Permission was NOT give by the user id: {}", jodUser.getId());
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .addKeyValue("userId", jodUser.getId())
+        .log("User {} canceled Koski import", jodUser.getId());
     response.sendRedirect(createRedirectUrl(callbackUrl.toString(), "cancel"));
   }
 

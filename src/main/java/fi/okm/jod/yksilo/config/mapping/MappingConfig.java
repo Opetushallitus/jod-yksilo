@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 public class MappingConfig {
 
   // limits for acceptable JSON input sizes
-  public static final long MAX_DOC_LEN = 1024L * 1024L;
+  public static final long MAX_DOC_LEN = 2 * 1024L * 1024L;
   public static final int MAX_STRING_LEN = 32 * 1024;
   public static final int MAX_NAME_LEN = 256;
 
