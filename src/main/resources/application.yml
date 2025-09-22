@@ -81,8 +81,7 @@ springdoc:
 
 logging:
   level:
-    fi.okm.jod: DEBUG
-    sql: DEBUG
+    root: INFO
     org:
       springframework:
         web:

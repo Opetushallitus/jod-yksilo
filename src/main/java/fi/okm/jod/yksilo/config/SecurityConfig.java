@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.config;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -122,18 +120,8 @@ public class SecurityConfig {
               headers.cacheControl(CacheControlConfig::disable);
               headers.addHeaderWriter(new CacheControlHeadersWriter());
             })
-        .addFilterBefore(
-            (request, response, chain) -> {
-              if (request instanceof HttpServletRequest req
-                  && req.getSession(false) instanceof HttpSession session
-                  && (System.currentTimeMillis() - session.getCreationTime())
-                      > sessionMaxDuration.toMillis()) {
-                req.logout();
-                throw new AccessDeniedException("Session maximum duration exceeded");
-              }
-              chain.doFilter(request, response);
-            },
-            AuthorizationFilter.class)
+        .addFilterBefore(new MdcFilter(), AuthorizationFilter.class)
+        .addFilterAfter(new SessionDurationFilter(sessionMaxDuration), MdcFilter.class)
         .build();
   }
 

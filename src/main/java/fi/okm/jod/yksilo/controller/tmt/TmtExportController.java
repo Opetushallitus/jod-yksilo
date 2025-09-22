@@ -45,7 +45,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
 public class TmtExportController {
 
-  public static final String USER_ID = "userId";
   public static final String EXPORT_ID = "exportId";
   public static final String ERROR_PARAM = "error";
   private final TmtAuthorizationRepository authorizationRepository;
@@ -78,7 +77,6 @@ public class TmtExportController {
             .build()
             .toUri();
     log.atInfo()
-        .addKeyValue(USER_ID, user.getId())
         .addKeyValue(EXPORT_ID, authorizationRequest.id())
         .log("Requesting authorization for user {} profile export", user.getId());
     return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
@@ -96,7 +94,6 @@ public class TmtExportController {
         authorizationRepository.clearAuthorizationRequest();
         authorizationRepository.saveAccessToken(authorizationRequest, token);
         log.atInfo()
-            .addKeyValue(USER_ID, user.getId())
             .addKeyValue(EXPORT_ID, authorizationRequest.id())
             .log("Received TMT authorization for user {} profile export", user.getId());
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
@@ -108,7 +105,6 @@ public class TmtExportController {
             .build();
       } catch (InvalidTokenException e) {
         log.atError()
-            .addKeyValue(USER_ID, user.getId())
             .addKeyValue(EXPORT_ID, authorizationRequest.id())
             .log("Received invalid access token for user {}", user.getId(), e);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
@@ -139,15 +135,15 @@ public class TmtExportController {
 
   @PostMapping("/vienti/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @SuppressWarnings("try")
   void export(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     var accessToken = authorizationRepository.getAccessToken(id);
     if (accessToken != null) {
       authorizationRepository.clearAccessToken();
-      MDC.put(EXPORT_ID, accessToken.id().toString());
-      log.atInfo()
-          .addKeyValue(USER_ID, user.getId())
-          .log("Exporting profile for user {}", user.getId());
-      service.export(user, accessToken);
+      try (var ignored = MDC.putCloseable(EXPORT_ID, accessToken.id().toString())) {
+        log.atInfo().log("Exporting profile for user {}", user.getId());
+        service.export(user, accessToken);
+      }
     } else {
       log.error("Access token not found");
       throw new IllegalArgumentException("Access token not found");

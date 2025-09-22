@@ -104,10 +104,7 @@ public class YksiloService {
     yksilot.updateEmail(user.getQualifiedPersonId(), dto.email());
     yksilot.save(yksilo);
 
-    log.atInfo()
-        .addMarker(LogMarker.AUDIT)
-        .addKeyValue("userId", user.getId())
-        .log("Updated user {} attributes", user.getId());
+    log.atInfo().addMarker(LogMarker.AUDIT).log("Updated user {} attributes", user.getId());
   }
 
   private static <T> T validate(T value, T expected) {
@@ -126,20 +123,14 @@ public class YksiloService {
   public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getId());
-    log.atInfo()
-        .addMarker(LogMarker.AUDIT)
-        .addKeyValue("userId", user.getId())
-        .log("Deleted user {} profile", user.getId());
+    log.atInfo().addMarker(LogMarker.AUDIT).log("Deleted user {} profile", user.getId());
   }
 
   public YksiloExportDto export(JodUser user) {
     var exportDto =
         ExportMapper.mapYksilo(
             getYksilo(user), yksilot.getEmail(user.getQualifiedPersonId()).orElse(null));
-    log.atInfo()
-        .addMarker(LogMarker.AUDIT)
-        .addKeyValue("userId", user.getId())
-        .log("Exported user {} profile", user.getId());
+    log.atInfo().addMarker(LogMarker.AUDIT).log("Exported user {} profile", user.getId());
     return exportDto;
   }
 

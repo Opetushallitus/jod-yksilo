@@ -129,12 +129,9 @@ public class TmtExportService {
           .retrieve()
           .toBodilessEntity();
       tapahtuma.setTila(Tila.VALMIS);
-      log.atInfo()
-          .addKeyValue("userId", jodUser.getId())
-          .log("Successfully exported TMT profile for user {}", jodUser.getId());
+      log.atInfo().log("Successfully exported TMT profile for user {}", jodUser.getId());
     } catch (HttpClientErrorException.BadRequest e) {
       log.atError()
-          .addKeyValue("userId", jodUser.getId())
           .log(
               "TMT export for user {} failed, invalid profile data: {}",
               jodUser.getId(),
@@ -142,21 +139,17 @@ public class TmtExportService {
       throw new ServiceValidationException("TMT export failed: Invalid profile data", e);
     } catch (HttpClientErrorException.Forbidden e) {
       log.atError()
-          .addKeyValue("userId", jodUser.getId())
           .log("TMT export for user {} failed, access denied: {}", jodUser.getId(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } catch (HttpClientErrorException.Unauthorized e) {
       log.atError()
-          .addKeyValue("userId", jodUser.getId())
           .log(
               "TMT export for user {} failed, unauthorized (token expired?): {}",
               jodUser.getId(),
               e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } catch (RestClientException e) {
-      log.atError()
-          .addKeyValue("userId", jodUser.getId())
-          .log("TMT export for user {} failed: {}", jodUser.getId(), e.getMessage());
+      log.atError().log("TMT export for user {} failed: {}", jodUser.getId(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
     } finally {
       tapahtumat.saveAndFlush(tapahtuma);
