@@ -9,10 +9,10 @@
 
 package fi.okm.jod.yksilo.controller.koski;
 
-import com.codahale.metrics.Clock;
 import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.validation.Limits;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,6 +58,7 @@ public class IntegraatioKoskiController {
 
   @GetMapping("/koulutukset")
   @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
+  @Timed
   ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
       @AuthenticationPrincipal JodUser jodUser,
       Authentication authentication,
@@ -68,21 +70,19 @@ public class IntegraatioKoskiController {
     }
 
     try {
-      var clock = Clock.defaultClock();
-      long startTime = clock.getTime();
       var dataInJson = koskiOauth2Service.fetchDataFromResourceServer(authorizedClient);
-      long duration = clock.getTime() - startTime;
-      if (duration > 1_000) {
-        log.warn(
-            "Fetching data from Koski's opintopolku took {} ms, which longer than expected (1s).",
-            duration);
-      }
       koskiOauth2Service.checkPersonIdMatches(jodUser, dataInJson);
-
       var educationHistories = koskiService.getKoulutusData(dataInJson);
+      log.atInfo()
+          .addMarker(LogMarker.AUDIT)
+          .log("User {} education history imported", jodUser.getId());
+      koskiOauth2Service.unauthorize(authentication, request, response);
       return ResponseEntity.ok(educationHistories);
 
     } catch (WrongPersonException e) {
+      log.atWarn()
+          .addMarker(LogMarker.AUDIT)
+          .log("User {} tried to access another person's Koski data.", jodUser.getId());
       koskiOauth2Service.unauthorize(authentication, request, response);
       throw e;
     }

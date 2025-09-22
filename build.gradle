@@ -40,7 +40,7 @@ repositories {
 }
 
 ext {
-  spotbugsVersion = "4.9.4"
+  spotbugsVersion = "4.9.6"
   setProperty("flyway.version", "11.12.0")
 }
 

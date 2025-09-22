@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.scheduling.annotation.Async;
@@ -53,14 +54,17 @@ public class OsaamisetTunnistusEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Async
+  @SuppressWarnings("try")
   public void handleOsaamisetTunnistusEvent(OsaamisetTunnistusEvent event) {
-    doHandleOsaamisetTunnistusEvent(event);
+    try (var ignored = MDC.putCloseable("userId", event.jodUser().getId().toString())) {
+      doHandleOsaamisetTunnistusEvent(event);
+    }
   }
 
   @SuppressWarnings("java:S2142")
   void doHandleOsaamisetTunnistusEvent(OsaamisetTunnistusEvent event) {
 
-    log.info("Processing OsaamisetTunnistusEvent for user {}", event.jodUser().getId());
+    log.info("Processing OsaamisetTunnistusEvent");
 
     var interrupted = false;
     var koulutukset = new ArrayDeque<>(event.koulutukset());

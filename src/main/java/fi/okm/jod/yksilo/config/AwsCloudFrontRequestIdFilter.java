@@ -33,6 +33,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 class AwsCloudFrontRequestIdFilter extends OncePerRequestFilter {
 
   @Override
+  @SuppressWarnings("try")
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
@@ -42,8 +43,11 @@ class AwsCloudFrontRequestIdFilter extends OncePerRequestFilter {
     // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html#request-custom-headers-behavior
     var cfId = request.getHeader("X-Amz-Cf-Id");
     if (cfId != null) {
-      MDC.put("amzCfId", cfId);
+      try (var ignored = MDC.putCloseable("amzCfId", cfId)) {
+        filterChain.doFilter(request, response);
+      }
+    } else {
+      filterChain.doFilter(request, response);
     }
-    filterChain.doFilter(request, response);
   }
 }
