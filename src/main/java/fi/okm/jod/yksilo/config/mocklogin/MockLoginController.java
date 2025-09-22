@@ -10,7 +10,9 @@
 package fi.okm.jod.yksilo.config.mocklogin;
 
 import static fi.okm.jod.yksilo.config.SessionLoginAttribute.CALLBACK;
+import static fi.okm.jod.yksilo.config.SessionLoginAttribute.LANG;
 
+import fi.okm.jod.yksilo.domain.Kieli;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -29,10 +31,16 @@ class MockLoginController {
   @GetMapping(value = "/login", produces = "text/html")
   @ResponseBody
   public String login(
-      @RequestParam(required = false) URI returnUri, CsrfToken csrf, HttpServletRequest request) {
+      @RequestParam(required = false) URI callback,
+      @RequestParam(required = false) Kieli lang,
+      CsrfToken csrf,
+      HttpServletRequest request) {
 
-    if (returnUri != null && returnUri.getPath() != null) {
-      request.getSession().setAttribute(CALLBACK.getKey(), returnUri.getPath());
+    if (callback != null && callback.getPath() != null) {
+      request.getSession().setAttribute(CALLBACK.getKey(), callback.getPath());
+    }
+    if (lang != null) {
+      request.getSession().setAttribute(LANG.getKey(), lang.toString());
     }
 
     return """
