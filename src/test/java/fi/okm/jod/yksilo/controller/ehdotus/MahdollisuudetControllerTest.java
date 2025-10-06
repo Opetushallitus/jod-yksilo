@@ -26,7 +26,7 @@ import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.EndpointProperties;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
@@ -93,15 +93,15 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), TYOMAHDOLLISUUS,
-            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(2), TYOMAHDOLLISUUS,
-            listOfIds.get(3), TYOMAHDOLLISUUS,
-            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(5), TYOMAHDOLLISUUS));
+            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(1), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(4), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(5), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", "")));
 
     when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
             Sort.Direction.ASC, Kieli.FI))
@@ -163,15 +163,15 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), TYOMAHDOLLISUUS,
-            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(2), TYOMAHDOLLISUUS,
-            listOfIds.get(3), TYOMAHDOLLISUUS,
-            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(5), TYOMAHDOLLISUUS));
+            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(1), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(4), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(5), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", "")));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
@@ -254,15 +254,15 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), TYOMAHDOLLISUUS,
-            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(2), TYOMAHDOLLISUUS,
-            listOfIds.get(3), TYOMAHDOLLISUUS,
-            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(5), TYOMAHDOLLISUUS));
+            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(1), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(4), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(5), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", "")));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
@@ -314,15 +314,15 @@ class MahdollisuudetControllerTest {
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
-    LinkedHashMap<UUID, MahdollisuusTyyppi> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
+    LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), TYOMAHDOLLISUUS,
-            listOfIds.get(1), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(2), TYOMAHDOLLISUUS,
-            listOfIds.get(3), TYOMAHDOLLISUUS,
-            listOfIds.get(4), KOULUTUSMAHDOLLISUUS,
-            listOfIds.get(5), TYOMAHDOLLISUUS));
+            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(1), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", ""),
+            listOfIds.get(4), new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", ""),
+            listOfIds.get(5), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", "")));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(

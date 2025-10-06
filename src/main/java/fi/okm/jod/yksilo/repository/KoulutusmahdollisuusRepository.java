@@ -13,9 +13,11 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import jakarta.persistence.Tuple;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,22 +56,30 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
           case EN -> "en-x-icu";
         };
     // collate() is HQL extension
-    return findMahdollisuusIdsImpl(
-        lang, JpaSort.unsafe(direction, "collate(m.otsikko as `" + collation + "`)"));
+    final List<Tuple> mahdollisuusIdsImpl =
+        findMahdollisuusIdsImpl(
+            lang, JpaSort.unsafe(direction, "collate(m.otsikko as `" + collation + "`)"));
+    return mahdollisuusIdsImpl.stream()
+        .map(
+            t ->
+                new MahdollisuusDto(
+                    t.get("id", UUID.class),
+                    t.get(
+                        "tyyppi", String.class), // Convert to enum inside DTO constructor if needed
+                    t.get("ammattiryhma", String.class)))
+        .collect(Collectors.toList());
   }
 
   @Query(
-      // HQL
       """
-      SELECT NEW fi.okm.jod.yksilo.dto.MahdollisuusDto(m.id, m.tyyppi) FROM (
-          SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi
-          FROM Tyomahdollisuus t JOIN t.kaannos tk
-          WHERE KEY(tk) = :lang AND t.aktiivinen = true
-          UNION ALL
-          SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi
-          FROM Koulutusmahdollisuus k JOIN k.kaannos kk
-          WHERE KEY(kk) = :lang AND k.aktiivinen = true
-      ) m
-      """)
-  List<MahdollisuusDto> findMahdollisuusIdsImpl(Kieli lang, Sort sort);
+     SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.otsikko FROM (
+     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi, CAST(COALESCE(t.ammattiryhma, '') as text) as ammattiryhma
+     FROM Tyomahdollisuus t JOIN t.kaannos tk
+     WHERE KEY(tk) = :lang AND t.aktiivinen = true
+     UNION ALL
+     SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, CAST('' AS text) as ammattiryhma
+     FROM Koulutusmahdollisuus k JOIN k.kaannos kk
+     WHERE KEY(kk) = :lang AND k.aktiivinen = true) m
+     """)
+  List<Tuple> findMahdollisuusIdsImpl(Kieli lang, Sort sort);
 }

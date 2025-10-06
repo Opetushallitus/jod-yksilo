@@ -12,8 +12,8 @@ package fi.okm.jod.yksilo.dto;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import java.util.UUID;
 
-public record MahdollisuusDto(UUID id, MahdollisuusTyyppi tyyppi) {
-  public MahdollisuusDto(UUID id, String tyyppi) {
-    this(id, MahdollisuusTyyppi.valueOf(tyyppi));
+public record MahdollisuusDto(UUID id, MahdollisuusTyyppi tyypi, String ammattiryhma) {
+  public MahdollisuusDto(UUID id, String tyyppi, String ammattiryhma) {
+    this(id, MahdollisuusTyyppi.valueOf(tyyppi), ammattiryhma);
   }
 }

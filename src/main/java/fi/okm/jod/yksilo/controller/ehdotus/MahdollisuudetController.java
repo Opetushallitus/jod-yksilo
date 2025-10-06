@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Dat
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
+import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
@@ -128,8 +129,10 @@ class MahdollisuudetController {
     }
 
     // fetch kohtaanto results from inference endpoint and populate ehdotus DTOs
-    return populateEhdotusDtos(
-        mahdollisuusIds, performInferenceRequest(lang, ehdotus, osaamiset, kiinnostukset));
+    final List<EhdotusDto> ehdotusDtos =
+        populateEhdotusDtos(
+            mahdollisuusIds, performInferenceRequest(lang, ehdotus, osaamiset, kiinnostukset));
+    return ehdotusDtos;
   }
 
   private Map<UUID, Suggestion> performInferenceRequest(
@@ -153,19 +156,22 @@ class MahdollisuudetController {
         .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
   }
 
-  private List<EhdotusDto> populateEmptyEhdotusDtos(Map<UUID, MahdollisuusTyyppi> ids) {
+  private List<EhdotusDto> populateEmptyEhdotusDtos(Map<UUID, MahdollisuusDto> ids) {
     final var counter = new AtomicInteger(0);
     return ids.entrySet().stream()
         .map(
             entry ->
                 new EhdotusDto(
                     entry.getKey(),
-                    EhdotusMetadata.empty(entry.getValue(), counter.getAndIncrement())))
+                    EhdotusMetadata.empty(
+                        entry.getValue().tyypi(),
+                        entry.getValue().ammattiryhma(),
+                        counter.getAndIncrement())))
         .toList();
   }
 
   private List<EhdotusDto> populateEhdotusDtos(
-      SequencedMap<UUID, MahdollisuusTyyppi> ids, Map<UUID, Suggestion> suggestions) {
+      SequencedMap<UUID, MahdollisuusDto> ids, Map<UUID, Suggestion> suggestions) {
     // initialize lexicalIndex counters
     final var counter = new AtomicInteger(0);
     return ids.entrySet().stream()
@@ -175,13 +181,14 @@ class MahdollisuudetController {
               // Retrieve the result or create a new Suggestion if not found
               Suggestion suggestion =
                   Optional.ofNullable(suggestions.get(entry.getKey()))
-                      .orElseGet(supplyEmptySuggestion(entry.getKey(), entry.getValue()));
+                      .orElseGet(supplyEmptySuggestion(entry.getKey(), entry.getValue().tyypi()));
 
               // Create and return EhdotusDto
               return new EhdotusDto(
                   suggestion.id(),
                   new EhdotusMetadata(
                       MahdollisuusTyyppi.valueOf(suggestion.type()),
+                      entry.getValue().ammattiryhma(),
                       suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
@@ -243,6 +250,7 @@ class MahdollisuudetController {
    */
   public record EhdotusMetadata(
       @NotNull MahdollisuusTyyppi tyyppi,
+      @Nullable String ammattiryhma,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
       @Nullable Long osaamisia,
@@ -251,8 +259,8 @@ class MahdollisuudetController {
       @Nullable Integer tyollisyysNakyma,
       @NotNull Integer aakkosIndeksi) {
 
-    public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi, int order) {
-      return new EhdotusMetadata(tyyppi, null, null, null, null, order);
+    public static EhdotusMetadata empty(MahdollisuusTyyppi tyyppi, String ammattiryhma, int order) {
+      return new EhdotusMetadata(tyyppi, ammattiryhma, null, null, null, null, order);
     }
   }
 
@@ -311,6 +319,7 @@ class MahdollisuudetController {
                     it.mahdollisuusId(),
                     new EhdotusMetadata(
                         MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
+                        null,
                         it.pisteet(),
                         null,
                         it.osaamisia(),
