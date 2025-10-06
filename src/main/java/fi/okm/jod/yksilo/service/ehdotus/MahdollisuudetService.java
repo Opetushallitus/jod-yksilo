@@ -11,7 +11,7 @@ package fi.okm.jod.yksilo.service.ehdotus;
 
 import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import jakarta.annotation.PostConstruct;
@@ -45,14 +45,14 @@ public class MahdollisuudetService {
   }
 
   @Cacheable("mahdollisuusIdsAndTypes")
-  public SequencedMap<UUID, MahdollisuusTyyppi> fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+  public SequencedMap<UUID, MahdollisuusDto> fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
       Sort.Direction direction, Kieli lang) {
 
     return koulutusmahdollisuusRepository.findMahdollisuusIds(lang, direction).stream()
         .collect(
             Collectors.toMap(
-                it -> it.id(), // Key mapper
-                it -> it.tyyppi(), // Value mapper
+                MahdollisuusDto::id, // Key mapper
+                it -> it, // Value mapper
                 (existing, replacement) -> existing, // Merge function in case of duplicates
                 LinkedHashMap::new // Supplier for the LinkedHashMap
                 ));

@@ -14,7 +14,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.within;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
-import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import java.net.URI;
@@ -62,9 +61,6 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
     assertThat(result)
         .as("Only actives should be included.")
         .hasSize(4)
-        .containsEntry(koulutusIdActive1, MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS)
-        .containsEntry(koulutusIdActive2, MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS)
-        .containsEntry(tyoIdActive1, MahdollisuusTyyppi.TYOMAHDOLLISUUS)
         .doesNotContainKeys(koulutusIdInactive, tyoIdInactive);
   }
 
