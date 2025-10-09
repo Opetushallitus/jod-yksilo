@@ -66,20 +66,23 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
             t ->
                 new MahdollisuusDto(
                     t.get("id", UUID.class),
+                    t.get("tyyppi", String.class),
+                    t.get("ammattiryhma", String.class),
                     t.get(
-                        "tyyppi", String.class), // Convert to enum inside DTO constructor if needed
-                    t.get("ammattiryhma", String.class)))
+                        "aineisto",
+                        String.class) // Convert to enum inside DTO constructor if needed
+                    ))
         .collect(Collectors.toList());
   }
 
   @Query(
       """
-     SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.otsikko FROM (
-     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi, CAST(COALESCE(t.ammattiryhma, '') as text) as ammattiryhma
+     SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.otsikko FROM (
+     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi,  CAST(COALESCE(t.ammattiryhma, '') as text) as ammattiryhma, CAST(COALESCE(t.aineisto, '') as text) AS aineisto
      FROM Tyomahdollisuus t JOIN t.kaannos tk
      WHERE KEY(tk) = :lang AND t.aktiivinen = true
      UNION ALL
-     SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, CAST('' AS text) as ammattiryhma
+     SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, CAST('' AS text) as ammattiryhma, CAST('' AS text) as aineisto
      FROM Koulutusmahdollisuus k JOIN k.kaannos kk
      WHERE KEY(kk) = :lang AND k.aktiivinen = true) m
      """)
