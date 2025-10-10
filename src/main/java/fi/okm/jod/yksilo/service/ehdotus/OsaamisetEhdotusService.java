@@ -26,14 +26,12 @@ import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 /** Service for creating suggestions for Osaaminen using an external recommendation service. */
 @Service
 @Slf4j
-@Transactional(readOnly = true)
 public class OsaamisetEhdotusService {
 
   public static final int MAX_NUMBER_OF_SKILLS = 37;
