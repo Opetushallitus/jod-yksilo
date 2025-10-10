@@ -33,6 +33,8 @@ spring:
     timeout: 30m
     redis:
       repository-type: default
+  transaction:
+    default-timeout: 30s
   cache:
     type: caffeine
     caffeine:

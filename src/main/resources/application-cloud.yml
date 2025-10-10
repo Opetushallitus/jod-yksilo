@@ -25,6 +25,8 @@ spring:
           period: 31m
   datasource:
     type: fi.okm.jod.yksilo.config.datasource.RdsIamAuthHikariDataSource
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: "none"

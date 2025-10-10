@@ -22,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusmahdollisuus, UUID> {
 
@@ -47,6 +48,7 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
       """)
   List<PolunVaiheEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
 
+  @Transactional(readOnly = true)
   default List<MahdollisuusDto> findMahdollisuusIds(Kieli lang, Sort.Direction direction) {
     // collation names are specific to the PostgreSQL database
     var collation =
