@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
+import fi.okm.jod.yksilo.entity.Ammattiryhma;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -21,10 +22,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
-import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
@@ -48,7 +50,9 @@ public class Tyomahdollisuus {
   @MapKeyColumn(name = "tyyppi")
   private Map<TyomahdollisuusJakaumaTyyppi, TyomahdollisuusJakauma> jakaumat;
 
-  @Column private URI ammattiryhma;
+  @ManyToOne
+  @JoinColumn(name = "ammattiryhma")
+  private Ammattiryhma ammattiryhma;
 
   @Enumerated(EnumType.STRING)
   @Column

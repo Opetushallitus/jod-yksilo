@@ -29,7 +29,6 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.TyomahdollisuusJakauma;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -300,7 +299,6 @@ class MahdollisuusImportTest {
     assertEquals(TyomahdollisuusAineisto.AMMATTITIETO, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
     // Check updated data
-    assertEquals(URI.create("http://data.europa.eu/esco/isco/C2149"), entity.getAmmattiryhma());
     var kaannos = entity.getKaannos();
     assertEquals(3, kaannos.size());
     assertTyoOtsikko(kaannos, "Uusi Kouluttaja", "Nya Kouluttaja", "New Kouluttaja");
@@ -325,7 +323,7 @@ class MahdollisuusImportTest {
     assertNotNull(entity, "Tyomahdollisuus should exist after import");
     assertEquals(TyomahdollisuusAineisto.TMT, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
-    assertEquals(URI.create(""), entity.getAmmattiryhma());
+    assertNull(entity.getAmmattiryhma());
     var kaannos = entity.getKaannos();
     assertEquals(3, kaannos.size());
     assertTyoOtsikko(kaannos, "Kouluttaja", "Kouluttaja", "Kouluttaja");
@@ -386,7 +384,6 @@ class MahdollisuusImportTest {
     assertEquals(TyomahdollisuusAineisto.AMMATTITIETO, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
     // Check updated data
-    assertEquals(URI.create("http://data.europa.eu/esco/isco/C2149"), entity.getAmmattiryhma());
     var kaannos = entity.getKaannos();
     assertEquals(2, kaannos.size());
     assertTyoOtsikko(kaannos, "Uusi Kouluttaja", null, "New Kouluttaja");

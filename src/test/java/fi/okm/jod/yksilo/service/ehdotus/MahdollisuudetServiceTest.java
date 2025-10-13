@@ -38,8 +38,6 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
       UUID.fromString("c11249fd-e0a3-4b23-8de5-9dc67a157f46"); // Have osaamiset 1 to 6. (6 pc)
   private static final UUID koulutusIdInactive =
       UUID.fromString("c74eed41-c729-433e-8d36-4fc7527fe3df");
-  private static final UUID tyoIdActive1 =
-      UUID.fromString("ca466237-ce1d-4aca-9f9b-2ed566ef4f94"); // Have osaamiset 1 to 3. (3 pc)
   private static final UUID tyoIdInactive = UUID.fromString("af34f11f-05b5-434c-963a-df6d89a2149b");
 
   @Autowired private MahdollisuudetService mahdollisuudetService;
