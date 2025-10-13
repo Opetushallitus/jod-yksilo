@@ -78,7 +78,7 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
   @Query(
       """
      SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.otsikko FROM (
-     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi,  CAST(COALESCE(t.ammattiryhma, NULL) as text) as ammattiryhma, CAST(COALESCE(t.aineisto, NULL) as text) AS aineisto
+     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi,  CAST(t.ammattiryhma as text) as ammattiryhma, CAST(t.aineisto as text) AS aineisto
      FROM Tyomahdollisuus t JOIN t.kaannos tk
      WHERE KEY(tk) = :lang AND t.aktiivinen = true
      UNION ALL
