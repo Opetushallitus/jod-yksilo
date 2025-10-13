@@ -63,6 +63,9 @@ public class TyomahdollisuusService {
   }
 
   private static TyomahdollisuusDto map(Tyomahdollisuus entity) {
+    if (entity == null) {
+      return null;
+    }
     AmmattiryhmaBasicDto ammattiryhmaBasicDto = null;
     final Ammattiryhma ammattiryhma = entity.getAmmattiryhma();
     if (ammattiryhma != null) {
@@ -70,16 +73,14 @@ public class TyomahdollisuusService {
           new AmmattiryhmaBasicDto(
               entity.getAmmattiryhma().getEscoUri(), ammattiryhma.getMediaaniPalkka());
     }
-    return entity == null
-        ? null
-        : new TyomahdollisuusDto(
-            entity.getId(),
-            entity.getOtsikko(),
-            entity.getTiivistelma(),
-            entity.getKuvaus(),
-            ammattiryhmaBasicDto,
-            entity.getAineisto(),
-            entity.isAktiivinen());
+    return new TyomahdollisuusDto(
+        entity.getId(),
+        entity.getOtsikko(),
+        entity.getTiivistelma(),
+        entity.getKuvaus(),
+        ammattiryhmaBasicDto,
+        entity.getAineisto(),
+        entity.isAktiivinen());
   }
 
   private static TyomahdollisuusFullDto mapFull(
