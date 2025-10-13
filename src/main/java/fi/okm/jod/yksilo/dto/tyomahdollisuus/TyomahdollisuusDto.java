@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import jakarta.validation.constraints.NotNull;
-import java.net.URI;
 import java.util.UUID;
 
 public record TyomahdollisuusDto(
@@ -20,6 +19,6 @@ public record TyomahdollisuusDto(
     @NotNull LocalizedString otsikko,
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
-    URI ammattiryhma,
+    AmmattiryhmaBasicDto ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     boolean aktiivinen) {}
