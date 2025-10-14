@@ -300,6 +300,7 @@ class MahdollisuusImportTest {
     assertEquals(TyomahdollisuusAineisto.AMMATTITIETO, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
     // Check updated data
+    assertEquals(URI.create("http://data.europa.eu/esco/isco/C2149"), entity.getAmmattiryhmaUri());
     var kaannos = entity.getKaannos();
     assertEquals(3, kaannos.size());
     assertTyoOtsikko(kaannos, "Uusi Kouluttaja", "Nya Kouluttaja", "New Kouluttaja");
@@ -385,6 +386,7 @@ class MahdollisuusImportTest {
     assertNotNull(entity, "Should exist after import.");
     assertEquals(TyomahdollisuusAineisto.AMMATTITIETO, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
+    assertEquals(URI.create("http://data.europa.eu/esco/isco/C2149"), entity.getAmmattiryhmaUri());
     // Check updated data
     var kaannos = entity.getKaannos();
     assertEquals(2, kaannos.size());
