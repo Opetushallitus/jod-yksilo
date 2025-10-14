@@ -9,4 +9,6 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
-public record AmmattiryhmaBasicDto(String uri, Integer mediaaniPalkka) {}
+import java.net.URI;
+
+public record AmmattiryhmaBasicDto(URI uri, Integer mediaaniPalkka) {}

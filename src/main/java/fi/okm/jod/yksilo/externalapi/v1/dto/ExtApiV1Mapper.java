@@ -28,7 +28,7 @@ public class ExtApiV1Mapper {
         tyomahdollisuus.getOtsikko(),
         tyomahdollisuus.getKuvaus(),
         tyomahdollisuus.getTiivistelma(),
-        tyomahdollisuus.getAmmattiryhma().getUri(),
+        tyomahdollisuus.getAmmattiryhmaUri(),
         tyomahdollisuus.isAktiivinen());
   }
 
