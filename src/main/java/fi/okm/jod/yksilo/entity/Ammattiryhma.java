@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.net.URI;
-import java.net.URISyntaxException;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -36,14 +34,6 @@ public class Ammattiryhma extends JodEntity {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private JsonNode data;
-
-  public URI getUri() {
-    try {
-      return new URI(this.escoUri);
-    } catch (URISyntaxException e) {
-      return null;
-    }
-  }
 
   public Integer getMediaaniPalkka() {
     return getPropertyFromPalkkaus("mediaani");
