@@ -19,7 +19,6 @@ import fi.okm.jod.yksilo.entity.Ammattiryhma;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,13 +65,7 @@ public class TyomahdollisuusService {
     if (entity == null) {
       return null;
     }
-    AmmattiryhmaBasicDto ammattiryhmaBasicDto = null;
-    final Ammattiryhma ammattiryhma = entity.getAmmattiryhma();
-    if (ammattiryhma != null) {
-      ammattiryhmaBasicDto =
-          new AmmattiryhmaBasicDto(
-              entity.getAmmattiryhma().getEscoUri(), ammattiryhma.getMediaaniPalkka());
-    }
+    final AmmattiryhmaBasicDto ammattiryhmaBasicDto = getAmmattiryhmaBasicDto(entity);
     return new TyomahdollisuusDto(
         entity.getId(),
         entity.getOtsikko(),
@@ -83,9 +76,20 @@ public class TyomahdollisuusService {
         entity.isAktiivinen());
   }
 
+  private static AmmattiryhmaBasicDto getAmmattiryhmaBasicDto(final Tyomahdollisuus entity) {
+    AmmattiryhmaBasicDto ammattiryhmaBasicDto;
+    final Ammattiryhma ammattiryhma = entity.getAmmattiryhma();
+    Integer mediaaniPalkka = null;
+    if (ammattiryhma != null) {
+      mediaaniPalkka = ammattiryhma.getMediaaniPalkka();
+    }
+    ammattiryhmaBasicDto = new AmmattiryhmaBasicDto(entity.getAmmattiryhmaUri(), mediaaniPalkka);
+    return ammattiryhmaBasicDto;
+  }
+
   private static TyomahdollisuusFullDto mapFull(
       final Tyomahdollisuus entity, final Ammattiryhma ammattiryhma) {
-    URI ammattiryhmaUri = ammattiryhma != null ? ammattiryhma.getUri() : null;
+
     return entity == null
         ? null
         : new TyomahdollisuusFullDto(
@@ -95,7 +99,7 @@ public class TyomahdollisuusService {
             entity.getKuvaus(),
             entity.getTehtavat(),
             entity.getYleisetVaatimukset(),
-            ammattiryhmaUri,
+            entity.getAmmattiryhmaUri(),
             mapPalkkaData(ammattiryhma),
             entity.getAineisto(),
             entity.isAktiivinen(),

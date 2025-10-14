@@ -29,6 +29,7 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.TyomahdollisuusJakauma;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -324,6 +325,7 @@ class MahdollisuusImportTest {
     assertEquals(TyomahdollisuusAineisto.TMT, entity.getAineisto());
     assertTrue(entity.isAktiivinen());
     assertNull(entity.getAmmattiryhma());
+    assertEquals(URI.create(""), entity.getAmmattiryhmaUri());
     var kaannos = entity.getKaannos();
     assertEquals(3, kaannos.size());
     assertTyoOtsikko(kaannos, "Kouluttaja", "Kouluttaja", "Kouluttaja");

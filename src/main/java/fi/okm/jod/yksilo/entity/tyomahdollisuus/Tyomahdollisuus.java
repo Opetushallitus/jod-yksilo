@@ -27,6 +27,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
@@ -53,6 +54,11 @@ public class Tyomahdollisuus {
   @ManyToOne
   @JoinColumn(name = "ammattiryhma")
   private Ammattiryhma ammattiryhma;
+
+  // ammattiryhma column does not necessarily have counterpart in Ammattiryhma-table
+  // thats why we need to get the escoUri from here
+  @Column(name = "ammattiryhma", insertable = false, updatable = false)
+  private URI ammattiryhmaUri;
 
   @Enumerated(EnumType.STRING)
   @Column
