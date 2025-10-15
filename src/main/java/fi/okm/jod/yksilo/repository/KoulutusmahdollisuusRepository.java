@@ -33,19 +33,19 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
       //  The j.id in GROUP BY is needed because SIZE() becomes a correlated
       //  subquery that refers to the j.id.
       """
-      SELECT NEW fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto(
-        k.id,
-        CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
-        COUNT(osaamiset) as hits
-      )
-      FROM Koulutusmahdollisuus k
-      JOIN k.jakaumat j
-      JOIN j.arvot osaamiset
-      WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
-      AND osaamiset.arvo IN :missingOsaamiset
-      GROUP BY k.id, j.id
-      ORDER BY matchRatio DESC
-      """)
+          SELECT NEW fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto(
+            k.id,
+            CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
+            COUNT(osaamiset) as hits
+          )
+          FROM Koulutusmahdollisuus k
+          JOIN k.jakaumat j
+          JOIN j.arvot osaamiset
+          WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
+          AND osaamiset.arvo IN :missingOsaamiset
+          GROUP BY k.id, j.id
+          ORDER BY matchRatio DESC
+          """)
   List<PolunVaiheEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
 
   @Transactional(readOnly = true)
@@ -68,23 +68,23 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
                     t.get("id", UUID.class),
                     t.get("tyyppi", String.class),
                     t.get("ammattiryhma", String.class),
-                    t.get(
-                        "aineisto",
-                        String.class) // Convert to enum inside DTO constructor if needed
+                    t.get("aineisto", String.class),
+                    t.get("koulutusTyyppi", String.class)
+                    // Convert to enum inside DTO constructor if needed
                     ))
         .collect(Collectors.toList());
   }
 
   @Query(
       """
-     SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.otsikko FROM (
-     SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi, CAST(t.ammattiryhmaUri as text) as ammattiryhma, CAST(t.aineisto as text) AS aineisto
-     FROM Tyomahdollisuus t JOIN t.kaannos tk
-     WHERE KEY(tk) = :lang AND t.aktiivinen = true
-     UNION ALL
-     SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, NULL as ammattiryhma, NULL as aineisto
-     FROM Koulutusmahdollisuus k JOIN k.kaannos kk
-     WHERE KEY(kk) = :lang AND k.aktiivinen = true) m
-     """)
+          SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.koulutusTyyppi as koulutusTyyppi, m.otsikko FROM (
+          SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi, CAST(t.ammattiryhmaUri as text) as ammattiryhma, CAST(t.aineisto as text) AS aineisto, CAST(NULL as text) as koulutusTyyppi
+          FROM Tyomahdollisuus t JOIN t.kaannos tk
+          WHERE KEY(tk) = :lang AND t.aktiivinen = true
+          UNION ALL
+          SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, NULL as ammattiryhma, NULL as aineisto, CAST(k.tyyppi as text) as koulutusTyyppi
+          FROM Koulutusmahdollisuus k JOIN k.kaannos kk
+          WHERE KEY(kk) = :lang AND k.aktiivinen = true) m
+          """)
   List<Tuple> findMahdollisuusIdsImpl(Kieli lang, Sort sort);
 }
