@@ -9,20 +9,27 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import java.util.UUID;
 
 public record MahdollisuusDto(
-    UUID id, MahdollisuusTyyppi tyypi, String ammattiryhma, TyomahdollisuusAineisto aineisto) {
-  public MahdollisuusDto(UUID id, String tyyppi, String ammattiryhma, String aineisto) {
+    UUID id,
+    MahdollisuusTyyppi tyypi,
+    String ammattiryhma,
+    TyomahdollisuusAineisto aineisto,
+    KoulutusmahdollisuusTyyppi koulutusTyyppi) {
+  public MahdollisuusDto(
+      UUID id, String tyyppi, String ammattiryhma, String aineisto, String koulutusTyyppi) {
 
     this(
         id,
         MahdollisuusTyyppi.valueOf(tyyppi),
         ammattiryhma,
-        (aineisto == null || aineisto.isEmpty())
+        (aineisto == null || aineisto.isEmpty()) ? null : TyomahdollisuusAineisto.valueOf(aineisto),
+        (koulutusTyyppi == null || koulutusTyyppi.isEmpty())
             ? null
-            : TyomahdollisuusAineisto.valueOf(aineisto));
+            : KoulutusmahdollisuusTyyppi.valueOf(koulutusTyyppi));
   }
 }
