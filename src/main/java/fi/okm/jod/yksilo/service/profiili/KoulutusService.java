@@ -39,6 +39,7 @@ public class KoulutusService {
   private final KoulutusRepository koulutukset;
   private final YksilonOsaaminenService osaamiset;
 
+  @Transactional(readOnly = true)
   public List<KoulutusDto> findAll(JodUser user, UUID kokonaisuusId) {
     return koulutukset
         .findByKokonaisuusYksiloIdAndKokonaisuusId(user.getId(), kokonaisuusId)
@@ -60,6 +61,7 @@ public class KoulutusService {
     return add(kokonaisuus, dto).getId();
   }
 
+  @Transactional(readOnly = true)
   public KoulutusDto get(JodUser user, UUID tyopaikkaId, UUID id) {
     return koulutukset
         .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), tyopaikkaId, id)

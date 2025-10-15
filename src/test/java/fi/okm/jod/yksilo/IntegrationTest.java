@@ -9,12 +9,10 @@
 
 package fi.okm.jod.yksilo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -26,8 +24,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @Execution(ExecutionMode.CONCURRENT)
 @ResourceLock("SLOW")
 public abstract class IntegrationTest {
-
-  @Autowired protected ObjectMapper objectMapper;
 
   @ServiceConnection
   private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
