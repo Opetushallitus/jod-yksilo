@@ -55,11 +55,11 @@ public class OsaamisetEhdotusService {
         ClientHttpRequestFactoryBuilder.jdk()
             .withHttpClientCustomizer(
                 builder -> {
-                  builder.connectTimeout(Duration.ofMillis(5000));
+                  builder.connectTimeout(Duration.ofSeconds(5));
                 })
             .withCustomizer(
                 c -> {
-                  c.setReadTimeout(Duration.ofMillis(5000));
+                  c.setReadTimeout(Duration.ofSeconds(20));
                 })
             .build();
 
@@ -72,13 +72,8 @@ public class OsaamisetEhdotusService {
                   converters.add(messageConverter);
                 })
             .baseUrl(baseUrl)
-            .defaultHeader(
-                HttpHeaders.USER_AGENT, "fi.okm.jod (https://okm.fi/hanke?tunnus=OKM069:00/2021)")
+            .defaultHeader(HttpHeaders.USER_AGENT, "fi.okm.jod.yksilo")
             .build();
-
-    // NOTE:
-    // Default RestClient includes response bodies in error messages and stack traces, which
-    // can be a security risk. RestClient also does not bound the response size in any way.
   }
 
   public List<Ehdotus> createEhdotus(LocalizedString kuvaus) {
