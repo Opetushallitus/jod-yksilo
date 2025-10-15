@@ -96,15 +96,18 @@ class MahdollisuudetControllerTest {
     LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+            listOfIds.get(0),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(1),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
-            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
-            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
+            listOfIds.get(2),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
+            listOfIds.get(3),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(4),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
             listOfIds.get(5),
-                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null)));
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null)));
 
     when(mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
             Sort.Direction.ASC, Kieli.FI))
@@ -169,15 +172,18 @@ class MahdollisuudetControllerTest {
     LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+            listOfIds.get(0),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(1),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
-            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
-            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
+            listOfIds.get(2),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
+            listOfIds.get(3),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(4),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
             listOfIds.get(5),
-                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null)));
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null)));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
@@ -263,15 +269,18 @@ class MahdollisuudetControllerTest {
     LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+            listOfIds.get(0),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(1),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
-            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
-            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
+            listOfIds.get(2),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
+            listOfIds.get(3),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(4),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
             listOfIds.get(5),
-                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null)));
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null)));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
@@ -326,15 +335,18 @@ class MahdollisuudetControllerTest {
     LinkedHashMap<UUID, MahdollisuusDto> mahdollisuudet = LinkedHashMap.newLinkedHashMap(3);
     mahdollisuudet.putAll(
         Map.of(
-            listOfIds.get(0), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+            listOfIds.get(0),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(1),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
-            listOfIds.get(2), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
-            listOfIds.get(3), new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
+            listOfIds.get(2),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
+            listOfIds.get(3),
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null),
             listOfIds.get(4),
-                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null),
+                new MahdollisuusDto(UUID.randomUUID(), "KOULUTUSMAHDOLLISUUS", null, null, null),
             listOfIds.get(5),
-                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null)));
+                new MahdollisuusDto(UUID.randomUUID(), "TYOMAHDOLLISUUS", null, null, null)));
     var inferenceResponse = new MahdollisuudetController.Response();
     inferenceResponse.addAll(
         List.of(
