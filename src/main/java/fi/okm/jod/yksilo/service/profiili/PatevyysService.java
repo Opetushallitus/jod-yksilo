@@ -32,6 +32,7 @@ public class PatevyysService {
   private final PatevyysRepository patevyydet;
   private final YksilonOsaaminenService osaamiset;
 
+  @Transactional(readOnly = true)
   public List<PatevyysDto> findAll(JodUser user, UUID toimintoId) {
     return patevyydet.findByToimintoYksiloIdAndToimintoId(user.getId(), toimintoId).stream()
         .map(Mapper::mapPatevyys)
@@ -51,6 +52,7 @@ public class PatevyysService {
     return add(toiminto, dto).getId();
   }
 
+  @Transactional(readOnly = true)
   public PatevyysDto get(JodUser user, UUID id, UUID patevyysId) {
     return patevyydet
         .findBy(user, id, patevyysId)
