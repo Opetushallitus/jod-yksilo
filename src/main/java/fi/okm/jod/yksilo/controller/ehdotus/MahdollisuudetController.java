@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
@@ -168,6 +169,7 @@ class MahdollisuudetController {
                         entry.getValue().tyypi(),
                         entry.getValue().ammattiryhma(),
                         entry.getValue().aineisto(),
+                        entry.getValue().koulutusTyyppi(),
                         counter.getAndIncrement())))
         .toList();
   }
@@ -191,7 +193,8 @@ class MahdollisuudetController {
                   new EhdotusMetadata(
                       MahdollisuusTyyppi.valueOf(suggestion.type()),
                       entry.getValue().ammattiryhma(),
-                      null,
+                      entry.getValue().aineisto(),
+                      entry.getValue().koulutusTyyppi(),
                       suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
@@ -255,6 +258,7 @@ class MahdollisuudetController {
       @NotNull MahdollisuusTyyppi tyyppi,
       @Nullable String ammattiryhma,
       @Nullable TyomahdollisuusAineisto aineisto,
+      @Nullable KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
       @Nullable Long osaamisia,
@@ -267,8 +271,18 @@ class MahdollisuudetController {
         MahdollisuusTyyppi tyyppi,
         String ammattiryhma,
         TyomahdollisuusAineisto aineisto,
+        KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
         int order) {
-      return new EhdotusMetadata(tyyppi, ammattiryhma, aineisto, null, null, null, null, order);
+      return new EhdotusMetadata(
+          tyyppi,
+          ammattiryhma,
+          aineisto,
+          koulutusmahdollisuusTyyppi,
+          null,
+          null,
+          null,
+          null,
+          order);
     }
   }
 
@@ -327,6 +341,7 @@ class MahdollisuudetController {
                     it.mahdollisuusId(),
                     new EhdotusMetadata(
                         MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
+                        null,
                         null,
                         null,
                         it.pisteet(),
