@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.dto;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
+import java.util.List;
 import java.util.UUID;
 
 public record MahdollisuusDto(
@@ -19,9 +20,15 @@ public record MahdollisuusDto(
     MahdollisuusTyyppi tyypi,
     String ammattiryhma,
     TyomahdollisuusAineisto aineisto,
-    KoulutusmahdollisuusTyyppi koulutusTyyppi) {
+    KoulutusmahdollisuusTyyppi koulutusTyyppi,
+    List<String> maakunnat) {
   public MahdollisuusDto(
-      UUID id, String tyyppi, String ammattiryhma, String aineisto, String koulutusTyyppi) {
+      UUID id,
+      String tyyppi,
+      String ammattiryhma,
+      String aineisto,
+      String koulutusTyyppi,
+      List<String> maakunnat) {
 
     this(
         id,
@@ -30,6 +37,7 @@ public record MahdollisuusDto(
         (aineisto == null || aineisto.isEmpty()) ? null : TyomahdollisuusAineisto.valueOf(aineisto),
         (koulutusTyyppi == null || koulutusTyyppi.isEmpty())
             ? null
-            : KoulutusmahdollisuusTyyppi.valueOf(koulutusTyyppi));
+            : KoulutusmahdollisuusTyyppi.valueOf(koulutusTyyppi),
+        maakunnat);
   }
 }

@@ -170,6 +170,7 @@ class MahdollisuudetController {
                         entry.getValue().ammattiryhma(),
                         entry.getValue().aineisto(),
                         entry.getValue().koulutusTyyppi(),
+                        entry.getValue().maakunnat(),
                         counter.getAndIncrement())))
         .toList();
   }
@@ -195,6 +196,7 @@ class MahdollisuudetController {
                       entry.getValue().ammattiryhma(),
                       entry.getValue().aineisto(),
                       entry.getValue().koulutusTyyppi(),
+                      entry.getValue().maakunnat(),
                       suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
@@ -259,6 +261,7 @@ class MahdollisuudetController {
       @Nullable String ammattiryhma,
       @Nullable TyomahdollisuusAineisto aineisto,
       @Nullable KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
+      @Nullable List<String> maakunnat,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
       @Nullable Long osaamisia,
@@ -272,12 +275,14 @@ class MahdollisuudetController {
         String ammattiryhma,
         TyomahdollisuusAineisto aineisto,
         KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
+        List<String> maakunnat,
         int order) {
       return new EhdotusMetadata(
           tyyppi,
           ammattiryhma,
           aineisto,
           koulutusmahdollisuusTyyppi,
+          maakunnat,
           null,
           null,
           null,
@@ -341,6 +346,7 @@ class MahdollisuudetController {
                     it.mahdollisuusId(),
                     new EhdotusMetadata(
                         MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
+                        null,
                         null,
                         null,
                         null,

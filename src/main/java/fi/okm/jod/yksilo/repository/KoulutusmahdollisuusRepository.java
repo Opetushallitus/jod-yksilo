@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Tuple;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
@@ -57,34 +58,60 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
           case SV -> "sv-x-icu";
           case EN -> "en-x-icu";
         };
+    // Cache
     // collate() is HQL extension
     final List<Tuple> mahdollisuusIdsImpl =
         findMahdollisuusIdsImpl(
             lang, JpaSort.unsafe(direction, "collate(m.otsikko as `" + collation + "`)"));
-    return mahdollisuusIdsImpl.stream()
+    Map<UUID, List<Tuple>> grouped =
+        mahdollisuusIdsImpl.stream().collect(Collectors.groupingBy(t -> t.get("id", UUID.class)));
+
+    return grouped.entrySet().stream()
         .map(
-            t ->
-                new MahdollisuusDto(
-                    t.get("id", UUID.class),
-                    t.get("tyyppi", String.class),
-                    t.get("ammattiryhma", String.class),
-                    t.get("aineisto", String.class),
-                    t.get("koulutusTyyppi", String.class)
-                    // Convert to enum inside DTO constructor if needed
-                    ))
-        .collect(Collectors.toList());
+            entry -> {
+              UUID id = entry.getKey();
+              List<Tuple> tuples = entry.getValue();
+              String tyyppi = tuples.getFirst().get("tyyppi", String.class);
+              String ammattiryhma = tuples.getFirst().get("ammattiryhma", String.class);
+              String aineisto = tuples.getFirst().get("aineisto", String.class);
+              String koulutusTyyppi = tuples.getFirst().get("koulutusTyyppi", String.class);
+              List<String> maakunnat =
+                  tuples.stream().map(t -> t.get("maakunta", String.class)).toList();
+
+              return new MahdollisuusDto(
+                  id, tyyppi, ammattiryhma, aineisto, koulutusTyyppi, maakunnat);
+            })
+        .toList();
   }
 
   @Query(
       """
-          SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.koulutusTyyppi as koulutusTyyppi, m.otsikko FROM (
-          SELECT t.id AS id, tk.otsikko AS otsikko, 'TYOMAHDOLLISUUS' AS tyyppi, CAST(t.ammattiryhmaUri as text) as ammattiryhma, CAST(t.aineisto as text) AS aineisto, CAST(NULL as text) as koulutusTyyppi
-          FROM Tyomahdollisuus t JOIN t.kaannos tk
-          WHERE KEY(tk) = :lang AND t.aktiivinen = true
-          UNION ALL
-          SELECT k.id AS id, kk.otsikko AS otsikko, 'KOULUTUSMAHDOLLISUUS' AS tyyppi, NULL as ammattiryhma, NULL as aineisto, CAST(k.tyyppi as text) as koulutusTyyppi
-          FROM Koulutusmahdollisuus k JOIN k.kaannos kk
-          WHERE KEY(kk) = :lang AND k.aktiivinen = true) m
-          """)
+        SELECT m.id as id, m.tyyppi as tyyppi, m.ammattiryhma as ammattiryhma, m.aineisto as aineisto, m.otsikko, m.koulutusTyyppi as koulutusTyyppi, m.maakunta as maakunta FROM (
+        SELECT
+        t.id AS id,
+        tk.otsikko AS otsikko,
+        'TYOMAHDOLLISUUS' AS tyyppi,
+        CAST(t.ammattiryhmaUri as text) as ammattiryhma,
+        CAST(t.aineisto as text) AS aineisto,
+        CAST(NULL as text) as koulutusTyyppi,
+        a.arvo as maakunta
+        FROM Tyomahdollisuus t JOIN t.kaannos tk
+        LEFT JOIN t.jakaumat j ON j.tyyppi = 'MAAKUNTA'
+        LEFT JOIN j.arvot a
+        WHERE KEY(tk) = :lang AND t.aktiivinen = true
+        UNION ALL
+        SELECT
+        k.id AS id,
+        kk.otsikko AS otsikko,
+        'KOULUTUSMAHDOLLISUUS' AS tyyppi,
+        NULL as ammattiryhma,
+        NULL as aineisto,
+        CAST(k.tyyppi as text) as koulutusTyyppi,
+        NULL as maakunta
+        FROM Koulutusmahdollisuus k JOIN k.kaannos kk
+        LEFT JOIN k.jakaumat kj ON kj.tyyppi = 'MAAKUNTA'
+        LEFT JOIN kj.arvot ka
+        WHERE KEY(kk) = :lang AND k.aktiivinen = true ) m
+        """)
   List<Tuple> findMahdollisuusIdsImpl(Kieli lang, Sort sort);
 }
