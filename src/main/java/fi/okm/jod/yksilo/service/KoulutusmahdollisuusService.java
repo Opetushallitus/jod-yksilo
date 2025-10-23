@@ -11,15 +11,20 @@ package fi.okm.jod.yksilo.service;
 
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.dto.KestoJakaumaDto;
 import fi.okm.jod.yksilo.dto.KoulutusViiteDto;
 import fi.okm.jod.yksilo.dto.KoulutusmahdollisuusDto;
 import fi.okm.jod.yksilo.dto.KoulutusmahdollisuusFullDto;
+import fi.okm.jod.yksilo.entity.Jakauma;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus.KestoJakauma;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.KoulutusmahdollisuusJakauma;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus_;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,7 +43,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class KoulutusmahdollisuusService {
   private final KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
+  private static String mostCommonKoulutusala(Koulutusmahdollisuus entity) {
+    final KoulutusmahdollisuusJakauma koulutusAlat =
+        entity.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.KOULUTUSALA);
+    if (koulutusAlat == null) {
+      return null;
+    }
+    return koulutusAlat.getArvot().stream()
+        .max(Comparator.comparingDouble(Jakauma.Arvo::osuus))
+        .map(Jakauma.Arvo::arvo)
+        .orElse(null);
+  }
+
   private static KoulutusmahdollisuusDto map(Koulutusmahdollisuus entity) {
+
     return entity == null
         ? null
         : new KoulutusmahdollisuusDto(
@@ -48,6 +66,7 @@ public class KoulutusmahdollisuusService {
             entity.getTiivistelma(),
             entity.getKuvaus(),
             mapKesto(entity.getKesto()),
+            mostCommonKoulutusala(entity),
             entity.isAktiivinen());
   }
 
