@@ -21,4 +21,5 @@ public record KoulutusmahdollisuusDto(
     LocalizedString tiivistelma,
     LocalizedString kuvaus,
     KestoJakaumaDto kesto,
+    String yleisinKoulutusala,
     Boolean aktiivinen) {}
