@@ -17,6 +17,7 @@ import jakarta.persistence.Tuple;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
@@ -71,12 +72,15 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
             entry -> {
               UUID id = entry.getKey();
               List<Tuple> tuples = entry.getValue();
-              String tyyppi = tuples.getFirst().get("tyyppi", String.class);
-              String ammattiryhma = tuples.getFirst().get("ammattiryhma", String.class);
-              String aineisto = tuples.getFirst().get("aineisto", String.class);
-              String koulutusTyyppi = tuples.getFirst().get("koulutusTyyppi", String.class);
+              var tyyppi = tuples.getFirst().get("tyyppi", String.class);
+              var ammattiryhma = tuples.getFirst().get("ammattiryhma", String.class);
+              var aineisto = tuples.getFirst().get("aineisto", String.class);
+              var koulutusTyyppi = tuples.getFirst().get("koulutusTyyppi", String.class);
               List<String> maakunnat =
-                  tuples.stream().map(t -> t.get("maakunta", String.class)).toList();
+                  tuples.stream()
+                      .map(t -> t.get("maakunta", String.class))
+                      .filter(Objects::nonNull)
+                      .toList();
 
               return new MahdollisuusDto(
                   id, tyyppi, ammattiryhma, aineisto, koulutusTyyppi, maakunnat);
