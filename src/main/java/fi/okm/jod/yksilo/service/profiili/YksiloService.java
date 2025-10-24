@@ -126,6 +126,7 @@ public class YksiloService {
     log.atInfo().addMarker(LogMarker.AUDIT).log("Deleted user {} profile", user.getId());
   }
 
+  @Transactional(readOnly = true)
   public YksiloExportDto export(JodUser user) {
     var exportDto =
         ExportMapper.mapYksilo(

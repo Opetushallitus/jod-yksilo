@@ -37,6 +37,7 @@ public class MuuOsaaminenService {
   private final YksiloRepository yksilot;
   private final YksilonOsaaminenService osaaminenService;
 
+  @Transactional(readOnly = true)
   public Set<URI> findAll(JodUser user) {
     return osaaminenService.findAll(user, OsaamisenLahdeTyyppi.MUU_OSAAMINEN, null).stream()
         .map(yo -> yo.osaaminen().uri())
@@ -49,6 +50,7 @@ public class MuuOsaaminenService {
         osaaminenService.getOsaamiset(ids));
   }
 
+  @Transactional(readOnly = true)
   public LocalizedString getVapaateksti(JodUser user) {
     var yksilo = yksilot.getReferenceById(user.getId());
     return yksilo.getMuuOsaaminenVapaateksti();

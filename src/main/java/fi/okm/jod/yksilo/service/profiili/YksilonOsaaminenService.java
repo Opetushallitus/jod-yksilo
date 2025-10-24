@@ -47,6 +47,7 @@ public class YksilonOsaaminenService {
   private final OsaaminenRepository osaamisetRepository;
   private final List<OsaamisenLahdeRepository<?>> lahteet;
 
+  @Transactional(readOnly = true)
   public List<YksilonOsaaminenDto> findAll(JodUser user, OsaamisenLahdeTyyppi tyyppi, UUID id) {
 
     if (tyyppi != null && id != null) {
@@ -66,6 +67,7 @@ public class YksilonOsaaminenService {
     return Mapper.mapYksilonOsaaminen(repository.findAllBy(user.getId(), tyyppi, sort));
   }
 
+  @Transactional(readOnly = true)
   public YksilonOsaaminenDto get(JodUser user, UUID id) {
     return repository
         .findByYksiloIdAndId(user.getId(), id)

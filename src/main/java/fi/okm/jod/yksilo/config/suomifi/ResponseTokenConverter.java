@@ -13,6 +13,7 @@ import static java.util.Objects.requireNonNull;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
@@ -159,7 +160,13 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
                           }
                         };
                       })
-                  .orElseGet(() -> new Yksilo(id));
+                  .orElseGet(
+                      () -> {
+                        log.atInfo()
+                            .addMarker(LogMarker.AUDIT)
+                            .log("Creating new user with id {}", id);
+                        return new Yksilo(id);
+                      });
           yksilot.save(yksilo);
           return id;
         });
