@@ -1,4 +1,21 @@
 #!/bin/bash
-if ! git diff --cached --quiet --diff-filter=ACM -- ":src/**"; then
-  ./gradlew --console=plain --quiet --offline spotlessCheck checkstyleMain
+set -e
+
+# Identify staged Java source files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM -- 'src/**/*.java')
+
+if [[ -n "$staged_files" ]]; then
+  echo "Running Spotless and Checkstyle on staged Java files..."
+
+  # Apply Spotless formatting (fixes in place)
+  ./gradlew --console=plain --quiet --offline spotlessApply checkstyleMain
+
+  # Re-add any files modified by Spotless back to staging
+  for file in $staged_files; do
+    if [[ -f "$file" ]] && ! git diff --quiet "$file"; then
+      git add "$file"
+      echo "Re-added formatted file: $file"
+    fi
+  done
 fi
+

@@ -22,6 +22,7 @@ import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class KoulutusmahdollisuusService {
   private final KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
   private static KoulutusmahdollisuusDto map(Koulutusmahdollisuus entity) {
+    System.out.println("moi");
     return entity == null
         ? null
         : new KoulutusmahdollisuusDto(
