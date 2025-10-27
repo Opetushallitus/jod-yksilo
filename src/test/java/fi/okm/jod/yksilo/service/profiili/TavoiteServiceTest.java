@@ -16,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -29,17 +29,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql("/data/mahdollisuudet-test-data.sql")
-@Import(PaamaaraService.class)
-class PaamaaraServiceTest extends AbstractServiceTest {
-  @Autowired private PaamaaraService service;
+@Import(TavoiteService.class)
+class TavoiteServiceTest extends AbstractServiceTest {
+  @Autowired private TavoiteService service;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @Test
-  void shouldAddPaamaara() {
+  void shouldAddTavoite() {
     var dto =
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -50,11 +50,11 @@ class PaamaaraServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldUpdatePaamaara() {
+  void shouldUpdateTavoite() {
     var dto =
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -63,9 +63,9 @@ class PaamaaraServiceTest extends AbstractServiceTest {
 
     var id = service.add(user, dto);
     var updated =
-        new PaamaaraDto(
+        new TavoiteDto(
             id,
-            PaamaaraTyyppi.PITKA,
+            TavoiteTyyppi.PITKA,
             dto.mahdollisuusTyyppi(),
             dto.mahdollisuusId(),
             ls("tavoite2"),
@@ -79,11 +79,11 @@ class PaamaaraServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldNotAddInvalidPaamaara() {
+  void shouldNotAddInvalidTavoite() {
     var dto =
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
             UUID.randomUUID(),
             ls("tavoite"),
@@ -93,11 +93,11 @@ class PaamaaraServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldDeletePaamaara() {
+  void shouldDeleteTavoite() {
     var dto =
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -109,11 +109,11 @@ class PaamaaraServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldNotDeleteOtherUserPaamaara() {
+  void shouldNotDeleteOtherUserTavoite() {
     var dto =
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),

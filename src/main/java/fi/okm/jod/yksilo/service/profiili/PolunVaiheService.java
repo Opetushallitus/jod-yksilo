@@ -38,10 +38,10 @@ public class PolunVaiheService {
   private final PolunVaiheRepository vaiheRepository;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
 
-  public UUID add(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
+  public UUID add(JodUser user, UUID tavoiteId, UUID suunnitelmaId, PolunVaiheDto dto) {
     var suunnitelma =
         suunnitelmaRepository
-            .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, suunnitelmaId)
+            .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, suunnitelmaId)
             .orElseThrow(PolunVaiheService::notFound);
 
     var koulutusmahdollisuus =
@@ -56,20 +56,20 @@ public class PolunVaiheService {
     return add(suunnitelma, dto, koulutusmahdollisuus).getId();
   }
 
-  public void update(JodUser user, UUID paamaaraId, UUID suunnitelmaId, PolunVaiheDto dto) {
+  public void update(JodUser user, UUID tavoiteId, UUID suunnitelmaId, PolunVaiheDto dto) {
     var vaihe =
         vaiheRepository
-            .findByPolunSuunnitelmaPaamaaraYksiloIdAndPolunSuunnitelmaPaamaaraIdAndPolunSuunnitelmaIdAndId(
-                user.getId(), paamaaraId, suunnitelmaId, dto.id())
+            .findByPolunSuunnitelmaTavoiteYksiloIdAndPolunSuunnitelmaTavoiteIdAndPolunSuunnitelmaIdAndId(
+                user.getId(), tavoiteId, suunnitelmaId, dto.id())
             .orElseThrow(PolunVaiheService::notFound);
     update(vaihe, dto);
   }
 
-  public void delete(JodUser user, UUID paamaaraId, UUID suunnitelmaId, UUID vaiheId) {
+  public void delete(JodUser user, UUID tavoiteId, UUID suunnitelmaId, UUID vaiheId) {
     var vaihe =
         vaiheRepository
-            .findByPolunSuunnitelmaPaamaaraYksiloIdAndPolunSuunnitelmaPaamaaraIdAndPolunSuunnitelmaIdAndId(
-                user.getId(), paamaaraId, suunnitelmaId, vaiheId)
+            .findByPolunSuunnitelmaTavoiteYksiloIdAndPolunSuunnitelmaTavoiteIdAndPolunSuunnitelmaIdAndId(
+                user.getId(), tavoiteId, suunnitelmaId, vaiheId)
             .orElseThrow(PolunVaiheService::notFound);
     delete(vaihe);
   }
@@ -112,7 +112,7 @@ public class PolunVaiheService {
     var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
     var suunnitelma = vaihe.getPolunSuunnitelma();
-    var paamaaraOsaamiset = suunnitelma.getPaamaara().getOsaamiset();
+    var tavoiteOsaamiset = suunnitelma.getTavoite().getOsaamiset();
     var suunnitelmaOsaamiset =
         suunnitelma.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet());
     var vaiheet = suunnitelma.getVaiheet();
@@ -125,8 +125,8 @@ public class PolunVaiheService {
 
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!paamaaraOsaamiset.containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in paamaara");
+    } else if (!tavoiteOsaamiset.containsAll(ids)) {
+      throw new ServiceValidationException("Osaaminen not in tavoite");
     } else if (ids.stream().anyMatch(suunnitelmaOsaamiset::contains)) {
       throw new ServiceValidationException("Osaaminen in suunnitelma");
     } else if (ids.stream().anyMatch(vaiheetOsaamiset::contains)) {

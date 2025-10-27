@@ -12,9 +12,9 @@ package fi.okm.jod.yksilo.controller.profiili;
 import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.service.profiili.PaamaaraService;
+import fi.okm.jod.yksilo.service.profiili.TavoiteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,34 +35,34 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/paamaarat")
+@RequestMapping("/api/profiili/tavoitteet")
 @RequiredArgsConstructor
-@Tag(name = "profiili/paamaarat")
-@FeatureRequired(Feature.PAAMAARA)
-class PaamaaraController {
-  private final PaamaaraService service;
+@Tag(name = "profiili/tavoitteet")
+@FeatureRequired(Feature.TAVOITE)
+class TavoiteController {
+  private final TavoiteService service;
 
   @GetMapping
-  @Operation(summary = "Gets all paamaarat")
-  List<PaamaaraDto> findAll(@AuthenticationPrincipal JodUser user) {
+  @Operation(summary = "Gets all tavoitteet")
+  List<TavoiteDto> findAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
   }
 
   @PostMapping
-  @Operation(summary = "Adds a new paamaara")
+  @Operation(summary = "Adds a new tavoite")
   @ResponseStatus(HttpStatus.CREATED)
   UUID add(
-      @AuthenticationPrincipal JodUser user, @Validated(Add.class) @RequestBody PaamaaraDto dto) {
+      @AuthenticationPrincipal JodUser user, @Validated(Add.class) @RequestBody TavoiteDto dto) {
     return service.add(user, dto);
   }
 
   @PutMapping("/{id}")
-  @Operation(summary = "Updates a paamaara")
+  @Operation(summary = "Updates a tavoite")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @AuthenticationPrincipal JodUser user,
       @PathVariable UUID id,
-      @Valid @RequestBody PaamaaraDto dto) {
+      @Valid @RequestBody TavoiteDto dto) {
     if (dto.id() == null || !id.equals(dto.id())) {
       throw new IllegalArgumentException("Invalid identifier");
     }
@@ -70,7 +70,7 @@ class PaamaaraController {
   }
 
   @DeleteMapping("/{id}")
-  @Operation(summary = "Deletes a paamaara")
+  @Operation(summary = "Deletes a tavoite")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);

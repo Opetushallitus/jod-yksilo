@@ -33,9 +33,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/paamaarat/{id}/suunnitelmat/{suunnitelmaId}/vaiheet")
+@RequestMapping("/api/profiili/tavoitteet/{id}/suunnitelmat/{suunnitelmaId}/vaiheet")
 @RequiredArgsConstructor
-@Tag(name = "profiili/paamaarat")
+@Tag(name = "profiili/tavoitteet")
 @FeatureRequired(Feature.POLKU)
 public class PolunVaiheController {
   private final PolunVaiheService service;

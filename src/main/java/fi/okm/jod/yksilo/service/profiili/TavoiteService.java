@@ -10,11 +10,11 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
-import fi.okm.jod.yksilo.entity.Paamaara;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
-import fi.okm.jod.yksilo.repository.PaamaaraRepository;
+import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -28,28 +28,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PaamaaraService {
+public class TavoiteService {
 
   public static final int MAX_PAAMAARA_COUNT = 10_000;
 
   private final YksiloRepository yksilot;
-  private final PaamaaraRepository paamaarat;
+  private final TavoiteRepository tavoitteet;
   private final TyomahdollisuusRepository tyomahdollisuudet;
   private final KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
   @Transactional(readOnly = true)
-  public List<PaamaaraDto> findAll(JodUser user) {
+  public List<TavoiteDto> findAll(JodUser user) {
     var yksilo = yksilot.getReferenceById(user.getId());
-    return paamaarat.findAllByYksilo(yksilo).stream().map(Mapper::mapPaamaara).toList();
+    return tavoitteet.findAllByYksilo(yksilo).stream().map(Mapper::mapTavoite).toList();
   }
 
-  public UUID add(JodUser user, PaamaaraDto dto) {
+  public UUID add(JodUser user, TavoiteDto dto) {
     var yksilo = yksilot.getReferenceById(user.getId());
 
-    var paamaara =
+    var tavoite =
         switch (dto.mahdollisuusTyyppi()) {
           case TYOMAHDOLLISUUS ->
-              new Paamaara(
+              new Tavoite(
                   yksilo,
                   dto.tyyppi(),
                   tyomahdollisuudet
@@ -57,7 +57,7 @@ public class PaamaaraService {
                       .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
                   dto.tavoite());
           case KOULUTUSMAHDOLLISUUS ->
-              new Paamaara(
+              new Tavoite(
                   yksilo,
                   dto.tyyppi(),
                   koulutusmahdollisuudet
@@ -66,32 +66,32 @@ public class PaamaaraService {
                   dto.tavoite());
         };
 
-    if (paamaarat.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
-      throw new ServiceValidationException("Too many Paamaara");
+    if (tavoitteet.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
+      throw new ServiceValidationException("Too many Tavoite");
     }
 
     yksilo.updated();
-    return paamaarat.save(paamaara).getId();
+    return tavoitteet.save(tavoite).getId();
   }
 
   public void delete(JodUser user, UUID id) {
     final Yksilo yksilo = yksilot.getReferenceById(user.getId());
-    if (paamaarat.deleteByYksiloAndId(yksilot.getReferenceById(user.getId()), id) == 0) {
-      throw new NotFoundException("Paamaara not found");
+    if (tavoitteet.deleteByYksiloAndId(yksilot.getReferenceById(user.getId()), id) == 0) {
+      throw new NotFoundException("Tavoite not found");
     }
     yksilo.updated();
     this.yksilot.save(yksilo);
   }
 
-  public void update(JodUser user, PaamaaraDto dto) {
+  public void update(JodUser user, TavoiteDto dto) {
     final Yksilo yksilo = yksilot.getReferenceById(user.getId());
-    var paamaara =
-        paamaarat
+    var tavoite =
+        tavoitteet
             .findByYksiloAndId(yksilo, dto.id())
-            .orElseThrow(() -> new NotFoundException("Paamaara not found"));
-    paamaara.setTyyppi(dto.tyyppi());
-    paamaara.setTavoite(dto.tavoite());
+            .orElseThrow(() -> new NotFoundException("Tavoite not found"));
+    tavoite.setTyyppi(dto.tyyppi());
+    tavoite.setTavoite(dto.tavoite());
     yksilo.updated();
-    this.paamaarat.save(paamaara);
+    this.tavoitteet.save(tavoite);
   }
 }

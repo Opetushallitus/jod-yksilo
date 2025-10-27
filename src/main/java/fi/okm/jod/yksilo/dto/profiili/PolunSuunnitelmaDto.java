@@ -28,7 +28,7 @@ import java.util.UUID;
 public record PolunSuunnitelmaDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
-    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) PaamaaraYhteenvetoDto paamaara,
+    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) TavoiteYhteenvetoDto tavoite,
     @Null(groups = Add.class)
         @Schema(accessMode = READ_ONLY)
         @Size(max = Limits.VAIHE_PER_SUUNNITELMA)

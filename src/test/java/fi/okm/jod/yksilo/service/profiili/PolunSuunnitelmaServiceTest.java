@@ -18,10 +18,10 @@ import static org.mockito.Mockito.mockStatic;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -36,12 +36,12 @@ import org.springframework.test.context.jdbc.Sql;
 @Sql("/data/mahdollisuudet-test-data.sql")
 @Import({
   PolunSuunnitelmaService.class,
-  PaamaaraService.class,
+  TavoiteService.class,
   YksilonOsaaminenService.class,
   MuuOsaaminenService.class
 })
 class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
-  @Autowired private PaamaaraService paamaarat;
+  @Autowired private TavoiteService tavoitteet;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
   @Autowired private KoulutusmahdollisuusRepository koulutusmahdollisuudet;
   @Autowired private PolunSuunnitelmaService service;
@@ -49,48 +49,48 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Test
   void shouldAddSuunnitelma() {
     var tavoite = ls("tavoite");
-    var paamaaraId = addPaamaara(tavoite);
+    var tavoiteId = addTavoite(tavoite);
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
-    var id = assertDoesNotThrow(() -> service.add(user, paamaaraId, dto));
-    var result = service.get(user, paamaaraId, id);
+    var id = assertDoesNotThrow(() -> service.add(user, tavoiteId, dto));
+    var result = service.get(user, tavoiteId, id);
     assertThat(dto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "paamaara", "vaiheet")
+        .ignoringFields("id", "tavoite", "vaiheet")
         .isEqualTo(result);
-    assertThat(result.paamaara().id()).isEqualTo(paamaaraId);
-    assertThat(result.paamaara().tavoite()).usingRecursiveComparison().isEqualTo(tavoite);
+    assertThat(result.tavoite().id()).isEqualTo(tavoiteId);
+    assertThat(result.tavoite().tavoite()).usingRecursiveComparison().isEqualTo(tavoite);
   }
 
   @Test
-  void shouldThrowExceptionWhenAddingSuunnitelmaWithKoulutusmahdollisuusPaamaara() {
-    var paamaaraId = addPaamaara(ls("tavoite"), MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS);
+  void shouldThrowExceptionWhenAddingSuunnitelmaWithKoulutusmahdollisuusTavoite() {
+    var tavoiteId = addTavoite(ls("tavoite"), MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS);
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
     assertThrows(
         ServiceValidationException.class,
-        () -> service.add(user, paamaaraId, dto),
-        "Invalid Paamaara");
+        () -> service.add(user, tavoiteId, dto),
+        "Invalid Tavoite");
   }
 
   @Test
   void shouldUpdateSuunnitelma() {
-    var paamaaraId = addPaamaara(ls("tavoite"));
+    var tavoiteId = addTavoite(ls("tavoite"));
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
-    var id = service.add(user, paamaaraId, dto);
+    var id = service.add(user, tavoiteId, dto);
     var updateDto = new PolunSuunnitelmaUpdateDto(id, ls("uusi nimi"), null, null);
-    service.update(user, paamaaraId, updateDto);
+    service.update(user, tavoiteId, updateDto);
     assertThat(updateDto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "paamaara", "vaiheet", "osaamiset", "ignoredOsaamiset")
-        .isEqualTo(service.get(user, paamaaraId, id));
+        .ignoringFields("id", "tavoite", "vaiheet", "osaamiset", "ignoredOsaamiset")
+        .isEqualTo(service.get(user, tavoiteId, id));
   }
 
   @Test
   void shouldDeleteSuunnitelma() {
-    var paamaaraId = addPaamaara(ls("tavoite"));
+    var tavoiteId = addTavoite(ls("tavoite"));
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
-    var id = service.add(user, paamaaraId, dto);
-    service.delete(user, paamaaraId, id);
-    assertThrows(NotFoundException.class, () -> service.get(user, paamaaraId, id));
+    var id = service.add(user, tavoiteId, dto);
+    service.delete(user, tavoiteId, id);
+    assertThrows(NotFoundException.class, () -> service.get(user, tavoiteId, id));
   }
 
   @Test
@@ -98,32 +98,32 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     int testLimit = 3;
     try (var mockedService = mockStatic(PolunSuunnitelmaService.class)) {
       mockedService
-          .when(PolunSuunnitelmaService::getSuunnitelmaPerPaamaaraLimit)
+          .when(PolunSuunnitelmaService::getSuunnitelmaPerTavoiteLimit)
           .thenReturn(testLimit);
-      var paamaaraId = addPaamaara(ls("tavoite"));
+      var tavoiteId = addTavoite(ls("tavoite"));
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
         var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet(), emptySet());
-        service.add(user, paamaaraId, dto);
+        service.add(user, tavoiteId, dto);
       }
 
       // Attempt to add one more Suunnitelma, which should throw an exception
       var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet(), emptySet());
-      assertThrows(ServiceValidationException.class, () -> service.add(user, paamaaraId, dto));
+      assertThrows(ServiceValidationException.class, () -> service.add(user, tavoiteId, dto));
     }
   }
 
-  private UUID addPaamaara(LocalizedString tavoite) {
-    return addPaamaara(tavoite, MahdollisuusTyyppi.TYOMAHDOLLISUUS);
+  private UUID addTavoite(LocalizedString tavoite) {
+    return addTavoite(tavoite, MahdollisuusTyyppi.TYOMAHDOLLISUUS);
   }
 
-  private UUID addPaamaara(LocalizedString tavoite, MahdollisuusTyyppi mahdollisuusTyyppi) {
-    return paamaarat.add(
+  private UUID addTavoite(LocalizedString tavoite, MahdollisuusTyyppi mahdollisuusTyyppi) {
+    return tavoitteet.add(
         user,
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.PITKA,
+            TavoiteTyyppi.PITKA,
             mahdollisuusTyyppi,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS.equals(mahdollisuusTyyppi)
                 ? tyomahdollisuudet.findAll().getFirst().getId()

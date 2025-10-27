@@ -17,8 +17,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolunVaiheRepository extends JpaRepository<PolunVaihe, UUID> {
   Optional<PolunVaihe>
-      findByPolunSuunnitelmaPaamaaraYksiloIdAndPolunSuunnitelmaPaamaaraIdAndPolunSuunnitelmaIdAndId(
-          UUID yksiloId, UUID paamaaraId, UUID polunSuunnitelmaId, UUID id);
+      findByPolunSuunnitelmaTavoiteYksiloIdAndPolunSuunnitelmaTavoiteIdAndPolunSuunnitelmaIdAndId(
+          UUID yksiloId, UUID tavoiteId, UUID polunSuunnitelmaId, UUID id);
 
   long countByPolunSuunnitelma(PolunSuunnitelma polunSuunnitelma);
 }

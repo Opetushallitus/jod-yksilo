@@ -12,6 +12,6 @@ package fi.okm.jod.yksilo.config.feature;
 public enum Feature {
   VIRTUAALIOHJAAJA,
   POLKU,
-  PAAMAARA,
+  TAVOITE,
   KOSKI
 }

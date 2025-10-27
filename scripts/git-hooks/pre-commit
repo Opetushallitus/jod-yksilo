@@ -1,4 +1,3 @@
 #!/bin/bash
 if ! git diff --cached --quiet --diff-filter=ACM -- ":src/**"; then
   ./gradlew --console=plain --quiet --offline spotlessCheck checkstyleMain
-fi

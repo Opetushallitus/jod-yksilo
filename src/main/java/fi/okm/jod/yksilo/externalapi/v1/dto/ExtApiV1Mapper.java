@@ -11,7 +11,7 @@ package fi.okm.jod.yksilo.externalapi.v1.dto;
 
 import fi.okm.jod.yksilo.entity.Ammatti;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.Paamaara;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
@@ -60,9 +60,9 @@ public class ExtApiV1Mapper {
         yksilo.getSuosikit().stream()
             .map(ExtApiV1Mapper::toSuosikkiDto)
             .collect(Collectors.toSet());
-    var paamaarat =
-        yksilo.getPaamaarat().stream()
-            .map(ExtApiV1Mapper::toPaamaaraDto)
+    var tavoitteet =
+        yksilo.getTavoitteet().stream()
+            .map(ExtApiV1Mapper::toTavoiteDto)
             .collect(Collectors.toSet());
     return new ExtProfiiliDto(
         yksilo.getId(),
@@ -75,17 +75,17 @@ public class ExtApiV1Mapper {
         osaamisKiinnostukset,
         ammattiKiinnostukset,
         suosikit,
-        paamaarat);
+        tavoitteet);
   }
 
-  private static ExtPaamaaraDto toPaamaaraDto(Paamaara paamaara) {
+  private static ExtTavoiteDto toTavoiteDto(Tavoite tavoite) {
     var tyomahdollisuusId =
-        paamaara.getTyomahdollisuus() != null ? paamaara.getTyomahdollisuus().getId() : null;
+        tavoite.getTyomahdollisuus() != null ? tavoite.getTyomahdollisuus().getId() : null;
     var koulutusMahdollisuusId =
-        paamaara.getKoulutusmahdollisuus() != null
-            ? paamaara.getKoulutusmahdollisuus().getId()
+        tavoite.getKoulutusmahdollisuus() != null
+            ? tavoite.getKoulutusmahdollisuus().getId()
             : null;
-    return new ExtPaamaaraDto(paamaara.getTyyppi(), tyomahdollisuusId, koulutusMahdollisuusId);
+    return new ExtTavoiteDto(tavoite.getTyyppi(), tyomahdollisuusId, koulutusMahdollisuusId);
   }
 
   private static ExtSuosikkiDto toSuosikkiDto(YksilonSuosikki yksilonSuosikki) {

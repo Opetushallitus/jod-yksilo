@@ -35,15 +35,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/profiili/paamaarat/{id}/suunnitelmat")
+@RequestMapping("/api/profiili/tavoitteet/{id}/suunnitelmat")
 @RequiredArgsConstructor
-@Tag(name = "profiili/paamaarat")
+@Tag(name = "profiili/tavoitteet")
 @FeatureRequired(Feature.POLKU)
 public class PolunSuunnitelmaController {
   private final PolunSuunnitelmaService service;
 
   @GetMapping("/{suunnitelmaId}")
-  @Operation(summary = "Gets a suunnitelma of the paamaara")
+  @Operation(summary = "Gets a suunnitelma of the tavoite")
   public PolunSuunnitelmaDto get(
       @AuthenticationPrincipal JodUser user,
       @PathVariable UUID id,
@@ -52,7 +52,7 @@ public class PolunSuunnitelmaController {
   }
 
   @PostMapping
-  @Operation(summary = "Adds a new suunnitelma to the paamaara")
+  @Operation(summary = "Adds a new suunnitelma to the tavoite")
   @ResponseStatus(HttpStatus.CREATED)
   public UUID add(
       @AuthenticationPrincipal JodUser user,
@@ -62,7 +62,7 @@ public class PolunSuunnitelmaController {
   }
 
   @PutMapping("/{suunnitelmaId}")
-  @Operation(summary = "Updates a suunnitelma of the paamaara")
+  @Operation(summary = "Updates a suunnitelma of the tavoite")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void update(
       @AuthenticationPrincipal JodUser user,
@@ -76,7 +76,7 @@ public class PolunSuunnitelmaController {
   }
 
   @DeleteMapping("/{suunnitelmaId}")
-  @Operation(summary = "Deletes a suunnitelma of the paamaara")
+  @Operation(summary = "Deletes a suunnitelma of the tavoite")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(
       @AuthenticationPrincipal JodUser user,

@@ -3,22 +3,22 @@ set -e -o pipefail
 
 echo "NOTE: This script will UPDATE all user data related to tyomahdollisuus and koulutusmahdollisuus from:
  - tyomahdollisuus_jakauma_arvot
- - paamaara
+ - tavoite
  - tyomahdollisuus_kaannos
  - tyomahdollisuus_jakauma
  - yksilon_suosikki
- - paamaara_kaannos
+ - tavoite_kaannos
  - tyomahdollisuus_jakauma_arvot
  - koulutusmahdollisuus_jakauma_arvot
  - koulutus_viite_kaannos
  - koulutusmahdollisuus_kaannos
  - koulutusmahdollisuus_jakauma
  - koulutus_viite
- - paamaara
+ - tavoite
  - yksilon_suosikki
  - koulutusmahdollisuus_jakauma_arvot
  - koulutus_viite_kaannos
- - paamaara_kaannos
+ - tavoite_kaannos
 "
 # Function to ask for user confirmation
 ask_confirmation() {

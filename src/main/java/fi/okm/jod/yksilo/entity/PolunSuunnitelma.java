@@ -45,13 +45,13 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-@Table(indexes = {@Index(columnList = "paamaara_id")})
+@Table(indexes = {@Index(columnList = "tavoite_id")})
 public class PolunSuunnitelma {
   @GeneratedValue @Id private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
-  private Paamaara paamaara;
+  private Tavoite tavoite;
 
   @Getter(AccessLevel.NONE)
   @ElementCollection
@@ -79,8 +79,8 @@ public class PolunSuunnitelma {
     // For JPA
   }
 
-  public PolunSuunnitelma(Paamaara paamaara) {
-    this.paamaara = requireNonNull(paamaara);
+  public PolunSuunnitelma(Tavoite tavoite) {
+    this.tavoite = requireNonNull(tavoite);
     this.kaannos = new EnumMap<>(Kieli.class);
   }
 

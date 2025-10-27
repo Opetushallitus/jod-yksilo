@@ -7,10 +7,10 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.externalapi.v1.dto;
+package fi.okm.jod.yksilo.domain;
 
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
-import java.util.UUID;
-
-public record ExtPaamaaraDto(
-    PaamaaraTyyppi tyyppi, UUID tyomahdollisuusId, UUID koulutusmahdollisuusId) {}
+public enum TavoiteTyyppi {
+  LYHYT,
+  PITKA,
+  MUU
+}
