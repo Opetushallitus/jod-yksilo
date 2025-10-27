@@ -32,6 +32,7 @@ public class ToimenkuvaService {
   private final ToimenkuvaRepository toimenkuvat;
   private final YksilonOsaaminenService osaamiset;
 
+  @Transactional(readOnly = true)
   public List<ToimenkuvaDto> findAll(JodUser user, UUID tyopaikkaId) {
     return tyopaikat
         .findByYksiloIdAndId(user.getId(), tyopaikkaId)
@@ -55,6 +56,7 @@ public class ToimenkuvaService {
     return add(tyopaikka, dto).getId();
   }
 
+  @Transactional(readOnly = true)
   public ToimenkuvaDto get(JodUser user, UUID tyopaikkaId, UUID id) {
     return toimenkuvat
         .findBy(user, tyopaikkaId, id)

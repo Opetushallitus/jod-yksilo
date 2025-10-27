@@ -34,10 +34,12 @@ public class TyopaikkaService {
   private final TyopaikkaRepository tyopaikat;
   private final ToimenkuvaService toimenkuvaService;
 
+  @Transactional(readOnly = true)
   public List<TyopaikkaDto> findAll(JodUser user) {
     return tyopaikat.findByYksiloId(user.getId()).stream().map(Mapper::mapTyopaikka).toList();
   }
 
+  @Transactional(readOnly = true)
   public TyopaikkaDto get(JodUser user, UUID id) {
     return tyopaikat
         .findByYksiloIdAndId(user.getId(), id)

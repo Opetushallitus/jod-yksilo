@@ -33,10 +33,12 @@ public class ToimintoService {
   private final ToimintoRepository toiminnot;
   private final PatevyysService patevyysService;
 
+  @Transactional(readOnly = true)
   public List<ToimintoDto> findAll(JodUser user) {
     return toiminnot.findByYksiloId(user.getId()).stream().map(Mapper::mapToiminto).toList();
   }
 
+  @Transactional(readOnly = true)
   public ToimintoDto get(JodUser user, UUID id) {
     return toiminnot
         .findByYksiloIdAndId(user.getId(), id)
@@ -64,6 +66,7 @@ public class ToimintoService {
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
     toiminto.setNimi(dto.nimi());
+    toiminnot.flush();
   }
 
   public void delete(JodUser user, UUID id) {

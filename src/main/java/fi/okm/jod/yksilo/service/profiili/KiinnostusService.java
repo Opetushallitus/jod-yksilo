@@ -55,6 +55,7 @@ public class KiinnostusService {
     this.yksilot.save(yksilo);
   }
 
+  @Transactional(readOnly = true)
   public LocalizedString getVapaateksti(JodUser user) {
     var yksilo = getYksilo(user);
     return yksilo.getOsaamisKiinnostuksetVapaateksti();

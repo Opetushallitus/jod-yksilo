@@ -16,4 +16,7 @@
   <Match>
     <Annotation name="jakarta.persistence.metamodel.StaticMetamodel"/>
   </Match>
+  <Match>
+    <Method name="~.*\$\$_hibernate_.*"/>
+  </Match>
 </FindBugsFilter>
