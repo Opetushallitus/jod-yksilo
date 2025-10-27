@@ -86,7 +86,7 @@ public class Yksilo extends JodEntity {
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = MAX_IN_SIZE)
-  private Set<Paamaara> paamaarat;
+  private Set<Tavoite> tavoitteet;
 
   @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<TapahtumaLoki> tapahtumat;
@@ -117,7 +117,7 @@ public class Yksilo extends JodEntity {
     this.osaamisKiinnostukset = new HashSet<>();
     this.ammattiKiinnostukset = new HashSet<>();
     this.suosikit = new HashSet<>();
-    this.paamaarat = new HashSet<>();
+    this.tavoitteet = new HashSet<>();
     this.tapahtumat = new HashSet<>();
   }
 

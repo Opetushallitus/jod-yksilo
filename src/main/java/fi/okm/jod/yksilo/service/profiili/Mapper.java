@@ -16,12 +16,12 @@ import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
@@ -30,10 +30,10 @@ import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
-import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.PolunVaihe;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
@@ -154,10 +154,10 @@ public final class Mapper {
             entity.getId(), mapOsaaminen(entity.getOsaaminen()), mapOsaamisenLahde(entity));
   }
 
-  public static PaamaaraDto mapPaamaara(Paamaara entity) {
+  public static TavoiteDto mapTavoite(Tavoite entity) {
     return entity == null
         ? null
-        : new PaamaaraDto(
+        : new TavoiteDto(
             entity.getId(),
             entity.getTyyppi(),
             entity.getMahdollisuusTyyppi(),
@@ -205,8 +205,7 @@ public final class Mapper {
         : new PolunSuunnitelmaDto(
             entity.getId(),
             entity.getNimi(),
-            new PaamaaraYhteenvetoDto(
-                entity.getPaamaara().getId(), entity.getPaamaara().getTavoite()),
+            new TavoiteYhteenvetoDto(entity.getTavoite().getId(), entity.getTavoite().getTavoite()),
             entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()),
             entity.getOsaamiset().stream()
                 .map(Osaaminen::getUri)

@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import fi.okm.jod.yksilo.config.suomifi.Attribute;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.domain.Sukupuoli;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -31,19 +31,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 @Sql(scripts = {"/data/mahdollisuudet-test-data.sql"})
-@Import({YksiloService.class, PaamaaraService.class})
+@Import({YksiloService.class, TavoiteService.class})
 class YksiloServiceTest extends AbstractServiceTest {
   @Autowired private YksiloService service;
-  @Autowired private PaamaaraService paamaaraService;
+  @Autowired private TavoiteService tavoiteService;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @Test
   void shouldDeleteUserProfile() {
-    paamaaraService.add(
+    tavoiteService.add(
         user,
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.MUU,
+            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -51,7 +51,7 @@ class YksiloServiceTest extends AbstractServiceTest {
             null));
     simulateCommit();
     assertDoesNotThrow(() -> service.delete(user));
-    assertEquals(0, paamaaraService.findAll(user).size());
+    assertEquals(0, tavoiteService.findAll(user).size());
     assertThrows(NotFoundException.class, () -> service.get(user));
   }
 

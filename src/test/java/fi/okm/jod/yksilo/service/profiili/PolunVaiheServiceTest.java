@@ -17,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mockStatic;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
 import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PaamaaraDto;
+import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.PolunVaiheRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -43,12 +43,12 @@ import org.springframework.test.context.jdbc.Sql;
 @Import({
   PolunVaiheService.class,
   PolunSuunnitelmaService.class,
-  PaamaaraService.class,
+  TavoiteService.class,
   YksilonOsaaminenService.class,
   MuuOsaaminenService.class
 })
 class PolunVaiheServiceTest extends AbstractServiceTest {
-  @Autowired private PaamaaraService paamaarat;
+  @Autowired private TavoiteService tavoitteet;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
   @Autowired private PolunSuunnitelmaService suunnitelmat;
   @Autowired private PolunVaiheService vaiheet;
@@ -56,11 +56,11 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldAddVaihe() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     var dto =
         createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
-    var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
+    var id = vaiheet.add(user, tavoiteId, suunnitelmaId, dto);
     assertThat(dto)
         .usingRecursiveComparison()
         .ignoringFields("id")
@@ -69,11 +69,11 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldUpdateVaihe() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     var dto =
         createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
-    var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
+    var id = vaiheet.add(user, tavoiteId, suunnitelmaId, dto);
     var updatedDto =
         new PolunVaiheDto(
             id,
@@ -87,7 +87,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
             LocalDate.of(2023, 2, 5),
             Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
             false);
-    vaiheet.update(user, paamaaraId, suunnitelmaId, updatedDto);
+    vaiheet.update(user, tavoiteId, suunnitelmaId, updatedDto);
     assertThat(updatedDto)
         .usingRecursiveComparison()
         .ignoringFields("id")
@@ -96,15 +96,14 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldDeleteVaihe() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     var dto =
         createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
-    var id = vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
-    vaiheet.delete(user, paamaaraId, suunnitelmaId, id);
+    var id = vaiheet.add(user, tavoiteId, suunnitelmaId, dto);
+    vaiheet.delete(user, tavoiteId, suunnitelmaId, id);
     assertThat(vaiheRepository.findById(id)).isEmpty();
-    assertThrows(
-        NotFoundException.class, () -> vaiheet.delete(user, paamaaraId, suunnitelmaId, id));
+    assertThrows(NotFoundException.class, () -> vaiheet.delete(user, tavoiteId, suunnitelmaId, id));
   }
 
   @Test
@@ -113,34 +112,33 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
     try (MockedStatic<PolunVaiheService> mockedService = mockStatic(PolunVaiheService.class)) {
       mockedService.when(PolunVaiheService::getVaihePerSuunnitelmaLimit).thenReturn(testLimit);
 
-      var paamaaraId = addPaamaara();
-      var suunnitelmaId = addSuunnitelma(paamaaraId);
+      var tavoiteId = addTavoite();
+      var suunnitelmaId = addSuunnitelma(tavoiteId);
       for (var i = 0; i < testLimit; i++) {
         var dto =
             createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
-        vaiheet.add(user, paamaaraId, suunnitelmaId, dto);
+        vaiheet.add(user, tavoiteId, suunnitelmaId, dto);
       }
       var dto =
           createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")));
       assertThrows(
-          ServiceValidationException.class,
-          () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+          ServiceValidationException.class, () -> vaiheet.add(user, tavoiteId, suunnitelmaId, dto));
     }
   }
 
   @Test
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithInvalidOsaaminen() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     var dto = createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1"), URI.create("urn:unknown")));
     assertThrows(
-        ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+        ServiceValidationException.class, () -> vaiheet.add(user, tavoiteId, suunnitelmaId, dto));
   }
 
   @Test
-  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenNotInPaamaara() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+  void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenNotInTavoite() {
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     var dto =
         new PolunVaiheDto(
             null,
@@ -155,29 +153,29 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
             Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen7")),
             false);
     assertThrows(
-        ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+        ServiceValidationException.class, () -> vaiheet.add(user, tavoiteId, suunnitelmaId, dto));
   }
 
   @Test
   void shouldThrowServiceValidationExceptionWhenAddingVaiheWithOsaaminenInSuunnitelma() {
-    var paamaaraId = addPaamaara();
-    var suunnitelmaId = addSuunnitelma(paamaaraId);
+    var tavoiteId = addTavoite();
+    var suunnitelmaId = addSuunnitelma(tavoiteId);
     suunnitelmat.update(
         user,
-        paamaaraId,
+        tavoiteId,
         new PolunSuunnitelmaUpdateDto(
             suunnitelmaId, ls("nimi"), Set.of(URI.create("urn:osaaminen1")), null));
     var dto = createPolunVaiheDto(Set.of(URI.create("urn:osaaminen1")));
     assertThrows(
-        ServiceValidationException.class, () -> vaiheet.add(user, paamaaraId, suunnitelmaId, dto));
+        ServiceValidationException.class, () -> vaiheet.add(user, tavoiteId, suunnitelmaId, dto));
   }
 
-  private UUID addPaamaara() {
-    return paamaarat.add(
+  private UUID addTavoite() {
+    return tavoitteet.add(
         user,
-        new PaamaaraDto(
+        new TavoiteDto(
             null,
-            PaamaaraTyyppi.PITKA,
+            TavoiteTyyppi.PITKA,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -185,10 +183,10 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
             null));
   }
 
-  private UUID addSuunnitelma(UUID paamaaraId) {
+  private UUID addSuunnitelma(UUID tavoiteId) {
     return suunnitelmat.add(
         user,
-        paamaaraId,
+        tavoiteId,
         new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
   }
 

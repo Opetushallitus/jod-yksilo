@@ -73,7 +73,7 @@ FOR yksilo_index IN 1..10 LOOP
   SELECT gen_random_uuid(), NOW(), yid, k.id FROM koulutusmahdollisuus k LIMIT 7;
 
   -- päämäärät
-  INSERT INTO paamaara(id, luotu, tyyppi, koulutusmahdollisuus_id, yksilo_id)
+  INSERT INTO tavoite(id, luotu, tyyppi, koulutusmahdollisuus_id, yksilo_id)
   SELECT gen_random_uuid(), NOW(), ''MUU'', k.id, yid FROM koulutusmahdollisuus k LIMIT 8;
   END LOOP;
 END

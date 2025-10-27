@@ -14,11 +14,11 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.Paamaara;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
-import fi.okm.jod.yksilo.repository.PaamaaraRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
+import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
@@ -33,54 +33,54 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PolunSuunnitelmaService {
-  private final PaamaaraRepository paamaaraRepository;
+  private final TavoiteRepository tavoiteRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
   private final OsaaminenRepository osaamisetRepository;
   private final MuuOsaaminenService muuOsaaminenService;
 
   @Transactional(readOnly = true)
-  public PolunSuunnitelmaDto get(JodUser user, UUID paamaaraId, UUID id) {
+  public PolunSuunnitelmaDto get(JodUser user, UUID tavoiteId, UUID id) {
     return suunnitelmaRepository
-        .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, id)
+        .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, id)
         .map(Mapper::mapPolunSuunnitelma)
         .orElseThrow(PolunSuunnitelmaService::notFound);
   }
 
-  public UUID add(JodUser user, UUID paamaaraId, PolunSuunnitelmaDto dto) {
-    var paamaara =
-        paamaaraRepository
-            .findByYksiloIdAndId(user.getId(), paamaaraId)
+  public UUID add(JodUser user, UUID tavoiteId, PolunSuunnitelmaDto dto) {
+    var tavoite =
+        tavoiteRepository
+            .findByYksiloIdAndId(user.getId(), tavoiteId)
             .orElseThrow(PolunSuunnitelmaService::notFound);
 
-    if (MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS.equals(paamaara.getMahdollisuusTyyppi())) {
-      throw new ServiceValidationException("Invalid Paamaara");
+    if (MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS.equals(tavoite.getMahdollisuusTyyppi())) {
+      throw new ServiceValidationException("Invalid Tavoite");
     }
 
-    if (suunnitelmaRepository.countByPaamaara(paamaara) >= getSuunnitelmaPerPaamaaraLimit()) {
+    if (suunnitelmaRepository.countByTavoite(tavoite) >= getSuunnitelmaPerTavoiteLimit()) {
       throw new ServiceValidationException("Too many Suunnitelmas");
     }
 
-    return add(paamaara, dto).getId();
+    return add(tavoite, dto).getId();
   }
 
-  public void update(JodUser user, UUID paamaaraId, PolunSuunnitelmaUpdateDto dto) {
+  public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaUpdateDto dto) {
     var suunnitelma =
         suunnitelmaRepository
-            .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, dto.id())
+            .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, dto.id())
             .orElseThrow(PolunSuunnitelmaService::notFound);
     update(suunnitelma, dto);
   }
 
-  public void delete(JodUser user, UUID paamaaraId, UUID id) {
+  public void delete(JodUser user, UUID tavoiteId, UUID id) {
     var suunnitelma =
         suunnitelmaRepository
-            .findByPaamaaraYksiloIdAndPaamaaraIdAndId(user.getId(), paamaaraId, id)
+            .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, id)
             .orElseThrow(PolunSuunnitelmaService::notFound);
     delete(suunnitelma);
   }
 
-  private PolunSuunnitelma add(Paamaara paamaara, PolunSuunnitelmaDto dto) {
-    var entity = new PolunSuunnitelma(paamaara);
+  private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto) {
+    var entity = new PolunSuunnitelma(tavoite);
     entity.setNimi(dto.nimi());
     entity = suunnitelmaRepository.save(entity);
     return entity;
@@ -92,7 +92,7 @@ public class PolunSuunnitelmaService {
     if (osaamiset != null) {
       var entities = getOsaamiset(entity, dto);
       entity.setOsaamiset(entities);
-      muuOsaaminenService.add(entity.getPaamaara().getYksilo(), entities);
+      muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
     }
     if (dto.ignoredOsaamiset() != null) {
       entity.setIgnoredOsaamiset(getIgnoredOsaamiset(entity, dto));
@@ -114,8 +114,8 @@ public class PolunSuunnitelmaService {
 
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getPaamaara().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in paamaara");
+    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
+      throw new ServiceValidationException("Osaaminen not in tavoite");
     } else if (osaamiset.stream().anyMatch(vaiheOsaamiset::contains)) {
       throw new ServiceValidationException("Osaaminen in vaihe");
     }
@@ -130,8 +130,8 @@ public class PolunSuunnitelmaService {
 
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getPaamaara().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in paamaara");
+    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
+      throw new ServiceValidationException("Osaaminen not in tavoite");
     }
 
     return osaamiset;
@@ -141,7 +141,7 @@ public class PolunSuunnitelmaService {
     return new NotFoundException("Not found");
   }
 
-  static int getSuunnitelmaPerPaamaaraLimit() {
+  static int getSuunnitelmaPerTavoiteLimit() {
     return Limits.SUUNNITELMA_PER_PAAMAARA;
   }
 }

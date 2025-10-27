@@ -9,22 +9,22 @@
 
 package fi.okm.jod.yksilo.repository;
 
-import fi.okm.jod.yksilo.entity.Paamaara;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PaamaaraRepository extends JpaRepository<Paamaara, UUID> {
+public interface TavoiteRepository extends JpaRepository<Tavoite, UUID> {
 
-  List<Paamaara> findAllByYksilo(Yksilo yksilo);
+  List<Tavoite> findAllByYksilo(Yksilo yksilo);
 
   int deleteByYksiloAndId(Yksilo yksilo, UUID id);
 
-  Optional<Paamaara> findByYksiloAndId(Yksilo yksilo, UUID id);
+  Optional<Tavoite> findByYksiloAndId(Yksilo yksilo, UUID id);
 
-  Optional<Paamaara> findByYksiloIdAndId(UUID yksiloId, UUID id);
+  Optional<Tavoite> findByYksiloIdAndId(UUID yksiloId, UUID id);
 
   int countByYksilo(Yksilo yksilo);
 }

@@ -31,4 +31,4 @@ public record YksiloExportDto(
     MuuOsaaminenExportDto muuOsaaminen,
     KiinnostuksetExportDto kiinnostukset,
     Set<YksilonSuosikkiExportDto> suosikit,
-    Set<PaamaaraExportDto> paamaarat) {}
+    Set<TavoiteExportDto> tavoitteet) {}

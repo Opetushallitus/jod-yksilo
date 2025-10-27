@@ -16,7 +16,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.PaamaaraTyyppi;
+import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
@@ -56,7 +56,7 @@ import org.hibernate.annotations.Check;
 @Getter
 @Table(indexes = {@Index(columnList = "yksilo_id")})
 @Check(constraints = "(tyomahdollisuus_id IS NULL) != (koulutusmahdollisuus_id IS NULL)")
-public class Paamaara {
+public class Tavoite {
   @GeneratedValue @Id private UUID id;
 
   @Column(nullable = false, updatable = false)
@@ -67,7 +67,7 @@ public class Paamaara {
   private Yksilo yksilo;
 
   @Enumerated(EnumType.STRING)
-  private PaamaaraTyyppi tyyppi;
+  private TavoiteTyyppi tyyppi;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Tyomahdollisuus tyomahdollisuus;
@@ -76,7 +76,7 @@ public class Paamaara {
   private Koulutusmahdollisuus koulutusmahdollisuus;
 
   @OneToMany(
-      mappedBy = "paamaara",
+      mappedBy = "tavoite",
       fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
       orphanRemoval = true)
@@ -89,13 +89,13 @@ public class Paamaara {
   @BatchSize(size = 100)
   private Map<Kieli, Kaannos> kaannos = new EnumMap<>(Kieli.class);
 
-  protected Paamaara() {
+  protected Tavoite() {
     // For JPA
   }
 
-  public Paamaara(
+  public Tavoite(
       Yksilo yksilo,
-      PaamaaraTyyppi tyyppi,
+      TavoiteTyyppi tyyppi,
       Tyomahdollisuus tyomahdollisuus,
       LocalizedString tavoite) {
     this.yksilo = yksilo;
@@ -105,9 +105,9 @@ public class Paamaara {
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
   }
 
-  public Paamaara(
+  public Tavoite(
       Yksilo yksilo,
-      PaamaaraTyyppi tyyppi,
+      TavoiteTyyppi tyyppi,
       Koulutusmahdollisuus mahdollisuus,
       LocalizedString tavoite) {
     this.yksilo = yksilo;
@@ -125,7 +125,7 @@ public class Paamaara {
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
   }
 
-  public void setTyyppi(@NotNull PaamaaraTyyppi tyyppi) {
+  public void setTyyppi(@NotNull TavoiteTyyppi tyyppi) {
     this.tyyppi = tyyppi;
   }
 

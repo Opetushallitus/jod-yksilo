@@ -25,4 +25,4 @@ public record ExtProfiiliDto(
     Set<ExtOsaamisKiinnostusDto> osaamisKiinnostukset,
     Set<ExtAmmattiKiinnostusDto> ammattiKiinnostukset,
     Set<ExtSuosikkiDto> suosikit,
-    Set<ExtPaamaaraDto> paamaarat) {}
+    Set<ExtTavoiteDto> paamaarat) {}
