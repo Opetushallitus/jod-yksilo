@@ -40,6 +40,7 @@ public class KoulutusKokonaisuusService {
   private final KoulutusService koulutusService;
   private final ApplicationEventPublisher applicationEventPublisher;
 
+  @Transactional(readOnly = true)
   public List<KoulutusKokonaisuusDto> findAll(JodUser user) {
     return kokonaisuudet.findByYksiloId(user.getId()).stream()
         .map(Mapper::mapKoulutusKokonaisuus)
@@ -79,6 +80,7 @@ public class KoulutusKokonaisuusService {
     return entity;
   }
 
+  @Transactional(readOnly = true)
   public KoulutusKokonaisuusDto get(JodUser user, UUID id) {
     return kokonaisuudet
         .findByYksiloIdAndId(user.getId(), id)
