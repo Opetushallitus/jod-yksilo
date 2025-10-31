@@ -16,8 +16,5 @@ public interface InferenceService<T, R> {
 
   R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType);
 
-  InferenceSession<R> infer(
-      String endpoint, UUID sessionId, T payload, ParameterizedTypeReference<R> responseType);
-
   record InferenceSession<R>(R data, UUID sessionId) {}
 }
