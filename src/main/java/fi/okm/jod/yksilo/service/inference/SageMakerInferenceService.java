@@ -15,7 +15,6 @@ import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceOverloadedException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.io.IOException;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 import software.amazon.awssdk.services.sagemakerruntime.model.InvokeEndpointRequest;
+import software.amazon.awssdk.services.sagemakerruntime.model.ModelErrorException;
 import software.amazon.awssdk.services.sagemakerruntime.model.ModelNotReadyException;
 import software.amazon.awssdk.services.sagemakerruntime.model.SageMakerRuntimeException;
 import software.amazon.awssdk.services.sagemakerruntime.model.ServiceUnavailableException;
@@ -47,23 +47,10 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
 
   @Override
   public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
-    return inferInternal(endpoint, null, payload, responseType).data();
-  }
-
-  @Override
-  public InferenceSession<R> infer(
-      String endpoint, UUID sessionId, T payload, ParameterizedTypeReference<R> responseType) {
-    return inferInternal(
-        endpoint, sessionId != null ? sessionId.toString() : "NEW_SESSION", payload, responseType);
-  }
-
-  private InferenceSession<R> inferInternal(
-      String endpoint, String sessionId, T payload, ParameterizedTypeReference<R> responseType) {
     try {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
-              .sessionId(sessionId)
               .customAttributes(tracer.currentSpan().context().traceIdString())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
@@ -71,22 +58,16 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
 
       var response = sageMakerClient.invokeEndpoint(request);
       var javaType = objectMapper.getTypeFactory().constructType(responseType.getType());
-      if (sessionId != null && sessionId.equals("NEW_SESSION")) {
-        return new InferenceSession<>(
-            objectMapper.readValue(response.body().asInputStream(), javaType),
-            UUID.fromString(
-                response.newSessionId().substring(0, response.newSessionId().indexOf(";"))));
-      } else {
-        return new InferenceSession<>(
-            objectMapper.readValue(response.body().asInputStream(), javaType),
-            (sessionId != null ? UUID.fromString(sessionId) : null));
-      }
+      return objectMapper.readValue(response.body().asInputStream(), javaType);
+
     } catch (IOException e) {
       throw new ServiceException("Invoking SageMaker failed", e);
     } catch (ModelNotReadyException | ServiceUnavailableException e) {
       log.warn("SageMaker service unavailable: {}", e.getMessage());
       throw new fi.okm.jod.yksilo.service.ServiceUnavailableException(
           "SageMaker model not ready or service unavailable", e);
+    } catch (ModelErrorException e) {
+      throw new ServiceValidationException(e.originalMessage());
     } catch (SageMakerRuntimeException e) {
       if ("ThrottlingException".equals(e.awsErrorDetails().errorCode())) {
         throw new ServiceOverloadedException("SageMaker is throttling requests", e);
