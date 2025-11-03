@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.opensaml.saml.saml2.core.NameIDType;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.ssl.pem.PemContent;
 import org.springframework.context.annotation.Bean;
@@ -137,7 +139,8 @@ public class Saml2LoginConfig {
       HttpSecurity http,
       ResponseTokenConverter converter,
       Saml2AuthenticationRequestResolver authenticationRequestResolver,
-      Saml2LogoutRequestResolver logoutRequestResolver)
+      Saml2LogoutRequestResolver logoutRequestResolver,
+      @Value("${jod.session.timeout}") Duration sessionTimeout)
       throws Exception {
 
     log.info("Configuring Suomi.fi-tunnistus");
@@ -145,7 +148,7 @@ public class Saml2LoginConfig {
     var redirectStrategy = new DefaultRedirectStrategy();
     redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
 
-    var loginSuccessHandler = new LoginSuccessHandler(redirectStrategy);
+    var loginSuccessHandler = new LoginSuccessHandler(sessionTimeout, redirectStrategy);
     var authenticationEventHandler = new AuthenticationEventHandler(redirectStrategy);
     var profileDeletionHandler = new ProfileDeletionHandler(yksiloService);
 
