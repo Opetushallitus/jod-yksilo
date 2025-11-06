@@ -55,7 +55,8 @@ public class TavoiteService {
                   tyomahdollisuudet
                       .findById(dto.mahdollisuusId())
                       .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
-                  dto.tavoite());
+                  dto.tavoite(),
+                  dto.kuvaus());
           case KOULUTUSMAHDOLLISUUS ->
               new Tavoite(
                   yksilo,
@@ -63,7 +64,9 @@ public class TavoiteService {
                   koulutusmahdollisuudet
                       .findById(dto.mahdollisuusId())
                       .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found")),
-                  dto.tavoite());
+                  dto.tavoite(),
+                  dto.kuvaus());
+          case null -> new Tavoite(yksilo, dto.tyyppi(), dto.tavoite(), dto.kuvaus());
         };
 
     if (tavoitteet.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {

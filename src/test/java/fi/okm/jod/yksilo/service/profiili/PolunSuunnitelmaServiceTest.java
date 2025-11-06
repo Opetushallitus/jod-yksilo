@@ -129,6 +129,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
                 ? tyomahdollisuudet.findAll().getFirst().getId()
                 : koulutusmahdollisuudet.findAll().getFirst().getId(),
             tavoite,
+            tavoite,
             null,
             null));
   }

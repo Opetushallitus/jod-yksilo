@@ -22,4 +22,5 @@ public record TavoiteExportDto(
     UUID tyomahdollisuus,
     UUID koulutusmahdollisuus,
     List<PolunSuunnitelmaExportDto> suunnitelmat,
-    LocalizedString tavoite) {}
+    LocalizedString tavoite,
+    LocalizedString kuvaus) {}
