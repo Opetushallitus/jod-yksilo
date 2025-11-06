@@ -53,6 +53,16 @@ public class KoulutusmahdollisuusController {
     return new SivuDto<>(new PageImpl<>(koulutusmahdollisuusService.findByIds(id)));
   }
 
+  @GetMapping("/full")
+  public SivuDto<KoulutusmahdollisuusFullDto> findAllFull(
+      @RequestParam(required = false, defaultValue = "0") @Min(0) int sivu,
+      @RequestParam(required = false, defaultValue = "10") @Min(1) @Max(1000) int koko,
+      @RequestParam(required = false) Set<UUID> id) {
+    Pageable pageable = PageRequest.of(sivu, koko);
+    // Return paged also when requested by IDs
+    return new SivuDto<>(koulutusmahdollisuusService.findAllFull(id, pageable));
+  }
+
   @GetMapping("/{id}")
   @Operation(summary = "Get full information content of a koulutusmahdollisuus")
   public ResponseEntity<KoulutusmahdollisuusFullDto> findById(@PathVariable UUID id) {

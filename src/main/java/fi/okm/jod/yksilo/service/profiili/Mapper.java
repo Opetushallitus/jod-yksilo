@@ -163,6 +163,7 @@ public final class Mapper {
             entity.getMahdollisuusTyyppi(),
             entity.getMahdollisuusId(),
             entity.getTavoite(),
+            entity.getKuvaus(),
             entity.getLuotu(),
             entity.getSuunnitelmat().stream()
                 .map(

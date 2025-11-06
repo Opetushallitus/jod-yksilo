@@ -43,6 +43,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     assertDoesNotThrow(() -> service.add(user, dto));
@@ -58,6 +59,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus2"),
             null,
             null);
 
@@ -69,6 +71,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             dto.mahdollisuusTyyppi(),
             dto.mahdollisuusId(),
             ls("tavoite2"),
+            ls("kuvaus2"),
             null,
             new HashSet<>());
     assertDoesNotThrow(() -> service.update(user, updated));
@@ -87,6 +90,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
             UUID.randomUUID(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     assertThrows(NotFoundException.class, () -> service.add(user, dto));
@@ -101,6 +105,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     var id = service.add(user, dto);
@@ -117,6 +122,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     var id = service.add(user, dto);

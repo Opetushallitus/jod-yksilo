@@ -179,6 +179,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null));
   }

@@ -27,9 +27,10 @@ import java.util.UUID;
 public record TavoiteDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @NotNull TavoiteTyyppi tyyppi,
-    @NotNull MahdollisuusTyyppi mahdollisuusTyyppi,
-    @NotNull UUID mahdollisuusId,
+    MahdollisuusTyyppi mahdollisuusTyyppi,
+    UUID mahdollisuusId,
     @Size(max = 10000) @PrintableString LocalizedString tavoite,
+    @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY)
         Set<PolunSuunnitelmaYhteenvetoDto> suunnitelmat) {}

@@ -196,7 +196,8 @@ public final class ExportMapper {
             getTyomahdollisuusId(entity.getTyomahdollisuus()),
             getKoulutusmahdollisuusId(entity.getKoulutusmahdollisuus()),
             entity.getSuunnitelmat().stream().map(ExportMapper::mapPolunSuunnitelma).toList(),
-            entity.getTavoite());
+            entity.getTavoite(),
+            entity.getKuvaus());
   }
 
   public static PolunSuunnitelmaExportDto mapPolunSuunnitelma(PolunSuunnitelma entity) {

@@ -97,24 +97,40 @@ public class Tavoite {
       Yksilo yksilo,
       TavoiteTyyppi tyyppi,
       Tyomahdollisuus tyomahdollisuus,
-      LocalizedString tavoite) {
+      LocalizedString tavoite,
+      LocalizedString kuvaus) {
     this.yksilo = yksilo;
     this.tyomahdollisuus = tyomahdollisuus;
     this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   public Tavoite(
       Yksilo yksilo,
       TavoiteTyyppi tyyppi,
       Koulutusmahdollisuus mahdollisuus,
-      LocalizedString tavoite) {
+      LocalizedString tavoite,
+      LocalizedString kuvaus) {
     this.yksilo = yksilo;
     this.koulutusmahdollisuus = mahdollisuus;
     this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
+  }
+
+  public Tavoite(
+      final Yksilo yksilo,
+      final TavoiteTyyppi tyyppi,
+      final LocalizedString tavoite,
+      final LocalizedString kuvaus) {
+    this.yksilo = yksilo;
+    this.tyyppi = tyyppi;
+
+    merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   public LocalizedString getTavoite() {
@@ -136,7 +152,13 @@ public class Tavoite {
   }
 
   public UUID getMahdollisuusId() {
-    return tyomahdollisuus != null ? tyomahdollisuus.getId() : koulutusmahdollisuus.getId();
+    if (tyomahdollisuus != null) {
+      return tyomahdollisuus.getId();
+    }
+    if (koulutusmahdollisuus != null) {
+      return koulutusmahdollisuus.getId();
+    }
+    return null;
   }
 
   public Set<URI> getOsaamiset() {
@@ -166,14 +188,21 @@ public class Tavoite {
     return emptySet();
   }
 
+  public LocalizedString getKuvaus() {
+    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
+  }
+
   @Embeddable
   @Data
   static class Kaannos implements Translation {
     @Column(length = Integer.MAX_VALUE)
     String tavoite;
 
+    @Column(length = Integer.MAX_VALUE)
+    String kuvaus;
+
     public boolean isEmpty() {
-      return tavoite == null;
+      return tavoite == null && kuvaus == null;
     }
   }
 }
