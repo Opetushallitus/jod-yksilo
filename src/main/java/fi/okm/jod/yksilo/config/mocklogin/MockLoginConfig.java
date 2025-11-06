@@ -14,8 +14,10 @@ import fi.okm.jod.yksilo.config.ProfileDeletionHandler;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,13 +43,15 @@ public class MockLoginConfig {
 
   /** Mock authentication using form login. */
   @Bean
-  SecurityFilterChain mockLoginFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain mockLoginFilterChain(
+      HttpSecurity http, @Value("${jod.session.timeout}") Duration sessionTimeout)
+      throws Exception {
     log.warn("WARNING: Using mock authentication.");
 
     var redirectStrategy = new DefaultRedirectStrategy();
     redirectStrategy.setStatusCode(HttpStatus.SEE_OTHER);
 
-    var loginSuccessHandler = new LoginSuccessHandler(redirectStrategy);
+    var loginSuccessHandler = new LoginSuccessHandler(sessionTimeout, redirectStrategy);
 
     var logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
     logoutSuccessHandler.setRedirectStrategy(redirectStrategy);

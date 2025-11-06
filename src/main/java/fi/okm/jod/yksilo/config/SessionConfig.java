@@ -9,9 +9,12 @@
 
 package fi.okm.jod.yksilo.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
+import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
 import io.lettuce.core.RedisCredentialsProvider;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,9 @@ public class SessionConfig implements BeanClassLoaderAware {
 
   private ClassLoader loader;
 
+  @JsonTypeInfo(use = Id.CLASS)
+  interface SessionMixin {}
+
   @Override
   public void setBeanClassLoader(@NonNull ClassLoader classLoader) {
     this.loader = classLoader;
@@ -48,6 +54,7 @@ public class SessionConfig implements BeanClassLoaderAware {
     // Create a custom ObjectMapper that uses Spring Security’s Jackson modules.
     var mapper = new ObjectMapper();
     mapper.registerModules(SecurityJackson2Modules.getModules(this.loader));
+    mapper.addMixIn(InferenceSession.class, SessionMixin.class);
     return new GenericJackson2JsonRedisSerializer(mapper);
   }
 

@@ -31,7 +31,7 @@ spring:
     baseline-version: "20250707.250"
     baseline-description: baseline
   session:
-    timeout: 30m
+    timeout: 15m
     redis:
       repository-type: default
   transaction:
@@ -102,6 +102,7 @@ management:
 
 jod:
   session:
+    timeout: 30m
     maxDuration: 12h
   recommendation:
     skills:

@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.service.inference;
 
 import fi.okm.jod.yksilo.service.ServiceException;
 import java.time.Duration;
-import java.util.UUID;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
@@ -53,11 +52,5 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
     } catch (RestClientException e) {
       throw new ServiceException("Invoking Inference Endpoint failed", e);
     }
-  }
-
-  @Override
-  public InferenceSession<R> infer(
-      String endpoint, UUID sessionId, T payload, ParameterizedTypeReference<R> responseType) {
-    throw new UnsupportedOperationException("Session is not supported by this inference service");
   }
 }

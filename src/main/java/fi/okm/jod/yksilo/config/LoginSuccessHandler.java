@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
+  private final Duration sessionTimeout;
   private final RedirectStrategy redirectStrategy;
 
   @Override
@@ -34,20 +36,23 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
       HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     String callback = null;
 
-    if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
-      log.atInfo()
-          .addMarker(LogMarker.AUDIT)
-          .addKeyValue("userId", user.getId())
-          .log("User {} logged in", user.getId());
-    }
+    if (request.getSession(false) instanceof HttpSession session) {
 
-    if (request.getSession(false) instanceof HttpSession s) {
-      callback = (String) s.getAttribute(SessionLoginAttribute.CALLBACK.getKey());
+      if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
+        log.atInfo()
+            .addMarker(LogMarker.AUDIT)
+            .addKeyValue("userId", user.getId())
+            .log("User {} logged in", user.getId());
+
+        session.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
+      }
+
+      callback = (String) session.getAttribute(SessionLoginAttribute.CALLBACK.getKey());
 
       for (SessionLoginAttribute attr : SessionLoginAttribute.values()) {
-        s.removeAttribute(attr.getKey());
+        session.removeAttribute(attr.getKey());
       }
-      s.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+      session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
     }
 
     try {

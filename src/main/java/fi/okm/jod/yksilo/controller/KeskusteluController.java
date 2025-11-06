@@ -16,14 +16,18 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,11 +41,15 @@ import org.springframework.web.bind.annotation.RestController;
 @FeatureRequired(Feature.VIRTUAALIOHJAAJA)
 public class KeskusteluController {
 
-  private final InferenceService<Request, Response> inferenceService;
+  private static final String CONVERSATION_SESSION_ATTRIBUTE =
+      KeskusteluController.class.getName() + ".CONVERSATION";
+  public static final int MAX_CONVERSATION_SECONDS = 1800;
+
+  private final InferenceService<InferenceRequest, InferenceResponse> inferenceService;
   private final String endpoint;
 
   public KeskusteluController(
-      InferenceService<Request, Response> inferenceService,
+      InferenceService<InferenceRequest, InferenceResponse> inferenceService,
       @Value("${jod.keskustelu.endpoint}") String endpoint) {
     this.inferenceService = inferenceService;
     this.endpoint = endpoint;
@@ -49,46 +57,86 @@ public class KeskusteluController {
 
   @PostMapping
   @Operation(summary = "Creates a keskustelu")
-  public ResponseWithId createKeskustelu(
-      @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus) {
+  public Keskustelu createKeskustelu(
+      @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus,
+      HttpServletRequest request) {
     if (kuvaus.asMap().size() > 1) {
       throw new IllegalArgumentException("Ambiguous request, only one language version allowed");
     }
+
     var entry = kuvaus.asMap().entrySet().iterator().next();
-    var response =
+    var inferenceResponse =
         inferenceService.infer(
             endpoint,
-            null,
-            new Request(entry.getValue(), entry.getKey().toString()),
+            new InferenceRequest(null, entry.getValue(), entry.getKey().toString()),
             new ParameterizedTypeReference<>() {});
-    return new ResponseWithId(
-        response.sessionId(), response.data().kiinnostukset(), response.data().response());
+
+    var httpSession = request.getSession();
+    httpSession.setAttribute(CONVERSATION_SESSION_ATTRIBUTE, inferenceResponse.session());
+
+    log.info("Created a new conversation with id {}", inferenceResponse.session().id());
+
+    return new Keskustelu(
+        inferenceResponse.session().id(),
+        inferenceResponse.kiinnostukset(),
+        inferenceResponse.response());
   }
 
   @PostMapping("/{id}")
   @Operation(summary = "Continues a keskustelu")
-  public ResponseWithId continueKeskustelu(
+  public ResponseEntity<Vastaus> continueKeskustelu(
       @PathVariable UUID id,
-      @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus) {
-    if (kuvaus.asMap().size() > 1) {
+      @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus,
+      HttpServletRequest request) {
+
+    if (!(request.getSession(false) instanceof HttpSession httpSession
+        && httpSession.getAttribute(CONVERSATION_SESSION_ATTRIBUTE)
+            instanceof InferenceSession inferenceSession)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!inferenceSession.id().equals(id)
+        || Instant.now()
+            .isAfter(
+                Instant.ofEpochSecond(inferenceSession.timestamp())
+                    .plusSeconds(MAX_CONVERSATION_SECONDS))) {
+      log.warn("Attempt to continue non-existing or expired conversation {}", id);
+      httpSession.removeAttribute(CONVERSATION_SESSION_ATTRIBUTE);
+      return ResponseEntity.notFound().build();
+    }
+
+    var entries = kuvaus.asMap().entrySet();
+    if (entries.size() > 1) {
       throw new IllegalArgumentException("Ambiguous request, only one language version allowed");
     }
-    var entry = kuvaus.asMap().entrySet().iterator().next();
-    var response =
+
+    log.info("Continuing conversation {}", id);
+    var entry = entries.iterator().next();
+    var inferenceResponse =
         inferenceService.infer(
             endpoint,
-            id,
-            new Request(entry.getValue(), entry.getKey().toString()),
-            new ParameterizedTypeReference<>() {});
-    return new ResponseWithId(
-        response.sessionId(), response.data().kiinnostukset(), response.data().response());
+            new InferenceRequest(inferenceSession, entry.getValue(), entry.getKey().toString()),
+            RESPONSE_TYPE);
+    return ResponseEntity.ok(
+        new Vastaus(inferenceResponse.kiinnostukset(), inferenceResponse.response()));
   }
 
-  public record Request(String message, @JsonProperty("language_code") String languageCode) {}
+  public record InferenceRequest(
+      InferenceSession session,
+      String message,
+      @JsonProperty("language_code") String languageCode) {}
 
-  public record Response(Set<Kiinnostus> kiinnostukset, String response) {}
+  public record InferenceResponse(
+      InferenceSession session, Set<Kiinnostus> kiinnostukset, String response) {}
+
+  public record InferenceSession(UUID id, long timestamp, String signature) {}
+
+  public record Keskustelu(UUID id, Set<Kiinnostus> kiinnostukset, String vastaus) {}
+
+  public record Vastaus(Set<Kiinnostus> kiinnostukset, String vastaus) {}
 
   public record Kiinnostus(@JsonProperty("esco_uri") URI escoUri, String kuvaus) {}
 
-  public record ResponseWithId(UUID id, Set<Kiinnostus> kiinnostukset, String vastaus) {}
+  private static final ParameterizedTypeReference<InferenceResponse> RESPONSE_TYPE =
+      new ParameterizedTypeReference<>() {};
 }
