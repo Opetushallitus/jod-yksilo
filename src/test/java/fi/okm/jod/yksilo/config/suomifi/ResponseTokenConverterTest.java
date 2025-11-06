@@ -21,8 +21,10 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,18 +41,23 @@ import org.springframework.test.context.TestPropertySource;
 class ResponseTokenConverterTest extends IntegrationTest {
   @Autowired private ResponseTokenConverter converter;
   @Autowired private YksiloRepository yksilot;
+  @Autowired private DataSource dataSource;
 
   @Test
   void shouldCreateUser() {
     var nationalId = FinnishPersonIdentifier.of("010199-9997");
-    var id =
+    var jodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.SV, PersonIdentifierType.FIN);
-    var yksilo = yksilot.findById(id).orElseThrow();
+    var yksilo = yksilot.findById(jodUser.getId()).orElseThrow();
 
     assertFalse(yksilo.getTervetuloapolku());
     assertNull(yksilo.getSukupuoli());
     assertNull(yksilo.getSyntymavuosi());
     assertNull(yksilo.getKotikunta());
+    assertName(
+        PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()),
+        "Matti",
+        "Meikäläinen");
   }
 
   @Test
@@ -68,15 +75,19 @@ class ResponseTokenConverterTest extends IntegrationTest {
       yksilot.save(yksilo);
     }
 
-    var updated =
+    var updatedJodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.SV, PersonIdentifierType.FIN);
 
-    assertEquals(id, updated);
+    assertEquals(id, updatedJodUser.getId());
     var yksilo = yksilot.findById(id).orElseThrow();
 
     assertEquals(nationalId.getGender(), yksilo.getSukupuoli());
     assertEquals(nationalId.getBirthYear(), yksilo.getSyntymavuosi());
     assertEquals("508", yksilo.getKotikunta());
+    assertName(
+        PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()),
+        "Matti",
+        "Meikäläinen");
   }
 
   @Test
@@ -98,14 +109,18 @@ class ResponseTokenConverterTest extends IntegrationTest {
       yksilot.save(yksilo);
     }
 
-    var updated = converter.upsertUser(principal, Kieli.SV, PersonIdentifierType.FIN);
+    var updatedJodUser = converter.upsertUser(principal, Kieli.SV, PersonIdentifierType.FIN);
 
-    assertEquals(id, updated);
+    assertEquals(id, updatedJodUser.getId());
     var yksilo = yksilot.findById(id).orElseThrow();
 
     assertNull(yksilo.getSukupuoli());
     assertEquals(nationalId.getBirthYear(), yksilo.getSyntymavuosi());
     assertEquals(kotikunta, yksilo.getKotikunta());
+    assertName(
+        PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()),
+        "Matti",
+        "Meikäläinen");
   }
 
   @Test
@@ -118,9 +133,9 @@ class ResponseTokenConverterTest extends IntegrationTest {
   @Test
   void shouldCreateEidasUser() {
     var eidasId = "FI/DE/ABC123";
-    var id =
+    var jodUser =
         converter.upsertUser(new MockEidasPrincipal(eidasId), Kieli.SV, PersonIdentifierType.EIDAS);
-    var yksilo = yksilot.findById(id).orElseThrow();
+    var yksilo = yksilot.findById(jodUser.getId()).orElseThrow();
 
     assertFalse(yksilo.getTervetuloapolku());
     assertNull(yksilo.getSyntymavuosi());
@@ -138,14 +153,34 @@ class ResponseTokenConverterTest extends IntegrationTest {
       yksilot.save(yksilo);
     }
 
-    var updated =
+    var updatedJodUser =
         converter.upsertUser(new MockEidasPrincipal(eidasId), Kieli.SV, PersonIdentifierType.EIDAS);
 
-    assertEquals(id, updated);
+    assertEquals(id, updatedJodUser.getId());
     var yksilo = yksilot.findById(id).orElseThrow();
 
     assertEquals(1999, yksilo.getSyntymavuosi());
     assertEquals(Kieli.SV, yksilo.getValittuKieli());
+    assertName(PersonIdentifierType.EIDAS.asQualifiedIdentifier(eidasId), "John", "Doe");
+  }
+
+  private void assertName(String identifier, String expectedFirstName, String expectedLastName) {
+    try (var conn = dataSource.getConnection();
+        var stmt = conn.prepareStatement("SELECT * FROM tunnistus.read_yksilo_name(?)")) {
+      stmt.setString(1, identifier);
+      try (var rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          var etunimi = rs.getString("etunimi");
+          var sukunimi = rs.getString("sukunimi");
+          assertEquals(expectedFirstName, etunimi);
+          assertEquals(expectedLastName, sukunimi);
+        } else {
+          throw new AssertionError("No result from read_yksilo_name");
+        }
+      }
+    } catch (SQLException e) {
+      throw new AssertionError("SQL Exception during test", e);
+    }
   }
 
   record MockPrincipal(FinnishPersonIdentifier identifier) implements Saml2AuthenticatedPrincipal {
@@ -155,12 +190,26 @@ class ResponseTokenConverterTest extends IntegrationTest {
     }
 
     @Override
+    public List<String> getSessionIndexes() {
+      return List.of();
+    }
+
+    @Override
+    public String getRelyingPartyRegistrationId() {
+      return "jodsuomifi";
+    }
+
+    @Override
     public Map<String, List<Object>> getAttributes() {
       return Map.of(
           Attribute.NATIONAL_IDENTIFICATION_NUMBER.getUri(),
           List.of(identifier.asString()),
           Attribute.KOTIKUNTA_KUNTANUMERO.getUri(),
-          List.of("508"));
+          List.of("508"),
+          Attribute.GIVEN_NAME.getUri(),
+          List.of("Matti"),
+          Attribute.SN.getUri(),
+          List.of("Meikäläinen"));
     }
   }
 
@@ -171,12 +220,26 @@ class ResponseTokenConverterTest extends IntegrationTest {
     }
 
     @Override
+    public List<String> getSessionIndexes() {
+      return List.of();
+    }
+
+    @Override
+    public String getRelyingPartyRegistrationId() {
+      return "jodsuomifi";
+    }
+
+    @Override
     public Map<String, List<Object>> getAttributes() {
       return Map.of(
           Attribute.PERSON_IDENTIFIER.getUri(),
           List.of(identifier),
           Attribute.DATE_OF_BIRTH.getUri(),
-          List.of("1999-01-01"));
+          List.of("1999-01-01"),
+          Attribute.FIRST_NAME.getUri(),
+          List.of("John"),
+          Attribute.FAMILY_NAME.getUri(),
+          List.of("Doe"));
     }
   }
 }
