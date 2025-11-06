@@ -24,7 +24,6 @@ import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus_;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
