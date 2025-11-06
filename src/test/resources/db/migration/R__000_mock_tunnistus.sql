@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS tunnistus.henkilo (
   yksilo_id  UUID PRIMARY KEY,
   henkilo_id VARCHAR(300) NOT NULL UNIQUE,
   email      VARCHAR(254),
+  etunimi    TEXT,
+  sukunimi   TEXT,
   luotu      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   muokattu   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -50,5 +52,22 @@ BEGIN
   SET email    = $2,
       muokattu = CURRENT_TIMESTAMP
   WHERE henkilo.henkilo_id = $1;
+END
+$$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION tunnistus.read_yksilo_name(henkilo_id VARCHAR(300))
+      RETURNS TABLE(etunimi TEXT, sukunimi TEXT) AS $$
+BEGIN
+  RETURN QUERY
+    SELECT h.etunimi, h.sukunimi
+    FROM tunnistus.henkilo h
+    WHERE h.henkilo_id = $1;
+END
+$$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION tunnistus.update_yksilo_name(henkilo_id VARCHAR(300), etunimi TEXT, sukunimi TEXT) RETURNS VOID AS
+$$
+BEGIN
+UPDATE tunnistus.henkilo SET etunimi = $2, sukunimi = $3, muokattu = CURRENT_TIMESTAMP WHERE henkilo.henkilo_id = $1;
 END
 $$ LANGUAGE PLPGSQL;
