@@ -15,9 +15,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
@@ -25,6 +27,7 @@ import lombok.Setter;
 
 @Entity
 @Getter
+@Table(indexes = @Index(columnList = "yksilo_id", name = "ix_tapahtuma_loki_yksilo_fk"))
 public class TapahtumaLoki {
   @Id @GeneratedValue long id;
 
