@@ -31,6 +31,11 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
   @Query(value = "SELECT tunnistus.update_yksilo_email(:henkiloId, :email)", nativeQuery = true)
   void updateEmail(String henkiloId, @Nullable String email);
 
+  @Query(
+      value = "SELECT tunnistus.update_yksilo_name(:henkiloId, :etunimi, :sukunimi)",
+      nativeQuery = true)
+  void updateName(String henkiloId, String etunimi, String sukunimi);
+
   @Query(value = "SELECT tunnistus.read_yksilo_email(:henkiloId)", nativeQuery = true)
   Optional<String> getEmail(String henkiloId);
 

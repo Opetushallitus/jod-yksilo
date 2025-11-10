@@ -27,9 +27,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -49,6 +51,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Getter
 @Access(AccessType.FIELD)
+@Table(
+    indexes = {
+      @Index(columnList = "kokonaisuus_id", name = "ix_koulutus_kokonaisuus_fk"),
+    })
 public class Koulutus implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 

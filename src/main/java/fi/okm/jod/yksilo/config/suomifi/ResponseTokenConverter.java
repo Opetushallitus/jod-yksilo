@@ -22,7 +22,6 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.convert.converter.Converter;
@@ -98,24 +97,17 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
             default -> null;
           };
 
-      var userId = upsertUser(principal, selectedLanguage, pid);
+      var jodUser = upsertUser(principal, selectedLanguage, pid);
 
       return new Saml2Authentication(
-          new JodSaml2Principal(
-              principal.getName(),
-              principal.getAttributes(),
-              principal.getSessionIndexes(),
-              principal.getRelyingPartyRegistrationId(),
-              userId),
-          authentication.getSaml2Response(),
-          authentication.getAuthorities());
+          jodUser, authentication.getSaml2Response(), authentication.getAuthorities());
     }
 
     throw new BadCredentialsException("Invalid response token");
   }
 
   /* package private for testing */
-  UUID upsertUser(
+  JodSaml2Principal upsertUser(
       Saml2AuthenticatedPrincipal principal, Kieli selectedLanguage, PersonIdentifierType pid) {
     var personId = principal.<String>getFirstAttribute(pid.getAttribute().getUri());
     if (personId == null || personId.isBlank()) {
@@ -124,6 +116,16 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     return transactionTemplate.execute(
         status -> {
           var id = yksilot.findIdByHenkiloId(pid.asQualifiedIdentifier(personId));
+          var jodUser =
+              new JodSaml2Principal(
+                  principal.getName(),
+                  principal.getAttributes(),
+                  principal.getSessionIndexes(),
+                  principal.getRelyingPartyRegistrationId(),
+                  id);
+          yksilot.updateName(
+              pid.asQualifiedIdentifier(personId), jodUser.givenName(), jodUser.familyName());
+
           var yksilo =
               yksilot
                   .findById(id)
@@ -168,7 +170,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
                         return new Yksilo(id);
                       });
           yksilot.save(yksilo);
-          return id;
+          return jodUser;
         });
   }
 }
