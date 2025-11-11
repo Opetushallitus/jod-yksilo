@@ -18,6 +18,7 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
+import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
@@ -35,6 +36,7 @@ import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.entity.YksilonSuosikki;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import java.net.URI;
 import java.util.Collection;
@@ -219,5 +221,12 @@ public final class Mapper {
                     mapOsaaminen.apply(entity.getOsaaminen()),
                     mapOsaamisenLahde(entity)))
         .toList();
+  }
+
+  public static SuosikkiDto mapYksilonSuosikki(YksilonSuosikki entity) {
+    return entity == null
+        ? null
+        : new SuosikkiDto(
+            entity.getId(), entity.getKohdeId(), entity.getTyyppi(), entity.getLuotu());
   }
 }

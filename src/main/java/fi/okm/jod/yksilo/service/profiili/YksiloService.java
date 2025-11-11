@@ -135,7 +135,7 @@ public class YksiloService {
     return exportDto;
   }
 
-  private Yksilo getYksilo(JodUser user) {
+  Yksilo getYksilo(JodUser user) {
     return yksilot
         .findById(user.getId())
         .orElseThrow(() -> new NotFoundException("Profiili does not exist"));
