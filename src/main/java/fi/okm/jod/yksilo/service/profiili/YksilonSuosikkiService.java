@@ -44,9 +44,7 @@ public class YksilonSuosikkiService {
     return (tyyppi == null
             ? suosikit.findByYksilo(yksilo)
             : suosikit.findByYksiloAndTyyppi(yksilo, tyyppi))
-        .stream()
-            .map(ys -> new SuosikkiDto(ys.getId(), ys.getKohdeId(), ys.getTyyppi(), ys.getLuotu()))
-            .toList();
+        .stream().map(Mapper::mapYksilonSuosikki).toList();
   }
 
   /**

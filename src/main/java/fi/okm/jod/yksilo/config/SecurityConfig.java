@@ -98,7 +98,8 @@ public class SecurityConfig {
                         "/api/ammatit",
                         "/api/tyomahdollisuudet/**",
                         "/api/koulutusmahdollisuudet/**",
-                        "/api/keskustelut/**")
+                        "/api/keskustelut/**",
+                        "/api/jakolinkki/**")
                     .permitAll()
                     .anyRequest()
                     .hasRole(JodRole.USER.name()))
