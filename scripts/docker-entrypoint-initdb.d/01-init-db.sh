@@ -150,13 +150,42 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     RETURNS TABLE (
       jakolinkki_id UUID,
       ulkoinen_id UUID,
-      voimassa_asti TIMESTAMPTZ
+      voimassa_asti TIMESTAMPTZ,
+      nimi_jaettu BOOLEAN,
+      email_jaettu BOOLEAN
     ) AS $$
     BEGIN
       RETURN QUERY
-      SELECT j.jakolinkki_id, j.ulkoinen_id, j.voimassa_asti
+      SELECT
+        j.jakolinkki_id,
+        j.ulkoinen_id,
+        j.voimassa_asti,
+        j.nimi_jaettu,
+        j.email_jaettu
       FROM jakolinkki j
       WHERE j.henkilo_id = in_henkilo_id;
+    END $$
+    LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
+
+    CREATE OR REPLACE FUNCTION get_jakolinkki(in_henkilo_id VARCHAR(300), in_jakolinkki_id UUID)
+    RETURNS TABLE (
+      jakolinkki_id UUID,
+      ulkoinen_id UUID,
+      voimassa_asti TIMESTAMPTZ,
+      nimi_jaettu BOOLEAN,
+      email_jaettu BOOLEAN
+    ) AS $$
+     BEGIN
+      RETURN QUERY
+      SELECT
+        j.jakolinkki_id,
+        j.ulkoinen_id,
+        j.voimassa_asti,
+        j.nimi_jaettu,
+        j.email_jaettu
+      FROM jakolinkki j
+      WHERE j.jakolinkki_id = in_jakolinkki_id
+      AND j.henkilo_id = in_henkilo_id;
     END $$
     LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = tunnistus, pg_temp;
 
@@ -164,8 +193,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     RETURNS TABLE (
       jakolinkki_id UUID,
       email VARCHAR(254),
-      etunimi VARCHAR(100),
-      sukunimi VARCHAR(100),
+      etunimi TEXT,
+      sukunimi TEXT,
       voimassa_asti TIMESTAMPTZ,
       nimi_jaettu BOOLEAN,
       email_jaettu BOOLEAN
@@ -190,6 +219,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     REVOKE ALL ON FUNCTION generate_yksilo_id, create_jakolinkki, update_jakolinkki, update_yksilo_email, update_yksilo_name, delete_jakolinkki, get_jakolinkit, get_jakolinkki_by_ulkoinen_id, remove_yksilo_id, read_yksilo_email, read_yksilo_name FROM public;
     GRANT EXECUTE ON FUNCTION generate_yksilo_id, create_jakolinkki, update_jakolinkki, update_yksilo_email, update_yksilo_name, delete_jakolinkki, get_jakolinkit, get_jakolinkki_by_ulkoinen_id, remove_yksilo_id, read_yksilo_email, read_yksilo_name TO yksilo;
     GRANT REFERENCES(yksilo_id) ON henkilo TO yksilo;
+    GRANT REFERENCES(jakolinkki_id) ON jakolinkki TO yksilo;
     GRANT USAGE ON SCHEMA tunnistus TO yksilo;
 
     -- Workaround for Hibernate ddl-auto

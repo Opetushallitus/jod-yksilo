@@ -7,12 +7,19 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.config.feature;
+package fi.okm.jod.yksilo.repository.projection;
 
-public enum Feature {
-  VIRTUAALIOHJAAJA,
-  POLKU,
-  TAVOITE,
-  KOSKI,
-  JAKOLINKKI
+import java.time.Instant;
+import java.util.UUID;
+
+public interface JakolinkkiSettings {
+  UUID getJakolinkkiId();
+
+  UUID getUlkoinenId();
+
+  Instant getVoimassaAsti();
+
+  boolean getNimiJaettu();
+
+  boolean getEmailJaettu();
 }

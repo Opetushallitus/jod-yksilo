@@ -90,7 +90,7 @@ DECLARE
   linkki_id UUID;
 BEGIN
   BEGIN
-    INSERT INTO jakolinkki(
+    INSERT INTO tunnistus.jakolinkki(
       jakolinkki_id,
       ulkoinen_id,
       henkilo_id,
@@ -128,7 +128,7 @@ $$
 DECLARE
   rows_updated INTEGER;
 BEGIN
-  UPDATE jakolinkki
+  UPDATE tunnistus.jakolinkki
   SET voimassa_asti = in_voimassa_asti, muokattu = CURRENT_TIMESTAMP,
       nimi_jaettu = in_nimi_jaettu, email_jaettu = in_email_jaettu
   WHERE henkilo_id = in_henkilo_id
@@ -147,7 +147,7 @@ $$
 DECLARE
   rows_deleted INTEGER;
 BEGIN
-  DELETE FROM jakolinkki
+  DELETE FROM tunnistus.jakolinkki
   WHERE henkilo_id = in_henkilo_id
   AND jakolinkki_id = in_jakolinkki_id;
 
@@ -160,14 +160,44 @@ CREATE OR REPLACE FUNCTION tunnistus.get_jakolinkit(in_henkilo_id VARCHAR(300))
   RETURNS TABLE (
     jakolinkki_id UUID,
     ulkoinen_id UUID,
-    voimassa_asti TIMESTAMPTZ
+    voimassa_asti TIMESTAMPTZ,
+    nimi_jaettu BOOLEAN,
+    email_jaettu BOOLEAN
   ) AS
 $$
 BEGIN
   RETURN QUERY
-    SELECT j.jakolinkki_id, j.ulkoinen_id, j.voimassa_asti
-    FROM jakolinkki j
+    SELECT
+      j.jakolinkki_id,
+      j.ulkoinen_id,
+      j.voimassa_asti,
+      j.nimi_jaettu,
+      j.email_jaettu
+    FROM tunnistus.jakolinkki j
     WHERE j.henkilo_id = in_henkilo_id;
+END
+$$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION tunnistus.get_jakolinkki(in_henkilo_id VARCHAR(300), in_jakolinkki_id UUID)
+  RETURNS TABLE (
+    jakolinkki_id UUID,
+    ulkoinen_id UUID,
+    voimassa_asti TIMESTAMPTZ,
+    nimi_jaettu BOOLEAN,
+    email_jaettu BOOLEAN
+  ) AS
+$$
+BEGIN
+  RETURN QUERY
+    SELECT
+      j.jakolinkki_id,
+      j.ulkoinen_id,
+      j.voimassa_asti,
+      j.nimi_jaettu,
+      j.email_jaettu
+    FROM tunnistus.jakolinkki j
+    WHERE j.jakolinkki_id = in_jakolinkki_id
+      AND j.henkilo_id = in_henkilo_id;
 END
 $$ LANGUAGE PLPGSQL;
 
@@ -175,8 +205,8 @@ CREATE OR REPLACE FUNCTION tunnistus.get_jakolinkki_by_ulkoinen_id(in_ulkoinen_i
   RETURNS TABLE (
     jakolinkki_id UUID,
     email VARCHAR(254),
-    etunimi VARCHAR(100),
-    sukunimi VARCHAR(100),
+    etunimi TEXT,
+    sukunimi TEXT,
     voimassa_asti TIMESTAMPTZ,
     nimi_jaettu BOOLEAN,
     email_jaettu BOOLEAN
@@ -192,7 +222,7 @@ BEGIN
       j.voimassa_asti,
       j.nimi_jaettu,
       j.email_jaettu
-    FROM jakolinkki j
+    FROM tunnistus.jakolinkki j
     JOIN tunnistus.henkilo h ON h.henkilo_id = j.henkilo_id
     WHERE j.ulkoinen_id = in_ulkoinen_id
       AND j.voimassa_asti > CURRENT_TIMESTAMP;
