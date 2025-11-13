@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
@@ -41,6 +42,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -66,6 +68,10 @@ public class PolunSuunnitelma {
       orphanRemoval = true)
   @BatchSize(size = 100)
   private List<PolunVaihe> vaiheet = new ArrayList<>();
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @Setter
+  private Koulutusmahdollisuus koulutusmahdollisuus;
 
   @ManyToMany
   @BatchSize(size = 100)
@@ -100,6 +106,13 @@ public class PolunSuunnitelma {
 
   public void setNimi(LocalizedString nimi) {
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
+  }
+
+  public UUID getKoulutusmahdollisuusId() {
+    if (this.getKoulutusmahdollisuus() == null) {
+      return null;
+    }
+    return this.koulutusmahdollisuus.getId();
   }
 
   @Embeddable

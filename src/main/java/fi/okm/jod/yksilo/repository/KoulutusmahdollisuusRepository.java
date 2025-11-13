@@ -43,6 +43,7 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
       """
           SELECT NEW fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto(
             k.id,
+            k.tyyppi as koulutusmahdollisuusTyyppi,
             CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
             COUNT(osaamiset) as hits
           )

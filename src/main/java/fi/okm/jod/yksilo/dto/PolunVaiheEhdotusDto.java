@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.dto;
 
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
+
 import java.util.UUID;
 
 /**
@@ -18,4 +20,4 @@ import java.util.UUID;
  * @param pisteet score or how good the match is (0-1)
  * @param osaamisia How many missing skills are present in the Mahdollisuus
  */
-public record PolunVaiheEhdotusDto(UUID mahdollisuusId, double pisteet, long osaamisia) {}
+public record PolunVaiheEhdotusDto(UUID mahdollisuusId, KoulutusmahdollisuusTyyppi tyyppi, double pisteet, long osaamisia) {}

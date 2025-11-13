@@ -334,7 +334,9 @@ class MahdollisuudetController {
           @Size(max = 1000)
           @Schema(description = "Missing osaamiset that user did not selected that they know.")
           Set<@Valid URI> missingOsaamiset) {
-    var suggestions = mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset);
+    final List<PolunVaiheEhdotusDto> suggestions = mahdollisuudetService.getPolkuVaiheSuggestions(
+        missingOsaamiset);
+
     return populateEhdotusDtos(suggestions);
   }
 
@@ -348,7 +350,7 @@ class MahdollisuudetController {
                         MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
                         null,
                         null,
-                        null,
+                        it.tyyppi(),
                         null,
                         it.pisteet(),
                         null,
