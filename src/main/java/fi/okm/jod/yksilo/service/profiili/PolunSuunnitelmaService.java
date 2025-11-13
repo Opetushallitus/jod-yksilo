@@ -11,17 +11,23 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.OsaamisListaDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
+import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PolunSuunnitelmaService {
   private final TavoiteRepository tavoiteRepository;
+  private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
   private final OsaaminenRepository osaamisetRepository;
   private final MuuOsaaminenService muuOsaaminenService;
@@ -59,8 +66,10 @@ public class PolunSuunnitelmaService {
     if (suunnitelmaRepository.countByTavoite(tavoite) >= getSuunnitelmaPerTavoiteLimit()) {
       throw new ServiceValidationException("Too many Suunnitelmas");
     }
-
-    return add(tavoite, dto).getId();
+    final Koulutusmahdollisuus koulutusmahdollisuus = this.koulutusmahdollisuusRepository
+        .findById(dto.koulutusmahdollisuusId())
+        .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
+    return add(tavoite, dto, koulutusmahdollisuus).getId();
   }
 
   public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaUpdateDto dto) {
@@ -79,10 +88,16 @@ public class PolunSuunnitelmaService {
     delete(suunnitelma);
   }
 
-  private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto) {
+  private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto, final Koulutusmahdollisuus koulutusmahdollisuus) {
     var entity = new PolunSuunnitelma(tavoite);
     entity.setNimi(dto.nimi());
+    // var entities = getOsaamiset(dto);
+    // entity.setOsaamiset(entities);
     entity = suunnitelmaRepository.save(entity);
+    if (koulutusmahdollisuus != null) {
+      entity.setKoulutusmahdollisuus(koulutusmahdollisuus);
+      entity.setNimi(koulutusmahdollisuus.getOtsikko());
+    }
     return entity;
   }
 
@@ -90,7 +105,7 @@ public class PolunSuunnitelmaService {
     entity.setNimi(dto.nimi());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
-      var entities = getOsaamiset(entity, dto);
+      var entities = getOsaamiset(dto);
       entity.setOsaamiset(entities);
       muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
     }
@@ -104,22 +119,15 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-  private Set<Osaaminen> getOsaamiset(PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
+
+  // palautetaan kaikki osaamiset, mitkä on dto:ssa ja tavoitteen osaamisissa
+  private Set<Osaaminen> getOsaamiset(OsaamisListaDto dto) {
     var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
-    var vaiheOsaamiset =
-        suunnitelma.getVaiheet().stream()
-            .flatMap(v -> v.getOsaamiset().stream())
-            .collect(Collectors.toSet());
 
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in tavoite");
-    } else if (osaamiset.stream().anyMatch(vaiheOsaamiset::contains)) {
-      throw new ServiceValidationException("Osaaminen in vaihe");
     }
-
     return osaamiset;
   }
 

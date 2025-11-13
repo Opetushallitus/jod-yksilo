@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.profiili;
+package fi.okm.jod.yksilo.dto.profiili.suunnitelma;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
@@ -24,4 +24,4 @@ public record PolunSuunnitelmaUpdateDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     Set<@NotNull URI> osaamiset,
-    Set<@NotNull URI> ignoredOsaamiset) {}
+    Set<@NotNull URI> ignoredOsaamiset) implements OsaamisListaDto {}

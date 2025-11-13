@@ -20,8 +20,8 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.PolunVaiheLahde;
 import fi.okm.jod.yksilo.domain.PolunVaiheTyyppi;
 import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.PolunVaiheRepository;
@@ -188,7 +188,7 @@ class PolunVaiheServiceTest extends AbstractServiceTest {
     return suunnitelmat.add(
         user,
         tavoiteId,
-        new PolunSuunnitelmaDto(null, ls("nimi"), null, emptySet(), emptySet(), emptySet()));
+        new PolunSuunnitelmaDto(null, ls("nimi"), null, null, null, emptySet(), emptySet()));
   }
 
   private PolunVaiheDto createPolunVaiheDto(Set<URI> osaamiset) {

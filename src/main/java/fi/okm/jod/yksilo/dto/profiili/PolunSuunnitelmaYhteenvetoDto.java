@@ -22,4 +22,6 @@ import java.util.UUID;
 
 public record PolunSuunnitelmaYhteenvetoDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
-    @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi) {}
+    @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
+    UUID koulutusmahdollisuusId
+) {}
