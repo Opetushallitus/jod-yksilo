@@ -20,7 +20,6 @@ public record TavoiteExportDto(
     Instant luotu,
     TavoiteTyyppi tyyppi,
     UUID tyomahdollisuus,
-    UUID koulutusmahdollisuus,
     List<PolunSuunnitelmaExportDto> suunnitelmat,
     LocalizedString tavoite,
     LocalizedString kuvaus) {}

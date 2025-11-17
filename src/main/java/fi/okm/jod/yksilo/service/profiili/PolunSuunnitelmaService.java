@@ -13,11 +13,8 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.OsaamisListaDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaUpdateDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
@@ -27,10 +24,8 @@ import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
-
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,13 +61,11 @@ public class PolunSuunnitelmaService {
     if (suunnitelmaRepository.countByTavoite(tavoite) >= getSuunnitelmaPerTavoiteLimit()) {
       throw new ServiceValidationException("Too many Suunnitelmas");
     }
-    final Koulutusmahdollisuus koulutusmahdollisuus = this.koulutusmahdollisuusRepository
-        .findById(dto.koulutusmahdollisuusId())
-        .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
-    return add(tavoite, dto, koulutusmahdollisuus).getId();
+
+    return add(tavoite, dto).getId();
   }
 
-  public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaUpdateDto dto) {
+  public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaDto dto) {
     var suunnitelma =
         suunnitelmaRepository
             .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, dto.id())
@@ -88,20 +81,29 @@ public class PolunSuunnitelmaService {
     delete(suunnitelma);
   }
 
-  private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto, final Koulutusmahdollisuus koulutusmahdollisuus) {
+  private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto) {
+
     var entity = new PolunSuunnitelma(tavoite);
     entity.setNimi(dto.nimi());
-    // var entities = getOsaamiset(dto);
-    // entity.setOsaamiset(entities);
-    entity = suunnitelmaRepository.save(entity);
-    if (koulutusmahdollisuus != null) {
+    if (dto.koulutusmahdollisuusId() == null) {
+      var entities = getOsaamiset(dto);
+      entity.setOsaamiset(entities);
+      entity.setNimi(dto.nimi());
+      entity.setKuvaus(dto.kuvaus());
+    } else {
+      final Koulutusmahdollisuus koulutusmahdollisuus =
+          this.koulutusmahdollisuusRepository
+              .findById(dto.koulutusmahdollisuusId())
+              .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
       entity.setKoulutusmahdollisuus(koulutusmahdollisuus);
       entity.setNimi(koulutusmahdollisuus.getOtsikko());
+      entity.setKuvaus(koulutusmahdollisuus.getKuvaus());
     }
+    entity = suunnitelmaRepository.save(entity);
     return entity;
   }
 
-  private void update(PolunSuunnitelma entity, PolunSuunnitelmaUpdateDto dto) {
+  private void update(PolunSuunnitelma entity, PolunSuunnitelmaDto dto) {
     entity.setNimi(dto.nimi());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
@@ -119,7 +121,6 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-
   // palautetaan kaikki osaamiset, mitkä on dto:ssa ja tavoitteen osaamisissa
   private Set<Osaaminen> getOsaamiset(OsaamisListaDto dto) {
     var ids = dto.osaamiset();
@@ -132,7 +133,7 @@ public class PolunSuunnitelmaService {
   }
 
   private Set<Osaaminen> getIgnoredOsaamiset(
-      PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
+      PolunSuunnitelma suunnitelma, PolunSuunnitelmaDto dto) {
     var ids = dto.ignoredOsaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(ids);
 

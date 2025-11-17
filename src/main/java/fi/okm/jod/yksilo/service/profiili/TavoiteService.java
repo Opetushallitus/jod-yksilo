@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Yksilo;
+import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
@@ -47,28 +48,14 @@ public class TavoiteService {
     var yksilo = yksilot.getReferenceById(user.getId());
 
     var tavoite =
-        switch (dto.mahdollisuusTyyppi()) {
-          case TYOMAHDOLLISUUS ->
-              new Tavoite(
-                  yksilo,
-                  dto.tyyppi(),
-                  tyomahdollisuudet
-                      .findById(dto.mahdollisuusId())
-                      .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
-                  dto.tavoite(),
-                  dto.kuvaus());
-          case KOULUTUSMAHDOLLISUUS ->
-              new Tavoite(
-                  yksilo,
-                  dto.tyyppi(),
-                  koulutusmahdollisuudet
-                      .findById(dto.mahdollisuusId())
-                      .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found")),
-                  dto.tavoite(),
-                  dto.kuvaus());
-          case null -> new Tavoite(yksilo, dto.tyyppi(), dto.tavoite(), dto.kuvaus());
-        };
-
+        new Tavoite(
+            yksilo,
+            dto.tyyppi(),
+            tyomahdollisuudet
+                .findById(dto.mahdollisuusId())
+                .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
+            dto.tavoite(),
+            dto.kuvaus());
     if (tavoitteet.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
       throw new ServiceValidationException("Too many Tavoite");
     }
@@ -94,6 +81,11 @@ public class TavoiteService {
             .orElseThrow(() -> new NotFoundException("Tavoite not found"));
     tavoite.setTyyppi(dto.tyyppi());
     tavoite.setTavoite(dto.tavoite());
+    final Tyomahdollisuus tyomahdollisuus =
+        tyomahdollisuudet
+            .findById(dto.mahdollisuusId())
+            .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
+    tavoite.setTyomahdollisuus(tyomahdollisuus);
     yksilo.updated();
     this.tavoitteet.save(tavoite);
   }

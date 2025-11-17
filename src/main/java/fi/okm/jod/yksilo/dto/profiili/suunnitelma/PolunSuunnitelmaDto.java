@@ -9,34 +9,24 @@
 
 package fi.okm.jod.yksilo.dto.profiili.suunnitelma;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
-import fi.okm.jod.yksilo.dto.profiili.TavoiteYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.validation.Limits;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
-
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 
-import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
-
-public record PolunSuunnitelmaDto (
+public record PolunSuunnitelmaDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @PrintableString @Size(max = 200) LocalizedString nimi,
-    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) TavoiteYhteenvetoDto tavoite,
-    @Null(groups = Add.class)
-        @Schema(accessMode = READ_ONLY)
-        @Size(max = Limits.VAIHE_PER_SUUNNITELMA)
-        Set<@Valid @NotNull PolunVaiheDto> vaiheet,
-
+    @PrintableString @Size(max = 200) LocalizedString kuvaus,
     UUID koulutusmahdollisuusId,
-    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Set<@NotNull URI> osaamiset,
+    @Schema(accessMode = READ_ONLY) Set<@NotNull URI> osaamiset,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Set<@NotNull URI> ignoredOsaamiset)
     implements OsaamisListaDto {}
