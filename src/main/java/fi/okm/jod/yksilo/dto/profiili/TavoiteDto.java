@@ -13,11 +13,9 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -26,10 +24,9 @@ import java.util.UUID;
 
 public record TavoiteDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
-    @NotNull TavoiteTyyppi tyyppi,
     MahdollisuusTyyppi mahdollisuusTyyppi,
     UUID mahdollisuusId,
-    @Size(max = 10000) @PrintableString LocalizedString tavoite,
+    @Size(max = 200) @PrintableString LocalizedString tavoite,
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY)

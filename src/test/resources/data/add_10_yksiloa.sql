@@ -73,8 +73,8 @@ FOR yksilo_index IN 1..10 LOOP
   SELECT gen_random_uuid(), NOW(), yid, k.id FROM koulutusmahdollisuus k LIMIT 7;
 
   -- päämäärät
-  INSERT INTO tavoite(id, luotu, tyyppi, koulutusmahdollisuus_id, yksilo_id)
-  SELECT gen_random_uuid(), NOW(), ''MUU'', k.id, yid FROM koulutusmahdollisuus k LIMIT 8;
+  INSERT INTO tavoite(id, luotu, tyomahdollisuus_id, yksilo_id)
+  SELECT gen_random_uuid(), NOW(), k.id, yid FROM tyomahdollisuus k LIMIT 8;
   END LOOP;
 END
 ' LANGUAGE plpgsql;

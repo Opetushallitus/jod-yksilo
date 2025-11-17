@@ -50,7 +50,6 @@ public class TavoiteService {
     var tavoite =
         new Tavoite(
             yksilo,
-            dto.tyyppi(),
             tyomahdollisuudet
                 .findById(dto.mahdollisuusId())
                 .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
@@ -79,7 +78,6 @@ public class TavoiteService {
         tavoitteet
             .findByYksiloAndId(yksilo, dto.id())
             .orElseThrow(() -> new NotFoundException("Tavoite not found"));
-    tavoite.setTyyppi(dto.tyyppi());
     tavoite.setTavoite(dto.tavoite());
     tavoite.setKuvaus(dto.kuvaus());
     final Tyomahdollisuus tyomahdollisuus =

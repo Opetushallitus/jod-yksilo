@@ -53,8 +53,7 @@ class ExportMapperTest {
             "mapPatevyys",
             "mapYksilonSuosikki",
             "mapTavoite",
-            "mapPolunSuunnitelma",
-            "mapPolunVaihe");
+            "mapPolunSuunnitelma");
 
     Set<String> actualMethods =
         Set.of(ExportMapper.class.getDeclaredMethods()).stream()
