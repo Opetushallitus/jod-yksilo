@@ -15,7 +15,6 @@ import static java.util.Collections.emptySet;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.CascadeType;
@@ -24,7 +23,6 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -34,7 +32,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -65,9 +62,6 @@ public class Tavoite {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @Enumerated(EnumType.STRING)
-  private TavoiteTyyppi tyyppi;
-
   @ManyToOne(fetch = FetchType.LAZY)
   @Setter
   private Tyomahdollisuus tyomahdollisuus;
@@ -92,25 +86,18 @@ public class Tavoite {
 
   public Tavoite(
       Yksilo yksilo,
-      TavoiteTyyppi tyyppi,
       Tyomahdollisuus tyomahdollisuus,
       LocalizedString tavoite,
       LocalizedString kuvaus) {
     this.yksilo = yksilo;
     this.tyomahdollisuus = tyomahdollisuus;
-    this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
-  public Tavoite(
-      final Yksilo yksilo,
-      final TavoiteTyyppi tyyppi,
-      final LocalizedString tavoite,
-      final LocalizedString kuvaus) {
+  public Tavoite(final Yksilo yksilo, final LocalizedString tavoite, final LocalizedString kuvaus) {
     this.yksilo = yksilo;
-    this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
@@ -126,10 +113,6 @@ public class Tavoite {
 
   public void setKuvaus(LocalizedString kuvaus) {
     merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
-  }
-
-  public void setTyyppi(@NotNull TavoiteTyyppi tyyppi) {
-    this.tyyppi = tyyppi;
   }
 
   public MahdollisuusTyyppi getMahdollisuusTyyppi() {

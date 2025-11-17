@@ -140,7 +140,6 @@ public final class Mapper {
         ? null
         : new TavoiteDto(
             entity.getId(),
-            entity.getTyyppi(),
             entity.getMahdollisuusTyyppi(),
             entity.getMahdollisuusId(),
             entity.getTavoite(),

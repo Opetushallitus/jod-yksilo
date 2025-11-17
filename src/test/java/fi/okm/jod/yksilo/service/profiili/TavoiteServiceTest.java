@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -39,7 +38,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -55,7 +53,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -67,7 +64,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var updated =
         new TavoiteDto(
             id,
-            TavoiteTyyppi.PITKA,
             dto.mahdollisuusTyyppi(),
             dto.mahdollisuusId(),
             ls("tavoite2"),
@@ -86,7 +82,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
             UUID.randomUUID(),
             ls("tavoite"),
@@ -101,7 +96,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
@@ -118,7 +112,6 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),

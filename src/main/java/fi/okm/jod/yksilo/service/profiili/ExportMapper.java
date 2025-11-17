@@ -190,7 +190,6 @@ public final class ExportMapper {
         : new TavoiteExportDto(
             entity.getId(),
             entity.getLuotu(),
-            entity.getTyyppi(),
             getTyomahdollisuusId(entity.getTyomahdollisuus()),
             entity.getSuunnitelmat().stream().map(ExportMapper::mapPolunSuunnitelma).toList(),
             entity.getTavoite(),

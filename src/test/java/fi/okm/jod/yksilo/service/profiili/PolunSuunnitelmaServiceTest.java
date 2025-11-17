@@ -18,7 +18,6 @@ import static org.mockito.Mockito.mockStatic;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
@@ -112,7 +111,6 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
         user,
         new TavoiteDto(
             null,
-            TavoiteTyyppi.PITKA,
             mahdollisuusTyyppi,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS.equals(mahdollisuusTyyppi)
                 ? tyomahdollisuudet.findAll().getFirst().getId()

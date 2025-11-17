@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +17,6 @@ import java.util.UUID;
 public record TavoiteExportDto(
     UUID id,
     Instant luotu,
-    TavoiteTyyppi tyyppi,
     UUID tyomahdollisuus,
     List<PolunSuunnitelmaExportDto> suunnitelmat,
     LocalizedString tavoite,
