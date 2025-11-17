@@ -81,6 +81,7 @@ public class TavoiteService {
             .orElseThrow(() -> new NotFoundException("Tavoite not found"));
     tavoite.setTyyppi(dto.tyyppi());
     tavoite.setTavoite(dto.tavoite());
+    tavoite.setKuvaus(dto.kuvaus());
     final Tyomahdollisuus tyomahdollisuus =
         tyomahdollisuudet
             .findById(dto.mahdollisuusId())

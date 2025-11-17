@@ -53,7 +53,6 @@ public class PolunSuunnitelmaService {
         tavoiteRepository
             .findByYksiloIdAndId(user.getId(), tavoiteId)
             .orElseThrow(PolunSuunnitelmaService::notFound);
-
     if (MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS.equals(tavoite.getMahdollisuusTyyppi())) {
       throw new ServiceValidationException("Invalid Tavoite");
     }
@@ -111,9 +110,6 @@ public class PolunSuunnitelmaService {
       entity.setOsaamiset(entities);
       muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
     }
-    if (dto.ignoredOsaamiset() != null) {
-      entity.setIgnoredOsaamiset(getIgnoredOsaamiset(entity, dto));
-    }
     suunnitelmaRepository.save(entity);
   }
 
@@ -121,7 +117,6 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-  // palautetaan kaikki osaamiset, mitkä on dto:ssa ja tavoitteen osaamisissa
   private Set<Osaaminen> getOsaamiset(OsaamisListaDto dto) {
     var ids = dto.osaamiset();
     var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
@@ -129,20 +124,6 @@ public class PolunSuunnitelmaService {
     if (osaamiset.size() != ids.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
-    return osaamiset;
-  }
-
-  private Set<Osaaminen> getIgnoredOsaamiset(
-      PolunSuunnitelma suunnitelma, PolunSuunnitelmaDto dto) {
-    var ids = dto.ignoredOsaamiset();
-    var osaamiset = osaamisetRepository.findByUriIn(ids);
-
-    if (osaamiset.size() != ids.size()) {
-      throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in tavoite");
-    }
-
     return osaamiset;
   }
 

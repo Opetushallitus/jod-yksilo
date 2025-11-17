@@ -11,13 +11,7 @@ package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import java.net.URI;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public record PolunSuunnitelmaExportDto(
-    UUID id,
-    LocalizedString nimi,
-    List<PolunVaiheExportDto> vaiheet,
-    Set<URI> osaamiset,
-    Set<URI> ignoredOsaamiset) {}
+public record PolunSuunnitelmaExportDto(UUID id, LocalizedString nimi, Set<URI> osaamiset) {}

@@ -11,7 +11,7 @@ package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
-import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
+import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Tuple;
 import java.util.Collection;
@@ -41,7 +41,7 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
       //  The j.id in GROUP BY is needed because SIZE() becomes a correlated
       //  subquery that refers to the j.id.
       """
-          SELECT NEW fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto(
+          SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
             k.id,
             k.tyyppi as koulutusmahdollisuusTyyppi,
             CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
@@ -55,7 +55,7 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
           GROUP BY k.id, j.id
           ORDER BY matchRatio DESC
           """)
-  List<PolunVaiheEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
+  List<SuunnitelmaEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
 
   @Transactional(readOnly = true)
   default List<MahdollisuusDto> findMahdollisuusIds(Kieli lang, Sort.Direction direction) {

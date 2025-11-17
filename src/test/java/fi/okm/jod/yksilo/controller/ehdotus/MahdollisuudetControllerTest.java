@@ -25,10 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.EndpointProperties;
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
+import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
@@ -409,8 +410,11 @@ class MahdollisuudetControllerTest {
 
     var serviceSuggestions =
         List.of(
-            new PolunVaiheEhdotusDto(
-                UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"), 0.5, 2));
+            new SuunnitelmaEhdotusDto(
+                UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"),
+                KoulutusmahdollisuusTyyppi.EI_TUTKINTO,
+                0.5,
+                2));
     when(mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset))
         .thenReturn(serviceSuggestions);
 

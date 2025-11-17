@@ -13,6 +13,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.validation.FreeText;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -25,8 +26,7 @@ import java.util.UUID;
 public record PolunSuunnitelmaDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @PrintableString @Size(max = 200) LocalizedString nimi,
-    @PrintableString @Size(max = 200) LocalizedString kuvaus,
+    @FreeText @Size(max = 500) LocalizedString kuvaus,
     UUID koulutusmahdollisuusId,
-    @Schema(accessMode = READ_ONLY) Set<@NotNull URI> osaamiset,
-    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Set<@NotNull URI> ignoredOsaamiset)
+    Set<@NotNull URI> osaamiset)
     implements OsaamisListaDto {}

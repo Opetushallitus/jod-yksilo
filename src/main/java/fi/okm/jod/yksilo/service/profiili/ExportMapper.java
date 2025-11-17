@@ -16,7 +16,6 @@ import fi.okm.jod.yksilo.dto.profiili.export.KoulutusKokonaisuusExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.MuuOsaaminenExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PatevyysExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PolunSuunnitelmaExportDto;
-import fi.okm.jod.yksilo.dto.profiili.export.PolunVaiheExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TavoiteExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimenkuvaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimintoExportDto;
@@ -29,7 +28,6 @@ import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
@@ -205,29 +203,6 @@ public final class ExportMapper {
         : new PolunSuunnitelmaExportDto(
             entity.getId(),
             entity.getNimi(),
-            entity.getVaiheet().stream().map(ExportMapper::mapPolunVaihe).toList(),
-            entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()),
-            entity.getIgnoredOsaamiset().stream()
-                .map(Osaaminen::getUri)
-                .collect(Collectors.toSet()));
-  }
-
-  public static PolunVaiheExportDto mapPolunVaihe(PolunVaihe entity) {
-    return entity == null
-        ? null
-        : new PolunVaiheExportDto(
-            entity.getId(),
-            entity.getLahde(),
-            entity.getTyyppi(),
-            entity.getKoulutusmahdollisuus() != null
-                ? entity.getKoulutusmahdollisuus().getId()
-                : null,
-            entity.getNimi(),
-            entity.getKuvaus(),
-            entity.getLinkit(),
-            entity.getAlkuPvm(),
-            entity.getLoppuPvm(),
-            entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()),
-            entity.isValmis());
+            entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()));
   }
 }
