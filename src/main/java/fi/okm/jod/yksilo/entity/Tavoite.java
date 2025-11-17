@@ -124,6 +124,10 @@ public class Tavoite {
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
   }
 
+  public void setKuvaus(LocalizedString kuvaus) {
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
+  }
+
   public void setTyyppi(@NotNull TavoiteTyyppi tyyppi) {
     this.tyyppi = tyyppi;
   }

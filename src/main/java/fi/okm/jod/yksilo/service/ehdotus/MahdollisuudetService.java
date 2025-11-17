@@ -12,7 +12,7 @@ package fi.okm.jod.yksilo.service.ehdotus;
 import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
-import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
+import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
@@ -68,7 +68,7 @@ public class MahdollisuudetService {
    * @return a list of {@link Suggestion} objects, each containing the details of a matching
    *     opportunity
    */
-  public List<PolunVaiheEhdotusDto> getPolkuVaiheSuggestions(Set<URI> missingOsaamiset) {
+  public List<SuunnitelmaEhdotusDto> getPolkuVaiheSuggestions(Set<URI> missingOsaamiset) {
     if (missingOsaamiset == null || missingOsaamiset.isEmpty()) {
       return List.of();
     }

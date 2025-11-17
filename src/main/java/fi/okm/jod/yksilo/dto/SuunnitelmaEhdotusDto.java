@@ -19,5 +19,5 @@ import java.util.UUID;
  * @param pisteet score or how good the match is (0-1)
  * @param osaamisia How many missing skills are present in the Mahdollisuus
  */
-public record PolunVaiheEhdotusDto(
+public record SuunnitelmaEhdotusDto(
     UUID mahdollisuusId, KoulutusmahdollisuusTyyppi tyyppi, double pisteet, long osaamisia) {}

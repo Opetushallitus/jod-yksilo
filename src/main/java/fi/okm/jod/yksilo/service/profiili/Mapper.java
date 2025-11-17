@@ -35,6 +35,7 @@ import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -160,19 +161,20 @@ public final class Mapper {
     if (entity == null) {
       return null;
     }
-    UUID koulutusMahdollisuusId =
-        entity.getKoulutusmahdollisuus() != null ? entity.getKoulutusmahdollisuus().getId() : null;
+    Set<URI> osaamiset = getOsaamiset(entity);
+    UUID koulutusMahdollisuusId = entity.getKoulutusmahdollisuusId();
     return new PolunSuunnitelmaDto(
-        entity.getId(),
-        entity.getNimi(),
-        entity.getKuvaus(),
-        koulutusMahdollisuusId,
-        entity.getOsaamiset().stream()
-            .map(Osaaminen::getUri)
-            .collect(Collectors.toUnmodifiableSet()),
-        entity.getIgnoredOsaamiset().stream()
-            .map(Osaaminen::getUri)
-            .collect(Collectors.toUnmodifiableSet()));
+        entity.getId(), entity.getNimi(), entity.getKuvaus(), koulutusMahdollisuusId, osaamiset);
+  }
+
+  private static Set<URI> getOsaamiset(final PolunSuunnitelma entity) {
+    Koulutusmahdollisuus koulutusmahdollisuus = entity.getKoulutusmahdollisuus();
+    if (koulutusmahdollisuus == null) {
+      return entity.getOsaamiset().stream()
+          .map(Osaaminen::getUri)
+          .collect(Collectors.toUnmodifiableSet());
+    }
+    return koulutusmahdollisuus.getOsaamiset();
   }
 
   private static Set<URI> extractOsaamisetUris(Koulutus entity) {
