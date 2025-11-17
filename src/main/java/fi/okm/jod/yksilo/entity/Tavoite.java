@@ -13,12 +13,10 @@ import static fi.okm.jod.yksilo.entity.Translation.merge;
 import static java.util.Collections.emptySet;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
-import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -49,6 +47,7 @@ import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Check;
 
@@ -70,10 +69,8 @@ public class Tavoite {
   private TavoiteTyyppi tyyppi;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @Setter
   private Tyomahdollisuus tyomahdollisuus;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  private Koulutusmahdollisuus koulutusmahdollisuus;
 
   @OneToMany(
       mappedBy = "tavoite",
@@ -101,20 +98,6 @@ public class Tavoite {
       LocalizedString kuvaus) {
     this.yksilo = yksilo;
     this.tyomahdollisuus = tyomahdollisuus;
-    this.tyyppi = tyyppi;
-
-    merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
-    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
-  }
-
-  public Tavoite(
-      Yksilo yksilo,
-      TavoiteTyyppi tyyppi,
-      Koulutusmahdollisuus mahdollisuus,
-      LocalizedString tavoite,
-      LocalizedString kuvaus) {
-    this.yksilo = yksilo;
-    this.koulutusmahdollisuus = mahdollisuus;
     this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
@@ -155,34 +138,16 @@ public class Tavoite {
     if (tyomahdollisuus != null) {
       return tyomahdollisuus.getId();
     }
-    if (koulutusmahdollisuus != null) {
-      return koulutusmahdollisuus.getId();
-    }
     return null;
   }
 
   public Set<URI> getOsaamiset() {
-    if (getMahdollisuusTyyppi() == MahdollisuusTyyppi.TYOMAHDOLLISUUS) {
-      var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
-      if (jakauma != null && jakauma.getArvot() != null) {
-        return jakauma.getArvot().stream()
-            .map(Jakauma.Arvo::arvo)
-            .map(URI::create)
-            .collect(Collectors.toUnmodifiableSet());
-      }
-    } else {
-      var jakauma =
-          koulutusmahdollisuus.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN);
-      if (jakauma != null && jakauma.getArvot() != null) {
-        return koulutusmahdollisuus
-            .getJakaumat()
-            .get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN)
-            .getArvot()
-            .stream()
-            .map(Jakauma.Arvo::arvo)
-            .map(URI::create)
-            .collect(Collectors.toUnmodifiableSet());
-      }
+    var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
+    if (jakauma != null && jakauma.getArvot() != null) {
+      return jakauma.getArvot().stream()
+          .map(Jakauma.Arvo::arvo)
+          .map(URI::create)
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     return emptySet();

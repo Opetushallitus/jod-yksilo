@@ -13,7 +13,6 @@ import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.PolunSuunnitelmaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,7 +67,7 @@ public class PolunSuunnitelmaController {
       @AuthenticationPrincipal JodUser user,
       @PathVariable UUID id,
       @PathVariable UUID suunnitelmaId,
-      @Valid @RequestBody PolunSuunnitelmaUpdateDto dto) {
+      @Valid @RequestBody PolunSuunnitelmaDto dto) {
     if (dto.id() == null || !suunnitelmaId.equals(dto.id())) {
       throw new IllegalArgumentException("Invalid identifier");
     }

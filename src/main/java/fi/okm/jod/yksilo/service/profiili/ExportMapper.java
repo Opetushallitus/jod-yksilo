@@ -194,7 +194,6 @@ public final class ExportMapper {
             entity.getLuotu(),
             entity.getTyyppi(),
             getTyomahdollisuusId(entity.getTyomahdollisuus()),
-            getKoulutusmahdollisuusId(entity.getKoulutusmahdollisuus()),
             entity.getSuunnitelmat().stream().map(ExportMapper::mapPolunSuunnitelma).toList(),
             entity.getTavoite(),
             entity.getKuvaus());

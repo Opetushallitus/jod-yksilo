@@ -81,11 +81,7 @@ public class ExtApiV1Mapper {
   private static ExtTavoiteDto toTavoiteDto(Tavoite tavoite) {
     var tyomahdollisuusId =
         tavoite.getTyomahdollisuus() != null ? tavoite.getTyomahdollisuus().getId() : null;
-    var koulutusMahdollisuusId =
-        tavoite.getKoulutusmahdollisuus() != null
-            ? tavoite.getKoulutusmahdollisuus().getId()
-            : null;
-    return new ExtTavoiteDto(tavoite.getTyyppi(), tyomahdollisuusId, koulutusMahdollisuusId);
+    return new ExtTavoiteDto(tavoite.getTyyppi(), tyomahdollisuusId, null);
   }
 
   private static ExtSuosikkiDto toSuosikkiDto(YksilonSuosikki yksilonSuosikki) {

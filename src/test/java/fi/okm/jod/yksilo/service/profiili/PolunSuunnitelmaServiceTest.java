@@ -19,9 +19,8 @@ import static org.mockito.Mockito.mockStatic;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaUpdateDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -76,7 +75,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     var tavoiteId = addTavoite(ls("tavoite"));
     var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, null, emptySet(), emptySet());
     var id = service.add(user, tavoiteId, dto);
-    var updateDto = new PolunSuunnitelmaUpdateDto(id, ls("uusi nimi"), null, null);
+    var updateDto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null);
     service.update(user, tavoiteId, updateDto);
     assertThat(updateDto)
         .usingRecursiveComparison()
@@ -104,12 +103,14 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
-        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, null, emptySet(), emptySet());
+        var dto =
+            new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, null, emptySet(), emptySet());
         service.add(user, tavoiteId, dto);
       }
 
       // Attempt to add one more Suunnitelma, which should throw an exception
-      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, null, emptySet(), emptySet());
+      var dto =
+          new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, null, emptySet(), emptySet());
       assertThrows(ServiceValidationException.class, () -> service.add(user, tavoiteId, dto));
     }
   }
