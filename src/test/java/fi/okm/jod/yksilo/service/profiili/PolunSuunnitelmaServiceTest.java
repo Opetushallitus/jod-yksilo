@@ -50,7 +50,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     var tavoite = ls("tavoite");
     var tavoiteId = addTavoite(tavoite);
     var suunnitelmaNimi = ls("nimi");
-    var dto = new PolunSuunnitelmaDto(null, suunnitelmaNimi, null, null, emptySet(), emptySet());
+    var dto = new PolunSuunnitelmaDto(null, suunnitelmaNimi, null, null, emptySet());
     var id = assertDoesNotThrow(() -> service.add(user, tavoiteId, dto));
     var result = service.get(user, tavoiteId, id);
     assertThat(dto)
@@ -63,9 +63,9 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Test
   void shouldUpdateSuunnitelma() {
     var tavoiteId = addTavoite(ls("tavoite"));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet());
     var id = service.add(user, tavoiteId, dto);
-    var updateDto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null, null, null);
+    var updateDto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null, null);
     service.update(user, tavoiteId, updateDto);
     assertThat(updateDto)
         .usingRecursiveComparison()
@@ -76,7 +76,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Test
   void shouldDeleteSuunnitelma() {
     var tavoiteId = addTavoite(ls("tavoite"));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), emptySet());
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet());
     var id = service.add(user, tavoiteId, dto);
     service.delete(user, tavoiteId, id);
     assertThrows(NotFoundException.class, () -> service.get(user, tavoiteId, id));
@@ -93,12 +93,12 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
-        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet(), emptySet());
+        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet());
         service.add(user, tavoiteId, dto);
       }
 
       // Attempt to add one more Suunnitelma, which should throw an exception
-      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet(), emptySet());
+      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet());
       assertThrows(ServiceValidationException.class, () -> service.add(user, tavoiteId, dto));
     }
   }
