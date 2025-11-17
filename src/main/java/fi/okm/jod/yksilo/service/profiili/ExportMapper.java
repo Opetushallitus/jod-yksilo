@@ -202,6 +202,8 @@ public final class ExportMapper {
         : new PolunSuunnitelmaExportDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getKuvaus(),
+            entity.getKoulutusmahdollisuusId(),
             entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()));
   }
 }

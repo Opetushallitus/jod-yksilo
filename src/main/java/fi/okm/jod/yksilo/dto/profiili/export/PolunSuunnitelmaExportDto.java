@@ -14,4 +14,9 @@ import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 
-public record PolunSuunnitelmaExportDto(UUID id, LocalizedString nimi, Set<URI> osaamiset) {}
+public record PolunSuunnitelmaExportDto(
+    UUID id,
+    LocalizedString nimi,
+    LocalizedString kuvaus,
+    UUID koulutusmahdollisuusId,
+    Set<URI> osaamiset) {}
