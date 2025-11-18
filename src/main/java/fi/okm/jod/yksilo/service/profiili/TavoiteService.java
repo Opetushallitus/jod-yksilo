@@ -36,7 +36,6 @@ public class TavoiteService {
   private final YksiloRepository yksilot;
   private final TavoiteRepository tavoitteet;
   private final TyomahdollisuusRepository tyomahdollisuudet;
-  private final KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
   @Transactional(readOnly = true)
   public List<TavoiteDto> findAll(JodUser user) {

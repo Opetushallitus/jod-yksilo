@@ -152,8 +152,11 @@ public final class Mapper {
                             polunSuunnitelma.getId(),
                             polunSuunnitelma.getNimi(),
                             polunSuunnitelma.getKuvaus(),
-                            polunSuunnitelma.getKoulutusmahdollisuusId()))
-                .collect(Collectors.toSet()));
+                            polunSuunnitelma.getKoulutusmahdollisuusId(),
+                            getOsaamiset(polunSuunnitelma))
+                    )
+                .collect(Collectors.toSet()),
+            entity.getOsaamiset());
   }
 
   public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
