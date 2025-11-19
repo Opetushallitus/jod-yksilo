@@ -45,8 +45,7 @@ class TavoiteController {
   @GetMapping
   @Operation(summary = "Gets all tavoitteet")
   List<TavoiteDto> findAll(@AuthenticationPrincipal JodUser user) {
-    final List<TavoiteDto> all = service.findAll(user);
-    return all;
+    return service.findAll(user);
   }
 
   @PostMapping
