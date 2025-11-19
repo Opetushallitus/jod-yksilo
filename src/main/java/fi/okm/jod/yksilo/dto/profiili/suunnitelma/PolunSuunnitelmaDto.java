@@ -28,5 +28,4 @@ public record PolunSuunnitelmaDto(
     @PrintableString @Size(max = 200) LocalizedString nimi,
     @FreeText @Size(max = 500) LocalizedString kuvaus,
     UUID koulutusmahdollisuusId,
-    Set<@NotNull URI> osaamiset)
-    implements OsaamisListaDto {}
+    Set<@NotNull URI> osaamiset) {}
