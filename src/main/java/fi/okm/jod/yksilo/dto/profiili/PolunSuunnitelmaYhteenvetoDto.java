@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
-
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;

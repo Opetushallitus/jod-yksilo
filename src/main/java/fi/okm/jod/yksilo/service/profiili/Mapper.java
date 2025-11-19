@@ -153,8 +153,7 @@ public final class Mapper {
                             polunSuunnitelma.getNimi(),
                             polunSuunnitelma.getKuvaus(),
                             polunSuunnitelma.getKoulutusmahdollisuusId(),
-                            getOsaamiset(polunSuunnitelma))
-                    )
+                            getOsaamiset(polunSuunnitelma)))
                 .collect(Collectors.toSet()),
             entity.getOsaamiset());
   }
