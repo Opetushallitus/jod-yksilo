@@ -4,9 +4,9 @@ VALUES ('ca466237-ce1d-4aca-9f9b-2ed566ef4f94', TRUE, 'TMT');
 
 INSERT INTO tyomahdollisuus_kaannos (tyomahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma,
                                      tehtavat, yleiset_vaatimukset)
-VALUES ('ca466237-ce1d-4aca-9f9b-2ed566ef4f94', 'FI', 'Työmahdollisuus', 'Kuvaus', 'Tiivistelmä',
+VALUES ('ca466237-ce1d-4aca-9f9b-2ed566ef4f94', 'FI', 'Työmahdollisuus 2', 'Kuvaus', 'Tiivistelmä',
         'Tehtävät', 'Vaatimukset'),
-       ('ca466237-ce1d-4aca-9f9b-2ed566ef4f94', 'EN', 'Job opportunity', 'Description', 'Summary',
+       ('ca466237-ce1d-4aca-9f9b-2ed566ef4f94', 'EN', 'Job opportunity 2', 'Description', 'Summary',
         'Tasks', 'Requirements');
 
 INSERT INTO tyomahdollisuus_jakauma (tyomahdollisuus_id, tyyppi, maara, tyhjia)
@@ -39,9 +39,9 @@ VALUES ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', TRUE, 'TMT');
 
 INSERT INTO tyomahdollisuus_kaannos (tyomahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma,
                                      tehtavat, yleiset_vaatimukset)
-VALUES ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', 'FI', 'Työmahdollisuus', 'Kuvaus', 'Tiivistelmä',
+VALUES ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', 'FI', 'Työmahdollisuus 1', 'Kuvaus', 'Tiivistelmä',
         'Tehtävät', 'Vaatimukset'),
-       ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', 'EN', 'Job opportunity', 'Description', 'Summary',
+       ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', 'EN', 'Job opportunity 1', 'Description', 'Summary',
         'Tasks', 'Requirements');
 
 INSERT INTO tyomahdollisuus_jakauma (tyomahdollisuus_id, tyyppi, maara, tyhjia)
@@ -64,7 +64,7 @@ VALUES ('af34f11f-05b5-434c-963a-df6d89a2149b', FALSE, 'AMMATTITIETO');
 
 INSERT INTO tyomahdollisuus_kaannos (tyomahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma,
                                      tehtavat, yleiset_vaatimukset)
-VALUES ('af34f11f-05b5-434c-963a-df6d89a2149b', 'FI', 'Työmahdollisuus', 'Kuvaus', 'Tiivistelmä',
+VALUES ('af34f11f-05b5-434c-963a-df6d89a2149b', 'FI', 'Työmahdollisuus 3', 'Kuvaus', 'Tiivistelmä',
         'Tehtävät', 'Vaatimukset'),
-       ('af34f11f-05b5-434c-963a-df6d89a2149b', 'EN', 'Job opportunity', 'Description', 'Summary',
+       ('af34f11f-05b5-434c-963a-df6d89a2149b', 'EN', 'Job opportunity 3', 'Description', 'Summary',
         'Tasks', 'Requirements');

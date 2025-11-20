@@ -2,10 +2,11 @@
 INSERT INTO Koulutusmahdollisuus (id, aktiivinen, tyyppi)
 VALUES ('481e204a-691a-48dd-9b01-7f08d5858db9', TRUE, 'TUTKINTO');
 
-INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma)
-VALUES ('481e204a-691a-48dd-9b01-7f08d5858db9', 'FI', 'Koulutusmahdollisuus', 'Kuvaus',
+INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus,
+                                          tiivistelma)
+VALUES ('481e204a-691a-48dd-9b01-7f08d5858db9', 'FI', 'Koulutusmahdollisuus 2', 'Kuvaus',
         'Tiivistelmä'),
-       ('481e204a-691a-48dd-9b01-7f08d5858db9', 'EN', 'Educational opportunity', 'Description',
+       ('481e204a-691a-48dd-9b01-7f08d5858db9', 'EN', 'Educational opportunity 2', 'Description',
         'Summary');
 
 INSERT INTO koulutusmahdollisuus_jakauma (koulutusmahdollisuus_id, tyyppi, maara, tyhjia)
@@ -36,10 +37,11 @@ WHERE koulutusmahdollisuus_id = '481e204a-691a-48dd-9b01-7f08d5858db9'
 INSERT INTO Koulutusmahdollisuus (id, aktiivinen, tyyppi)
 VALUES ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', TRUE, 'TUTKINTO');
 
-INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma)
-VALUES ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', 'FI', 'Koulutusmahdollisuus', 'Kuvaus',
+INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus,
+                                          tiivistelma)
+VALUES ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', 'FI', 'Koulutusmahdollisuus 1', 'Kuvaus',
         'Tiivistelmä'),
-       ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', 'EN', 'Educational opportunity', 'Description',
+       ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', 'EN', 'Educational opportunity 1', 'Description',
         'Summary');
 
 INSERT INTO koulutusmahdollisuus_jakauma (koulutusmahdollisuus_id, tyyppi, maara, tyhjia)
@@ -60,13 +62,13 @@ WHERE koulutusmahdollisuus_id = 'c11249fd-e0a3-4b23-8de5-9dc67a157f46'
   AND tyyppi = 'OSAAMINEN';
 
 
-
 -- Insert inactive Koulutusmahdollisuus
 INSERT INTO Koulutusmahdollisuus (id, aktiivinen, tyyppi)
 VALUES ('c74eed41-c729-433e-8d36-4fc7527fe3df', FALSE, 'EI_TUTKINTO');
 
-INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus, tiivistelma)
-VALUES ('c74eed41-c729-433e-8d36-4fc7527fe3df', 'FI', 'Koulutusmahdollisuus', 'Kuvaus',
+INSERT INTO koulutusmahdollisuus_kaannos (koulutusmahdollisuus_id, kaannos_key, otsikko, kuvaus,
+                                          tiivistelma)
+VALUES ('c74eed41-c729-433e-8d36-4fc7527fe3df', 'FI', 'Koulutusmahdollisuus 3', 'Kuvaus',
         'Tiivistelmä'),
-       ('c74eed41-c729-433e-8d36-4fc7527fe3df', 'EN', 'Educational opportunity', 'Description',
+       ('c74eed41-c729-433e-8d36-4fc7527fe3df', 'EN', 'Educational opportunity 3', 'Description',
         'Summary');
