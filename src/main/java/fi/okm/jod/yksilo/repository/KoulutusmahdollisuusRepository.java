@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Tuple;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,8 +65,12 @@ public interface KoulutusmahdollisuusRepository extends JpaRepository<Koulutusma
     final List<Tuple> mahdollisuusIdsImpl =
         findMahdollisuusIdsImpl(
             lang, JpaSort.unsafe(direction, "collate(m.otsikko as `" + collation + "`)"));
+
     Map<UUID, List<Tuple>> grouped =
-        mahdollisuusIdsImpl.stream().collect(Collectors.groupingBy(t -> t.get("id", UUID.class)));
+        mahdollisuusIdsImpl.stream()
+            .collect(
+                Collectors.groupingBy(
+                    t -> t.get("id", UUID.class), LinkedHashMap::new, Collectors.toList()));
 
     return grouped.entrySet().stream()
         .map(
