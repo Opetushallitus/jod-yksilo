@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.suunnitelma.OsaamisListaDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
@@ -24,6 +23,7 @@ import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -85,7 +85,7 @@ public class PolunSuunnitelmaService {
     var entity = new PolunSuunnitelma(tavoite);
     entity.setNimi(dto.nimi());
     if (dto.koulutusmahdollisuusId() == null) {
-      var entities = getOsaamiset(dto);
+      var entities = getOsaamiset(dto.osaamiset());
       entity.setOsaamiset(entities);
       entity.setNimi(dto.nimi());
       entity.setKuvaus(dto.kuvaus());
@@ -106,7 +106,7 @@ public class PolunSuunnitelmaService {
     entity.setNimi(dto.nimi());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
-      var entities = getOsaamiset(dto);
+      var entities = getOsaamiset(dto.osaamiset());
       entity.setOsaamiset(entities);
       muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
     }
@@ -117,11 +117,10 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-  private Set<Osaaminen> getOsaamiset(OsaamisListaDto dto) {
-    var ids = dto.osaamiset();
-    var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
+  private Set<Osaaminen> getOsaamiset(Set<URI> osaamisUris) {
+    var osaamiset = osaamisetRepository.findByUriIn(osaamisUris);
 
-    if (osaamiset.size() != ids.size()) {
+    if (osaamiset.size() != osaamisUris.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
     }
     return osaamiset;

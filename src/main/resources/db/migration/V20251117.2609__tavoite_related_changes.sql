@@ -20,3 +20,5 @@ DROP TABLE IF EXISTS polun_vaihe_kaannos CASCADE;
 DROP TABLE IF EXISTS polun_vaihe_linkit CASCADE;
 DROP TABLE IF EXISTS polun_vaihe_osaamiset CASCADE;
 DROP TABLE IF EXISTS polun_suunnitelma_ignored_osaamiset;
+
+ALTER TABLE tavoite DROP COLUMN IF EXISTS tyyppi;

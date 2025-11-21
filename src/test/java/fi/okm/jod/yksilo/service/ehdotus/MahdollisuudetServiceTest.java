@@ -15,6 +15,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.within;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
+import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import java.net.URI;
 import java.util.Set;
@@ -42,6 +43,7 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
 
   @Autowired private MahdollisuudetService mahdollisuudetService;
   @Autowired private KoulutusmahdollisuusRepository koulutusmahdollisuudet;
+  @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
   @SuppressWarnings("java:S2699")
   @Test
@@ -60,6 +62,21 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
         .as("Only actives should be included.")
         .hasSize(4)
         .doesNotContainKeys(koulutusIdInactive, tyoIdInactive);
+  }
+
+  @Test
+  void shouldHaveAlphabeticalOrder() {
+    var result =
+        mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
+            Sort.Direction.ASC, Kieli.FI);
+
+    var k = koulutusmahdollisuudet.findById(result.firstEntry().getKey());
+    assertThat(k).isPresent();
+    assertThat(k.get().getOtsikko().get(Kieli.FI)).isEqualTo("Koulutusmahdollisuus 1");
+
+    var t = tyomahdollisuudet.findById(result.lastEntry().getKey());
+    assertThat(t).isPresent();
+    assertThat(t.get().getOtsikko().get(Kieli.FI)).isEqualTo("Työmahdollisuus 2");
   }
 
   @Order(value = 999)
