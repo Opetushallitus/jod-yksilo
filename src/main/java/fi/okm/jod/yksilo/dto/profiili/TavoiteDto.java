@@ -16,8 +16,10 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -30,4 +32,5 @@ public record TavoiteDto(
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY)
-        Set<PolunSuunnitelmaYhteenvetoDto> suunnitelmat) {}
+        Set<PolunSuunnitelmaYhteenvetoDto> suunnitelmat,
+    @Null(groups = Add.class) Set<@NotNull URI> osaamiset) {}

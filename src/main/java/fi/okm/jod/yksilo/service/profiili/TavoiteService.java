@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
-import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -36,7 +35,6 @@ public class TavoiteService {
   private final YksiloRepository yksilot;
   private final TavoiteRepository tavoitteet;
   private final TyomahdollisuusRepository tyomahdollisuudet;
-  private final KoulutusmahdollisuusRepository koulutusmahdollisuudet;
 
   @Transactional(readOnly = true)
   public List<TavoiteDto> findAll(JodUser user) {
