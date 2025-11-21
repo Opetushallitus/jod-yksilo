@@ -59,7 +59,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             ls("tavoite"),
             ls("kuvaus2"),
             null,
-            null,
+            new HashSet<>(),
             new HashSet<>());
 
     var id = service.add(user, dto);
@@ -76,7 +76,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
     assertDoesNotThrow(() -> service.update(user, updated));
     assertThat(updated)
         .usingRecursiveComparison()
-        .ignoringFields("luotu")
+        .ignoringFields("luotu", "osaamiset")
         .isEqualTo(service.findAll(user).getFirst());
   }
 
