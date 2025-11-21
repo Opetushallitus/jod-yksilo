@@ -14,4 +14,3 @@ ALTER TABLE polun_suunnitelma
   ADD CONSTRAINT fk_ps_tavoite_id
     FOREIGN KEY (tavoite_id)
       REFERENCES tavoite (id);
-ALTER TABLE tavoite DROP COLUMN IF EXISTS tyyppi;
