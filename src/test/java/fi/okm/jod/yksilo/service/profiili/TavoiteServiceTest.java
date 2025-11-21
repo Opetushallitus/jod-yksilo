@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
@@ -39,10 +38,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     assertDoesNotThrow(() -> service.add(user, dto));
@@ -54,10 +53,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus2"),
             null,
             null);
 
@@ -65,10 +64,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var updated =
         new TavoiteDto(
             id,
-            TavoiteTyyppi.PITKA,
             dto.mahdollisuusTyyppi(),
             dto.mahdollisuusId(),
             ls("tavoite2"),
+            ls("kuvaus2"),
             null,
             new HashSet<>());
     assertDoesNotThrow(() -> service.update(user, updated));
@@ -83,10 +82,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
             UUID.randomUUID(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     assertThrows(NotFoundException.class, () -> service.add(user, dto));
@@ -97,10 +96,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     var id = service.add(user, dto);
@@ -113,10 +112,10 @@ class TavoiteServiceTest extends AbstractServiceTest {
     var dto =
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null);
     var id = service.add(user, dto);

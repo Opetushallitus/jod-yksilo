@@ -18,7 +18,6 @@ import fi.okm.jod.yksilo.config.suomifi.Attribute;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.Sukupuoli;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
@@ -43,10 +42,10 @@ class YksiloServiceTest extends AbstractServiceTest {
         user,
         new TavoiteDto(
             null,
-            TavoiteTyyppi.MUU,
             MahdollisuusTyyppi.TYOMAHDOLLISUUS,
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
+            ls("kuvaus"),
             null,
             null));
     simulateCommit();

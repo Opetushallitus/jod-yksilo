@@ -14,8 +14,8 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -28,19 +28,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -59,21 +57,13 @@ public class PolunSuunnitelma {
   @BatchSize(size = 100)
   private Map<Kieli, Kaannos> kaannos;
 
-  @OneToMany(
-      mappedBy = "polunSuunnitelma",
-      fetch = FetchType.LAZY,
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
-  @BatchSize(size = 100)
-  private List<PolunVaihe> vaiheet = new ArrayList<>();
+  @ManyToOne(fetch = FetchType.LAZY)
+  @Setter
+  private Koulutusmahdollisuus koulutusmahdollisuus;
 
   @ManyToMany
   @BatchSize(size = 100)
   private Set<Osaaminen> osaamiset = new HashSet<>();
-
-  @ManyToMany
-  @BatchSize(size = 100)
-  private Set<Osaaminen> ignoredOsaamiset = new HashSet<>();
 
   protected PolunSuunnitelma() {
     // For JPA
@@ -89,17 +79,27 @@ public class PolunSuunnitelma {
     osaamiset.addAll(entities);
   }
 
-  public void setIgnoredOsaamiset(Collection<Osaaminen> entities) {
-    ignoredOsaamiset.clear();
-    ignoredOsaamiset.addAll(entities);
-  }
-
   public LocalizedString getNimi() {
     return LocalizedString.of(kaannos, Kaannos::getNimi);
   }
 
+  public LocalizedString getKuvaus() {
+    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
+  }
+
   public void setNimi(LocalizedString nimi) {
     merge(nimi, kaannos, Kaannos::new, Kaannos::setNimi);
+  }
+
+  public void setKuvaus(LocalizedString kuvaus) {
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
+  }
+
+  public UUID getKoulutusmahdollisuusId() {
+    if (this.getKoulutusmahdollisuus() == null) {
+      return null;
+    }
+    return this.koulutusmahdollisuus.getId();
   }
 
   @Embeddable
@@ -107,6 +107,8 @@ public class PolunSuunnitelma {
   static class Kaannos implements Translation {
     @Basic(optional = false)
     String nimi;
+
+    String kuvaus;
 
     public boolean isEmpty() {
       return nimi == null;

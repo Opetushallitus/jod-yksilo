@@ -10,7 +10,16 @@
 package fi.okm.jod.yksilo.externalapi.v1.dto;
 
 import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 public record ExtTavoiteDto(
-    TavoiteTyyppi tyyppi, UUID tyomahdollisuusId, UUID koulutusmahdollisuusId) {}
+    @Schema(
+            description = "This field is deprecated. Tavoite type is not differentiated anymore",
+            deprecated = true)
+        TavoiteTyyppi tyyppi,
+    UUID tyomahdollisuusId,
+    @Schema(
+            description = "This field is deprecated. Tavoite can only be tyomahdollisuus",
+            deprecated = true)
+        UUID koulutusmahdollisuusId) {}

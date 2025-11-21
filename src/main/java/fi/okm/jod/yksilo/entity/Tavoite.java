@@ -13,12 +13,9 @@ import static fi.okm.jod.yksilo.entity.Translation.merge;
 import static java.util.Collections.emptySet;
 
 import fi.okm.jod.yksilo.domain.Kieli;
-import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.domain.TavoiteTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
-import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,7 +23,6 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -36,7 +32,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -49,6 +44,7 @@ import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Check;
 
@@ -66,14 +62,9 @@ public class Tavoite {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @Enumerated(EnumType.STRING)
-  private TavoiteTyyppi tyyppi;
-
   @ManyToOne(fetch = FetchType.LAZY)
+  @Setter
   private Tyomahdollisuus tyomahdollisuus;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  private Koulutusmahdollisuus koulutusmahdollisuus;
 
   @OneToMany(
       mappedBy = "tavoite",
@@ -95,26 +86,21 @@ public class Tavoite {
 
   public Tavoite(
       Yksilo yksilo,
-      TavoiteTyyppi tyyppi,
       Tyomahdollisuus tyomahdollisuus,
-      LocalizedString tavoite) {
+      LocalizedString tavoite,
+      LocalizedString kuvaus) {
     this.yksilo = yksilo;
     this.tyomahdollisuus = tyomahdollisuus;
-    this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
-  public Tavoite(
-      Yksilo yksilo,
-      TavoiteTyyppi tyyppi,
-      Koulutusmahdollisuus mahdollisuus,
-      LocalizedString tavoite) {
+  public Tavoite(final Yksilo yksilo, final LocalizedString tavoite, final LocalizedString kuvaus) {
     this.yksilo = yksilo;
-    this.koulutusmahdollisuus = mahdollisuus;
-    this.tyyppi = tyyppi;
 
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   public LocalizedString getTavoite() {
@@ -125,8 +111,8 @@ public class Tavoite {
     merge(tavoite, kaannos, Kaannos::new, Kaannos::setTavoite);
   }
 
-  public void setTyyppi(@NotNull TavoiteTyyppi tyyppi) {
-    this.tyyppi = tyyppi;
+  public void setKuvaus(LocalizedString kuvaus) {
+    merge(kuvaus, kaannos, Kaannos::new, Kaannos::setKuvaus);
   }
 
   public MahdollisuusTyyppi getMahdollisuusTyyppi() {
@@ -136,34 +122,26 @@ public class Tavoite {
   }
 
   public UUID getMahdollisuusId() {
-    return tyomahdollisuus != null ? tyomahdollisuus.getId() : koulutusmahdollisuus.getId();
+    if (tyomahdollisuus != null) {
+      return tyomahdollisuus.getId();
+    }
+    return null;
   }
 
   public Set<URI> getOsaamiset() {
-    if (getMahdollisuusTyyppi() == MahdollisuusTyyppi.TYOMAHDOLLISUUS) {
-      var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
-      if (jakauma != null && jakauma.getArvot() != null) {
-        return jakauma.getArvot().stream()
-            .map(Jakauma.Arvo::arvo)
-            .map(URI::create)
-            .collect(Collectors.toUnmodifiableSet());
-      }
-    } else {
-      var jakauma =
-          koulutusmahdollisuus.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN);
-      if (jakauma != null && jakauma.getArvot() != null) {
-        return koulutusmahdollisuus
-            .getJakaumat()
-            .get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN)
-            .getArvot()
-            .stream()
-            .map(Jakauma.Arvo::arvo)
-            .map(URI::create)
-            .collect(Collectors.toUnmodifiableSet());
-      }
+    var jakauma = tyomahdollisuus.getJakaumat().get(TyomahdollisuusJakaumaTyyppi.OSAAMINEN);
+    if (jakauma != null && jakauma.getArvot() != null) {
+      return jakauma.getArvot().stream()
+          .map(Jakauma.Arvo::arvo)
+          .map(URI::create)
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     return emptySet();
+  }
+
+  public LocalizedString getKuvaus() {
+    return LocalizedString.of(kaannos, Kaannos::getKuvaus);
   }
 
   @Embeddable
@@ -172,8 +150,11 @@ public class Tavoite {
     @Column(length = Integer.MAX_VALUE)
     String tavoite;
 
+    @Column(length = Integer.MAX_VALUE)
+    String kuvaus;
+
     public boolean isEmpty() {
-      return tavoite == null;
+      return tavoite == null && kuvaus == null;
     }
   }
 }

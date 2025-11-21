@@ -15,7 +15,6 @@ import fi.okm.jod.yksilo.dto.profiili.export.KoulutusExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.KoulutusKokonaisuusExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PatevyysExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PolunSuunnitelmaExportDto;
-import fi.okm.jod.yksilo.dto.profiili.export.PolunVaiheExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TavoiteExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimenkuvaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimintoExportDto;
@@ -26,7 +25,6 @@ import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
@@ -55,8 +53,7 @@ class ExportMapperTest {
             "mapPatevyys",
             "mapYksilonSuosikki",
             "mapTavoite",
-            "mapPolunSuunnitelma",
-            "mapPolunVaihe");
+            "mapPolunSuunnitelma");
 
     Set<String> actualMethods =
         Set.of(ExportMapper.class.getDeclaredMethods()).stream()
@@ -137,15 +134,9 @@ class ExportMapperTest {
   @Test
   void testPolunSuunnitelmaMappingCompleteness() {
     assertMappingCompleteness(
-        PolunSuunnitelma.class, PolunSuunnitelmaExportDto.class, Set.of("yksilo", "tavoite"));
-  }
-
-  @Test
-  void testPolunVaiheMappingCompleteness() {
-    assertMappingCompleteness(
-        PolunVaihe.class,
-        PolunVaiheExportDto.class,
-        Set.of("polunSuunnitelma", "koulutusmahdollisuus"));
+        PolunSuunnitelma.class,
+        PolunSuunnitelmaExportDto.class,
+        Set.of("yksilo", "tavoite", "koulutusmahdollisuus"));
   }
 
   private void assertMappingCompleteness(

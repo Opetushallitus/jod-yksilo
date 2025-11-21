@@ -17,7 +17,7 @@ import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
-import fi.okm.jod.yksilo.dto.PolunVaiheEhdotusDto;
+import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
@@ -334,11 +334,13 @@ class MahdollisuudetController {
           @Size(max = 1000)
           @Schema(description = "Missing osaamiset that user did not selected that they know.")
           Set<@Valid URI> missingOsaamiset) {
-    var suggestions = mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset);
+    final List<SuunnitelmaEhdotusDto> suggestions =
+        mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset);
+
     return populateEhdotusDtos(suggestions);
   }
 
-  private static List<EhdotusDto> populateEhdotusDtos(List<PolunVaiheEhdotusDto> suggestions) {
+  private static List<EhdotusDto> populateEhdotusDtos(List<SuunnitelmaEhdotusDto> suggestions) {
     return suggestions.stream()
         .map(
             it ->
@@ -348,7 +350,7 @@ class MahdollisuudetController {
                         MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS,
                         null,
                         null,
-                        null,
+                        it.tyyppi(),
                         null,
                         it.pisteet(),
                         null,

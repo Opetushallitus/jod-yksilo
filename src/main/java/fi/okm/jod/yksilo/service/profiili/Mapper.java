@@ -17,33 +17,32 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunVaiheDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
-import fi.okm.jod.yksilo.dto.profiili.TavoiteYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import fi.okm.jod.yksilo.entity.PolunVaihe;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
@@ -90,24 +89,6 @@ public final class Mapper {
             isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
             isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
             entity.getOsasuoritukset());
-  }
-
-  private static Set<URI> extractOsaamisetUris(Koulutus entity) {
-    if (entity.getOsaamiset() == null) {
-      return Collections.emptySet();
-    }
-
-    return entity.getOsaamiset().stream()
-        .map(o -> o.getOsaaminen().getUri())
-        .collect(Collectors.toSet());
-  }
-
-  private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
-    return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
-  }
-
-  private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {
-    return status == null ? null : status == OsaamisenTunnistusStatus.FAIL;
   }
 
   public static ToimintoDto mapToiminto(Toiminto entity) {
@@ -159,17 +140,58 @@ public final class Mapper {
         ? null
         : new TavoiteDto(
             entity.getId(),
-            entity.getTyyppi(),
             entity.getMahdollisuusTyyppi(),
             entity.getMahdollisuusId(),
             entity.getTavoite(),
+            entity.getKuvaus(),
             entity.getLuotu(),
             entity.getSuunnitelmat().stream()
                 .map(
                     polunSuunnitelma ->
                         new PolunSuunnitelmaYhteenvetoDto(
-                            polunSuunnitelma.getId(), polunSuunnitelma.getNimi()))
+                            polunSuunnitelma.getId(),
+                            polunSuunnitelma.getNimi(),
+                            polunSuunnitelma.getKuvaus(),
+                            polunSuunnitelma.getKoulutusmahdollisuusId()))
                 .collect(Collectors.toSet()));
+  }
+
+  public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
+    if (entity == null) {
+      return null;
+    }
+    Set<URI> osaamiset = getOsaamiset(entity);
+    UUID koulutusMahdollisuusId = entity.getKoulutusmahdollisuusId();
+    return new PolunSuunnitelmaDto(
+        entity.getId(), entity.getNimi(), entity.getKuvaus(), koulutusMahdollisuusId, osaamiset);
+  }
+
+  private static Set<URI> getOsaamiset(final PolunSuunnitelma entity) {
+    Koulutusmahdollisuus koulutusmahdollisuus = entity.getKoulutusmahdollisuus();
+    if (koulutusmahdollisuus == null) {
+      return entity.getOsaamiset().stream()
+          .map(Osaaminen::getUri)
+          .collect(Collectors.toUnmodifiableSet());
+    }
+    return koulutusmahdollisuus.getOsaamiset();
+  }
+
+  private static Set<URI> extractOsaamisetUris(Koulutus entity) {
+    if (entity.getOsaamiset() == null) {
+      return Collections.emptySet();
+    }
+
+    return entity.getOsaamiset().stream()
+        .map(o -> o.getOsaaminen().getUri())
+        .collect(Collectors.toSet());
+  }
+
+  private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
+  }
+
+  private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {
+    return status == null ? null : status == OsaamisenTunnistusStatus.FAIL;
   }
 
   private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {
@@ -197,42 +219,5 @@ public final class Mapper {
                     mapOsaaminen.apply(entity.getOsaaminen()),
                     mapOsaamisenLahde(entity)))
         .toList();
-  }
-
-  public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
-    return entity == null
-        ? null
-        : new PolunSuunnitelmaDto(
-            entity.getId(),
-            entity.getNimi(),
-            new TavoiteYhteenvetoDto(entity.getTavoite().getId(), entity.getTavoite().getTavoite()),
-            entity.getVaiheet().stream().map(Mapper::mapPolunVaihe).collect(Collectors.toSet()),
-            entity.getOsaamiset().stream()
-                .map(Osaaminen::getUri)
-                .collect(Collectors.toUnmodifiableSet()),
-            entity.getIgnoredOsaamiset().stream()
-                .map(Osaaminen::getUri)
-                .collect(Collectors.toUnmodifiableSet()));
-  }
-
-  public static PolunVaiheDto mapPolunVaihe(PolunVaihe entity) {
-    return entity == null
-        ? null
-        : new PolunVaiheDto(
-            entity.getId(),
-            entity.getLahde(),
-            entity.getKoulutusmahdollisuus() != null
-                ? entity.getKoulutusmahdollisuus().getId()
-                : null,
-            entity.getTyyppi(),
-            entity.getNimi(),
-            entity.getKuvaus(),
-            entity.getLinkit(),
-            entity.getAlkuPvm(),
-            entity.getLoppuPvm(),
-            entity.getOsaamiset().stream()
-                .map(Osaaminen::getUri)
-                .collect(Collectors.toUnmodifiableSet()),
-            entity.isValmis());
   }
 }

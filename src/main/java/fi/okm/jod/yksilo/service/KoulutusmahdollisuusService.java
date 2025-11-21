@@ -102,6 +102,17 @@ public class KoulutusmahdollisuusService {
         .map(KoulutusmahdollisuusService::map);
   }
 
+  public Page<KoulutusmahdollisuusFullDto> findAllFull(Set<UUID> id, Pageable pageable) {
+    return koulutusmahdollisuudet
+        .findByIdIn(
+            id,
+            PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Koulutusmahdollisuus_.ID)))
+        .map(KoulutusmahdollisuusService::mapFull);
+  }
+
   public List<KoulutusmahdollisuusDto> findByIds(Set<UUID> uuidSet) {
     return koulutusmahdollisuudet.findAllById(uuidSet).stream()
         .map(KoulutusmahdollisuusService::map)

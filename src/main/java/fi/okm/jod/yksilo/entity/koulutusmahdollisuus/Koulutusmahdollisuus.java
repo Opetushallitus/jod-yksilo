@@ -9,10 +9,13 @@
 
 package fi.okm.jod.yksilo.entity.koulutusmahdollisuus;
 
+import static java.util.Collections.emptySet;
+
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.entity.Jakauma;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -26,9 +29,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
@@ -77,6 +82,17 @@ public class Koulutusmahdollisuus {
 
   public LocalizedString getTiivistelma() {
     return LocalizedString.of(kaannos, Kaannos::tiivistelma);
+  }
+
+  public Set<URI> getOsaamiset() {
+    var jakauma = this.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN);
+    if (jakauma != null && jakauma.getArvot() != null) {
+      return jakauma.getArvot().stream()
+          .map(Jakauma.Arvo::arvo)
+          .map(URI::create)
+          .collect(Collectors.toUnmodifiableSet());
+    }
+    return emptySet();
   }
 
   @Embeddable

@@ -7,12 +7,15 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.dto.profiili;
+package fi.okm.jod.yksilo.dto.profiili.suunnitelma;
+
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.validation.FreeText;
 import fi.okm.jod.yksilo.validation.PrintableString;
-import jakarta.validation.constraints.NotEmpty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
@@ -20,8 +23,9 @@ import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 
-public record PolunSuunnitelmaUpdateDto(
-    @Null(groups = Add.class) UUID id,
-    @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
-    Set<@NotNull URI> osaamiset,
-    Set<@NotNull URI> ignoredOsaamiset) {}
+public record PolunSuunnitelmaDto(
+    @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
+    @PrintableString @Size(max = 200) LocalizedString nimi,
+    @FreeText @Size(max = 500) LocalizedString kuvaus,
+    UUID koulutusmahdollisuusId,
+    Set<@NotNull URI> osaamiset) {}

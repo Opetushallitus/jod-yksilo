@@ -11,20 +11,21 @@ package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaDto;
-import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
+import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PolunSuunnitelmaService {
   private final TavoiteRepository tavoiteRepository;
+  private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
   private final OsaaminenRepository osaamisetRepository;
   private final MuuOsaaminenService muuOsaaminenService;
@@ -51,7 +53,6 @@ public class PolunSuunnitelmaService {
         tavoiteRepository
             .findByYksiloIdAndId(user.getId(), tavoiteId)
             .orElseThrow(PolunSuunnitelmaService::notFound);
-
     if (MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS.equals(tavoite.getMahdollisuusTyyppi())) {
       throw new ServiceValidationException("Invalid Tavoite");
     }
@@ -63,7 +64,7 @@ public class PolunSuunnitelmaService {
     return add(tavoite, dto).getId();
   }
 
-  public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaUpdateDto dto) {
+  public void update(JodUser user, UUID tavoiteId, PolunSuunnitelmaDto dto) {
     var suunnitelma =
         suunnitelmaRepository
             .findByTavoiteYksiloIdAndTavoiteIdAndId(user.getId(), tavoiteId, dto.id())
@@ -80,22 +81,34 @@ public class PolunSuunnitelmaService {
   }
 
   private PolunSuunnitelma add(Tavoite tavoite, PolunSuunnitelmaDto dto) {
+
     var entity = new PolunSuunnitelma(tavoite);
     entity.setNimi(dto.nimi());
+    if (dto.koulutusmahdollisuusId() == null) {
+      var entities = getOsaamiset(dto.osaamiset());
+      entity.setOsaamiset(entities);
+      entity.setNimi(dto.nimi());
+      entity.setKuvaus(dto.kuvaus());
+    } else {
+      final Koulutusmahdollisuus koulutusmahdollisuus =
+          this.koulutusmahdollisuusRepository
+              .findById(dto.koulutusmahdollisuusId())
+              .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
+      entity.setKoulutusmahdollisuus(koulutusmahdollisuus);
+      entity.setNimi(koulutusmahdollisuus.getOtsikko());
+      entity.setKuvaus(koulutusmahdollisuus.getKuvaus());
+    }
     entity = suunnitelmaRepository.save(entity);
     return entity;
   }
 
-  private void update(PolunSuunnitelma entity, PolunSuunnitelmaUpdateDto dto) {
+  private void update(PolunSuunnitelma entity, PolunSuunnitelmaDto dto) {
     entity.setNimi(dto.nimi());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
-      var entities = getOsaamiset(entity, dto);
+      var entities = getOsaamiset(dto.osaamiset());
       entity.setOsaamiset(entities);
       muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
-    }
-    if (dto.ignoredOsaamiset() != null) {
-      entity.setIgnoredOsaamiset(getIgnoredOsaamiset(entity, dto));
     }
     suunnitelmaRepository.save(entity);
   }
@@ -104,36 +117,12 @@ public class PolunSuunnitelmaService {
     suunnitelmaRepository.delete(entity);
   }
 
-  private Set<Osaaminen> getOsaamiset(PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
-    var ids = dto.osaamiset();
-    var osaamiset = osaamisetRepository.findByUriIn(dto.osaamiset());
-    var vaiheOsaamiset =
-        suunnitelma.getVaiheet().stream()
-            .flatMap(v -> v.getOsaamiset().stream())
-            .collect(Collectors.toSet());
+  private Set<Osaaminen> getOsaamiset(Set<URI> osaamisUris) {
+    var osaamiset = osaamisetRepository.findByUriIn(osaamisUris);
 
-    if (osaamiset.size() != ids.size()) {
+    if (osaamiset.size() != osaamisUris.size()) {
       throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in tavoite");
-    } else if (osaamiset.stream().anyMatch(vaiheOsaamiset::contains)) {
-      throw new ServiceValidationException("Osaaminen in vaihe");
     }
-
-    return osaamiset;
-  }
-
-  private Set<Osaaminen> getIgnoredOsaamiset(
-      PolunSuunnitelma suunnitelma, PolunSuunnitelmaUpdateDto dto) {
-    var ids = dto.ignoredOsaamiset();
-    var osaamiset = osaamisetRepository.findByUriIn(ids);
-
-    if (osaamiset.size() != ids.size()) {
-      throw new ServiceValidationException("Unknown osaaminen");
-    } else if (!suunnitelma.getTavoite().getOsaamiset().containsAll(ids)) {
-      throw new ServiceValidationException("Osaaminen not in tavoite");
-    }
-
     return osaamiset;
   }
 
