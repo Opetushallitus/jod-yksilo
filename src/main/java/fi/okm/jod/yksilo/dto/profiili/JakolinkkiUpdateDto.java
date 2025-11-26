@@ -36,4 +36,5 @@ public record JakolinkkiUpdateDto(
     Set<UUID> jaetutTyopaikat,
     Set<UUID> jaetutKoulutukset,
     Set<UUID> jaetutToiminnot,
-    Set<SuosikkiTyyppi> jaetutSuosikit) {}
+    Set<SuosikkiTyyppi> jaetutSuosikit,
+    Set<UUID> jaetutTavoitteet) {}

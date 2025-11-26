@@ -24,4 +24,5 @@ public record JakolinkkiContentDto(
     Set<ToimintoDto> toiminnot,
     MuuOsaaminenDto muuOsaaminen,
     Set<SuosikkiDto> suosikit,
-    KiinnostuksetDto kiinnostukset) {}
+    KiinnostuksetDto kiinnostukset,
+    Set<TavoiteDto> tavoitteet) {}
