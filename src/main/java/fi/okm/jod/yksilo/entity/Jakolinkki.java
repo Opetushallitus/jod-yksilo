@@ -74,6 +74,15 @@ public class Jakolinkki {
   @BatchSize(size = MAX_IN_SIZE)
   private Set<Toiminto> toiminnot;
 
+  @ManyToMany
+  @JoinTable(
+      name = "jakolinkki_tavoitteet",
+      schema = "yksilo",
+      joinColumns = @JoinColumn(name = "jakolinkki_id"),
+      inverseJoinColumns = @JoinColumn(name = "tavoite_id"))
+  @BatchSize(size = MAX_IN_SIZE)
+  private Set<Tavoite> tavoitteet;
+
   private boolean tyomahdollisuusSuosikitJaettu;
   private boolean koulutusmahdollisuusSuosikitJaettu;
 }

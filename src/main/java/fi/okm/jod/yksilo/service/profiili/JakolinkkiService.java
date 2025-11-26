@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.dto.profiili.MuuOsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.entity.Jakolinkki;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
+import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
@@ -147,6 +148,8 @@ public class JakolinkkiService {
             .collect(Collectors.toSet());
     var jaetutToiminnotIds =
         jakolinkki.getToiminnot().stream().map(Toiminto::getId).collect(Collectors.toSet());
+    var jaetutTavoitteetIds =
+        jakolinkki.getTavoitteet().stream().map(Tavoite::getId).collect(Collectors.toSet());
 
     log.atInfo()
         .addMarker(LogMarker.AUDIT)
@@ -179,7 +182,11 @@ public class JakolinkkiService {
             yksilo.getSuosikit(),
             jakolinkki.isKoulutusmahdollisuusSuosikitJaettu(),
             jakolinkki.isTyomahdollisuusSuosikitJaettu()),
-        jakolinkki.isKiinnostuksetJaettu() ? mapKiinnostukset(yksilo) : null);
+        jakolinkki.isKiinnostuksetJaettu() ? mapKiinnostukset(yksilo) : null,
+        yksilo.getTavoitteet().stream()
+            .filter(t -> jaetutTavoitteetIds.contains(t.getId()))
+            .map(Mapper::mapTavoite)
+            .collect(Collectors.toSet()));
   }
 
   public void delete(JodUser user, UUID id) {
@@ -220,6 +227,10 @@ public class JakolinkkiService {
         dto.jaetutSuosikit().contains(SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS));
     jakolinkki.setTyomahdollisuusSuosikitJaettu(
         dto.jaetutSuosikit().contains(SuosikkiTyyppi.TYOMAHDOLLISUUS));
+    jakolinkki.setTavoitteet(
+        yksilo.getTavoitteet().stream()
+            .filter(t -> dto.jaetutTavoitteet().contains(t.getId()))
+            .collect(Collectors.toSet()));
     return jakolinkki;
   }
 
@@ -297,6 +308,7 @@ public class JakolinkkiService {
                             && jakolinkki.isKoulutusmahdollisuusSuosikitJaettu())
                         || (st == SuosikkiTyyppi.TYOMAHDOLLISUUS
                             && jakolinkki.isTyomahdollisuusSuosikitJaettu()))
-            .collect(Collectors.toSet()));
+            .collect(Collectors.toSet()),
+        jakolinkki.getTavoitteet().stream().map(Tavoite::getId).collect(Collectors.toSet()));
   }
 }

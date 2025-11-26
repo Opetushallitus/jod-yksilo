@@ -19,6 +19,7 @@ import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.dto.profiili.JakolinkkiContentDto;
 import fi.okm.jod.yksilo.dto.profiili.JakolinkkiUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.entity.*;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
@@ -58,6 +59,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
   @Autowired TyopaikkaRepository tyopaikkaRepository;
   @Autowired KoulutusKokonaisuusRepository koulutusKokonaisuusRepository;
   @Autowired ToimintoRepository toimintoRepository;
+  @Autowired TavoiteRepository tavoiteRepository;
 
   private Instant sixMonthsFromNowEod() {
     return LocalDate.now()
@@ -83,6 +85,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
         Set.of(),
         Set.of(),
         Set.of(),
+        Set.of(),
         Set.of());
   }
 
@@ -104,6 +107,12 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
 
   private void addToiminto(String fiName) {
     toimintoRepository.save(new Toiminto(getYksilo(), ls(Kieli.FI, fiName)));
+  }
+
+  private void addTavoite(String fiName, Tyomahdollisuus tyomahdollisuus) {
+    tavoiteRepository.save(
+        new Tavoite(
+            getYksilo(), tyomahdollisuus, ls(Kieli.FI, fiName), ls(Kieli.FI, fiName + " kuvaus")));
   }
 
   private UUID ulkoinenIdOfSingleLink() {
@@ -551,6 +560,35 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
             URI.create("urn:osaaminen2"),
             URI.create("urn:ammatti1"),
             URI.create("urn:ammatti2"));
+  }
+
+  @Test
+  @Sql("/data/mahdollisuudet-test-data.sql")
+  void shouldShareTavoitteet() {
+    var tyomahdollisuus = tyomahdollisuusRepository.findAll().stream().findFirst().orElseThrow();
+    var yksilo = getYksilo();
+    addTavoite("Tavoite 1", tyomahdollisuus);
+
+    var tavoitteet = tavoiteRepository.findAllByYksilo(yksilo);
+    assertThat(tavoitteet).hasSize(1);
+    simulateCommit();
+    createJakolinkki(
+        defaultDto()
+            .withJaetutTavoitteet(
+                tavoitteet.stream().map(Tavoite::getId).collect(Collectors.toSet())));
+
+    var ulkoinenId = ulkoinenIdOfSingleLink();
+    var content = jakolinkkiService.getContent(ulkoinenId);
+    assertNotNull(content);
+    assertThat(content.tavoitteet()).hasSize(1);
+
+    assertThat(content.tavoitteet())
+        .extracting(t -> t.tavoite().get(Kieli.FI))
+        .containsExactlyInAnyOrder("Tavoite 1");
+
+    assertThat(content.tavoitteet())
+        .extracting(TavoiteDto::mahdollisuusId)
+        .containsExactlyInAnyOrder(tyomahdollisuus.getId());
   }
 
   @Test
