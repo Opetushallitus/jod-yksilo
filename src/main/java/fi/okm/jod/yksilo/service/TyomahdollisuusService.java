@@ -13,6 +13,7 @@ import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.PalkkaDataDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyollisyysDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.entity.Ammattiryhma;
@@ -80,10 +81,12 @@ public class TyomahdollisuusService {
     AmmattiryhmaBasicDto ammattiryhmaBasicDto;
     final Ammattiryhma ammattiryhma = entity.getAmmattiryhma();
     Integer mediaaniPalkka = null;
+    String kohtaanto = null;
     if (ammattiryhma != null) {
       mediaaniPalkka = ammattiryhma.getMediaaniPalkka();
+      kohtaanto = ammattiryhma.getKohtaanto();
     }
-    ammattiryhmaBasicDto = new AmmattiryhmaBasicDto(entity.getAmmattiryhmaUri(), mediaaniPalkka);
+    ammattiryhmaBasicDto = new AmmattiryhmaBasicDto(entity.getAmmattiryhmaUri(), mediaaniPalkka, kohtaanto);
     return ammattiryhmaBasicDto;
   }
 
@@ -101,10 +104,18 @@ public class TyomahdollisuusService {
             entity.getYleisetVaatimukset(),
             entity.getAmmattiryhmaUri(),
             mapPalkkaData(ammattiryhma),
+            mapTyollisyys(ammattiryhma),
             entity.getAineisto(),
             entity.isAktiivinen(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
+  }
+
+  private static TyollisyysDto mapTyollisyys(final Ammattiryhma ammattiryhma) {
+    if (ammattiryhma == null) {
+      return null;
+    }
+    return new TyollisyysDto(ammattiryhma.getKohtaanto());
   }
 
   private static PalkkaDataDto mapPalkkaData(final Ammattiryhma ammattiryhma) {
@@ -116,5 +127,5 @@ public class TyomahdollisuusService {
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
         ammattiryhma.getAlinDesiiliPalkka());
-  }
+  };
 }

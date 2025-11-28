@@ -28,6 +28,7 @@ public record TyomahdollisuusFullDto(
     LocalizedString yleisetVaatimukset,
     URI ammattiryhma,
     PalkkaDataDto palkkatiedot,
+    TyollisyysDto tyollisyysTiedot,
     TyomahdollisuusAineisto aineisto,
     boolean aktiivinen,
     @Schema(
