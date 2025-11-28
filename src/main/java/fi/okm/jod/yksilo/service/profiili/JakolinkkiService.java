@@ -70,8 +70,10 @@ public class JakolinkkiService {
     var jakolinkki = new Jakolinkki();
     jakolinkki.setId(jakolinkkiId);
     jakolinkki.setYksilo(yksilo);
+    mapToJakolinkki(jakolinkki, jakolinkkiDto, yksilo);
+    jakolinkkiRepository.save(jakolinkki);
 
-    jakolinkkiRepository.save(mapToJakolinkki(jakolinkki, jakolinkkiDto, yksilo));
+    logJakolinkkiActionAudit("created", jodUser.getQualifiedPersonId(), jakolinkki);
   }
 
   public void update(JodUser jodUser, JakolinkkiUpdateDto jakolinkkiDto) {
@@ -84,6 +86,12 @@ public class JakolinkkiService {
     var yksilo = yksiloService.getYksilo(jodUser);
 
     if (!jakolinkki.getYksilo().getId().equals(yksilo.getId())) {
+      log.atWarn()
+          .addMarker(LogMarker.AUDIT)
+          .log(
+              "User {} attempted to update jakolinkki {} which does not belong to them",
+              jodUser.getId(),
+              jakolinkkiDto.id());
       throw new NotFoundException(JAKOLINKKI_NOT_FOUND);
     }
 
@@ -95,6 +103,8 @@ public class JakolinkkiService {
         jakolinkkiDto.emailJaettu());
 
     jakolinkkiRepository.save(mapToJakolinkki(jakolinkki, jakolinkkiDto, yksilo));
+
+    logJakolinkkiActionAudit("updated", jodUser.getQualifiedPersonId(), jakolinkki);
   }
 
   @Transactional(readOnly = true)
@@ -111,7 +121,16 @@ public class JakolinkkiService {
     var jakolinkkiSettings =
         jakolinkkiRepository
             .getJakolinkki(jodUser.getQualifiedPersonId(), jakolinkkiId)
-            .orElseThrow(() -> new NotFoundException(JAKOLINKKI_NOT_FOUND));
+            .orElseThrow(
+                () -> {
+                  log.atInfo()
+                      .addMarker(LogMarker.AUDIT)
+                      .log(
+                          "User {} Jakolinkki not found with ulkoinenId {}",
+                          jodUser.getId(),
+                          jakolinkkiId);
+                  return new NotFoundException(JAKOLINKKI_NOT_FOUND);
+                });
 
     var yksilo = yksiloService.getYksilo(jodUser);
 
@@ -124,12 +143,26 @@ public class JakolinkkiService {
     var jakolinkkiDetails =
         jakolinkkiRepository
             .getJakolinkkiByUlkoinenId(ulkoinenJakolinkkiId)
-            .orElseThrow(() -> new NotFoundException(JAKOLINKKI_NOT_FOUND));
+            .orElseThrow(
+                () -> {
+                  log.atInfo()
+                      .addMarker(LogMarker.AUDIT)
+                      .log(
+                          "Invalid jakolinkki access attempt with ulkoinenId {}. Jakolinkki not found or is expired.",
+                          ulkoinenJakolinkkiId);
+                  return new NotFoundException(JAKOLINKKI_NOT_FOUND);
+                });
 
     var jakolinkki =
         jakolinkkiRepository
             .findById(jakolinkkiDetails.getJakolinkkiId())
-            .orElseThrow(() -> new NotFoundException(JAKOLINKKI_NOT_FOUND));
+            .orElseThrow(
+                () -> {
+                  log.atInfo()
+                      .addMarker(LogMarker.AUDIT)
+                      .log("Jakolinkki not found for id {}", jakolinkkiDetails.getJakolinkkiId());
+                  return new NotFoundException(JAKOLINKKI_NOT_FOUND);
+                });
 
     var yksilo = jakolinkki.getYksilo();
 
@@ -194,12 +227,28 @@ public class JakolinkkiService {
     var jakolinkki =
         jakolinkkiRepository
             .findById(id)
-            .orElseThrow(() -> new NotFoundException(JAKOLINKKI_NOT_FOUND));
+            .orElseThrow(
+                () -> {
+                  log.atInfo()
+                      .addMarker(LogMarker.AUDIT)
+                      .log(
+                          "User {} attempted to delete jakolinkki {} which does not exist",
+                          user.getId(),
+                          id);
+                  return new NotFoundException(JAKOLINKKI_NOT_FOUND);
+                });
     if (!jakolinkki.getYksilo().getId().equals(yksilo.getId())) {
+      log.atWarn()
+          .addMarker(LogMarker.AUDIT)
+          .log(
+              "User {} attempted to delete jakolinkki {} which does not belong to them",
+              user.getId(),
+              id);
       throw new NotFoundException(JAKOLINKKI_NOT_FOUND);
     }
     jakolinkkiRepository.deleteById(id);
     jakolinkkiRepository.deleteJakolinkki(user.getQualifiedPersonId(), id);
+    log.atInfo().addMarker(LogMarker.AUDIT).log("User {} deleted jakolinkki {}", user.getId(), id);
   }
 
   private Jakolinkki mapToJakolinkki(
@@ -271,6 +320,34 @@ public class JakolinkkiService {
                         && tyomahdollisuusSuosikitJaettu))
         .map(Mapper::mapYksilonSuosikki)
         .collect(Collectors.toSet());
+  }
+
+  private void logJakolinkkiActionAudit(String action, String userId, Jakolinkki jakolinkki) {
+    var jakolinkkiSettings =
+        jakolinkkiRepository.getJakolinkki(userId, jakolinkki.getId()).orElse(null);
+
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .log(
+            "User {} {} jakolinkki {} (valid until: {}). Shared: nimi={}, email={}, kotikunta={}, syntymavuosi={}, "
+                + "tyopaikat={}, koulutukset={}, toiminnot={}, muuOsaaminen={}, kiinnostukset={}, "
+                + "koulutusmahdollisuusSuosikit={}, tyomahdollisuusSuosikit={}, tavoitteet={}",
+            jakolinkki.getYksilo().getId(),
+            action,
+            jakolinkki.getId(),
+            jakolinkkiSettings != null ? jakolinkkiSettings.getVoimassaAsti() : null,
+            jakolinkkiSettings != null && jakolinkkiSettings.getNimiJaettu(),
+            jakolinkkiSettings != null && jakolinkkiSettings.getEmailJaettu(),
+            jakolinkki.isKotikuntaJaettu(),
+            jakolinkki.isSyntymavuosiJaettu(),
+            jakolinkki.getTyopaikat().size(),
+            jakolinkki.getKoulutukset().size(),
+            jakolinkki.getToiminnot().size(),
+            jakolinkki.isMuuOsaaminenJaettu(),
+            jakolinkki.isKiinnostuksetJaettu(),
+            jakolinkki.isKoulutusmahdollisuusSuosikitJaettu(),
+            jakolinkki.isTyomahdollisuusSuosikitJaettu(),
+            jakolinkki.getTavoitteet().size());
   }
 
   private JakolinkkiUpdateDto mapToJakolinkkiUpdateDto(
