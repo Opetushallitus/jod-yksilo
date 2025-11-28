@@ -86,7 +86,8 @@ public class TyomahdollisuusService {
       mediaaniPalkka = ammattiryhma.getMediaaniPalkka();
       kohtaanto = ammattiryhma.getKohtaanto();
     }
-    ammattiryhmaBasicDto = new AmmattiryhmaBasicDto(entity.getAmmattiryhmaUri(), mediaaniPalkka, kohtaanto);
+    ammattiryhmaBasicDto =
+        new AmmattiryhmaBasicDto(entity.getAmmattiryhmaUri(), mediaaniPalkka, kohtaanto);
     return ammattiryhmaBasicDto;
   }
 
@@ -127,5 +128,5 @@ public class TyomahdollisuusService {
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
         ammattiryhma.getAlinDesiiliPalkka());
-  };
+  }
 }
