@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,7 +48,8 @@ class YksiloServiceTest extends AbstractServiceTest {
             ls("tavoite"),
             ls("kuvaus"),
             null,
-            null));
+            emptySet(),
+            emptySet()));
     simulateCommit();
     assertDoesNotThrow(() -> service.delete(user));
     assertEquals(0, tavoiteService.findAll(user).size());

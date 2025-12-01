@@ -43,7 +43,8 @@ class TavoiteServiceTest extends AbstractServiceTest {
             ls("tavoite"),
             ls("kuvaus"),
             null,
-            null);
+            null,
+            new HashSet<>());
     assertDoesNotThrow(() -> service.add(user, dto));
     assertEquals(1, service.findAll(user).size());
   }
@@ -58,7 +59,8 @@ class TavoiteServiceTest extends AbstractServiceTest {
             ls("tavoite"),
             ls("kuvaus2"),
             null,
-            null);
+            new HashSet<>(),
+            new HashSet<>());
 
     var id = service.add(user, dto);
     var updated =
@@ -69,11 +71,12 @@ class TavoiteServiceTest extends AbstractServiceTest {
             ls("tavoite2"),
             ls("kuvaus2"),
             null,
+            new HashSet<>(),
             new HashSet<>());
     assertDoesNotThrow(() -> service.update(user, updated));
     assertThat(updated)
         .usingRecursiveComparison()
-        .ignoringFields("luotu")
+        .ignoringFields("luotu", "osaamiset")
         .isEqualTo(service.findAll(user).getFirst());
   }
 
@@ -86,6 +89,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             UUID.randomUUID(),
             ls("tavoite"),
             ls("kuvaus"),
+            null,
             null,
             null);
     assertThrows(NotFoundException.class, () -> service.add(user, dto));
@@ -100,6 +104,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             ls("kuvaus"),
+            null,
             null,
             null);
     var id = service.add(user, dto);
@@ -116,6 +121,7 @@ class TavoiteServiceTest extends AbstractServiceTest {
             tyomahdollisuudet.findAll().getFirst().getId(),
             ls("tavoite"),
             ls("kuvaus"),
+            null,
             null,
             null);
     var id = service.add(user, dto);

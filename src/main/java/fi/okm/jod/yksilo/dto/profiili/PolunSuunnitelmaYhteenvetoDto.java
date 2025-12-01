@@ -18,10 +18,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
+import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 
 public record PolunSuunnitelmaYhteenvetoDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString kuvaus,
-    UUID koulutusmahdollisuusId) {}
+    UUID koulutusmahdollisuusId,
+    @Null(groups = Add.class) Set<URI> osaamiset) {}

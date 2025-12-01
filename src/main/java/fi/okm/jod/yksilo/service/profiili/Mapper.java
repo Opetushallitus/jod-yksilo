@@ -154,18 +154,10 @@ public final class Mapper {
                             polunSuunnitelma.getId(),
                             polunSuunnitelma.getNimi(),
                             polunSuunnitelma.getKuvaus(),
-                            polunSuunnitelma.getKoulutusmahdollisuusId()))
-                .collect(Collectors.toSet()));
-  }
-
-  public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
-    if (entity == null) {
-      return null;
-    }
-    Set<URI> osaamiset = getOsaamiset(entity);
-    UUID koulutusMahdollisuusId = entity.getKoulutusmahdollisuusId();
-    return new PolunSuunnitelmaDto(
-        entity.getId(), entity.getNimi(), entity.getKuvaus(), koulutusMahdollisuusId, osaamiset);
+                            polunSuunnitelma.getKoulutusmahdollisuusId(),
+                            getOsaamiset(polunSuunnitelma)))
+                .collect(Collectors.toSet()),
+            entity.getOsaamiset());
   }
 
   private static Set<URI> getOsaamiset(final PolunSuunnitelma entity) {
@@ -190,6 +182,16 @@ public final class Mapper {
 
   private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
     return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
+  }
+
+  public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
+    if (entity == null) {
+      return null;
+    }
+    Set<URI> osaamiset = getOsaamiset(entity);
+    UUID koulutusMahdollisuusId = entity.getKoulutusmahdollisuusId();
+    return new PolunSuunnitelmaDto(
+        entity.getId(), entity.getNimi(), entity.getKuvaus(), koulutusMahdollisuusId, osaamiset);
   }
 
   private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {

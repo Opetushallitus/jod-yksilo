@@ -118,6 +118,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
             tavoite,
             tavoite,
             null,
-            null));
+            null,
+            emptySet()));
   }
 }
