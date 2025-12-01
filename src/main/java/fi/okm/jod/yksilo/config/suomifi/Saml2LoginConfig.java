@@ -9,6 +9,7 @@
 
 package fi.okm.jod.yksilo.config.suomifi;
 
+import static fi.okm.jod.yksilo.config.SessionLoginAttribute.LANG;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -232,7 +233,14 @@ public class Saml2LoginConfig {
           // Suomi.fi tunnistus requires that the nameId format is set to transient
           logoutRequest.getNameID().setFormat(NameIDType.TRANSIENT);
           resolveKieli(parameters.getRequest())
-              .ifPresent(kieli -> logoutRequest.setExtensions(vetumaExtensionBuilder.build(kieli)));
+              .ifPresent(
+                  kieli -> {
+                    parameters
+                        .getRequest()
+                        .getSession()
+                        .setAttribute(LANG.getKey(), kieli.toString());
+                    logoutRequest.setExtensions(vetumaExtensionBuilder.build(kieli));
+                  });
         });
     return resolver;
   }
@@ -248,7 +256,14 @@ public class Saml2LoginConfig {
             default -> Kieli.EN;
           });
     }
-    return Optional.empty();
+
+    return Optional.ofNullable(
+        switch (req.getParameter("lang")) {
+          case null -> null;
+          case "fi" -> Kieli.FI;
+          case "sv" -> Kieli.SV;
+          default -> Kieli.EN;
+        });
   }
 
   static class AuthenticationEventHandler
@@ -263,6 +278,9 @@ public class Saml2LoginConfig {
     void handle(
         HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
         throws IOException {
+
+      var path = resolveKieli(request).map(k -> "/" + k).orElse("/");
+
       if (request.getSession(false) instanceof HttpSession s
           && SecurityContextHolder.getContext().getAuthentication() == null) {
         // clear the temporary session used for SAML logout
@@ -275,7 +293,7 @@ public class Saml2LoginConfig {
             .addMarker(LogMarker.AUDIT)
             .log("Authentication failure: {}", exception.getMessage());
       }
-      redirectStrategy.sendRedirect(request, response, "/" + queryParam);
+      redirectStrategy.sendRedirect(request, response, path + queryParam);
     }
 
     @Override
