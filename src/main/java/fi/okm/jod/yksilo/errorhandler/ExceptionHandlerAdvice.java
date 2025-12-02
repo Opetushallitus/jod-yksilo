@@ -31,11 +31,13 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -121,16 +123,6 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.CONFLICT, request);
   }
 
-  @ExceptionHandler(ConstraintViolationException.class)
-  protected ResponseEntity<Object> handleServiceException(
-      ConstraintViolationException ex, WebRequest request) {
-    var info =
-        errorInfo.of(
-            ErrorCode.VALIDATION_FAILURE,
-            ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList());
-    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-  }
-
   @ExceptionHandler(ServiceException.class)
   protected ResponseEntity<Object> handleServiceException(ServiceException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.SERVICE_ERROR, List.of(ex.getMessage()));
@@ -138,22 +130,8 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
         ex, info, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  protected ResponseEntity<Object> handleServiceException(
-      IllegalArgumentException ex, WebRequest request) {
-    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
-    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-  }
-
-  @ExceptionHandler(DataIntegrityViolationException.class)
-  protected ResponseEntity<Object> handleServiceException(
-      DataIntegrityViolationException ex, WebRequest request) {
-    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
-    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-  }
-
   @ExceptionHandler(PermissionRequiredException.class)
-  protected ResponseEntity<Object> handleException(
+  protected ResponseEntity<Object> handleServiceException(
       PermissionRequiredException e, WebRequest request) {
     var info = errorInfo.of(ErrorCode.PERMISSION_REQUIRED, List.of(e.getMessage()));
     return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
@@ -190,14 +168,49 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
         e, info, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
   }
 
+  @ExceptionHandler(ConstraintViolationException.class)
+  protected ResponseEntity<Object> handleException(
+      ConstraintViolationException ex, WebRequest request) {
+    var info =
+        errorInfo.of(
+            ErrorCode.VALIDATION_FAILURE,
+            ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList());
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  protected ResponseEntity<Object> handleException(
+      IllegalArgumentException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  protected ResponseEntity<Object> handleException(
+      DataIntegrityViolationException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.INVALID_REQUEST, List.of());
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
+  @ExceptionHandler(ClientAuthorizationRequiredException.class)
+  protected ResponseEntity<Object> handleException(
+      ClientAuthorizationRequiredException e, WebRequest request) {
+    var info =
+        errorInfo.of(
+            ErrorCode.AUTHORIZATION_REQUIRED, List.of("Additional authorization required."));
+    return handleExceptionInternal(e, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+  }
+
   @Override
   protected ResponseEntity<Object> handleExceptionInternal(
       Exception ex, Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 
     if (status.is5xxServerError()) {
-      log.error("Request failed", ex);
+      log.atError().addKeyValue("requestUri", getRequestUri(request)).log("Request failed", ex);
     } else if (!status.isSameCodeAs(HttpStatus.NOT_FOUND)) {
-      log.warn("Request failed: {}", ex.getMessage());
+      log.atWarn()
+          .addKeyValue("requestUri", getRequestUri(request))
+          .log("Request failed: {}", ex.getMessage());
     }
 
     ErrorInfo info;
@@ -208,5 +221,12 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     }
 
     return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(info);
+  }
+
+  private String getRequestUri(WebRequest request) {
+    if (request instanceof ServletWebRequest webRequest) {
+      return webRequest.getRequest().getRequestURI();
+    }
+    return null;
   }
 }

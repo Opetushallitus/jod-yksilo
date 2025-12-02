@@ -19,7 +19,8 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternal;
+import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalGet;
+import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalPut;
 import jakarta.validation.Valid;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
@@ -38,6 +39,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -49,9 +51,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @Slf4j
 public class Application {
+
+  public static final String BEARER_PREFIX = "Bearer ";
   private final ObjectMapper objectMapper;
   private final Set<String> issuedTokens = ConcurrentHashMap.newKeySet();
+  private final Set<UUID> issuedCodes = ConcurrentHashMap.newKeySet();
   private final JWSSigner signer;
+
+  @SuppressWarnings("java:S3077")
+  private volatile FullProfileDtoExternalGet profile;
 
   public static void main(String[] args) {
     log.info("Starting TMT Mock API");
@@ -69,50 +77,82 @@ public class Application {
   }
 
   @GetMapping("/authorize")
-  ResponseEntity<Void> authorize(@RequestParam(value = "redirectUrl") String redirectUri)
-      throws JOSEException {
+  ResponseEntity<Void> authorize(
+      @RequestParam("redirect_uri") String redirectUri, @RequestParam("state") String state) {
+    log.info("Received authorization request, redirect {}", redirectUri);
+    var code = UUID.randomUUID();
+    log.info("Issuing authorization code: {}", code);
+    issuedCodes.add(code);
+
+    var redirectUriWithParams =
+        UriComponentsBuilder.fromUriString(redirectUri)
+            .queryParam("code", code)
+            .queryParam("state", state)
+            .build()
+            .toUri();
+    return ResponseEntity.status(HttpStatus.FOUND).location(redirectUriWithParams).build();
+  }
+
+  @SuppressWarnings("checkstyle:RecordComponentName")
+  record Token(String access_token, String token_type, long expires_in) {}
+
+  @PostMapping("/v1/request-token")
+  ResponseEntity<Token> requestToken(@RequestParam("code") UUID code) throws JOSEException {
+
+    if (!issuedCodes.remove(code)) {
+      throw new IllegalArgumentException("Unknown authorization code" + code);
+    }
 
     final String id = UUID.randomUUID().toString();
-    log.info("Creating authorization token with id: {}, redirect {}", id, redirectUri);
+    log.info("Creating authorization token with id: {}, code {}", id, code);
 
+    var exp = Date.from(Instant.now().plusSeconds(3600));
     var claims =
         new JWTClaimsSet.Builder()
             .jwtID(id)
             .issuer("issuer")
             .issueTime(new Date())
-            .expirationTime(Date.from(Instant.now().plusSeconds(3600)))
+            .expirationTime(exp)
             .build();
 
     // Create the signed JWT
-    SignedJWT signedJWT = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.ES256).build(), claims);
-    signedJWT.sign(signer);
+    SignedJWT signedJwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.ES256).build(), claims);
+    signedJwt.sign(signer);
 
-    var token = signedJWT.serialize();
+    var token = signedJwt.serialize();
     issuedTokens.add(token);
 
-    var redirectUriWithToken =
-        UriComponentsBuilder.fromUriString(redirectUri)
-            .scheme("http")
-            .queryParam("token", token)
-            .build()
-            .toUri();
-    return ResponseEntity.status(HttpStatus.FOUND).location(redirectUriWithToken).build();
+    return ResponseEntity.ok(new Token(token, "bearer", exp.getTime()));
   }
 
   @PutMapping("/v1/profile")
-  void updateProfile(
+  void importProfile(
       @RequestHeader("Authorization") String auth,
-      @RequestBody @Valid FullProfileDtoExternal profileDto)
+      @RequestBody @Valid FullProfileDtoExternalPut profileDto)
       throws JsonProcessingException {
-    if (!auth.startsWith("Bearer ")) {
+    if (!auth.startsWith(BEARER_PREFIX)) {
       throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
     }
-    String token = auth.substring("Bearer ".length());
+    String token = auth.substring(BEARER_PREFIX.length());
     if (!issuedTokens.remove(token)) {
       throw new IllegalArgumentException("Invalid or expired token");
     }
     log.info(
         "Updating profile: {}",
         objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profileDto));
+
+    profile = objectMapper.convertValue(profileDto, FullProfileDtoExternalGet.class);
+  }
+
+  @GetMapping("/v1/profile")
+  FullProfileDtoExternalGet exportProfile(@RequestHeader("Authorization") String auth) {
+    if (!auth.startsWith(BEARER_PREFIX)) {
+      throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
+    }
+    String token = auth.substring(BEARER_PREFIX.length());
+    if (!issuedTokens.remove(token)) {
+      throw new IllegalArgumentException("Invalid or expired token");
+    }
+    return profile;
   }
 }

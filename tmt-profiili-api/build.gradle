@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 plugins {
   id 'java-library'
   id "org.openapi.generator" version "7.17.0"
@@ -18,7 +20,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
 }
 
-openApiGenerate {
+tasks.register("openApiGenerateP51", GenerateTask) {
   globalProperties = [
       modelDocs : "false",
       apis      : "false",
@@ -26,7 +28,7 @@ openApiGenerate {
       modelTests: "false",
   ]
   generatorName = "java"
-  inputSpec = "${projectDir.toString().replace("\\", "/")}/src/openapi/openapi-profile-external.yaml"
+  inputSpec = "${projectDir.toString().replace("\\", "/")}/src/openapi/P51-tmt-profile-tuonti-V1.yaml"
   outputDir = "${projectDir}/build/generated/sources/openapi"
   configOptions = [
       "dateLibrary"            : "java8",
@@ -36,5 +38,26 @@ openApiGenerate {
       "hideGenerationTimestamp": "true",
   ]
 }
+
+tasks.register("openApiGenerateP60", GenerateTask) {
+  globalProperties = [
+      modelDocs : "false",
+      apis      : "false",
+      models    : "",
+      modelTests: "false",
+  ]
+  generatorName = "java"
+  inputSpec = "${projectDir.toString().replace("\\", "/")}/src/openapi/P60-tmt-profile-haku-V1.yaml"
+  outputDir = "${projectDir}/build/generated/sources/openapi"
+  configOptions = [
+      "dateLibrary"            : "java8",
+      "library"                : "restclient",
+      "modelPackage"           : "fi.okm.jod.yksilo.external.tmt.model",
+      "useJakartaEe"           : "true",
+      "hideGenerationTimestamp": "true",
+  ]
+}
+
 sourceSets.main.java.srcDirs += ["${projectDir}/build/generated/sources/openapi/src/main/java"]
-compileJava.dependsOn tasks.openApiGenerate
+compileJava.dependsOn tasks.openApiGenerateP51
+compileJava.dependsOn tasks.openApiGenerateP60

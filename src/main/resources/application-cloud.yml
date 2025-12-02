@@ -3,6 +3,7 @@ spring:
     import:
       - classpath:/saml2-suomifi.yml
       - classpath:/oauth2-koski.yml
+      - classpath:/oauth2-tmt.yml
       - aws-parameterstore:/jod/config/
       # the secret arns need to be provided statically (e.g. as env variable),
       # the dot at the end of the prefix is intentional

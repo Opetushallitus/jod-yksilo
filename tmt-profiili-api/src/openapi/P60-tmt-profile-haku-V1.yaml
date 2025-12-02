@@ -1,0 +1,490 @@
+components:
+  schemas:
+    BusinessActivityDto_ExternalGet:
+      description: 'FI: yritystoiminta - EN: business activity'
+      properties:
+        businessId:
+          description: 'FI: yritystunnus - EN: business id'
+          maxLength: 10
+          type: string
+        businessType:
+          description: 'FI: yritystyyppi, koodisto TYÖNHAKUPROFIILI_TYÖN_TYYPPI -
+            EN: business type, codeset TYÖNHAKUPROFIILI_TYÖN_TYYPPI'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_TY%C3%96N_TYYPPI/koodit
+          maxLength: 2
+          type: string
+        description:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        interval:
+          $ref: '#/components/schemas/IntervalItem_ExternalGet'
+        name:
+          additionalProperties: false
+          description: 'FI: nimi - EN: name'
+          type: object
+        title:
+          additionalProperties: false
+          description: 'FI: otsikko - EN: title'
+          type: object
+      type: object
+    CertificationDto_ExternalGet:
+      description: 'FI: sertifikaatti - EN: certification'
+      properties:
+        cardCodes:
+          description: 'FI: kortit ja luvat - EN: cards and permissions, codeset:
+            TYÖNHAKUPROFIILI_LUPA_KORTTI'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_LUPA_KORTTI/koodit
+          items:
+            description: 'FI: kortit ja luvat - EN: cards and permissions, codeset:
+              TYÖNHAKUPROFIILI_LUPA_KORTTI'
+            externalDocs:
+              url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_LUPA_KORTTI/koodit
+            maxLength: 3
+            minLength: 3
+            type: string
+          maxItems: 120
+          minItems: 0
+          type: array
+        description:
+          additionalProperties: false
+          description: 'FI: kuvaus - EN: description'
+          maxLength: 3
+          type: object
+      type: object
+    DescriptionItem_ExternalGet:
+      description: 'FI: kuvaus - EN: description'
+      properties:
+        description:
+          additionalProperties: false
+          description: 'FI: kuvaus - EN: description'
+          type: object
+        occupations:
+          description: 'FI: esco ammatit - EN: esco occupations'
+          externalDocs:
+            url: https://esco.ec.europa.eu/fi/classification/occupation_main
+          items:
+            $ref: '#/components/schemas/EscoValue_ExternalGet'
+          maxItems: 120
+          maxLength: 120
+          minItems: 0
+          type: array
+        skills:
+          description: 'FI: esco osaamiset - EN: esco skills'
+          externalDocs:
+            url: https://esco.ec.europa.eu/fi/classification/skill_main
+          items:
+            $ref: '#/components/schemas/EscoValue_ExternalGet'
+          maxItems: 120
+          maxLength: 120
+          minItems: 0
+          type: array
+      type: object
+    DrivingLicenseDto_ExternalGet:
+      description: 'FI: ajokortti - EN: driving license'
+      properties:
+        description:
+          additionalProperties: false
+          description: 'FI: kuvaus - EN: description'
+          maxLength: 3
+          type: object
+        licenseClasses:
+          description: 'FI: ajokorttiluokat - EN: driving license classes, codeset:
+            AJOKORTTILUOKKA'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/AJOKORTTILUOKKA/koodit
+          items:
+            description: 'FI: ajokorttiluokat - EN: driving license classes, codeset:
+              AJOKORTTILUOKKA'
+            externalDocs:
+              url: https://tyomarkkinatori.fi/api/codes/v1/kopa/AJOKORTTILUOKKA/koodit
+            maxLength: 5
+            minLength: 1
+            type: string
+          maxItems: 120
+          minItems: 0
+          type: array
+        ownCarAvailable:
+          description: 'FI: oman auton käyttömahdollisuus - EN: possibility to use
+            your own car'
+          type: boolean
+      type: object
+    EducationDto_ExternalGet:
+      description: 'FI: koulutus - EN: education'
+      properties:
+        customDegreeName:
+          additionalProperties: false
+          description: 'FI: tutkinnon nimi - EN: custom name of the degree'
+          type: object
+        degreeCode:
+          description: 'FI: koulutuksen tunnite - EN: degree code, codeset: TYÖNHAKUPROFIILI_KOULUTUS'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_KOULUTUS/koodit
+          maxLength: 6
+          minLength: 1
+          type: string
+        degreeInstitution:
+          additionalProperties: false
+          description: 'FI: oppilaitos tai koulutuksen järjestäjä - EN: degree institution'
+          maxLength: 3
+          type: object
+        description:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        interval:
+          $ref: '#/components/schemas/EducationIntervalItem_ExternalGet'
+      type: object
+    EducationIntervalItem_ExternalGet:
+      description: 'FI: aikaväli - EN: interval'
+      properties:
+        abortedDate:
+          description: 'FI: keskeytyspäivä - EN: aborted date'
+          format: date
+          maxLength: 10
+          type: string
+        endDate:
+          description: 'FI: loppupäivä - EN: end date'
+          format: date
+          maxLength: 10
+          type: string
+        startDate:
+          description: 'FI: aloituspäivä - EN: start date'
+          format: date
+          maxLength: 10
+          type: string
+        statusCode:
+          description: 'FI: koulutuksen tila - EN: status code, codeset: TYÖNHAKUPROFIILI_KOULUTUS_TILA'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_KOULUTUS_TILA/koodit
+          maxLength: 1
+          minLength: 1
+          type: string
+      type: object
+    EmploymentDto_ExternalGet:
+      description: 'FI: työkokemus - EN: employment experience'
+      properties:
+        description:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        employer:
+          additionalProperties: false
+          description: 'FI: työnantajan tai yrityksen nimi - EN: name of employer'
+          maxLength: 3
+          type: object
+        employerNameHidden:
+          description: 'FI: piilota työnantajan nimi julkaistussa profiilissa - EN:
+            hide employer name in published profile'
+          type: boolean
+        interval:
+          $ref: '#/components/schemas/IntervalItem_ExternalGet'
+        title:
+          additionalProperties: false
+          description: 'FI: otsikko - EN: title'
+          maxLength: 3
+          type: object
+      type: object
+    EscoValue_ExternalGet:
+      description: 'FI: esco osaamiset - EN: esco skills'
+      externalDocs:
+        url: https://esco.ec.europa.eu/fi/classification/skill_main
+      maxLength: 120
+      properties:
+        altLabel:
+          additionalProperties: false
+          description: alt labels
+          type: object
+        prefLabel:
+          additionalProperties: false
+          description: pref labels
+          type: object
+        uri:
+          maxLength: 254
+          minLength: 0
+          type: string
+      type: object
+    ExternalLinkDto_ExternalGet:
+      description: 'FI: ulkoinen linkki - EN: external link'
+      properties:
+        label:
+          additionalProperties: false
+          description: 'FI: ulkoinen tunniste - EN: external label'
+          type: object
+        url:
+          description: url
+          maxLength: 254
+          minLength: 0
+          pattern: ^(http|HTTP)[sS]?://[^/.\s]+\.[^\s]+$
+          type: string
+      type: object
+    FullProfileDto_ExternalGet:
+      properties:
+        businessActivities:
+          items:
+            $ref: '#/components/schemas/BusinessActivityDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+        certifications:
+          $ref: '#/components/schemas/CertificationDto_ExternalGet'
+        drivingLicenses:
+          $ref: '#/components/schemas/DrivingLicenseDto_ExternalGet'
+        educations:
+          items:
+            $ref: '#/components/schemas/EducationDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+        employments:
+          items:
+            $ref: '#/components/schemas/EmploymentDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+        experienceDescription:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        externalLinks:
+          items:
+            $ref: '#/components/schemas/ExternalLinkDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+        generalInfo:
+          $ref: '#/components/schemas/ProfileDto_ExternalGet'
+        jobPreferenceDescription:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        languageSkills:
+          items:
+            $ref: '#/components/schemas/LanguageSkillDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+        projects:
+          items:
+            $ref: '#/components/schemas/ProjectDto_ExternalGet'
+          maxItems: 20
+          minItems: 0
+          type: array
+      type: object
+    IntervalItem_ExternalGet:
+      description: 'FI: aikaväli - EN: interval'
+      properties:
+        endDate:
+          description: 'FI: loppupäivä - EN: end date'
+          format: date
+          maxLength: 10
+          pattern: yyyy-MM-dd
+          type: string
+        ongoing:
+          description: 'FI: jatkuu, jos tosi, loppupäivän pitää olla null - EN: ongoing,
+            if true, end date must be null'
+          type: boolean
+        startDate:
+          description: 'FI: aloituspäivä, menneisyydessä - EN: start date, must be
+            in the past'
+          format: date
+          maxLength: 10
+          pattern: yyyy-MM-dd
+          type: string
+      type: object
+    LanguageSkillDto_ExternalGet:
+      description: 'FI: kielitaito - EN: language skill'
+      properties:
+        code:
+          description: 'FI: kielikoodi - EN: language code, codeset: KIELI'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/KIELI/koodit
+          maxLength: 3
+          type: string
+        description:
+          additionalProperties: false
+          description: 'FI: kuvaus - EN: description'
+          type: object
+        level:
+          description: 'FI: kielitaidon taso - EN: language skill level, codeset:
+            TYÖNHAKUPROFIILI_KIELITAIDON_TASO'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96NHAKUPROFIILI_KIELITAIDON_TASO/koodit
+          maxLength: 2
+          type: string
+      type: object
+    ProfileDtoMeta_ExternalGet:
+      description: 'FI: profiilin metadata - EN: profile metadata'
+      properties:
+        created:
+          description: created date
+          format: date-time
+          maxLength: 26
+          type: string
+        lastModified:
+          description: last modified date
+          format: date-time
+          maxLength: 26
+          type: string
+      readOnly: true
+      type: object
+    ProfileDto_ExternalGet:
+      properties:
+        caption:
+          additionalProperties: false
+          description: 'FI: otsikko, EN: caption'
+          type: object
+        description:
+          additionalProperties: false
+          description: 'FI: kuvaus, EN: description'
+          type: object
+        meta:
+          $ref: '#/components/schemas/ProfileDtoMeta_ExternalGet'
+        personAvailability:
+          description: 'FI: työn aloitus, koodisto: TYÖN_ALOITUS - EN: availability,
+            codeset: TYÖN_ALOITUS'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/TY%C3%96N_ALOITUS/koodit
+          maxLength: 2
+          type: string
+        personAvailabilityText:
+          additionalProperties: false
+          description: 'FI: työn aloitus vapaateksti - EN: availability freetext'
+          type: object
+        preferredCountries:
+          description: 'FI: työnhakualue, maat, koodisto: MAA - EN: preferred countries,
+            codeset: MAA'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/MAA/koodit
+          items:
+            description: 'FI: työnhakualue, maat, koodisto: MAA - EN: preferred countries,
+              codeset: MAA'
+            externalDocs:
+              url: https://tyomarkkinatori.fi/api/codes/v1/kopa/MAA/koodit
+            maxLength: 3
+            minLength: 2
+            type: string
+          maxItems: 120
+          maxLength: 120
+          minItems: 0
+          type: array
+        preferredMunicipalities:
+          description: 'FI: työnhakualue, kunnat, koodisto KUNTA - EN:preferred municipalities
+            (Finland), codeset: KUNTA'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/KUNTA/koodit
+          items:
+            description: 'FI: työnhakualue, kunnat, koodisto KUNTA - EN:preferred
+              municipalities (Finland), codeset: KUNTA'
+            externalDocs:
+              url: https://tyomarkkinatori.fi/api/codes/v1/kopa/KUNTA/koodit
+            maxLength: 3
+            minLength: 3
+            type: string
+          maxItems: 120
+          maxLength: 120
+          minItems: 0
+          type: array
+        preferredRegions:
+          description: 'FI: työnhakualue, maakunnat, koodisto MAAKUNTA - EN: preferred
+            regions (Finland), codeset: MAAKUNTA'
+          externalDocs:
+            url: https://tyomarkkinatori.fi/api/codes/v1/kopa/MAAKUNTA/koodit
+          items:
+            description: 'FI: työnhakualue, maakunnat, koodisto MAAKUNTA - EN: preferred
+              regions (Finland), codeset: MAAKUNTA'
+            externalDocs:
+              url: https://tyomarkkinatori.fi/api/codes/v1/kopa/MAAKUNTA/koodit
+            maxLength: 2
+            minLength: 2
+            type: string
+          maxItems: 120
+          maxLength: 120
+          minItems: 0
+          type: array
+        startDate:
+          description: 'FI: aloituspäivä - EN: availability start date'
+          format: date
+          maxLength: 10
+          type: string
+        willingToTravel:
+          description: 'FI: valmis matkustamaan työssä - EN: willingness to travel'
+          type: boolean
+        willingToWorkRemotely:
+          description: 'FI: etätyöhalukkuus - EN: willingness to work remotely'
+          type: boolean
+      type: object
+    ProjectDto_ExternalGet:
+      description: 'FI: muu kokemus - EN: other project'
+      properties:
+        description:
+          $ref: '#/components/schemas/DescriptionItem_ExternalGet'
+        interval:
+          $ref: '#/components/schemas/IntervalItem_ExternalGet'
+        title:
+          additionalProperties: false
+          description: 'FI: otsikko - EN: title'
+          type: object
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      description: supports RFC8725
+      scheme: bearer
+      type: http
+info:
+  contact:
+    name: KEHA-keskus
+    url: https://www.keha-keskus.fi/
+  description: Profile Service that will expose rest endpoints to store and query
+    information of profiles
+  title: TMT Profile Service
+  version: v1
+openapi: 3.0.1
+paths:
+  /v1/profile:
+    get:
+      description: get profile information
+      operationId: getProfile
+      parameters:
+      - in: header
+        name: Authorization
+        required: true
+        schema:
+          maxLength: 5000
+          minLength: 0
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullProfileDto_ExternalGet'
+          description: Successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                maxLength: 5000
+              style: simple
+            RateLimit-Limit:
+              schema:
+                maxLength: 5
+              style: simple
+            RateLimit-Remaining:
+              schema:
+                maxLength: 5
+              style: simple
+            RateLimit-Reset:
+              schema:
+                maxLength: 5
+              style: simple
+      tags:
+      - external-manage
+servers:
+- description: Local development environment
+  url: https://localhost:8540
+  x-internal: true
+- description: Through a Kubernetes service in azure (test, production, etc)
+  url: https://tmt-profile-service.hakupalvelu
+  x-internal: true
+tags:
+- name: external-manage
+- name: tmt-denounce
+- name: tmt-matching
+- name: tmt-manage
+- name: tmt-user
+- name: internal-kafka
+- name: internal-atmt-matching
+- name: internal-profile

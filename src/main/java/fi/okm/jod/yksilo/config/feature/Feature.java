@@ -14,5 +14,6 @@ public enum Feature {
   POLKU,
   TAVOITE,
   KOSKI,
-  JAKOLINKKI
+  JAKOLINKKI,
+  TMT_INTEGRATION
 }
