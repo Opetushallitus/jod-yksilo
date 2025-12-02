@@ -9,20 +9,15 @@
 
 package fi.okm.jod.yksilo.config.koski;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
+import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -31,7 +26,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
 @ConditionalOnBean(KoskiOauth2Config.class)
@@ -95,24 +89,5 @@ public class KoskiSecurityConfig {
                           additionalParameters.put("response_mode", "form_post");
                         })));
     return resolver;
-  }
-
-  @Bean
-  public HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository() {
-    return new HttpSessionOAuth2AuthorizedClientRepository();
-  }
-
-  static class DenyUnauthenticatedFilter extends OncePerRequestFilter {
-    @Override
-    protected void doFilterInternal(
-        HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-        throws ServletException, IOException {
-      var securityContext = SecurityContextHolder.getContext();
-      if (securityContext.getAuthentication() == null
-          || !securityContext.getAuthentication().isAuthenticated()) {
-        throw new InsufficientAuthenticationException("Authentication required");
-      }
-      filterChain.doFilter(request, response);
-    }
   }
 }

@@ -58,9 +58,11 @@ public class FallbackErrorController implements ErrorController {
       }
     }
 
+    var requestUri = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
     var contextPath = request.getContextPath();
+
     if (status.is4xxClientError()
-        && request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) instanceof String
+        && requestUri instanceof String
         && "navigate".equalsIgnoreCase(request.getHeader("Sec-Fetch-Mode"))) {
       // Redirect back to the UI application for errors (likely) related to insufficient
       // authentication.
@@ -80,11 +82,13 @@ public class FallbackErrorController implements ErrorController {
       errorCode = ErrorCode.UNSPECIFIED_ERROR;
       log.atError()
           .addKeyValue("status", status.value())
+          .addKeyValue("requestUri", requestUri)
           .log("Request failed: {}", status.value(), exception);
     } else {
       var reason = exception == null ? null : exception.toString();
       log.atWarn()
           .addKeyValue("status", status.value())
+          .addKeyValue("requestUri", requestUri)
           .addKeyValue("reason", reason)
           .log("Request failed: {}, {}", status.value(), reason);
     }

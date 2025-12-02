@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -30,6 +31,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -44,6 +46,12 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
+
+  @Bean
+  @Lazy
+  public HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository() {
+    return new HttpSessionOAuth2AuthorizedClientRepository();
+  }
 
   @Bean
   @SuppressWarnings({"java:S4502", "java:S5411"})
@@ -107,6 +115,7 @@ public class SecurityConfig {
             exceptionHandling -> {
               exceptionHandling.authenticationEntryPoint(
                   (request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, authException);
                     request.getRequestDispatcher("/error").forward(request, response);
                   });

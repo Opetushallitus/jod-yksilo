@@ -10,23 +10,26 @@
 package fi.okm.jod.yksilo.config.tmt;
 
 import java.net.URI;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
 @ConfigurationProperties(prefix = "jod.tmt")
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 public class TmtConfiguration {
   private boolean enabled;
-  private URI authorizationUrl;
-  private URI apiUrl;
-  private String kipaSubscriptionKey;
-  private String tokenIssuer;
+  private Api exportApi;
+  private Api importApi;
+
+  @Getter
+  @Setter
+  public static class Api {
+    private URI apiUrl;
+    private URI authorizationUrl;
+    private URI tokenUrl;
+    private String kipaSubscriptionKey;
+    private String clientId;
+    private String clientSecret;
+  }
 }

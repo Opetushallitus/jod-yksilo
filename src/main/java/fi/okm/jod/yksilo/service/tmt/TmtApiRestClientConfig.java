@@ -9,37 +9,32 @@
 
 package fi.okm.jod.yksilo.service.tmt;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.Duration;
+import java.util.List;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-class TmtRestClientConfig {
-
+class TmtApiRestClientConfig {
   @Bean
-  RestClient tmtExportRestClient(
-      RestClient.Builder restClientBuilder, Jackson2ObjectMapperBuilder mapperBuilder) {
+  RestClient tmtRestClient(
+      RestClient.Builder builder, MappingJackson2HttpMessageConverter messageConverter) {
     var requestFactory =
         ClientHttpRequestFactoryBuilder.jdk()
             .build(
                 ClientHttpRequestFactorySettings.defaults()
                     .withConnectTimeout(Duration.ofSeconds(10))
                     .withReadTimeout(Duration.ofSeconds(30)));
-    var objectMapper = mapperBuilder.serializationInclusion(Include.NON_EMPTY).build();
 
-    return restClientBuilder
+    return builder
         .requestFactory(requestFactory)
-        .messageConverters(
-            converters -> {
-              converters.clear();
-              converters.add(new MappingJackson2HttpMessageConverter(objectMapper));
-            })
+        .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())
+        .messageConverters(List.of(messageConverter))
         .build();
   }
 }
