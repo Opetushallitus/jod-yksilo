@@ -88,9 +88,6 @@ public class Yksilo extends JodEntity {
   @BatchSize(size = MAX_IN_SIZE)
   private Set<Tavoite> tavoitteet;
 
-  @OneToMany(mappedBy = "yksilo", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  private Set<TapahtumaLoki> tapahtumat;
-
   // Demographic information
   @Setter private Integer syntymavuosi;
 
@@ -118,7 +115,6 @@ public class Yksilo extends JodEntity {
     this.ammattiKiinnostukset = new HashSet<>();
     this.suosikit = new HashSet<>();
     this.tavoitteet = new HashSet<>();
-    this.tapahtumat = new HashSet<>();
   }
 
   protected Yksilo() {

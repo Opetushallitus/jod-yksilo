@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.service.tmt;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -17,12 +16,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import fi.okm.jod.yksilo.config.tmt.TmtAuthorizationRepository.AccessToken;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
-import fi.okm.jod.yksilo.service.ServiceConflictException;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +30,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -42,10 +40,8 @@ import org.springframework.web.client.RestClient;
 @TestPropertySource(
     properties = {
       "jod.tmt.enabled=true",
-      "jod.tmt.kipa-subscription-key=key",
-      "jod.tmt.api-url=/v1/profile",
-      "jod.tmt.authorization-url=http://authorization.local",
-      "jod.tmt.token-issuer=issuer",
+      "jod.tmt.export-api.kipa-subscription-key=key",
+      "jod.tmt.export-api.api-url=/v1/profile",
     })
 @Slf4j
 class TmtExportServiceTest extends AbstractServiceTest {
@@ -59,8 +55,13 @@ class TmtExportServiceTest extends AbstractServiceTest {
         MockRestServiceServer.bindTo(clientBuilder).build();
 
     @Bean
-    RestClient mockClient() {
+    RestClient tmtRestClient() {
       return clientBuilder.build();
+    }
+
+    @Bean
+    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+      return new MappingJackson2HttpMessageConverter();
     }
   }
 
@@ -81,16 +82,9 @@ class TmtExportServiceTest extends AbstractServiceTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andRespond(withSuccess());
 
-    var accessToken = new AccessToken(UUID.randomUUID(), "token", Instant.MAX);
+    var accessToken =
+        new OAuth2AccessToken(
+            OAuth2AccessToken.TokenType.BEARER, "token", Instant.now(), Instant.MAX);
     assertDoesNotThrow(() -> tmtExportService.export(user, accessToken));
-  }
-
-  @Test
-  @Execution(ExecutionMode.SAME_THREAD)
-  void shouldNotExportProfileTwice() {
-    testConfig.mockServer.expect(requestTo("/v1/profile")).andRespond(withSuccess());
-    var accessToken = new AccessToken(UUID.randomUUID(), "token", Instant.MAX);
-    assertDoesNotThrow(() -> tmtExportService.export(user, accessToken));
-    assertThrows(ServiceConflictException.class, () -> tmtExportService.export(user, accessToken));
   }
 }

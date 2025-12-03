@@ -1,0 +1,29 @@
+---
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          tmt-vienti:
+            provider: tmt-vienti
+            client-id: ${jod.tmt.export-api.client-id}
+            client-secret: ${jod.tmt.export-api.client-secret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: authorization_code
+            client-name: tmt-vienti
+            redirect-uri: "{baseUrl}/oauth2/response/{registrationId}"
+          tmt-haku:
+            provider: tmt-haku
+            client-id: ${jod.tmt.import-api.client-id}
+            client-secret: ${jod.tmt.import-api.client-secret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: authorization_code
+            client-name: tmt-haku
+            redirect-uri: "{baseUrl}/oauth2/response/{registrationId}"
+        provider:
+          tmt-vienti:
+            token-uri: ${jod.tmt.export-api.token-url}
+            authorization-uri: ${jod.tmt.export-api.authorization-url}
+          tmt-haku:
+            token-uri: ${jod.tmt.import-api.token-url}
+            authorization-uri: ${jod.tmt.import-api.authorization-url}

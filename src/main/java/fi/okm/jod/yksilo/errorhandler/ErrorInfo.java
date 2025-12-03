@@ -34,5 +34,6 @@ public record ErrorInfo(
     PERMISSION_REQUIRED, // User need to give permission.
     WRONG_PERSON,
     DATA_NOT_FOUND,
+    AUTHORIZATION_REQUIRED,
   }
 }

@@ -24,7 +24,7 @@ import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
-import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternal;
+import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalPut;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -40,7 +40,7 @@ class TmtExportMappingTest {
     // Create Yksilo with random data
     Yksilo yksilo = createYksilo();
 
-    FullProfileDtoExternal profile = TmtExportService.toTmtProfile(yksilo);
+    FullProfileDtoExternalPut profile = TmtExportService.toTmtProfile(yksilo);
 
     assertNotNull(profile.getEducations());
     assertEquals(
