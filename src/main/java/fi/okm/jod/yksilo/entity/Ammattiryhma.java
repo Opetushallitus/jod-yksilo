@@ -35,6 +35,10 @@ public class Ammattiryhma extends JodEntity {
   @Column(columnDefinition = "jsonb")
   private JsonNode data;
 
+  public String getKohtaanto() {
+    return data.path("kohtaanto").optional("tyyppi").map(JsonNode::asText).orElse(null);
+  }
+
   public Integer getMediaaniPalkka() {
     return getPropertyFromPalkkaus("mediaani");
   }
