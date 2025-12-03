@@ -12,14 +12,15 @@ package fi.okm.jod.yksilo.service;
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
-import fi.okm.jod.yksilo.dto.tyomahdollisuus.PalkkaDataDto;
-import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyollisyysDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.entity.Ammattiryhma;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
+
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,7 +94,6 @@ public class TyomahdollisuusService {
 
   private static TyomahdollisuusFullDto mapFull(
       final Tyomahdollisuus entity, final Ammattiryhma ammattiryhma) {
-
     return entity == null
         ? null
         : new TyomahdollisuusFullDto(
@@ -103,30 +103,26 @@ public class TyomahdollisuusService {
             entity.getKuvaus(),
             entity.getTehtavat(),
             entity.getYleisetVaatimukset(),
-            entity.getAmmattiryhmaUri(),
-            mapPalkkaData(ammattiryhma),
-            mapTyollisyys(ammattiryhma),
+            mapAmmattiryhma(entity.getAmmattiryhmaUri(), ammattiryhma),
             entity.getAineisto(),
             entity.isAktiivinen(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
   }
 
-  private static TyollisyysDto mapTyollisyys(final Ammattiryhma ammattiryhma) {
-    if (ammattiryhma == null) {
+  private static AmmattiryhmaFullDto mapAmmattiryhma(
+      final URI ammattiryhmaUri, final Ammattiryhma ammattiryhma) {
+    if (ammattiryhma == null && ammattiryhmaUri == null) {
       return null;
+    } else if (ammattiryhma == null) {
+      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null);
     }
-    return new TyollisyysDto(ammattiryhma.getKohtaanto());
-  }
-
-  private static PalkkaDataDto mapPalkkaData(final Ammattiryhma ammattiryhma) {
-    if (ammattiryhma == null) {
-      return null;
-    }
-    return new PalkkaDataDto(
-        ammattiryhma.getMuokattu(),
+    return new AmmattiryhmaFullDto(
+        ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
-        ammattiryhma.getAlinDesiiliPalkka());
+        ammattiryhma.getAlinDesiiliPalkka(),
+        ammattiryhma.getKohtaanto()
+    );
   }
 }
