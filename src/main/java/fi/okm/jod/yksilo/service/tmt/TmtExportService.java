@@ -43,7 +43,6 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Service
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
@@ -130,7 +129,7 @@ public class TmtExportService {
           .addMarker(LogMarker.AUDIT)
           .log("TMT export failed, {}: {}", e.getStatusCode(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
-    } catch (RestClientException e) {
+    } catch (Exception e) {
       log.atWarn().log("TMT export failed: {}", e.getMessage());
       throw new ServiceException("TMT export failed", e);
     }
@@ -141,6 +140,7 @@ public class TmtExportService {
 
     yksilo.getTyopaikat().stream()
         .flatMap(it -> it.getToimenkuvat().stream())
+        .limit(20)
         .forEach(
             it -> {
               var item = new EmploymentDtoExternalPut();
@@ -160,6 +160,7 @@ public class TmtExportService {
 
     yksilo.getKoulutusKokonaisuudet().stream()
         .flatMap(it -> it.getKoulutukset().stream())
+        .limit(20)
         .forEach(
             it -> {
               var item = new EducationDtoExternalPut();
@@ -178,6 +179,7 @@ public class TmtExportService {
 
     yksilo.getToiminnot().stream()
         .flatMap(it -> it.getPatevyydet().stream())
+        .limit(20)
         .forEach(
             it -> {
               var item = new ProjectDtoExternalPut();

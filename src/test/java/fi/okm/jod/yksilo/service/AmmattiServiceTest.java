@@ -21,9 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
-@Sql("/data/ammatti.sql")
 @Import({AmmattiService.class})
 class AmmattiServiceTest extends AbstractServiceTest {
   @Autowired private AmmattiRepository repository;
@@ -42,17 +40,17 @@ class AmmattiServiceTest extends AbstractServiceTest {
   @Test
   void shouldFindAll() {
     var result = service.findAll(0, 10);
-    assertEquals(7, result.payload().maara());
+    assertEquals(9, result.payload().maara());
     assertEquals(1, result.version());
   }
 
   @Test
   void shouldFindByUri() {
     var result =
-        service.findBy(0, 10, Set.of(URI.create("urn:ammatti1"), URI.create("urn:osaaminen1")));
+        service.findBy(0, 10, Set.of(URI.create("urn:ammatti:1"), URI.create("urn:osaaminen:1")));
     assertThat(result.payload().sisalto())
         .extracting("uri")
-        .containsExactly(URI.create("urn:ammatti1"));
+        .containsExactly(URI.create("urn:ammatti:1"));
   }
 
   @Test
@@ -70,7 +68,7 @@ class AmmattiServiceTest extends AbstractServiceTest {
     entityManager
         .getEntityManager()
         .createNativeQuery(
-            "INSERT INTO ammatti (id, uri, koodi) VALUES (8, 'urn:ammatti8', 'koodi8')")
+            "INSERT INTO ammatti (id, uri, koodi) VALUES (10, 'urn:ammatti:10', '10')")
         .executeUpdate();
 
     entityManager.flush();

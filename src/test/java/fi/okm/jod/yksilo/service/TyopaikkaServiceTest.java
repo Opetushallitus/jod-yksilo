@@ -72,7 +72,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                                 ls(Kieli.FI, "kuvaus"),
                                 LocalDate.now(),
                                 null,
-                                Set.of(URI.create("urn:osaaminen1")))
+                                Set.of(URI.create("urn:osaaminen:1")))
                           })));
 
           simulateCommit();

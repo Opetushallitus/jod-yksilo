@@ -27,8 +27,8 @@ WHERE koulutusmahdollisuus_id = '481e204a-691a-48dd-9b01-7f08d5858db9'
 INSERT INTO koulutusmahdollisuus_jakauma_arvot (koulutusmahdollisuus_jakauma_id, arvo, osuus)
 SELECT id, arvo, osuus
 FROM koulutusmahdollisuus_jakauma
-       CROSS JOIN (VALUES ('urn:osaaminen1', 2),
-                          ('urn:osaaminen2', 1)) AS vals(arvo, osuus)
+       CROSS JOIN (VALUES ('urn:osaaminen:1', 2),
+                          ('urn:osaaminen:2', 1)) AS vals(arvo, osuus)
 WHERE koulutusmahdollisuus_id = '481e204a-691a-48dd-9b01-7f08d5858db9'
   AND tyyppi = 'OSAAMINEN';
 
@@ -52,12 +52,12 @@ VALUES ('c11249fd-e0a3-4b23-8de5-9dc67a157f46', 'KOULUTUSALA', 3, 0),
 INSERT INTO koulutusmahdollisuus_jakauma_arvot (koulutusmahdollisuus_jakauma_id, arvo, osuus)
 SELECT id, arvo, osuus
 FROM koulutusmahdollisuus_jakauma
-       CROSS JOIN (VALUES ('urn:osaaminen1', 2),
-                          ('urn:osaaminen2', 1),
-                          ('urn:osaaminen3', 2),
-                          ('urn:osaaminen4', 3),
-                          ('urn:osaaminen5', 4),
-                          ('urn:osaaminen6', 6)) AS vals(arvo, osuus)
+       CROSS JOIN (VALUES ('urn:osaaminen:1', 2),
+                          ('urn:osaaminen:2', 1),
+                          ('urn:osaaminen:3', 2),
+                          ('urn:osaaminen:4', 3),
+                          ('urn:osaaminen:5', 4),
+                          ('urn:osaaminen:6', 6)) AS vals(arvo, osuus)
 WHERE koulutusmahdollisuus_id = 'c11249fd-e0a3-4b23-8de5-9dc67a157f46'
   AND tyyppi = 'OSAAMINEN';
 

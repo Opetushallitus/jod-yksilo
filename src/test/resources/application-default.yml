@@ -3,6 +3,9 @@ logging:
     root: INFO
     fi.okm.jod: DEBUG
   exception-conversion-word:
+  structured:
+    format:
+      console: logstash
 
 spring:
   main:
@@ -20,6 +23,7 @@ management:
     metrics:
       export:
         enabled: false
+
 jod:
   external-api:
     apiKey: "9g43fg49873gr97gtd3d343f7g3497gf"

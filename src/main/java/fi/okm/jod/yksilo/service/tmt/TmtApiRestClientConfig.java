@@ -16,7 +16,6 @@ import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 
 @Configuration
@@ -33,7 +32,6 @@ class TmtApiRestClientConfig {
 
     return builder
         .requestFactory(requestFactory)
-        .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())
         .messageConverters(List.of(messageConverter))
         .build();
   }

@@ -9,10 +9,10 @@ VALUES (1, 10, 2, 'OSAAMINEN', '00016334-886e-4d11-93f0-872fcf671920'::uuid),
        (3, 30, 4, 'OSAAMINEN', '0014885a-4aa6-4202-9865-2fcb4457cc59'::uuid);
 
 INSERT INTO tyomahdollisuus_jakauma_arvot (tyomahdollisuus_jakauma_id, arvo, osuus)
-VALUES (1, 'urn:osaaminen1', 3),
-       (1, 'urn:osaaminen2', 2),
-       (1, 'urn:osaaminen3', 1),
-       (1, 'urn:osaaminen4', 1);
+VALUES (1, 'urn:osaaminen:1', 3),
+       (1, 'urn:osaaminen:2', 2),
+       (1, 'urn:osaaminen:3', 1),
+       (1, 'urn:osaaminen:4', 1);
 
 INSERT INTO koulutusmahdollisuus (id, tyyppi)
 VALUES ('00016334-886e-4d11-93f0-872fcf671921'::uuid, 'TUTKINTO'),
@@ -25,10 +25,10 @@ VALUES (1, 10, 2, 'OSAAMINEN', '00016334-886e-4d11-93f0-872fcf671921'::uuid),
        (3, 30, 4, 'OSAAMINEN', '0014885a-4aa6-4202-9865-2fcb4457cc51'::uuid);
 
 INSERT INTO koulutusmahdollisuus_jakauma_arvot (koulutusmahdollisuus_jakauma_id, arvo, osuus)
-VALUES (1, 'urn:osaaminen1', 3),
-       (1, 'urn:osaaminen2', 2),
-       (1, 'urn:osaaminen3', 1),
-       (1, 'urn:osaaminen4', 1),
-       (2, 'urn:osaaminen5', 1),
-       (2, 'urn:osaaminen6', 1),
-       (3, 'urn:osaaminen7', 1);
+VALUES (1, 'urn:osaaminen:1', 3),
+       (1, 'urn:osaaminen:2', 2),
+       (1, 'urn:osaaminen:3', 1),
+       (1, 'urn:osaaminen:4', 1),
+       (2, 'urn:osaaminen:5', 1),
+       (2, 'urn:osaaminen:6', 1),
+       (3, 'urn:osaaminen:7', 1);
