@@ -105,7 +105,7 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
   @Test
   void shouldGetMahdollisuudetSuggestionsForPolkuVaihe_withMatchingMissingOsaamiset() {
     var matchingMissingOsaamiset =
-        Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+        Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
 
     var result = mahdollisuudetService.getPolkuVaiheSuggestions(matchingMissingOsaamiset);
     assertThat(result).hasSize(2);

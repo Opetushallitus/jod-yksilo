@@ -15,9 +15,11 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
+import fi.okm.jod.yksilo.validation.Limits;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +56,8 @@ class KoulutusKokonaisuusController {
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Adds many new koulutuskokonaisuudet, and optionally associated koulutukset")
   List<UUID> addMany(
-      @Validated(Add.class) @RequestBody Set<KoulutusKokonaisuusDto> dtos,
+      @RequestBody @Validated(Add.class) @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS)
+          Set<@Valid KoulutusKokonaisuusDto> dtos,
       @AuthenticationPrincipal JodUser user) {
     return service.addManyForImport(user, dtos);
   }

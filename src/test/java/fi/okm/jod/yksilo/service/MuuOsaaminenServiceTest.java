@@ -52,13 +52,13 @@ class MuuOsaaminenServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldAddNewByUpdateYksilonMuuOsaaminen() {
-    service.update(user, Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen3")));
+    service.update(user, Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:3")));
     var result = service.findAll(user);
     assertEquals(2, result.size());
-    assertTrue(result.contains(URI.create("urn:osaaminen1")), "result contains osaaminen1");
-    assertTrue(result.contains(URI.create("urn:osaaminen3")), "result contains osaaminen3");
+    assertTrue(result.contains(URI.create("urn:osaaminen:1")), "result contains osaaminen1");
+    assertTrue(result.contains(URI.create("urn:osaaminen:3")), "result contains osaaminen3");
     assertFalse(
-        result.contains(URI.create("urn:osaaminen2")), "result does not contain osaaminen2");
+        result.contains(URI.create("urn:osaaminen:2")), "result does not contain osaaminen2");
   }
 
   @Test

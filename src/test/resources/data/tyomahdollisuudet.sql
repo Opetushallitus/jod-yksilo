@@ -26,9 +26,9 @@ WHERE tyomahdollisuus_id = 'ca466237-ce1d-4aca-9f9b-2ed566ef4f94'
 INSERT INTO tyomahdollisuus_jakauma_arvot (tyomahdollisuus_jakauma_id, arvo, osuus)
 SELECT id, uri, osuus
 FROM tyomahdollisuus_jakauma
-       CROSS JOIN (VALUES ('urn:osaaminen1', 0.4),
-                          ('urn:osaaminen2', 0.3),
-                          ('urn:osaaminen3', 0.3)) AS vals(uri, osuus)
+       CROSS JOIN (VALUES ('urn:osaaminen:1', 0.4),
+                          ('urn:osaaminen:2', 0.3),
+                          ('urn:osaaminen:3', 0.3)) AS vals(uri, osuus)
 WHERE tyomahdollisuus_id = 'ca466237-ce1d-4aca-9f9b-2ed566ef4f94'
   AND tyyppi = 'OSAAMINEN';
 
@@ -51,8 +51,8 @@ VALUES ('cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949', 'OSAAMINEN', 3, 0);
 INSERT INTO tyomahdollisuus_jakauma_arvot (tyomahdollisuus_jakauma_id, arvo, osuus)
 SELECT id, uri, osuus
 FROM tyomahdollisuus_jakauma
-       CROSS JOIN (VALUES ('urn:osaaminen1', 0.4),
-                          ('urn:osaaminen3', 0.3)) AS vals(uri, osuus)
+       CROSS JOIN (VALUES ('urn:osaaminen:1', 0.4),
+                          ('urn:osaaminen:3', 0.3)) AS vals(uri, osuus)
 WHERE tyomahdollisuus_id = 'cd5bb0b2-d09d-45e0-96e5-6c0c9a37a949'
   AND tyyppi = 'OSAAMINEN';
 

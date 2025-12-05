@@ -9,13 +9,22 @@
 
 package fi.okm.jod.yksilo.domain;
 
+import lombok.Getter;
+
+@Getter
 public enum Kieli {
   FI,
   SV,
   EN;
 
+  private final String koodi;
+
+  Kieli() {
+    this.koodi = name().toLowerCase().intern();
+  }
+
   @Override
   public String toString() {
-    return name().toLowerCase();
+    return koodi;
   }
 }

@@ -137,15 +137,16 @@ public class Application {
     if (!issuedTokens.remove(token)) {
       throw new IllegalArgumentException("Invalid or expired token");
     }
-    log.info(
-        "Updating profile: {}",
-        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profileDto));
-
     profile = objectMapper.convertValue(profileDto, FullProfileDtoExternalGet.class);
+    log.info(
+        "Imported profile, token={}:\n{}",
+        token,
+        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profile));
   }
 
   @GetMapping("/v1/profile")
-  FullProfileDtoExternalGet exportProfile(@RequestHeader("Authorization") String auth) {
+  FullProfileDtoExternalGet exportProfile(@RequestHeader("Authorization") String auth)
+      throws JsonProcessingException {
     if (!auth.startsWith(BEARER_PREFIX)) {
       throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
     }
@@ -153,6 +154,10 @@ public class Application {
     if (!issuedTokens.remove(token)) {
       throw new IllegalArgumentException("Invalid or expired token");
     }
+    log.info(
+        "Exporting profile, token={}:\n{}",
+        token,
+        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profile));
     return profile;
   }
 }
