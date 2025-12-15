@@ -21,23 +21,5 @@ public record MahdollisuusDto(
     String ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     KoulutusmahdollisuusTyyppi koulutusTyyppi,
-    List<String> maakunnat) {
-  public MahdollisuusDto(
-      UUID id,
-      String tyyppi,
-      String ammattiryhma,
-      String aineisto,
-      String koulutusTyyppi,
-      List<String> maakunnat) {
-
-    this(
-        id,
-        MahdollisuusTyyppi.valueOf(tyyppi),
-        ammattiryhma,
-        (aineisto == null || aineisto.isEmpty()) ? null : TyomahdollisuusAineisto.valueOf(aineisto),
-        (koulutusTyyppi == null || koulutusTyyppi.isEmpty())
-            ? null
-            : KoulutusmahdollisuusTyyppi.valueOf(koulutusTyyppi),
-        maakunnat);
-  }
-}
+    List<String> maakunnat,
+    Double kesto) {}

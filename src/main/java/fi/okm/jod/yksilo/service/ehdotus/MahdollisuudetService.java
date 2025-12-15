@@ -13,7 +13,7 @@ import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
-import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
+import fi.okm.jod.yksilo.repository.MahdollisuusRepository;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MahdollisuudetService {
 
-  private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
+  private final MahdollisuusRepository mahdollisuusRepository;
 
   @PostConstruct
   @CacheEvict(value = "mahdollisuusIdsAndTypes", allEntries = true)
@@ -42,11 +41,10 @@ public class MahdollisuudetService {
     // This method will clear all entries in the "tyomahdollisuusMetadata" cache at startup
   }
 
-  @Cacheable("mahdollisuusIdsAndTypes")
   public SequencedMap<UUID, MahdollisuusDto> fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
       Sort.Direction direction, Kieli lang) {
 
-    return koulutusmahdollisuusRepository.findMahdollisuusIds(lang, direction).stream()
+    return mahdollisuusRepository.findMahdollisuusIds(lang, direction).stream()
         .collect(
             Collectors.toMap(
                 MahdollisuusDto::id, // Key mapper
@@ -72,7 +70,7 @@ public class MahdollisuudetService {
     if (missingOsaamiset == null || missingOsaamiset.isEmpty()) {
       return List.of();
     }
-    return koulutusmahdollisuusRepository.getPolunVaiheSuggestions(
+    return mahdollisuusRepository.getPolunVaiheSuggestions(
         missingOsaamiset.stream().map(URI::toString).toList());
   }
 }
