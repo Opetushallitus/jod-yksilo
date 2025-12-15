@@ -168,8 +168,8 @@ public class TmtSecurityConfig {
         ClientHttpRequestFactoryBuilder.jdk()
             .build(
                 ClientHttpRequestFactorySettings.defaults()
-                    .withConnectTimeout(Duration.ofSeconds(10))
-                    .withReadTimeout(Duration.ofSeconds(30)));
+                    .withConnectTimeout(Duration.ofSeconds(5))
+                    .withReadTimeout(Duration.ofSeconds(10)));
 
     return builder
         .requestFactory(requestFactory)

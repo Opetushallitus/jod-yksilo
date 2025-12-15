@@ -134,8 +134,8 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
   @Test
   @Execution(ExecutionMode.SAME_THREAD)
   void shouldSuccessfullyProcessOsaamisetTunnistusEvent() {
-    var osaaminen1 = "urn:osaaminen1";
-    var osaaminen2 = "urn:osaaminen2";
+    var osaaminen1 = "urn:osaaminen:1";
+    var osaaminen2 = "urn:osaaminen:2";
 
     var koulutus1 = koulutukset.getFirst();
     var osasuoritukset =

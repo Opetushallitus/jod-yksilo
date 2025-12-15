@@ -21,10 +21,13 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -48,36 +51,39 @@ public class KoulutusKokonaisuusService {
   }
 
   public List<UUID> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    var entities = new ArrayList<Koulutus>();
-    for (KoulutusKokonaisuusDto dto : dtos) {
-      var koulutusList = add(user, dto, true).getKoulutukset();
-      entities.addAll(koulutusList);
-    }
-    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, entities));
-    return entities.stream().map(Koulutus::getId).toList();
+    var koulutukset = add(user, dtos, true).flatMap(dto -> dto.getKoulutukset().stream()).toList();
+    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, koulutukset));
+    return koulutukset.stream().map(Koulutus::getId).toList();
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
-    return add(user, dto, null).getId();
+    return add(user, Set.of(dto)).getFirst();
   }
 
-  private KoulutusKokonaisuus add(
-      JodUser user, KoulutusKokonaisuusDto dto, Boolean odottaaOsaamisetTunnistusta) {
+  public SequencedSet<UUID> add(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
+    return add(user, dtos, false)
+        .map(KoulutusKokonaisuus::getId)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  private Stream<KoulutusKokonaisuus> add(
+      JodUser user, Set<KoulutusKokonaisuusDto> dtos, boolean tunnistaOsaamiset) {
     var yksilo = yksilot.getReferenceById(user.getId());
-    if (kokonaisuudet.countByYksilo(yksilo) >= Limits.KOULUTUSKOKONAISUUS) {
+    if (kokonaisuudet.countByYksilo(yksilo) + dtos.size() > Limits.KOULUTUSKOKONAISUUS) {
       throw new ServiceValidationException("Too many KoulutusKokonaisuus");
     }
-    // prevent duplicates somehow?
-    var entity =
-        kokonaisuudet.save(
-            new KoulutusKokonaisuus(yksilot.getReferenceById(user.getId()), dto.nimi()));
-    for (var koulutus : dto.koulutukset()) {
-      entity
-          .getKoulutukset()
-          .add(koulutusService.add(entity, koulutus, odottaaOsaamisetTunnistusta));
-    }
 
-    return entity;
+    return dtos.stream()
+        .map(
+            dto -> {
+              var entity = kokonaisuudet.save(new KoulutusKokonaisuus(yksilo, dto.nimi()));
+              for (var koulutus : dto.koulutukset()) {
+                entity
+                    .getKoulutukset()
+                    .add(koulutusService.add(entity, koulutus, tunnistaOsaamiset));
+              }
+              return entity;
+            });
   }
 
   @Transactional(readOnly = true)

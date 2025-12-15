@@ -14,7 +14,9 @@ import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.TmtImportDto;
 import fi.okm.jod.yksilo.service.tmt.TmtExportService;
+import fi.okm.jod.yksilo.service.tmt.TmtImportService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +46,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class TmtProfileController {
 
   public static final String ERROR_PARAM = "error";
-  private final TmtExportService service;
+  private final TmtExportService exportService;
+  private final TmtImportService importService;
   private final OAuth2AuthorizedClientRepository authorizedClientRepository;
 
   /*
@@ -119,10 +122,25 @@ public class TmtProfileController {
       @RegisteredOAuth2AuthorizedClient("tmt-vienti") OAuth2AuthorizedClient authorizedClient) {
     if (authorizedClient != null && authentication.getPrincipal() instanceof JodUser user) {
       removeAuthorizedClient(authorizedClient, authentication, request);
-      service.export(user, authorizedClient.getAccessToken());
+      exportService.export(user, authorizedClient.getAccessToken());
     } else {
       log.atWarn().addMarker(LogMarker.AUDIT).log("TMT export not authorized");
       throw new IllegalArgumentException("TMT export not authorized");
+    }
+  }
+
+  @PostMapping("/api/integraatiot/tmt/haku")
+  @FeatureRequired(Feature.TMT_INTEGRATION)
+  TmtImportDto importProfile(
+      Authentication authentication,
+      HttpServletRequest request,
+      @RegisteredOAuth2AuthorizedClient("tmt-haku") OAuth2AuthorizedClient authorizedClient) {
+    if (authorizedClient != null && authentication.getPrincipal() instanceof JodUser user) {
+      removeAuthorizedClient(authorizedClient, authentication, request);
+      return importService.importProfile(user, authorizedClient.getAccessToken());
+    } else {
+      log.atWarn().addMarker(LogMarker.AUDIT).log("TMT import not authorized");
+      throw new IllegalArgumentException("TMT import not authorized");
     }
   }
 

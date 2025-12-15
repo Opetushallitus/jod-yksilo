@@ -9,6 +9,11 @@
 
 package fi.okm.jod.yksilo.service.tmt;
 
+import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.KOULUTUS_TILA_ALKAMASSA_TAI_JATKUU;
+import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.KOUTULUS_TILA_PAATTYNYT;
+import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.PROFILE_ITEM_LIMIT;
+import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.SKILL_LIMIT;
+
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -43,15 +48,12 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Service
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
 @Slf4j
 public class TmtExportService {
 
-  public static final String ALKAMASSA_TAI_JATKUU = "1";
-  public static final String PAATTYNYT = "2";
   private final RestClient restClient;
   private final YksiloRepository yksiloRepository;
   private final TransactionTemplate transactionTemplate;
@@ -130,7 +132,7 @@ public class TmtExportService {
           .addMarker(LogMarker.AUDIT)
           .log("TMT export failed, {}: {}", e.getStatusCode(), e.getMessage());
       throw new ServiceException("TMT export failed", e);
-    } catch (RestClientException e) {
+    } catch (Exception e) {
       log.atWarn().log("TMT export failed: {}", e.getMessage());
       throw new ServiceException("TMT export failed", e);
     }
@@ -141,6 +143,7 @@ public class TmtExportService {
 
     yksilo.getTyopaikat().stream()
         .flatMap(it -> it.getToimenkuvat().stream())
+        .limit(PROFILE_ITEM_LIMIT)
         .forEach(
             it -> {
               var item = new EmploymentDtoExternalPut();
@@ -160,6 +163,7 @@ public class TmtExportService {
 
     yksilo.getKoulutusKokonaisuudet().stream()
         .flatMap(it -> it.getKoulutukset().stream())
+        .limit(PROFILE_ITEM_LIMIT)
         .forEach(
             it -> {
               var item = new EducationDtoExternalPut();
@@ -170,7 +174,10 @@ public class TmtExportService {
                     new EducationIntervalItemExternalPut()
                         .startDate(it.getAlkuPvm())
                         .endDate(it.getLoppuPvm())
-                        .statusCode(it.getLoppuPvm() == null ? ALKAMASSA_TAI_JATKUU : PAATTYNYT));
+                        .statusCode(
+                            it.getLoppuPvm() == null
+                                ? KOULUTUS_TILA_ALKAMASSA_TAI_JATKUU
+                                : KOUTULUS_TILA_PAATTYNYT));
               }
               item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset()));
               profile.addEducationsItem(item);
@@ -178,6 +185,7 @@ public class TmtExportService {
 
     yksilo.getToiminnot().stream()
         .flatMap(it -> it.getPatevyydet().stream())
+        .limit(PROFILE_ITEM_LIMIT)
         .forEach(
             it -> {
               var item = new ProjectDtoExternalPut();
@@ -202,7 +210,7 @@ public class TmtExportService {
       var item = new DescriptionItemExternalPut();
       item.setDescription(asStringMap(kuvaus));
       osaamiset.stream()
-          .limit(120)
+          .limit(SKILL_LIMIT)
           .forEach(
               o ->
                   item.addSkillsItem(

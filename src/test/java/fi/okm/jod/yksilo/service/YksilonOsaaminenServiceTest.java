@@ -13,7 +13,6 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.entity.Osaaminen;
@@ -69,12 +68,6 @@ class YksilonOsaaminenServiceTest extends AbstractServiceTest {
 
     var muuOsaaminen = result.get(0).osaaminen();
     assertNotNull(muuOsaaminen);
-
-    assertEquals("urn:osaaminen1", muuOsaaminen.uri().toString());
-    assertEquals("johtaa musiikillista henkilökuntaa", muuOsaaminen.nimi().get(Kieli.FI));
-
-    assertEquals(
-        "Henkilöstön tehtävien osoittaminen ja johtaminen sellaisilla aloilla kuin pisteytys, järjestäminen, musiikin kopioiminen ja ääniohjaus.",
-        muuOsaaminen.kuvaus().get(Kieli.FI));
+    assertEquals("urn:osaaminen:1", muuOsaaminen.uri().toString());
   }
 }

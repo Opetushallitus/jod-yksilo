@@ -18,8 +18,12 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,17 +51,26 @@ public class ToimintoService {
   }
 
   public UUID add(JodUser user, ToimintoDto dto) {
+    return add(user, Set.of(dto)).getFirst();
+  }
+
+  public SequencedSet<UUID> add(JodUser user, Set<ToimintoDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
-    if (toiminnot.countByYksilo(yksilo) >= Limits.TOIMINTO) {
+    if (toiminnot.countByYksilo(yksilo) + dtos.size() > Limits.TOIMINTO) {
       throw new ServiceValidationException("Too many Toiminto");
     }
-    var toiminto = toiminnot.save(new Toiminto(yksilot.getReferenceById(user.getId()), dto.nimi()));
-    if (dto.patevyydet() != null) {
-      for (var patevyys : dto.patevyydet()) {
-        toiminto.getPatevyydet().add(patevyysService.add(toiminto, patevyys));
-      }
-    }
-    return toiminto.getId();
+    return dtos.stream()
+        .map(
+            dto -> {
+              var toiminto = toiminnot.save(new Toiminto(yksilo, dto.nimi()));
+              if (dto.patevyydet() != null) {
+                for (var patevyys : dto.patevyydet()) {
+                  toiminto.getPatevyydet().add(patevyysService.add(toiminto, patevyys));
+                }
+              }
+              return toiminto.getId();
+            })
+        .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   public void update(JodUser user, ToimintoUpdateDto dto) {
