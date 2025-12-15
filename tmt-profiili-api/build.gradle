@@ -36,6 +36,7 @@ tasks.register("openApiGenerateP51", GenerateTask) {
       "modelPackage"           : "fi.okm.jod.yksilo.external.tmt.model",
       "useJakartaEe"           : "true",
       "hideGenerationTimestamp": "true",
+      "containerDefaultToNull" : "true",
   ]
 }
 
@@ -55,6 +56,7 @@ tasks.register("openApiGenerateP60", GenerateTask) {
       "modelPackage"           : "fi.okm.jod.yksilo.external.tmt.model",
       "useJakartaEe"           : "true",
       "hideGenerationTimestamp": "true",
+      "containerDefaultToNull" : "true",
   ]
 }
 
