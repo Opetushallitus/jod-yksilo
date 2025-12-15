@@ -23,6 +23,7 @@ import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.config.tmt.TmtSecurityConfig;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.tmt.TmtExportService;
+import fi.okm.jod.yksilo.service.tmt.TmtImportService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +53,12 @@ import org.springframework.web.client.RestClient;
 @TestPropertySource(
     properties = {
       "jod.tmt.enabled=true",
-      "jod.tmt.export-api.kipa-subscription-key=apikey",
-      "jod.tmt.export-api.api-url=http://api.local",
     })
 class TmtProfileControllerTest {
   @Autowired private MockMvc mvc;
 
   @MockitoBean private TmtExportService tmtExportService;
+  @MockitoBean private TmtImportService tmtImportService;
   @MockitoBean private ClientRegistrationRepository clientRegistrationRepository;
   @MockitoBean private HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository;
 
@@ -83,6 +83,19 @@ class TmtProfileControllerTest {
   void shouldExportProfile() throws Exception {
     mvc.perform(post("/api/integraatiot/tmt/vienti").with(csrf()).with(oauth2Client("tmt-vienti")))
         .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldImportProfile() throws Exception {
+    mvc.perform(post("/api/integraatiot/tmt/haku").with(csrf()).with(oauth2Client("tmt-haku")))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldNotImportProfileWithoutAuthorization() throws Exception {
+    mvc.perform(post("/api/integraatiot/tmt/haku").with(csrf())).andExpect(status().is(400));
   }
 
   @TestConfiguration

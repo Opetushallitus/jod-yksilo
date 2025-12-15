@@ -28,8 +28,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@SqlConfig(separator = ";;;")
 class ExternalApiV1IntegrationTest extends IntegrationTest {
 
   @Autowired private TestRestTemplate testRestTemplate;

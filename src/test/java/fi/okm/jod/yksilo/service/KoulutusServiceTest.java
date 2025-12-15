@@ -65,7 +65,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   null,
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
-                  Set.of(URI.create("urn:osaaminen1")),
+                  Set.of(URI.create("urn:osaaminen:1")),
                   null,
                   null,
                   null));
@@ -91,7 +91,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                       null,
                       LocalDate.of(2021, 1, 1),
                       null,
-                      Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                      Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
                       null,
                       null,
                       null));
@@ -100,10 +100,10 @@ class KoulutusServiceTest extends AbstractServiceTest {
 
           var updated =
               Set.of(
-                  URI.create("urn:osaaminen2"),
-                  URI.create("urn:osaaminen6"),
-                  URI.create("urn:osaaminen5"),
-                  URI.create("urn:osaaminen4"));
+                  URI.create("urn:osaaminen:2"),
+                  URI.create("urn:osaaminen:6"),
+                  URI.create("urn:osaaminen:5"),
+                  URI.create("urn:osaaminen:4"));
           service.update(
               user,
               kokonaisuusId,
@@ -137,7 +137,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
                 null,
                 null,
                 null));
@@ -158,7 +158,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
             null,
             LocalDate.of(2021, 1, 1),
             null,
-            Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+            Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
             null,
             null,
             null));
@@ -173,7 +173,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2")),
+                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
                 null,
                 null,
                 null));
@@ -201,7 +201,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
     simulateCommit();
 
     service.completeOsaamisetTunnistus(
-        koulutus1, OsaamisenTunnistusStatus.DONE, Set.of(URI.create("urn:osaaminen1")));
+        koulutus1, OsaamisenTunnistusStatus.DONE, Set.of(URI.create("urn:osaaminen:1")));
     service.completeOsaamisetTunnistus(koulutus2, OsaamisenTunnistusStatus.FAIL, null);
     simulateCommit();
 
@@ -221,7 +221,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
     entityManager.persist(koulutus);
     simulateCommit();
 
-    var osaamiset = Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+    var osaamiset = Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
     service.completeOsaamisetTunnistus(koulutus, OsaamisenTunnistusStatus.DONE, osaamiset);
 
     var updatedKoulutus = entityManager.find(Koulutus.class, koulutus.getId());

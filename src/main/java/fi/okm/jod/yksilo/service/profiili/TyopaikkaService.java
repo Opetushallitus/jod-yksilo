@@ -19,8 +19,12 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.validation.Limits;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,19 +70,27 @@ public class TyopaikkaService {
   }
 
   public UUID add(JodUser user, TyopaikkaDto dto) {
+    return add(user, Set.of(dto)).getFirst();
+  }
+
+  public SequencedSet<UUID> add(JodUser user, Set<TyopaikkaDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
-    if (tyopaikat.countByYksilo(yksilo) >= Limits.TYOPAIKKA) {
+    if (tyopaikat.countByYksilo(yksilo) + dtos.size() > Limits.TYOPAIKKA) {
       throw new ServiceValidationException("Too many Tyopaikka");
     }
-    // prevent duplicates somehow?
-    var entity = tyopaikat.save(new Tyopaikka(yksilot.getReferenceById(user.getId()), dto.nimi()));
-    if (dto.toimenkuvat() != null) {
-      for (var toimenkuva : dto.toimenkuvat()) {
-        entity.getToimenkuvat().add(toimenkuvaService.add(entity, toimenkuva));
-      }
-    }
 
-    return entity.getId();
+    return dtos.stream()
+        .map(
+            dto -> {
+              var entity = tyopaikat.save(new Tyopaikka(yksilo, dto.nimi()));
+              if (dto.toimenkuvat() != null) {
+                for (var toimenkuva : dto.toimenkuvat()) {
+                  entity.getToimenkuvat().add(toimenkuvaService.add(entity, toimenkuva));
+                }
+              }
+              return entity.getId();
+            })
+        .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   private static ServiceException notFound() {

@@ -22,8 +22,6 @@ services:
       org.springframework.boot.jdbc.parameters: 'user=yksilo&password=yksilo'
 
   tmt-mock-api:
-    profiles:
-      - "mock"
     build:
       context: ./tmt-mock
       dockerfile: Dockerfile

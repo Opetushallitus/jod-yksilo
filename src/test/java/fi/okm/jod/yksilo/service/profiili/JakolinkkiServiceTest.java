@@ -527,11 +527,11 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     assertThat(content.muuOsaaminen()).isNotNull();
     assertThat(content.muuOsaaminen().vapaateksti().get(Kieli.FI))
         .isEqualTo("Muun osaamisen vapaateksti");
-    assertThat(content.muuOsaaminen().muuOsaaminen()).containsExactly(URI.create("urn:osaaminen1"));
+    assertThat(content.muuOsaaminen().muuOsaaminen())
+        .containsExactly(URI.create("urn:osaaminen:1"));
   }
 
   @Test
-  @Sql("/data/ammatti.sql")
   void shouldShareKiinnostukset() {
     var osaaminen1 = entityManager.find(Osaaminen.class, 1L);
     var osaaminen2 = entityManager.find(Osaaminen.class, 2L);
@@ -556,10 +556,10 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
         .isEqualTo("Osaamiskiinnostusten vapaateksti");
     assertThat(content.kiinnostukset().kiinnostukset())
         .containsExactlyInAnyOrder(
-            URI.create("urn:osaaminen1"),
-            URI.create("urn:osaaminen2"),
-            URI.create("urn:ammatti1"),
-            URI.create("urn:ammatti2"));
+            URI.create("urn:osaaminen:1"),
+            URI.create("urn:osaaminen:2"),
+            URI.create("urn:ammatti:1"),
+            URI.create("urn:ammatti:2"));
   }
 
   @Test

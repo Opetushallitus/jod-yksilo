@@ -161,10 +161,10 @@ class MahdollisuudetControllerTest {
   void whenSkillsShouldReturnScores() throws Exception {
     final var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            Set.of(URI.create("urn:osaaminen1")),
+            Set.of(URI.create("urn:osaaminen:1")),
             null,
             0.5,
-            Set.of(URI.create("urn:osaaminen2")),
+            Set.of(URI.create("urn:osaaminen:2")),
             null,
             0.5,
             0.5,
@@ -202,7 +202,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("urn:osaaminen1"),
+                URI.create("urn:osaaminen:1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
@@ -301,7 +301,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("urn:osaaminen1"),
+                URI.create("urn:osaaminen:1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
@@ -368,7 +368,7 @@ class MahdollisuudetControllerTest {
     var osaamiset =
         List.of(
             new OsaaminenDto(
-                URI.create("urn:osaaminen1"),
+                URI.create("urn:osaaminen:1"),
                 new LocalizedString(Map.of(Kieli.FI, "text")),
                 new LocalizedString(Map.of(Kieli.FI, "text"))));
 
@@ -406,7 +406,7 @@ class MahdollisuudetControllerTest {
   @Test
   @WithMockUser
   void shouldGetMahdollisuudetSuggestionsForPolkuVaihe() throws Exception {
-    var missingOsaamiset = Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+    var missingOsaamiset = Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
 
     var serviceSuggestions =
         List.of(

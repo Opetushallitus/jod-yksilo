@@ -75,8 +75,7 @@ class TmtExportMappingTest {
         .getOsaamiset()
         .add(
             new YksilonOsaaminen(
-                new MuuOsaaminen(yksilo, Set.of()),
-                new Osaaminen(URI.create("urn:osaaminen:12345"))));
+                new MuuOsaaminen(yksilo, Set.of()), new Osaaminen(URI.create("urn:osaaminen:1"))));
 
     var toiminto = new Toiminto(yksilo, ls("Toiminto 1"));
     var patevyys = new Patevyys(toiminto);
@@ -86,7 +85,7 @@ class TmtExportMappingTest {
     patevyys.setKuvaus(ls("Patevyys Kuvaus 1"));
     patevyys
         .getOsaamiset()
-        .add(new YksilonOsaaminen(patevyys, new Osaaminen(URI.create("urn:osaaminen:12345"))));
+        .add(new YksilonOsaaminen(patevyys, new Osaaminen(URI.create("urn:osaaminen:2"))));
     yksilo.getOsaamiset().addAll(patevyys.getOsaamiset());
     toiminto.getPatevyydet().add(patevyys);
     yksilo.getToiminnot().add(toiminto);
@@ -99,7 +98,7 @@ class TmtExportMappingTest {
     toimenkuva.setKuvaus(ls("Toimenkuva Kuvaus 1"));
     toimenkuva
         .getOsaamiset()
-        .add(new YksilonOsaaminen(toimenkuva, new Osaaminen(URI.create("urn:osaaminen:12345"))));
+        .add(new YksilonOsaaminen(toimenkuva, new Osaaminen(URI.create("urn:osaaminen:3"))));
     yksilo.getOsaamiset().addAll(toimenkuva.getOsaamiset());
     tyopaikka.getToimenkuvat().add(toimenkuva);
     yksilo.getTyopaikat().add(tyopaikka);
@@ -112,7 +111,7 @@ class TmtExportMappingTest {
     koulutus.setKuvaus(ls("Koulutus Kuvaus 1"));
     koulutus
         .getOsaamiset()
-        .add(new YksilonOsaaminen(koulutus, new Osaaminen(URI.create("urn:osaaminen:12345"))));
+        .add(new YksilonOsaaminen(koulutus, new Osaaminen(URI.create("urn:osaaminen:4"))));
     yksilo.getOsaamiset().addAll(koulutus.getOsaamiset());
     koulutusKokonaisuus.getKoulutukset().add(koulutus);
     yksilo.getKoulutusKokonaisuudet().add(koulutusKokonaisuus);

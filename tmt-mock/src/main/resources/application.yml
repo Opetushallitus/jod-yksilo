@@ -8,3 +8,8 @@ logging:
   level:
     root: error
     fi.okm.jod: info
+
+mock:
+  client-id: "dummy-client-id"
+  client-secret: "dummy-client-secret"
+  kipa-subscription-key: "dummy-key"

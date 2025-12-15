@@ -230,6 +230,8 @@ bootJar {
   }
 }
 
+bootRun.dependsOn(":tmt-mock:build")
+
 springBoot {
   buildInfo {
     excludes = ['time']

@@ -87,18 +87,16 @@ public class KoulutusService {
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {
-    return add(kokonaisuus, dto, null);
+    return add(kokonaisuus, dto, false);
   }
 
-  Koulutus add(
-      KoulutusKokonaisuus kokonaisuus, KoulutusDto dto, Boolean odottaaOsaamisetTunnistusta) {
+  Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto, boolean tunnistaOsaamiset) {
     var entity = new Koulutus(kokonaisuus);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
-    entity.setOsaamisenTunnistusStatus(
-        odottaaOsaamisetTunnistusta == null ? null : OsaamisenTunnistusStatus.WAIT);
+    entity.setOsaamisenTunnistusStatus(tunnistaOsaamiset ? OsaamisenTunnistusStatus.WAIT : null);
     entity.setOsasuoritukset(dto.osasuoritukset());
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {

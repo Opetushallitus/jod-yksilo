@@ -1,0 +1,1570 @@
+{
+  "businessActivities": [
+    {
+      "businessId": "",
+      "businessType": "03",
+      "description": {
+        "description": {
+          "en": "Kuvaus",
+          "fi": "Kuvaus",
+          "sv": "Kuvaus"
+        },
+        "occupations": [
+          {
+            "altLabel": {
+              "en": [
+                "advertising photographer",
+                "aerial photographer",
+                "architecture photographer",
+                "art photographer",
+                "backstage photographer",
+                "commercial photographer",
+                "corporate photographer",
+                "culinary photographer",
+                "cultural photographer",
+                "documentary photographer",
+                "event photographer",
+                "fashion photographer",
+                "food photographer",
+                "graphical industry photographer",
+                "illustration photographer",
+                "industrial photographer",
+                "interior photographer",
+                "itinerant photographer",
+                "landscape photographer",
+                "medical photographer",
+                "microphotographer",
+                "photo designer",
+                "photographer retoucher",
+                "photographic artist",
+                "photography assistant",
+                "photography studio manager",
+                "photography technician",
+                "photography-based artist",
+                "portrait photographer",
+                "portrayist",
+                "press photographer",
+                "product photographer",
+                "reportage photographer",
+                "scene photographer",
+                "school photographer",
+                "scientific photographer",
+                "social photographer",
+                "sports photographer",
+                "still life photographer",
+                "still shooting photographer",
+                "studio photographer",
+                "technical photographer",
+                "travel photographer",
+                "underwater photographer",
+                "video photographer",
+                "wedding photographer",
+                "wildlife photographer"
+              ],
+              "fi": [
+                "arkistokuvaaja",
+                "ateljeevalokuvaaja",
+                "lehtivalokuvaaja",
+                "mainoskuvaaja",
+                "mainosvalokuvaaja",
+                "muotokuvaaja",
+                "sairaalakuvaaja",
+                "taidevalokuvaaja",
+                "tehdaskuvaaja"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "photographer",
+              "fi": "valokuvaaja",
+              "sv": "fotograf"
+            },
+            "uri": "http://data.europa.eu/esco/occupation/66542dd6-05a6-4d9e-97ff-3f4858c31ff9"
+          }
+        ],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "choose location for photographic equipment",
+                "place photographic equipment",
+                "set up equipment of photography",
+                "set up photography equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "set up photographic equipment",
+              "fi": "asentaa valokuvauslaitteet",
+              "sv": "sätta upp fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/3de14645-0c33-4ea0-b544-a962e8705173"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "ensure correct function of photographic equipment",
+                "maintain equipment of photography",
+                "maintain photography equipment",
+                "run maintenance on photographic equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "maintain photographic equipment",
+              "fi": "huolehtia kuvauslaitteista",
+              "sv": "underhålla fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/bdffa651-96a7-42f8-9d8d-1504c3b7811c"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "choose pictures",
+                "review images",
+                "select a photo",
+                "select photographs"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "select photos",
+              "fi": "valita valokuvat",
+              "sv": "välja ut foton"
+            },
+            "uri": "http://data.europa.eu/esco/skill/64e505a8-8c7a-40a4-9776-0fd5ced146fa"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "choose photographic cameras and accessories",
+                "choose photographic gear",
+                "select equipment for photography",
+                "select photography equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "select photographic equipment",
+              "fi": "valita valokuvausvälineet",
+              "sv": "välja fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/b8d93b59-618a-47b5-8952-97cecc030cbb"
+          }
+        ]
+      },
+      "interval": {
+        "endDate": "2007-01-01",
+        "ongoing": false,
+        "startDate": "2006-01-01"
+      },
+      "name": {
+        "en": "Oy Firma Ab",
+        "fi": "Oy Firma Ab",
+        "sv": "Oy Firma Ab"
+      },
+      "title": {
+        "en": "CEO",
+        "fi": "CEO",
+        "sv": "CEO"
+      }
+    }
+  ],
+  "certifications": {
+    "cardCodes": [
+      "022",
+      "079",
+      "013",
+      "074",
+      "005",
+      "075",
+      "001",
+      "002",
+      "006",
+      "007",
+      "012"
+    ],
+    "description": {
+      "en": "",
+      "fi": "",
+      "sv": ""
+    }
+  },
+  "drivingLicenses": {
+    "description": {
+      "en": "",
+      "fi": "",
+      "sv": ""
+    },
+    "licenseClasses": [
+      "C1C",
+      "B"
+    ],
+    "ownCarAvailable": true
+  },
+  "educations": [
+    {
+      "customDegreeName": {},
+      "degreeCode": "651104",
+      "degreeInstitution": {
+        "en": "Ammattikorkeakoulu",
+        "fi": "Ammattikorkeakoulu",
+        "sv": "Ammattikorkeakoulu"
+      },
+      "description": {
+        "description": {
+          "en": "Kuvausta koulutuksesta voit tähän kirjata.",
+          "fi": "Kuvausta koulutuksesta voit tähän kirjata.",
+          "sv": "Kuvausta koulutuksesta voit tähän kirjata."
+        },
+        "occupations": [],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "education laws",
+                "education legislation",
+                "education norms",
+                "education regulation",
+                "the law of education"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "education law",
+              "fi": "koulutuslainsäädäntö",
+              "sv": "utbildningslagstiftning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/57beaad1-7c5e-4b17-a35f-31f49e1d7378"
+          }
+        ]
+      },
+      "interval": {
+        "endDate": "2022-06-01",
+        "startDate": "2018-01-01",
+        "statusCode": "2"
+      }
+    },
+    {
+      "customDegreeName": {
+        "fi": "Tutkinto"
+      },
+      "degreeInstitution": {
+        "fi": "Maailman opisto"
+      },
+      "description": {
+        "description": {},
+        "occupations": [],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "applied foreign languages in tourism",
+                "apply foreign languages to tourism",
+                "exploit foreign language skills in tourism",
+                "use foreign languages among  guests"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "apply foreign languages in tourism",
+              "fi": "käyttää vieraita kieliä matkailualalla",
+              "sv": "använda främmande språk i turismbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/ce04b5bc-ffb6-47b2-b386-ba40911e8542"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "communicate in multiple languages",
+                "speak a different language",
+                "speak foreign languages"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "speak different languages",
+              "fi": "puhua eri kieliä",
+              "sv": "tala olika språk"
+            },
+            "uri": "http://data.europa.eu/esco/skill/2de4572a-4724-4f76-afc2-72a568a264ac"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "check tour package conditions",
+                "handle contract tour details",
+                "handle details of tour contract",
+                "handle tour contract details",
+                "manage tour package contract details"
+              ],
+              "fi": [
+                "hoitaa matkapakettien yksityiskohdat",
+                "hoitaa matkasuunnitelmien yksityiskohdat",
+                "varmistaa matkapakettien yksityiskohtien toteutumisen",
+                "varmistaa matkasuunnitelmien yksityiskohtien toteutumisen",
+                "vastata matkapakettien yksityiskohdista",
+                "vastata matkasuunnitelmien yksityiskohdista"
+              ],
+              "sv": [
+                "hantera detaljer om resekontrakt",
+                "hantera resekontraktsdetaljer",
+                "sköta detaljer för resekontrakt",
+                "sköta detaljer om resekontrakt",
+                "sköta resekontraktsdetalj"
+              ]
+            },
+            "prefLabel": {
+              "en": "administer tour contract details",
+              "fi": "hallinnoida matkasuunnitelmien yksityiskohtia",
+              "sv": "administrera uppgifter i reseavtal"
+            },
+            "uri": "http://data.europa.eu/esco/skill/342212c7-5650-4dbd-b7ad-18a6aee8e567"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "assist clients having special needs",
+                "assist disabled clients",
+                "assist special needs clients",
+                "assist visitors with special needs",
+                "handle participants with special needs",
+                "provide advice to people with special needs",
+                "respond appropriately to people using personal supports"
+              ],
+              "fi": [
+                "auttaa henkilöitä  joilla on erikoistarpeita",
+                "auttaa vammaisasiakkaita",
+                "auttaa vammaisia asiakkaita",
+                "avustaa vammaisasiakkaita",
+                "avustaa vammaisia asiakkaita",
+                "neuvoa henkilöitä, joilla on erikoistarpeita",
+                "tukea henkilöitä, joilla on erityistarpeita",
+                "vastata asianmukaisesti tukivälineitä käyttäville henkilöille"
+              ],
+              "sv": [
+                "assistera klienter med särskilda behov",
+                "assistera kunder med särskilda behov",
+                "hjälpa klient med särskilda behov",
+                "hjälpa klienter med speciella behov",
+                "hjälpa klienter med särskilt behov",
+                "hjälpa kunder med särskilda behov"
+              ]
+            },
+            "prefLabel": {
+              "en": "assist clients with special needs",
+              "fi": "avustaa asiakkaita, joilla on erikoistarpeita",
+              "sv": "hjälpa klienter med särskilda behov"
+            },
+            "uri": "http://data.europa.eu/esco/skill/b6b2e665-1085-4f4d-9973-e979721815d7"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "lap wafers",
+                "lapping wafers",
+                "polishing wafers",
+                "wafer lapping",
+                "wafer polishing",
+                "wafers lapping",
+                "wafers polishing"
+              ],
+              "fi": [
+                "kiillottaa piikiekkoja"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "polish wafers",
+              "fi": "kiillottaa kiekkoja",
+              "sv": "polera brickor"
+            },
+            "uri": "http://data.europa.eu/esco/skill/e78473ee-d208-4b9c-b241-339334ac9a7b"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "abide by code of conduct guidelines in tourism",
+                "comply with code of ethics and conduct in tourism",
+                "follow code of ethical conduct in tourism",
+                "follow ethical conduct code  in tourism"
+              ],
+              "fi": [
+                "noudattaa eettisiä toimintaperiaatteita matkailualalla"
+              ],
+              "sv": [
+                "följa etiska regler inom turismbranschen",
+                "följa uppförandekoder inom turismbranschen"
+              ]
+            },
+            "prefLabel": {
+              "en": "follow ethical code of conduct in tourism",
+              "fi": "noudattaa eettisiä toimintatapoja matkailualalla",
+              "sv": "följa etiska koder inom turismbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/deb31109-4bc6-4aa8-8ca1-d2c422403e03"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "act as point of reference for tour group",
+                "address tour group upon arrival",
+                "welcome a tour group",
+                "welcome groups on tour"
+              ],
+              "fi": [
+                "antaa tietoa vastasaapuneille ryhmille",
+                "ottaa vastaan turistiryhmiä",
+                "toivottaa saapuneet ryhmät tervetulleiksi",
+                "toivottaa tervetulleeksi saapuneet ryhmät"
+              ],
+              "sv": [
+                "ta emot grupper",
+                "ta emot resesällskap",
+                "välkomna ett resesällskap",
+                "välkomna grupper med resande",
+                "välkomna grupper på resa",
+                "välkomna resegrupper",
+                "välkomna resesällskapen"
+              ]
+            },
+            "prefLabel": {
+              "en": "welcome tour groups",
+              "fi": "ottaa vastaan matkailijaryhmiä",
+              "sv": "välkomna resesällskap"
+            },
+            "uri": "http://data.europa.eu/esco/skill/580e21c2-565f-4a91-a90c-83a58564638e"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "Ashtanga yoga",
+                "Hatha yoga",
+                "practice of yoga",
+                "principles of yoga",
+                "yoga practice",
+                "yoga techniques"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "yoga",
+              "fi": "jooga",
+              "sv": "yoga"
+            },
+            "uri": "http://data.europa.eu/esco/skill/3abfda93-0f26-46ac-bf92-d5917047e90b"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "mechanisms of stress relief",
+                "methods of relaxation",
+                "methods of stress relief",
+                "relaxation mechanisms",
+                "relaxation methodologies",
+                "relaxation methods",
+                "stress alleviation mechanisms",
+                "stress alleviation methods",
+                "stress alleviation techniques",
+                "stress relief techniques",
+                "techniques of relaxation"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "relaxation techniques",
+              "fi": "rentoutustekniikat",
+              "sv": "avslappningsteknik"
+            },
+            "uri": "http://data.europa.eu/esco/skill/b0f4dea9-2a99-449e-b042-9afada464cb1"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "Joomla software"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "Joomla",
+              "fi": "Joomla",
+              "sv": "Joomla"
+            },
+            "uri": "http://data.europa.eu/esco/skill/d2adb565-a865-424d-aeb5-9fbcbf2afe2a"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "effects of the environment on tourism",
+                "environment and its impact on tourism",
+                "environmental impact of travel activities",
+                "impact of environment on tourism"
+              ],
+              "fi": [
+                "matkailun vaikutus ympäristöön",
+                "turismin vaikutukset ympäristöön",
+                "turismin ympäristövaikutukset"
+              ],
+              "sv": [
+                "miljöpåverkan från turism",
+                "turismens påverkan på miljön",
+                "turisms effekter på miljön",
+                "turistens påverkan på miljön"
+              ]
+            },
+            "prefLabel": {
+              "en": "environmental impact of tourism",
+              "fi": "matkailun ympäristövaikutukset",
+              "sv": "turismens miljöpåverkan"
+            },
+            "uri": "http://data.europa.eu/esco/skill/7cefbd03-d544-4184-a9b4-caa1eea2a646"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "ensure audience and visitors safety",
+                "ensure spectator safety",
+                "ensure visitors are healthy and safe",
+                "ensure visitors safety",
+                "ensure visitors' health and safety",
+                "manage visitor safety"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "ensure health and safety of visitors",
+              "fi": "varmistaa vierailijoiden terveys ja turvallisuus",
+              "sv": "garantera besökares hälsa och säkerhet"
+            },
+            "uri": "http://data.europa.eu/esco/skill/97843c38-17f0-4c9c-aa86-049e2870aa1a"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "local points of interest",
+                "local region tourism industry",
+                "local tourism industry",
+                "local tourist area industry"
+              ],
+              "fi": [
+                "antaa tietoa reiteistä, nähtävyyksistä ja kulttuurista",
+                "paikallinen alue,  seutu ja turismi",
+                "paikalliset kiinnostavat kohteet",
+                "paikalliset kiinnostuksenkohteet",
+                "tieto reiteistä, nähtävyyksistä ja kulttuurista"
+              ],
+              "sv": [
+                "lokal och regional industri för turister",
+                "lokal och regional turistbransch"
+              ]
+            },
+            "prefLabel": {
+              "en": "local area tourism industry",
+              "fi": "paikallinen alue-, seutu- ja matkailuala",
+              "sv": "lokal och regional turistindustri"
+            },
+            "uri": "http://data.europa.eu/esco/skill/221a3714-9a9e-43a4-869e-184bbea5e32d"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "check ambulance roadworthiness",
+                "ensure ambulance's roadworthiness",
+                "ensure roadworthiness of ambulance",
+                "ensure roadworthiness of ambulance vehicles",
+                "ensure roadworthiness of ambulances"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "ensure ambulance roadworthiness",
+              "fi": "varmistaa ambulanssin ajokuntoisuus",
+              "sv": "säkerställa ambulansens körvärdighet"
+            },
+            "uri": "http://data.europa.eu/esco/skill/fadca1ff-c4a9-46ed-9740-a42bd3991618"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "demonstrate  intercultural competence services in hospitality",
+                "demonstrate intercultural service competence in hospitality",
+                "display an understanding of cultural differences in the hospitality field",
+                "show cultural awareness in the hospitality and tourism sector"
+              ],
+              "fi": [
+                "hallita monikulttuurisia taitoja majoitusalalla",
+                "hallita monikulttuurisia taitoja vieraanvaraisuusalalla",
+                "osoittaa monikulttuurisia taitoja majoitusalalla"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "demonstrate intercultural competences in hospitality services",
+              "fi": "hallita monikulttuurisia taitoja matkailu-, majoitus- ja ravitsemisalalla",
+              "sv": "visa interkulturell kompetens i hotellbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/83723a7f-e905-4d6c-82ba-f40ab873883d"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "guide groups of tourists",
+                "lead leisure group tours",
+                "manage groups of tourists",
+                "manage tourists in groups"
+              ],
+              "fi": [
+                "hoitaa matkailijaryhmiä",
+                "opastaa matkailijoita",
+                "opastaa turisteja",
+                "toimia matkaoppaana"
+              ],
+              "sv": [
+                "ansvara för grupp med turister",
+                "ansvara för grupper med turister",
+                "ansvara för turistgrupp",
+                "ha hand om grupper med turister",
+                "ha hand om turistgrupper",
+                "ta hand om grupper med turister",
+                "ta hand om turistgrupper"
+              ]
+            },
+            "prefLabel": {
+              "en": "manage tourist groups",
+              "fi": "hoitaa turistiryhmiä",
+              "sv": "ansvara för turistgrupper"
+            },
+            "uri": "http://data.europa.eu/esco/skill/a7c51c48-802c-44ee-a40e-79b18b1d4365"
+          }
+        ]
+      },
+      "interval": {
+        "startDate": "2025-12-08",
+        "statusCode": "1"
+      }
+    },
+    {
+      "customDegreeName": {
+        "fi": "Tutkinto"
+      },
+      "degreeInstitution": {
+        "fi": "Oppilaitos"
+      },
+      "description": {
+        "description": {},
+        "occupations": [],
+        "skills": []
+      },
+      "interval": {
+        "endDate": "2025-12-07",
+        "startDate": "2025-12-01",
+        "statusCode": "2"
+      }
+    },
+    {
+      "customDegreeName": {
+        "fi": "Tutkinto"
+      },
+      "degreeInstitution": {
+        "fi": "Maailman opisto"
+      },
+      "description": {
+        "description": {},
+        "occupations": [],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "check tour package conditions",
+                "handle contract tour details",
+                "handle details of tour contract",
+                "handle tour contract details",
+                "manage tour package contract details"
+              ],
+              "fi": [
+                "hoitaa matkapakettien yksityiskohdat",
+                "hoitaa matkasuunnitelmien yksityiskohdat",
+                "varmistaa matkapakettien yksityiskohtien toteutumisen",
+                "varmistaa matkasuunnitelmien yksityiskohtien toteutumisen",
+                "vastata matkapakettien yksityiskohdista",
+                "vastata matkasuunnitelmien yksityiskohdista"
+              ],
+              "sv": [
+                "hantera detaljer om resekontrakt",
+                "hantera resekontraktsdetaljer",
+                "sköta detaljer för resekontrakt",
+                "sköta detaljer om resekontrakt",
+                "sköta resekontraktsdetalj"
+              ]
+            },
+            "prefLabel": {
+              "en": "administer tour contract details",
+              "fi": "hallinnoida matkasuunnitelmien yksityiskohtia",
+              "sv": "administrera uppgifter i reseavtal"
+            },
+            "uri": "http://data.europa.eu/esco/skill/342212c7-5650-4dbd-b7ad-18a6aee8e567"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "demonstrate  intercultural competence services in hospitality",
+                "demonstrate intercultural service competence in hospitality",
+                "display an understanding of cultural differences in the hospitality field",
+                "show cultural awareness in the hospitality and tourism sector"
+              ],
+              "fi": [
+                "hallita monikulttuurisia taitoja majoitusalalla",
+                "hallita monikulttuurisia taitoja vieraanvaraisuusalalla",
+                "osoittaa monikulttuurisia taitoja majoitusalalla"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "demonstrate intercultural competences in hospitality services",
+              "fi": "hallita monikulttuurisia taitoja matkailu-, majoitus- ja ravitsemisalalla",
+              "sv": "visa interkulturell kompetens i hotellbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/83723a7f-e905-4d6c-82ba-f40ab873883d"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "applied foreign languages in tourism",
+                "apply foreign languages to tourism",
+                "exploit foreign language skills in tourism",
+                "use foreign languages among  guests"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "apply foreign languages in tourism",
+              "fi": "käyttää vieraita kieliä matkailualalla",
+              "sv": "använda främmande språk i turismbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/ce04b5bc-ffb6-47b2-b386-ba40911e8542"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "Joomla software"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "Joomla",
+              "fi": "Joomla",
+              "sv": "Joomla"
+            },
+            "uri": "http://data.europa.eu/esco/skill/d2adb565-a865-424d-aeb5-9fbcbf2afe2a"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "mechanisms of stress relief",
+                "methods of relaxation",
+                "methods of stress relief",
+                "relaxation mechanisms",
+                "relaxation methodologies",
+                "relaxation methods",
+                "stress alleviation mechanisms",
+                "stress alleviation methods",
+                "stress alleviation techniques",
+                "stress relief techniques",
+                "techniques of relaxation"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "relaxation techniques",
+              "fi": "rentoutustekniikat",
+              "sv": "avslappningsteknik"
+            },
+            "uri": "http://data.europa.eu/esco/skill/b0f4dea9-2a99-449e-b042-9afada464cb1"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "guide groups of tourists",
+                "lead leisure group tours",
+                "manage groups of tourists",
+                "manage tourists in groups"
+              ],
+              "fi": [
+                "hoitaa matkailijaryhmiä",
+                "opastaa matkailijoita",
+                "opastaa turisteja",
+                "toimia matkaoppaana"
+              ],
+              "sv": [
+                "ansvara för grupp med turister",
+                "ansvara för grupper med turister",
+                "ansvara för turistgrupp",
+                "ha hand om grupper med turister",
+                "ha hand om turistgrupper",
+                "ta hand om grupper med turister",
+                "ta hand om turistgrupper"
+              ]
+            },
+            "prefLabel": {
+              "en": "manage tourist groups",
+              "fi": "hoitaa turistiryhmiä",
+              "sv": "ansvara för turistgrupper"
+            },
+            "uri": "http://data.europa.eu/esco/skill/a7c51c48-802c-44ee-a40e-79b18b1d4365"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "communicate in multiple languages",
+                "speak a different language",
+                "speak foreign languages"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "speak different languages",
+              "fi": "puhua eri kieliä",
+              "sv": "tala olika språk"
+            },
+            "uri": "http://data.europa.eu/esco/skill/2de4572a-4724-4f76-afc2-72a568a264ac"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "abide by code of conduct guidelines in tourism",
+                "comply with code of ethics and conduct in tourism",
+                "follow code of ethical conduct in tourism",
+                "follow ethical conduct code  in tourism"
+              ],
+              "fi": [
+                "noudattaa eettisiä toimintaperiaatteita matkailualalla"
+              ],
+              "sv": [
+                "följa etiska regler inom turismbranschen",
+                "följa uppförandekoder inom turismbranschen"
+              ]
+            },
+            "prefLabel": {
+              "en": "follow ethical code of conduct in tourism",
+              "fi": "noudattaa eettisiä toimintatapoja matkailualalla",
+              "sv": "följa etiska koder inom turismbranschen"
+            },
+            "uri": "http://data.europa.eu/esco/skill/deb31109-4bc6-4aa8-8ca1-d2c422403e03"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "effects of the environment on tourism",
+                "environment and its impact on tourism",
+                "environmental impact of travel activities",
+                "impact of environment on tourism"
+              ],
+              "fi": [
+                "matkailun vaikutus ympäristöön",
+                "turismin vaikutukset ympäristöön",
+                "turismin ympäristövaikutukset"
+              ],
+              "sv": [
+                "miljöpåverkan från turism",
+                "turismens påverkan på miljön",
+                "turisms effekter på miljön",
+                "turistens påverkan på miljön"
+              ]
+            },
+            "prefLabel": {
+              "en": "environmental impact of tourism",
+              "fi": "matkailun ympäristövaikutukset",
+              "sv": "turismens miljöpåverkan"
+            },
+            "uri": "http://data.europa.eu/esco/skill/7cefbd03-d544-4184-a9b4-caa1eea2a646"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "assist clients having special needs",
+                "assist disabled clients",
+                "assist special needs clients",
+                "assist visitors with special needs",
+                "handle participants with special needs",
+                "provide advice to people with special needs",
+                "respond appropriately to people using personal supports"
+              ],
+              "fi": [
+                "auttaa henkilöitä  joilla on erikoistarpeita",
+                "auttaa vammaisasiakkaita",
+                "auttaa vammaisia asiakkaita",
+                "avustaa vammaisasiakkaita",
+                "avustaa vammaisia asiakkaita",
+                "neuvoa henkilöitä, joilla on erikoistarpeita",
+                "tukea henkilöitä, joilla on erityistarpeita",
+                "vastata asianmukaisesti tukivälineitä käyttäville henkilöille"
+              ],
+              "sv": [
+                "assistera klienter med särskilda behov",
+                "assistera kunder med särskilda behov",
+                "hjälpa klient med särskilda behov",
+                "hjälpa klienter med speciella behov",
+                "hjälpa klienter med särskilt behov",
+                "hjälpa kunder med särskilda behov"
+              ]
+            },
+            "prefLabel": {
+              "en": "assist clients with special needs",
+              "fi": "avustaa asiakkaita, joilla on erikoistarpeita",
+              "sv": "hjälpa klienter med särskilda behov"
+            },
+            "uri": "http://data.europa.eu/esco/skill/b6b2e665-1085-4f4d-9973-e979721815d7"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "Ashtanga yoga",
+                "Hatha yoga",
+                "practice of yoga",
+                "principles of yoga",
+                "yoga practice",
+                "yoga techniques"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "yoga",
+              "fi": "jooga",
+              "sv": "yoga"
+            },
+            "uri": "http://data.europa.eu/esco/skill/3abfda93-0f26-46ac-bf92-d5917047e90b"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "lap wafers",
+                "lapping wafers",
+                "polishing wafers",
+                "wafer lapping",
+                "wafer polishing",
+                "wafers lapping",
+                "wafers polishing"
+              ],
+              "fi": [
+                "kiillottaa piikiekkoja"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "polish wafers",
+              "fi": "kiillottaa kiekkoja",
+              "sv": "polera brickor"
+            },
+            "uri": "http://data.europa.eu/esco/skill/e78473ee-d208-4b9c-b241-339334ac9a7b"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "local points of interest",
+                "local region tourism industry",
+                "local tourism industry",
+                "local tourist area industry"
+              ],
+              "fi": [
+                "antaa tietoa reiteistä, nähtävyyksistä ja kulttuurista",
+                "paikallinen alue,  seutu ja turismi",
+                "paikalliset kiinnostavat kohteet",
+                "paikalliset kiinnostuksenkohteet",
+                "tieto reiteistä, nähtävyyksistä ja kulttuurista"
+              ],
+              "sv": [
+                "lokal och regional industri för turister",
+                "lokal och regional turistbransch"
+              ]
+            },
+            "prefLabel": {
+              "en": "local area tourism industry",
+              "fi": "paikallinen alue-, seutu- ja matkailuala",
+              "sv": "lokal och regional turistindustri"
+            },
+            "uri": "http://data.europa.eu/esco/skill/221a3714-9a9e-43a4-869e-184bbea5e32d"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "ensure audience and visitors safety",
+                "ensure spectator safety",
+                "ensure visitors are healthy and safe",
+                "ensure visitors safety",
+                "ensure visitors' health and safety",
+                "manage visitor safety"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "ensure health and safety of visitors",
+              "fi": "varmistaa vierailijoiden terveys ja turvallisuus",
+              "sv": "garantera besökares hälsa och säkerhet"
+            },
+            "uri": "http://data.europa.eu/esco/skill/97843c38-17f0-4c9c-aa86-049e2870aa1a"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "check ambulance roadworthiness",
+                "ensure ambulance's roadworthiness",
+                "ensure roadworthiness of ambulance",
+                "ensure roadworthiness of ambulance vehicles",
+                "ensure roadworthiness of ambulances"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "ensure ambulance roadworthiness",
+              "fi": "varmistaa ambulanssin ajokuntoisuus",
+              "sv": "säkerställa ambulansens körvärdighet"
+            },
+            "uri": "http://data.europa.eu/esco/skill/fadca1ff-c4a9-46ed-9740-a42bd3991618"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "act as point of reference for tour group",
+                "address tour group upon arrival",
+                "welcome a tour group",
+                "welcome groups on tour"
+              ],
+              "fi": [
+                "antaa tietoa vastasaapuneille ryhmille",
+                "ottaa vastaan turistiryhmiä",
+                "toivottaa saapuneet ryhmät tervetulleiksi",
+                "toivottaa tervetulleeksi saapuneet ryhmät"
+              ],
+              "sv": [
+                "ta emot grupper",
+                "ta emot resesällskap",
+                "välkomna ett resesällskap",
+                "välkomna grupper med resande",
+                "välkomna grupper på resa",
+                "välkomna resegrupper",
+                "välkomna resesällskapen"
+              ]
+            },
+            "prefLabel": {
+              "en": "welcome tour groups",
+              "fi": "ottaa vastaan matkailijaryhmiä",
+              "sv": "välkomna resesällskap"
+            },
+            "uri": "http://data.europa.eu/esco/skill/580e21c2-565f-4a91-a90c-83a58564638e"
+          }
+        ]
+      },
+      "interval": {
+        "startDate": "2025-12-08",
+        "statusCode": "1"
+      }
+    },
+    {
+      "customDegreeName": {},
+      "degreeCode": "321951",
+      "degreeInstitution": {
+        "en": "Testioppilaitos",
+        "fi": "Testioppilaitos",
+        "sv": "Testioppilaitos"
+      },
+      "description": {
+        "description": {
+          "en": "Kuvaus",
+          "fi": "Kuvaus",
+          "sv": "Kuvaus"
+        },
+        "occupations": [],
+        "skills": []
+      },
+      "interval": {
+        "startDate": "2026-01-01",
+        "statusCode": "1"
+      }
+    }
+  ],
+  "employments": [
+    {
+      "description": {
+        "description": {},
+        "occupations": [],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "picture taking",
+                "shooting"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "photography",
+              "fi": "valokuvaus",
+              "sv": "fotografi"
+            },
+            "uri": "http://data.europa.eu/esco/skill/38509fa4-7c06-4a4b-9622-f521f03c37b8"
+          },
+          {
+            "altLabel": {
+              "en": [],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "proofread text",
+              "fi": "oikolukea teksti",
+              "sv": "korrekturläsa text"
+            },
+            "uri": "http://data.europa.eu/esco/skill/637ca2e2-0624-48b1-be6e-9ff4580344ac"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "audio-visual apparatus",
+                "audio-visual devices",
+                "audio-visual gear",
+                "audio-visual instruments"
+              ],
+              "fi": [
+                "audiovisuaaliset varusteet"
+              ],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "audiovisual equipment",
+              "fi": "audiovisuaaliset laitteet",
+              "sv": "audiovisuell utrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/e6262391-ffda-4b8e-9f5c-89cf1a0e7384"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "vocal methods",
+                "vocal practices",
+                "vocal procedures",
+                "vocal technique",
+                "voice techniques"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "vocal techniques",
+              "fi": "äänenkäyttötekniikat",
+              "sv": "röstteknik"
+            },
+            "uri": "http://data.europa.eu/esco/skill/7d4a4dc4-9324-4975-905d-ff1140f95acc"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "go on air during live broadcasts",
+                "host live broadcasts",
+                "present during live broadcast",
+                "presenting during live broadcasts"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "present during live broadcasts",
+              "fi": "esiintyä suorissa lähetyksissä",
+              "sv": "presentera i direktsändning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/fd9694e7-5e7a-4209-806f-51451bb63dc7"
+          }
+        ]
+      },
+      "employer": {
+        "fi": "Työnantaja"
+      },
+      "employerNameHidden": false,
+      "interval": {
+        "endDate": "2025-12-31",
+        "ongoing": false,
+        "startDate": "2025-10-01"
+      },
+      "title": {
+        "fi": "Toimenkuva"
+      }
+    },
+    {
+      "description": {
+        "description": {
+          "en": "",
+          "fi": "",
+          "sv": ""
+        },
+        "occupations": [],
+        "skills": []
+      },
+      "employer": {
+        "en": "Testi",
+        "fi": "Testi",
+        "sv": "Testi"
+      },
+      "employerNameHidden": true,
+      "interval": {
+        "ongoing": false
+      },
+      "title": {
+        "en": "Nimike",
+        "fi": "Nimike",
+        "sv": "Nimike"
+      }
+    }
+  ],
+  "experienceDescription": {
+    "description": {
+      "en": "fysiikanopettaja",
+      "fi": "fysiikanopettaja",
+      "sv": "fysiikanopettaja"
+    },
+    "occupations": [],
+    "skills": []
+  },
+  "externalLinks": [
+    {
+      "label": {
+        "en": "Toinen linkki",
+        "fi": "Toinen linkki",
+        "sv": "Toinen linkki"
+      },
+      "url": "https://example.org/"
+    },
+    {
+      "label": {
+        "en": "Linkki",
+        "fi": "Linkki",
+        "sv": "Linkki"
+      },
+      "url": "https://tyomarkkinatori.fi/"
+    }
+  ],
+  "generalInfo": {
+    "caption": {
+      "en": "Motivoitunut ammattilainen etsii töitä",
+      "fi": "Motivoitunut ammattilainen etsii töitä",
+      "sv": "Motivoitunut ammattilainen etsii töitä"
+    },
+    "description": {
+      "en": "Tähän esittelytekstiä.",
+      "fi": "Tähän esittelytekstiä.",
+      "sv": "Tähän esittelytekstiä."
+    },
+    "meta": {
+      "created": "2025-06-25T08:12:46.127449Z",
+      "lastModified": "2025-12-12T12:04:38.986554Z"
+    },
+    "personAvailability": "03",
+    "personAvailabilityText": {
+      "en": "",
+      "fi": "",
+      "sv": ""
+    },
+    "preferredCountries": [
+      "FI"
+    ],
+    "preferredMunicipalities": [
+      "853"
+    ],
+    "preferredRegions": [
+      "01",
+      "02"
+    ],
+    "willingToTravel": true,
+    "willingToWorkRemotely": true
+  },
+  "jobPreferenceDescription": {
+    "description": {
+      "en": "Työtoiveista voit tässä kertoa itse.",
+      "fi": "Työtoiveista voit tässä kertoa itse.",
+      "sv": "Työtoiveista voit tässä kertoa itse."
+    },
+    "occupations": [],
+    "skills": [
+      {
+        "altLabel": {
+          "en": [
+            "advise about construction materials",
+            "advise regarding construction materials",
+            "give advice on construction materials",
+            "giving advice on construction materials",
+            "giving of advice on construction materials",
+            "provide advice on construction materials"
+          ],
+          "fi": [],
+          "sv": []
+        },
+        "prefLabel": {
+          "en": "advise on construction materials",
+          "fi": "antaa rakennusmateriaaleihin liittyviä neuvoja",
+          "sv": "ge råd om byggmaterial"
+        },
+        "uri": "http://data.europa.eu/esco/skill/01c03003-516d-43c6-8477-45c472413521"
+      },
+      {
+        "altLabel": {
+          "en": [
+            "building material industry",
+            "building materials business",
+            "building materials company",
+            "building materials industries",
+            "building materials operation",
+            "building materials outfit"
+          ],
+          "fi": [],
+          "sv": [
+            "byggnadsmaterialbranschen",
+            "byggvarubranschen"
+          ]
+        },
+        "prefLabel": {
+          "en": "building materials industry",
+          "fi": "rakennusmateriaaliteollisuus",
+          "sv": "byggmaterialbranschen"
+        },
+        "uri": "http://data.europa.eu/esco/skill/e26e07ca-4a35-42e3-940d-e5868fd38fba"
+      },
+      {
+        "altLabel": {
+          "en": [
+            "construction approaches",
+            "construction methodology",
+            "construction procedures",
+            "construction processes",
+            "construction systems",
+            "construction techniques"
+          ],
+          "fi": [],
+          "sv": [
+            "konstruktionsmetoder"
+          ]
+        },
+        "prefLabel": {
+          "en": "construction methods",
+          "fi": "rakennusmenetelmät",
+          "sv": "byggmetoder"
+        },
+        "uri": "http://data.europa.eu/esco/skill/cc173f61-3386-44c5-a048-3889e1ec9114"
+      },
+      {
+        "altLabel": {
+          "en": [
+            "human factors regarding health and safety",
+            "human health and safety considerations",
+            "human health and safety implications",
+            "human safety considerations",
+            "human safety factors",
+            "human safety implications"
+          ],
+          "fi": [],
+          "sv": []
+        },
+        "prefLabel": {
+          "en": "human factors regarding safety",
+          "fi": "turvallisuuteen vaikuttavat inhimilliset tekijät",
+          "sv": "mänskliga faktorer i samband med säkerhet"
+        },
+        "uri": "http://data.europa.eu/esco/skill/02137a68-6860-45e8-8e4d-38db467bb8b6"
+      },
+      {
+        "altLabel": {
+          "en": [
+            "plan an ergonomic work station",
+            "work in an ergonomic way",
+            "work to set up an ergonomic work station"
+          ],
+          "fi": [],
+          "sv": []
+        },
+        "prefLabel": {
+          "en": "work ergonomically",
+          "fi": "työskennellä ergonomisesti",
+          "sv": "arbeta ergonomiskt"
+        },
+        "uri": "http://data.europa.eu/esco/skill/156f8c5b-894a-4ccc-a70e-37a2726f3f00"
+      }
+    ]
+  },
+  "languageSkills": [
+    {
+      "code": "fi",
+      "description": {
+        "fi": ""
+      },
+      "level": "L1"
+    },
+    {
+      "code": "en",
+      "description": {
+        "fi": ""
+      },
+      "level": "B2"
+    },
+    {
+      "code": "af",
+      "description": {
+        "fi": ""
+      },
+      "level": "A1"
+    },
+    {
+      "code": "sv",
+      "description": {
+        "fi": ""
+      },
+      "level": "B1"
+    }
+  ],
+  "projects": [
+    {
+      "description": {
+        "description": {
+          "en": "Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta.",
+          "fi": "Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta.",
+          "sv": "Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta. Tässä kuvaus muusta kokemuksesta."
+        },
+        "occupations": [],
+        "skills": [
+          {
+            "altLabel": {
+              "en": [
+                "choose location for photographic equipment",
+                "place photographic equipment",
+                "set up equipment of photography",
+                "set up photography equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "set up photographic equipment",
+              "fi": "asentaa valokuvauslaitteet",
+              "sv": "sätta upp fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/3de14645-0c33-4ea0-b544-a962e8705173"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "ensure correct function of photographic equipment",
+                "maintain equipment of photography",
+                "maintain photography equipment",
+                "run maintenance on photographic equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "maintain photographic equipment",
+              "fi": "huolehtia kuvauslaitteista",
+              "sv": "underhålla fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/bdffa651-96a7-42f8-9d8d-1504c3b7811c"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "employ specialised photographic equipment",
+                "use digital photographic equipment",
+                "use equipment for photographs",
+                "use equipment for photography"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "use photographic equipment",
+              "fi": "käyttää valokuvausvälineitä",
+              "sv": "använda fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/c7b1e520-8921-46dd-b444-e0637323bb7f"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "determine composition of image",
+                "determine picture",
+                "select subject of picture"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "determine image composition",
+              "fi": "määritellä kuvien sommittelu",
+              "sv": "fastställa bildkomposition"
+            },
+            "uri": "http://data.europa.eu/esco/skill/a6c06345-6ca0-42f2-b01e-bb4078fef1e2"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "check photographic equipment",
+                "control photographic tools",
+                "test equipment of photography",
+                "test photography equipment"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "test photographic equipment",
+              "fi": "testata valokuvausvälineitä",
+              "sv": "testa fotoutrustning"
+            },
+            "uri": "http://data.europa.eu/esco/skill/e139c087-bd34-4660-8554-1d01092bc749"
+          },
+          {
+            "altLabel": {
+              "en": [
+                "choose pictures",
+                "review images",
+                "select a photo",
+                "select photographs"
+              ],
+              "fi": [],
+              "sv": []
+            },
+            "prefLabel": {
+              "en": "select photos",
+              "fi": "valita valokuvat",
+              "sv": "välja ut foton"
+            },
+            "uri": "http://data.europa.eu/esco/skill/64e505a8-8c7a-40a4-9776-0fd5ced146fa"
+          }
+        ]
+      },
+      "interval": {
+        "ongoing": true,
+        "startDate": "2025-01-01"
+      },
+      "title": {
+        "en": "Muu Kokemus",
+        "fi": "Muu Kokemus",
+        "sv": "Muu Kokemus"
+      }
+    }
+  ]
+}

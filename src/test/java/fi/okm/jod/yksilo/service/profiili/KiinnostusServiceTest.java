@@ -23,29 +23,25 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
 @Import({KiinnostusService.class})
 class KiinnostusServiceTest extends AbstractServiceTest {
   @Autowired KiinnostusService service;
   @Autowired private YksiloRepository yksilot;
 
-  @Sql(
-      scripts = {"/data/ammatti.sql"},
-      executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Test
   void addKiinnostukset200() {
     Instant afterCreationBeforeUpdate = Instant.now();
     final Set<URI> kiinnostukset =
         Set.of(
-            URI.create("urn:ammatti1"),
-            URI.create("urn:ammatti2"),
-            URI.create("urn:ammatti3"),
-            URI.create("urn:osaaminen1"),
-            URI.create("urn:osaaminen2"),
-            URI.create("urn:osaaminen3"),
-            URI.create("urn:osaaminen4"),
-            URI.create("urn:osaaminen5"));
+            URI.create("urn:ammatti:1"),
+            URI.create("urn:ammatti:2"),
+            URI.create("urn:ammatti:3"),
+            URI.create("urn:osaaminen:1"),
+            URI.create("urn:osaaminen:2"),
+            URI.create("urn:osaaminen:3"),
+            URI.create("urn:osaaminen:4"),
+            URI.create("urn:osaaminen:5"));
 
     this.service.updateOsaamiset(user, kiinnostukset);
     simulateCommit();
@@ -53,15 +49,15 @@ class KiinnostusServiceTest extends AbstractServiceTest {
     final Yksilo yksilo = this.yksilot.getReferenceById(user.getId());
     final Set<String> ammattiKiinnostukset = yksilot.findAmmattiKiinnostukset(yksilo);
     final Set<String> osaamisKiinnostukset = yksilot.findOsaamisKiinnostukset(yksilo);
-    assertEquals(ammattiKiinnostukset, Set.of("urn:ammatti1", "urn:ammatti2", "urn:ammatti3"));
+    assertEquals(ammattiKiinnostukset, Set.of("urn:ammatti:1", "urn:ammatti:2", "urn:ammatti:3"));
     assertEquals(
         osaamisKiinnostukset,
         Set.of(
-            "urn:osaaminen1",
-            "urn:osaaminen2",
-            "urn:osaaminen3",
-            "urn:osaaminen4",
-            "urn:osaaminen5"));
+            "urn:osaaminen:1",
+            "urn:osaaminen:2",
+            "urn:osaaminen:3",
+            "urn:osaaminen:4",
+            "urn:osaaminen:5"));
     Instant yksiloMuokattu = yksilo.getMuokattu();
     assertTrue(yksiloMuokattu.isAfter(afterCreationBeforeUpdate));
   }
@@ -69,7 +65,7 @@ class KiinnostusServiceTest extends AbstractServiceTest {
   @Test
   void testUpdateOsaamisKiinnostukset() {
     final Set<URI> kiinnostukset =
-        Set.of(URI.create("urn:osaaminen1"), URI.create("urn:osaaminen2"));
+        Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
     service.updateOsaamiset(user, kiinnostukset);
     simulateCommit();
     assertThat(service.getOsaamiset(user)).containsAll(kiinnostukset);
