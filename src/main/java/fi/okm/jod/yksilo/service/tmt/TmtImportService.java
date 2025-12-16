@@ -98,6 +98,7 @@ public class TmtImportService {
   }
 
   @Component
+  @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
   @RequiredArgsConstructor
   static class ProfilePersister {
     private final KoulutusKokonaisuusService koulutukset;
