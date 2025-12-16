@@ -51,7 +51,7 @@ public class MahdollisuusView {
   private KoulutusmahdollisuusTyyppi koulutusTyyppi;
 
   @Column(name = "maakunnat")
-  private String maakunnat;
+  private List<String> maakunnat;
 
   @Column(name = "kesto")
   private Double kesto;
@@ -59,9 +59,4 @@ public class MahdollisuusView {
   @Column(name = "kieli")
   @Enumerated(EnumType.STRING)
   private Kieli kieli;
-
-  public List<String> getMaakunnatList() {
-    final String[] split = maakunnat.split(",");
-    return List.of(split);
-  }
 }

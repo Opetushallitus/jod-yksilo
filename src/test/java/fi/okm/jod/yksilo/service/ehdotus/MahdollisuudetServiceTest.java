@@ -45,13 +45,6 @@ class MahdollisuudetServiceTest extends AbstractServiceTest {
   @Autowired private KoulutusmahdollisuusRepository koulutusmahdollisuudet;
   @Autowired private TyomahdollisuusRepository tyomahdollisuudet;
 
-  @SuppressWarnings("java:S2699")
-  @Test
-  void shouldClearCacheAtStartup() {
-    mahdollisuudetService.clearCacheAtStartup();
-    // Note: This just verifies the method executes, as it's just clearing the cache
-  }
-
   @Test
   void shouldFetchTyoAndKoulutusMahdollisuusIdsWithTypes() {
     var result =

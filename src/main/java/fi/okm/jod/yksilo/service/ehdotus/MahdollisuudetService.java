@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.repository.MahdollisuusRepository;
-import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +34,7 @@ public class MahdollisuudetService {
 
   private final MahdollisuusRepository mahdollisuusRepository;
 
-  @PostConstruct
-  @CacheEvict(value = "mahdollisuusIdsAndTypes", allEntries = true)
-  public void clearCacheAtStartup() {
-    // This method will clear all entries in the "tyomahdollisuusMetadata" cache at startup
-  }
-
+  @Cacheable("mahdollisuusIdsAndTypes")
   public SequencedMap<UUID, MahdollisuusDto> fetchTyoAndKoulutusMahdollisuusIdsWithTypes(
       Sort.Direction direction, Kieli lang) {
 
