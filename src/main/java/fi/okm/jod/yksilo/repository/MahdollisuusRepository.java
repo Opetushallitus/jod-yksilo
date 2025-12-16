@@ -33,20 +33,20 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
       //  The j.id in GROUP BY is needed because SIZE() becomes a correlated
       //  subquery that refers to the j.id.
       """
-          SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
-            k.id,
-            k.tyyppi as koulutusmahdollisuusTyyppi,
-            CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
-            COUNT(osaamiset) as hits
-          )
-          FROM Koulutusmahdollisuus k
-          JOIN k.jakaumat j
-          JOIN j.arvot osaamiset
-          WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
-          AND osaamiset.arvo IN :missingOsaamiset
-          GROUP BY k.id, j.id
-          ORDER BY matchRatio DESC
-          """)
+      SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
+        k.id,
+        k.tyyppi as koulutusmahdollisuusTyyppi,
+        CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
+        COUNT(osaamiset) as hits
+      )
+      FROM Koulutusmahdollisuus k
+      JOIN k.jakaumat j
+      JOIN j.arvot osaamiset
+      WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
+      AND osaamiset.arvo IN :missingOsaamiset
+      GROUP BY k.id, j.id
+      ORDER BY matchRatio DESC
+      """)
   List<SuunnitelmaEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
 
   @Transactional(readOnly = true)
@@ -65,7 +65,7 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
                     m.getAmmattiryhma(),
                     m.getAineisto(),
                     m.getKoulutusTyyppi(),
-                    m.getMaakunnatList(),
+                    m.getMaakunnat(),
                     m.getKesto()))
         .toList();
   }
