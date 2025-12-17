@@ -21,7 +21,7 @@ repositories {
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-validation'
-  implementation 'com.nimbusds:nimbus-jose-jwt:9.41.1'
+  implementation 'com.nimbusds:nimbus-jose-jwt:9.48'
   implementation project(':tmt-profiili-api')
   annotationProcessor 'org.projectlombok:lombok'
   compileOnly 'org.projectlombok:lombok'
