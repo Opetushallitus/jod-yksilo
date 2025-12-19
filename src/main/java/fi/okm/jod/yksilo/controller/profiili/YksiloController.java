@@ -47,9 +47,7 @@ public class YksiloController {
         user.familyName(),
         new CsrfTokenDto(
             csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
-        yksilo.tervetuloapolku(),
-        yksilo.lupaLuovuttaaTiedotUlkopuoliselle(),
-        yksilo.lupaKayttaaTekoalynKoulutukseen());
+        yksilo.tervetuloapolku());
   }
 
   @GetMapping("/tiedot-ja-luvat")
@@ -71,18 +69,8 @@ public class YksiloController {
         .body(yksiloService.export(user));
   }
 
-  @PutMapping
-  public void update(@AuthenticationPrincipal JodUser user, @RequestBody @Valid YksiloDto dto) {
-    yksiloService.update(user, dto);
-  }
-
   public record YksiloCsrfDto(
-      String etunimi,
-      String sukunimi,
-      @NotNull CsrfTokenDto csrf,
-      boolean tervetuloapolku,
-      boolean lupaLuovuttaaTiedotUlkopuoliselle,
-      boolean lupaKayttaaTekoalynKoulutukseen) {}
+      String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf, boolean tervetuloapolku) {}
 
   public record CsrfTokenDto(
       @NotNull String token, @NotNull String headerName, @NotNull String parameterName) {}
