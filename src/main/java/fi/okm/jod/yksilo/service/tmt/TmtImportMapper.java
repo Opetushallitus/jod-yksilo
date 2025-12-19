@@ -31,13 +31,13 @@ import fi.okm.jod.yksilo.external.tmt.model.IntervalItemExternalGet;
 import fi.okm.jod.yksilo.external.tmt.model.ProjectDtoExternalGet;
 import fi.okm.jod.yksilo.repository.koodisto.KoulutuskoodiRepository;
 import fi.okm.jod.yksilo.service.OsaaminenService;
-import jakarta.validation.Valid;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,46 +57,28 @@ class TmtImportMapper {
   private final KoulutuskoodiRepository koulutuskoodit;
 
   record ImportDto(
-      Set<@Valid TyopaikkaDto> tyopaikat,
-      Set<@Valid KoulutusKokonaisuusDto> koulutuskokonaisuudet,
-      Set<@Valid ToimintoDto> toiminnot) {}
+      Set<TyopaikkaDto> tyopaikat,
+      Set<KoulutusKokonaisuusDto> koulutuskokonaisuudet,
+      Set<ToimintoDto> toiminnot) {}
 
-  ImportDto map(FullProfileDtoExternalGet tmtProfile) {
-
-    var result = fromTmtProfile(tmtProfile);
-    var violations = validator.validate(result, Add.class);
-    if (violations.isEmpty()) {
-      return result;
-    } else {
-      log.atWarn()
-          .addKeyValue(
-              "validationErrors",
-              violations.stream()
-                  .map(cv -> cv == null ? "null" : cv.getPropertyPath() + ": " + cv.getMessage())
-                  .toList())
-          .log("TMT import failed due to validation errors");
-      throw new TmtImportException("TMT import failed: invalid response");
-    }
-  }
-
-  private ImportDto fromTmtProfile(FullProfileDtoExternalGet profile) {
+  ImportDto map(FullProfileDtoExternalGet profile) {
     if (profile == null) {
       return new ImportDto(Set.of(), Set.of(), Set.of());
     }
+
+    var violations = new HashSet<ConstraintViolation<?>>();
 
     var tyopaikat =
         profile.getEmployments() == null
             ? Set.<TyopaikkaDto>of()
             : profile.getEmployments().stream()
-                .flatMap(
-                    employment -> {
-                      var employerName = asLocalizedString(employment.getEmployer());
-                      return mapToToimenkuva(employment)
-                          .map(
-                              toimenkuva ->
-                                  new TyopaikkaDto(null, employerName, Set.of(toimenkuva)))
-                          .stream();
-                    })
+                .map(
+                    employment ->
+                        new TyopaikkaDto(
+                            null,
+                            asLocalizedString(employment.getEmployer()),
+                            Set.of(mapToToimenkuva(employment))))
+                .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
 
     var koulutuskokonaisuudet =
@@ -109,30 +91,40 @@ class TmtImportMapper {
                       var koulutus = mapToKoulutus(education);
                       return new KoulutusKokonaisuusDto(null, institutionName, Set.of(koulutus));
                     })
+                .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
 
     var toiminnot =
         profile.getProjects() == null
             ? Set.<ToimintoDto>of()
             : profile.getProjects().stream()
-                .flatMap(it -> mapToToiminto(it).stream())
+                .map(this::mapToToiminto)
+                .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
+
+    if (!violations.isEmpty()) {
+      log.atWarn()
+          .addKeyValue(
+              "validationErrors",
+              violations.stream()
+                  .map(cv -> cv == null ? "null" : cv.getPropertyPath() + ": " + cv.getMessage())
+                  .toList())
+          .log("TMT import had validation errors, invalid items ignored");
+    }
 
     return new ImportDto(tyopaikat, koulutuskokonaisuudet, toiminnot);
   }
 
-  private Optional<ToimenkuvaDto> mapToToimenkuva(EmploymentDtoExternalGet employment) {
+  @SuppressWarnings("java:S2637")
+  // return value may be invalid, caller will validate
+  private ToimenkuvaDto mapToToimenkuva(EmploymentDtoExternalGet employment) {
     var nimi = asLocalizedString(employment.getTitle());
     var kuvaus = extractDescription(employment.getDescription());
     var osaamiset = extractSkills(employment.getDescription());
     var alkuPvm = extractStartDate(employment.getInterval());
     var loppuPvm = extractEndDate(employment.getInterval());
 
-    if (alkuPvm == null) {
-      log.debug("Ignoring a Toimenkuva with missing start date");
-      return Optional.empty();
-    }
-    return Optional.of(new ToimenkuvaDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset));
+    return new ToimenkuvaDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
   }
 
   private KoulutusDto mapToKoulutus(EducationDtoExternalGet education) {
@@ -161,19 +153,17 @@ class TmtImportMapper {
         .build();
   }
 
-  private Optional<ToimintoDto> mapToToiminto(ProjectDtoExternalGet project) {
+  @SuppressWarnings("java:S2637")
+  // return value may be invalid, caller will validate
+  private ToimintoDto mapToToiminto(ProjectDtoExternalGet project) {
     var nimi = asLocalizedString(project.getTitle());
     var kuvaus = extractDescription(project.getDescription());
     var osaamiset = extractSkills(project.getDescription());
     var alkuPvm = extractStartDate(project.getInterval());
     var loppuPvm = extractEndDate(project.getInterval());
 
-    if (alkuPvm == null) {
-      log.debug("Ignoring a Toiminto with missing start date");
-      return Optional.empty();
-    }
     var patevyys = new PatevyysDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
-    return Optional.of(new ToimintoDto(null, nimi, Set.of(patevyys)));
+    return new ToimintoDto(null, nimi, Set.of(patevyys));
   }
 
   private LocalizedString extractDescription(DescriptionItemExternalGet description) {

@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.service.tmt;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -141,15 +140,16 @@ class TmtImportServiceTest extends AbstractServiceTest {
 
   @Test
   @Execution(ExecutionMode.SAME_THREAD)
-  void shouldFailToImportInvalidProfile() throws JsonProcessingException {
+  void shouldIgnoreInvalidData() throws JsonProcessingException {
 
     var profile = new FullProfileDtoExternalGet();
     profile.employments(
         List.of(
+            new EmploymentDtoExternalGet(),
             new EmploymentDtoExternalGet()
                 .interval(new IntervalItemExternalGet().startDate(LocalDate.now()).ongoing(true))
-                .title(Map.of(Kieli.FI.getKoodi(), "Työnimike"))
-                .employer(null)));
+                .title(Map.of(Kieli.EN.getKoodi(), "VALID"))
+                .employer(Map.of(Kieli.EN.getKoodi(), "VALID"))));
 
     testConfig
         .mockServer
@@ -166,6 +166,9 @@ class TmtImportServiceTest extends AbstractServiceTest {
         new OAuth2AccessToken(
             OAuth2AccessToken.TokenType.BEARER, "token", Instant.now(), Instant.MAX);
 
-    assertThrows(TmtImportException.class, () -> tmtImportService.importProfile(user, accessToken));
+    var result = assertDoesNotThrow(() -> tmtImportService.importProfile(user, accessToken));
+    assertThat(result.tyopaikat()).hasSize(1);
+    assertThat(tyopaikkaService.get(user, result.tyopaikat().iterator().next()).nimi())
+        .isEqualTo(ls(Kieli.EN, "VALID"));
   }
 }
