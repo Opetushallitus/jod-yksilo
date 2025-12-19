@@ -19,6 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl;
+import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.Sukupuoli;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.YksiloService;
@@ -81,14 +83,44 @@ class YksiloControllerTest {
 
     mockMvc
         .perform(
-            put("/api/profiili/yksilo")
+            put("/api/profiili/yksilo/tiedot-ja-luvat")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createYksiloDto())))
         .andExpect(status().isOk());
   }
 
+  @Test
+  @WithUserDetails("test")
+  void shouldRejectInvalidLanguage() throws Exception {
+
+    mockMvc
+        .perform(
+            put("/api/profiili/yksilo/tiedot-ja-luvat")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createYksiloDto("xx", null))))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  @WithUserDetails("test")
+  void shouldRejectInvalidEmail() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/profiili/yksilo/tiedot-ja-luvat")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createYksiloDto(null, "invalid-email"))))
+        .andExpect(status().is4xxClientError());
+  }
+
   private static YksiloDto createYksiloDto() {
-    return new YksiloDto(null, true, false, false, null, null, null, null, null, null);
+    return createYksiloDto("fi", "email@example.org");
+  }
+
+  private static YksiloDto createYksiloDto(String lang, String email) {
+    return new YksiloDto(
+        null, true, false, false, 1900, Sukupuoli.NAINEN, "999", lang, Kieli.FI, email);
   }
 }
