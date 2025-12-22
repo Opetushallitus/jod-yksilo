@@ -36,6 +36,7 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
       SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
         k.id,
         k.tyyppi as koulutusmahdollisuusTyyppi,
+        CAST(k.kesto.mediaani AS double) as kesto,
         CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
         COUNT(osaamiset) as hits
       )
