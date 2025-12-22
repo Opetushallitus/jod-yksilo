@@ -15,7 +15,6 @@ import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.dto.JakaumaDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,8 +25,7 @@ public record TyomahdollisuusFullDto(
     LocalizedString kuvaus,
     LocalizedString tehtavat,
     LocalizedString yleisetVaatimukset,
-    URI ammattiryhma,
-    PalkkaDataDto palkkatiedot,
+    AmmattiryhmaFullDto ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     boolean aktiivinen,
     @Schema(
