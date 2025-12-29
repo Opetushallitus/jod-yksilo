@@ -20,4 +20,10 @@ import java.util.UUID;
  * @param osaamisia How many missing skills are present in the Mahdollisuus
  */
 public record SuunnitelmaEhdotusDto(
-    UUID mahdollisuusId, KoulutusmahdollisuusTyyppi tyyppi, double pisteet, long osaamisia) {}
+    UUID mahdollisuusId,
+    KoulutusmahdollisuusTyyppi tyyppi,
+    Double kestoMediaani,
+    Double kestoMinimi,
+    Double kestoMaksimi,
+    double pisteet,
+    long osaamisia) {}
