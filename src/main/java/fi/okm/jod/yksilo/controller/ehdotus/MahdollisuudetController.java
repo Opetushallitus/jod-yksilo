@@ -172,6 +172,8 @@ class MahdollisuudetController {
                         entry.getValue().koulutusTyyppi(),
                         entry.getValue().maakunnat(),
                         entry.getValue().kesto(),
+                        entry.getValue().kestoMinimi(),
+                        entry.getValue().kestoMaksimi(),
                         counter.getAndIncrement())))
         .toList();
   }
@@ -199,6 +201,8 @@ class MahdollisuudetController {
                       entry.getValue().koulutusTyyppi(),
                       entry.getValue().maakunnat(),
                       entry.getValue().kesto(),
+                      entry.getValue().kestoMinimi(),
+                      entry.getValue().kestoMaksimi(),
                       suggestion.score() >= 0 ? suggestion.score() : null,
                       null,
                       null,
@@ -265,6 +269,8 @@ class MahdollisuudetController {
       @Nullable KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
       @Nullable List<String> maakunnat,
       @Nullable Double kesto,
+      @Nullable Double kestoMinimi,
+      @Nullable Double kestoMaksimi,
       @Nullable Double pisteet,
       @Nullable Trendi trendi,
       @Nullable Long osaamisia,
@@ -280,6 +286,8 @@ class MahdollisuudetController {
         KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
         List<String> maakunnat,
         Double kesto,
+        Double kestoMinimi,
+        Double kestoMaksimi,
         int order) {
       return new EhdotusMetadata(
           tyyppi,
@@ -288,6 +296,8 @@ class MahdollisuudetController {
           koulutusmahdollisuusTyyppi,
           maakunnat,
           kesto,
+          kestoMinimi,
+          kestoMaksimi,
           null,
           null,
           null,
@@ -357,7 +367,9 @@ class MahdollisuudetController {
                         null,
                         it.tyyppi(),
                         null,
-                        null,
+                        it.kestoMediaani(),
+                        it.kestoMinimi(),
+                        it.kestoMaksimi(),
                         it.pisteet(),
                         null,
                         it.osaamisia(),
