@@ -56,6 +56,10 @@ public class MahdollisuusView {
   @Column(name = "kesto")
   private Double kesto;
 
+  @Column private Double kestoMaksimi;
+
+  @Column private Double kestoMinimi;
+
   @Column(name = "kieli")
   @Enumerated(EnumType.STRING)
   private Kieli kieli;
