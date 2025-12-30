@@ -12,7 +12,7 @@ if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "*.csv"
   aws s3 sync "s3://${DEV_BUCKET}/tyomahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_tyomahdollisuus.json"
   aws s3 sync "s3://${DEV_BUCKET}/koulutusmahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_koulutusmahdollisuus.json"
-  aws s3 sync "s3://${DEV_BUCKET}/ammattiryhma/ammattiryhma.csv" ./tmp/data
+  aws s3 sync "s3://${DEV_BUCKET}/ammattiryhma/" ./tmp/data/ --exclude "*" --include "ammattiryhma.csv"
   aws s3 sync "s3://${DEV_BUCKET}/jod-yksilo-backend/data/" ./tmp/data/
 else
   echo "WARN: Skipping data and configuration download, missing AWS credentials or DEV_BUCKET" >&2
