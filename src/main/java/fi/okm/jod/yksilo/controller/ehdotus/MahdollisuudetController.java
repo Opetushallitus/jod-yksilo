@@ -357,7 +357,7 @@ class MahdollisuudetController {
                         null,
                         it.tyyppi(),
                         null,
-                        null,
+                        it.kesto(),
                         it.pisteet(),
                         null,
                         it.osaamisia(),

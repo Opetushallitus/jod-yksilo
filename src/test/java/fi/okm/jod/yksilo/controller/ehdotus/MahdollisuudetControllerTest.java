@@ -430,6 +430,7 @@ class MahdollisuudetControllerTest {
                 UUID.fromString("481e204a-691a-48dd-9b01-7f08d5858db9"),
                 KoulutusmahdollisuusTyyppi.EI_TUTKINTO,
                 0.5,
+                0.5,
                 2));
     when(mahdollisuudetService.getPolkuVaiheSuggestions(missingOsaamiset))
         .thenReturn(serviceSuggestions);
