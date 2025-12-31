@@ -36,6 +36,9 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
       SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
         k.id,
         k.tyyppi as koulutusmahdollisuusTyyppi,
+        CAST(k.kesto.mediaani AS double) as kestoMediaani,
+        CAST(k.kesto.maksimi AS double) as kestoMaksimi,
+        CAST(k.kesto.minimi AS double) as kestoMinimi,
         CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
         COUNT(osaamiset) as hits
       )
@@ -66,7 +69,9 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
                     m.getAineisto(),
                     m.getKoulutusTyyppi(),
                     m.getMaakunnat(),
-                    m.getKesto()))
+                    m.getKesto(),
+                    m.getKestoMinimi(),
+                    m.getKestoMaksimi()))
         .toList();
   }
 
