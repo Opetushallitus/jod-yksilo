@@ -39,6 +39,10 @@ public class Ammattiryhma extends JodEntity {
     return data.path("kohtaanto").optional("tyyppi").map(JsonNode::asText).orElse(null);
   }
 
+  public Integer getTyollistenMaara() {
+    return data.optional("tyollisetKokoMaa").map(JsonNode::asInt).orElse(null);
+  }
+
   public Integer getMediaaniPalkka() {
     return getPropertyFromPalkkaus("mediaani");
   }

@@ -19,4 +19,5 @@ public record AmmattiryhmaFullDto(
     Integer mediaaniPalkka,
     Integer ylinDesiiliPalkka,
     Integer alinDesiiliPalkka,
+    Integer tyollisetKokoMaa,
     String kohtaanto) {}
