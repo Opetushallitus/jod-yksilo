@@ -114,13 +114,14 @@ public class TyomahdollisuusService {
     if (ammattiryhma == null && ammattiryhmaUri == null) {
       return null;
     } else if (ammattiryhma == null) {
-      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null);
+      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null, null);
     }
     return new AmmattiryhmaFullDto(
         ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
         ammattiryhma.getAlinDesiiliPalkka(),
+        ammattiryhma.getTyollistenMaara(),
         ammattiryhma.getKohtaanto());
   }
 }
