@@ -27,3 +27,16 @@ spring:
           tmt-haku:
             token-uri: ${jod.tmt.import-api.token-url}
             authorization-uri: ${jod.tmt.import-api.authorization-url}
+
+jod:
+  tmt:
+    export-api: #p51
+      authorization-path:
+        fi: "/henkiloasiakkaat/oma-tyopolku/profiilitietojen-tuonnin-luvitus"
+        sv: "/sv/personkunder/min-karriarstig/autentisering-for-import-av-profildata"
+        en: "/en/personal-customers/my-job-path/permission-to-import-profile-data"
+    import-api: #p60
+      authorization-path:
+        fi: "/henkiloasiakkaat/oma-tyopolku/profiilitietojen-haun-luvitus"
+        sv: "/sv/personkunder/min-karriarstig/autentisering-for-hamtning-av-profildata"
+        en: "/en/personal-customers/my-job-path/permission-to-retrieve-profile-data"

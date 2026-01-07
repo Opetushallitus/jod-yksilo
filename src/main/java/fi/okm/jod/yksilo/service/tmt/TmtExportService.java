@@ -17,6 +17,7 @@ import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.SKILL_LIMIT;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
@@ -221,9 +222,19 @@ public class TmtExportService {
   }
 
   static Map<String, String> asStringMap(LocalizedString ls) {
-    return ls == null
-        ? null
-        : ls.asMap().entrySet().stream()
+    if (ls == null || ls.asMap().isEmpty()) {
+      return null;
+    }
+
+    var map =
+        ls.asMap().entrySet().stream()
             .collect(Collectors.toMap(e -> e.getKey().toString(), Entry::getValue));
+
+    // Fill in missing default language (TMT profile UI expects that at least "fi" is present)
+    map.computeIfAbsent(
+        Kieli.FI.getKoodi(),
+        k -> map.getOrDefault(Kieli.SV.getKoodi(), map.get(Kieli.EN.getKoodi())));
+
+    return map;
   }
 }

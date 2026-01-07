@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.config.tmt;
 
+import fi.okm.jod.yksilo.domain.Kieli;
 import java.net.URI;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,10 +28,20 @@ public class TmtConfiguration {
   @Setter
   public static class Api {
     private URI apiUrl;
+
+    /** Authorization endpoint base URL. */
     private URI authorizationUrl;
+
+    /** Localized path for the authorization endpoint. */
+    private Map<Kieli, String> authorizationPath;
+
     private URI tokenUrl;
     private String kipaSubscriptionKey;
     private String clientId;
     private String clientSecret;
+
+    public String getAuthorizationPath(Kieli kieli) {
+      return authorizationPath.get(kieli);
+    }
   }
 }
