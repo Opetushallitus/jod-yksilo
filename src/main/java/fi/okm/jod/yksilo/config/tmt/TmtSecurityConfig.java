@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.config.tmt;
 
 import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
+import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,6 +37,7 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCo
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
@@ -47,6 +50,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @Configuration
 @ConditionalOnProperty(value = "jod.tmt.enabled", havingValue = "true")
+@RequiredArgsConstructor
 public class TmtSecurityConfig {
 
   @Bean
@@ -55,7 +59,8 @@ public class TmtSecurityConfig {
       ClientRegistrationRepository repository,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository,
       RestClient.Builder restClientBuilder,
-      TmtConfiguration tmtConfiguration)
+      TmtConfiguration tmtConfiguration,
+      HttpServletRequest request)
       throws Exception {
     log.info("Configuring TMT OAuth2 export integration...");
 
@@ -64,7 +69,8 @@ public class TmtSecurityConfig {
         "tmt-vienti",
         repository,
         authorizedClientRepository,
-        tmtExportOauth2RestClient(restClientBuilder, tmtConfiguration));
+        tmtExportOauth2RestClient(restClientBuilder, tmtConfiguration),
+        () -> tmtConfiguration.getExportApi().getAuthorizationPath(resolveLang(request)));
   }
 
   @Bean
@@ -73,7 +79,8 @@ public class TmtSecurityConfig {
       ClientRegistrationRepository repository,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository,
       RestClient.Builder builder,
-      TmtConfiguration tmtConfiguration)
+      TmtConfiguration tmtConfiguration,
+      HttpServletRequest request)
       throws Exception {
     log.info("Configuring TMT OAuth2 import integration...");
 
@@ -82,15 +89,17 @@ public class TmtSecurityConfig {
         "tmt-haku",
         repository,
         authorizedClientRepository,
-        tmtImportOauth2RestClient(builder, tmtConfiguration));
+        tmtImportOauth2RestClient(builder, tmtConfiguration),
+        () -> tmtConfiguration.getImportApi().getAuthorizationPath(resolveLang(request)));
   }
 
-  private static SecurityFilterChain buildFilterChain(
+  private SecurityFilterChain buildFilterChain(
       HttpSecurity http,
       String registrationId,
       ClientRegistrationRepository registrationRepository,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository,
-      RestClient restClient)
+      RestClient restClient,
+      Supplier<String> authorizationEndpoint)
       throws Exception {
     return http.securityMatcher("/oauth2/*/" + registrationId)
         .requestCache(RequestCacheConfigurer::disable)
@@ -102,15 +111,19 @@ public class TmtSecurityConfig {
                     .authorizedClientRepository(authorizedClientRepository)
                     .authorizationCodeGrant(
                         grant ->
-                            grant.accessTokenResponseClient(
-                                createAccessTokenResponseClient(restClient))))
+                            grant
+                                .authorizationRequestResolver(
+                                    createAuthorizationRequestResolver(
+                                        registrationRepository, authorizationEndpoint))
+                                .accessTokenResponseClient(
+                                    createAccessTokenResponseClient(restClient))))
         .addFilterBefore(
             new CallbackFilter(registrationId), OAuth2AuthorizationRequestRedirectFilter.class)
         .addFilterBefore(new DenyUnauthenticatedFilter(), CallbackFilter.class)
         .build();
   }
 
-  private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+  private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
       createAccessTokenResponseClient(RestClient oauthRestClient) {
     final var responseClient = new RestClientAuthorizationCodeTokenResponseClient();
     responseClient.setRestClient(oauthRestClient);
@@ -177,5 +190,27 @@ public class TmtSecurityConfig {
         .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())
         .messageConverters(messageConverters)
         .build();
+  }
+
+  private static DefaultOAuth2AuthorizationRequestResolver createAuthorizationRequestResolver(
+      ClientRegistrationRepository repository, Supplier<String> authorizationPath) {
+    var resolver =
+        new DefaultOAuth2AuthorizationRequestResolver(
+            repository,
+            OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
+    resolver.setAuthorizationRequestCustomizer(
+        builder ->
+            builder.authorizationRequestUri(
+                uriBuilder -> uriBuilder.replacePath(authorizationPath.get()).build()));
+    return resolver;
+  }
+
+  private static Kieli resolveLang(HttpServletRequest request) {
+    return switch (request.getParameter("lang")) {
+      case null -> Kieli.FI;
+      case "fi" -> Kieli.FI;
+      case "sv" -> Kieli.SV;
+      default -> Kieli.EN;
+    };
   }
 }
