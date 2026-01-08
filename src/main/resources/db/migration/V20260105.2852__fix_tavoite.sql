@@ -16,6 +16,10 @@ DELETE
 FROM polun_suunnitelma
 WHERE tavoite_id IN (SELECT id FROM tavoite WHERE tyomahdollisuus_id IS NULL);
 
+DELETE FROM tavoite_kaannos WHERE tavoite_id IN (
+  SELECT id FROM tavoite WHERE tyomahdollisuus_id IS NULL
+);
+
 DELETE
 FROM tavoite
 WHERE tyomahdollisuus_id IS NULL;
