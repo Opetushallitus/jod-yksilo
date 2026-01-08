@@ -28,7 +28,8 @@ public enum TyomahdollisuusJakaumaTyyppi {
   MAAKUNTA,
   MAA,
   SIJAINTI_JOUSTAVA,
-  TYOKIELI;
+  TYOKIELI,
+  TOIMIALA;
 
   private final String propertyName;
 
