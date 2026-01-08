@@ -9,11 +9,13 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import java.net.URI;
 
 /** Data of the ammattiryhma. */
 public record AmmattiryhmaFullDto(
-    URI ammattiryhma,
+    @Schema(requiredMode = RequiredMode.REQUIRED) URI uri,
     Integer mediaaniPalkka,
     Integer ylinDesiiliPalkka,
     Integer alinDesiiliPalkka,
