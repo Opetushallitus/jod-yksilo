@@ -9,6 +9,11 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import java.net.URI;
 
-public record AmmattiryhmaBasicDto(URI uri, Integer mediaaniPalkka, String kohtaanto) {}
+public record AmmattiryhmaBasicDto(
+    @Schema(requiredMode = RequiredMode.REQUIRED) URI uri,
+    Integer mediaaniPalkka,
+    String kohtaanto) {}
