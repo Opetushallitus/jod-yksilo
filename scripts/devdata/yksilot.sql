@@ -90,9 +90,9 @@ $$
             SELECT id
             INTO tavoite_id
             from (select id, row_number() OVER (ORDER BY id) as rivi
-                  from koulutusmahdollisuus) as ir
+                  from tyomahdollisuus) as ir
             where rivi = (i + 20);
-            INSERT INTO tavoite(id, luotu, koulutusmahdollisuus_id, yksilo_id)
+            INSERT INTO tavoite(id, luotu, tyomahdollisuus_id, yksilo_id)
             VALUES (gen_random_uuid(), now(), tavoite_id, yid);
           END LOOP;
 
