@@ -11,8 +11,10 @@ package fi.okm.jod.yksilo.service;
 
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.entity.Ammattiryhma;
@@ -20,6 +22,7 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus_;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,13 +117,33 @@ public class TyomahdollisuusService {
     if (ammattiryhma == null && ammattiryhmaUri == null) {
       return null;
     } else if (ammattiryhma == null) {
-      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null);
+      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null, null, null);
     }
+
     return new AmmattiryhmaFullDto(
         ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
         ammattiryhma.getAlinDesiiliPalkka(),
+        ammattiryhma.getTyollistenMaara(),
+        getTyollisetKoulutusAloittain(ammattiryhma),
         ammattiryhma.getKohtaanto());
+  }
+
+  private static List<KoulutusAlaDto> getTyollisetKoulutusAloittain(
+      final Ammattiryhma ammattiryhma) {
+    JsonNode node = ammattiryhma.getData().path("tyollisetKoulutusAloittain");
+    if (node.isMissingNode() || !node.isObject()) {
+      return new ArrayList<>();
+    }
+
+    return node.properties().stream()
+        .filter(entry -> entry.getValue().path("osuus").isNumber())
+        .map(
+            entry ->
+                new KoulutusAlaDto(
+                    entry.getValue().path("koulutusala").asText(),
+                    entry.getValue().path("osuus").asDouble()))
+        .toList();
   }
 }
