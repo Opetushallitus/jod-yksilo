@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyollisyysDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
 import fi.okm.jod.yksilo.entity.Ammattiryhma;
@@ -117,16 +118,17 @@ public class TyomahdollisuusService {
     if (ammattiryhma == null && ammattiryhmaUri == null) {
       return null;
     } else if (ammattiryhma == null) {
-      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null, null, null);
+      return new AmmattiryhmaFullDto(ammattiryhmaUri, null, null, null, null, null);
     }
-
+    final TyollisyysDto tyollisyysData =
+        new TyollisyysDto(
+            ammattiryhma.getTyollistenMaara(), getTyollisetKoulutusAloittain(ammattiryhma));
     return new AmmattiryhmaFullDto(
         ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
         ammattiryhma.getYlinDesiiliPalkka(),
         ammattiryhma.getAlinDesiiliPalkka(),
-        ammattiryhma.getTyollistenMaara(),
-        getTyollisetKoulutusAloittain(ammattiryhma),
+        tyollisyysData,
         ammattiryhma.getKohtaanto());
   }
 

@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
 import java.net.URI;
-import java.util.List;
 
 /** Data of the ammattiryhma. */
 public record AmmattiryhmaFullDto(
@@ -18,6 +17,5 @@ public record AmmattiryhmaFullDto(
     Integer mediaaniPalkka,
     Integer ylinDesiiliPalkka,
     Integer alinDesiiliPalkka,
-    Integer tyollisetKokoMaa,
-    List<KoulutusAlaDto> koulutusalaTyollisyydet,
+    TyollisyysDto tyollisyysData,
     String kohtaanto) {}
