@@ -3,13 +3,13 @@ set -e -o pipefail
 
 mkdir -p ./tmp/data
 mkdir -p ./.run
-ESCO_VERSION="1.2.0"
+ESCO_VERSION="FINESCO-1.2.0-R8"
 
 if [[ -n $AWS_SESSION_TOKEN && -n $DEV_BUCKET ]]; then
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/application-local.yml .
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/jod-yksilo-bootRun.run.xml .run/
   aws s3 cp s3://${DEV_BUCKET}/jod-yksilo-backend/Dockerfile.osaamissuosittelija .
-  aws s3 sync "s3://${DEV_BUCKET}/data/jod-yksilo-esco-data/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "*.csv"
+  aws s3 sync "s3://${DEV_BUCKET}/data/${ESCO_VERSION}/" ./tmp/data/ --exclude "*" --include "*.json"
   aws s3 sync "s3://${DEV_BUCKET}/tyomahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_tyomahdollisuus.json"
   aws s3 sync "s3://${DEV_BUCKET}/koulutusmahdollisuudet/" ./tmp/data/ --exclude "*" --include "full_json_lines_koulutusmahdollisuus.json"
   aws s3 sync "s3://${DEV_BUCKET}/ammattiryhma/" ./tmp/data/ --exclude "*" --include "ammattiryhma.csv"
@@ -39,37 +39,26 @@ echo "Importing data"
   DEVDATA="$(dirname "$(realpath "$0")")/devdata"
   cd ./tmp/data
 
-  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-    -c "TRUNCATE TABLE esco_data.skills"
+  for esco in "skills" "skill_descriptions" "occupations" "occupation_descriptions"; do
 
-  for lang in "en" "fi" "sv"; do
-    <skills_${lang}.csv docker exec \
-      -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-      -c "SET esco.lang=${lang}" \
-      -c "\COPY esco_data.skills(conceptType,conceptUri,skillType,reuseLevel,preferredLabel,altLabels,hiddenLabels,status,modifiedDate,scopeNote,definition,inScheme,description) FROM STDIN (FORMAT CSV, HEADER true)"
-  done
-  docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-    -c "TRUNCATE TABLE esco_data.occupations"
+    if [[ $esco == *"_descriptions" ]]; then
+      filter='to_entries | .[]'
+    else
+      filter='.[]'
+    fi
 
-  for lang in "en" "fi" "sv"; do
-    <occupations_${lang}.csv docker exec \
-      -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-      -c "SET esco.lang=${lang}" \
-      -c "\COPY esco_data.occupations(conceptType,conceptUri,iscoGroup,preferredLabel,altLabels,hiddenLabels,status,modifiedDate,regulatedProfessionNote,scopeNote,definition,inScheme,description,code) FROM STDIN (FORMAT CSV, HEADER true)"
-  done
+    jq -c "$filter" "$esco.json" | sed 's/\\/\\\\/g' |
+      docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
+        -c "TRUNCATE TABLE esco_data.$esco" \
+        -c "\COPY esco_data.${esco}(data) FROM STDIN (FORMAT text)"
 
-  for lang in "en" "fi" "sv"; do
-    <ISCOGroups_${lang}.csv docker exec \
-      -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-      -c "SET esco.lang=${lang}" \
-      -c "\COPY esco_data.occupations(conceptType,conceptUri,code,preferredLabel,status,altLabels,inScheme,description) FROM STDIN (FORMAT csv, HEADER true);"
   done
 
   for mahdollisuus in "tyomahdollisuus" "koulutusmahdollisuus"; do
     docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "TRUNCATE TABLE ${mahdollisuus}_data.import"
 
-    <full_json_lines_${mahdollisuus}.json docker exec \
+    docker <full_json_lines_${mahdollisuus}.json exec \
       -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
       -c "\COPY ${mahdollisuus}_data.import(data) FROM STDIN (FORMAT text)"
   done
@@ -80,9 +69,9 @@ echo "Importing data"
     -c "CALL tyomahdollisuus_data.import();" \
     -c "CALL koulutusmahdollisuus_data.import();"
 
-  <"$DEVDATA/yksilot.sql" docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo
+  docker <"$DEVDATA/yksilot.sql" exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo
 
-  <ammattiryhma.csv docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
+  docker <ammattiryhma.csv exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
     -c "$(cat "$DEVDATA/ammattiryhma.sql")"
 
   sed 's/\\/\\\\/g' koulutuskoodi.jsonl | docker exec \
