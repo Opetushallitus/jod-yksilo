@@ -104,6 +104,7 @@ public class PolunSuunnitelmaService {
 
   private void update(PolunSuunnitelma entity, PolunSuunnitelmaDto dto) {
     entity.setNimi(dto.nimi());
+    entity.setKuvaus(dto.kuvaus());
     var osaamiset = dto.osaamiset();
     if (osaamiset != null) {
       var entities = getOsaamiset(dto.osaamiset());
