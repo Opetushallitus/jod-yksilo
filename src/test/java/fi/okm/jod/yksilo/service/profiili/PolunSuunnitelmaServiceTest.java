@@ -25,6 +25,7 @@ import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +50,12 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
     var tavoite = ls("tavoite");
     var tavoiteId = addTavoite(tavoite);
     var suunnitelmaNimi = ls("nimi");
-    var dto = new PolunSuunnitelmaDto(null, suunnitelmaNimi, null, null, emptySet());
+    var dto = new PolunSuunnitelmaDto(null, suunnitelmaNimi, null, null, emptySet(), null);
     var id = assertDoesNotThrow(() -> service.add(user, tavoiteId, dto));
     var result = service.get(user, tavoiteId, id);
     assertThat(dto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "tavoite", "vaiheet")
+        .ignoringFields("id", "tavoite", "vaiheet", "luotu")
         .isEqualTo(result);
     assertThat(result.nimi()).usingRecursiveComparison().isEqualTo(suunnitelmaNimi);
   }
@@ -62,20 +63,20 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   @Test
   void shouldUpdateSuunnitelma() {
     var tavoiteId = addTavoite(ls("tavoite"));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet());
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), null);
     var id = service.add(user, tavoiteId, dto);
-    var updateDto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null, null);
+    var updateDto = new PolunSuunnitelmaDto(id, ls("uusi nimi"), null, null, null, null);
     service.update(user, tavoiteId, updateDto);
     assertThat(updateDto)
         .usingRecursiveComparison()
-        .ignoringFields("id", "tavoite", "vaiheet", "osaamiset", "ignoredOsaamiset")
+        .ignoringFields("id", "tavoite", "vaiheet", "osaamiset", "ignoredOsaamiset", "luotu")
         .isEqualTo(service.get(user, tavoiteId, id));
   }
 
   @Test
   void shouldDeleteSuunnitelma() {
     var tavoiteId = addTavoite(ls("tavoite"));
-    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet());
+    var dto = new PolunSuunnitelmaDto(null, ls("nimi"), null, null, emptySet(), null);
     var id = service.add(user, tavoiteId, dto);
     service.delete(user, tavoiteId, id);
     assertThrows(NotFoundException.class, () -> service.get(user, tavoiteId, id));
@@ -92,12 +93,14 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
 
       // Add the maximum allowed number of Suunnitelmas
       for (int i = 0; i < testLimit; i++) {
-        var dto = new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet());
+        var dto =
+            new PolunSuunnitelmaDto(null, ls("nimi" + i), null, null, emptySet(), Instant.now());
         service.add(user, tavoiteId, dto);
       }
 
       // Attempt to add one more Suunnitelma, which should throw an exception
-      var dto = new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet());
+      var dto =
+          new PolunSuunnitelmaDto(null, ls("extra nimi"), null, null, emptySet(), Instant.now());
       assertThrows(ServiceValidationException.class, () -> service.add(user, tavoiteId, dto));
     }
   }
