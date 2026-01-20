@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -29,6 +30,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -46,6 +48,9 @@ import org.hibernate.annotations.BatchSize;
 @Table(indexes = {@Index(columnList = "tavoite_id")})
 public class PolunSuunnitelma {
   @GeneratedValue @Id private UUID id;
+
+  @Column(nullable = false, updatable = false)
+  private Instant luotu = Instant.now();
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)

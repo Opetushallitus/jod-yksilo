@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,4 +28,5 @@ public record PolunSuunnitelmaYhteenvetoDto(
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString kuvaus,
     UUID koulutusmahdollisuusId,
-    @Null(groups = Add.class) Set<URI> osaamiset) {}
+    @Null(groups = Add.class) Set<URI> osaamiset,
+    Instant luotu) {}

@@ -155,7 +155,8 @@ public final class Mapper {
                             polunSuunnitelma.getNimi(),
                             polunSuunnitelma.getKuvaus(),
                             polunSuunnitelma.getKoulutusmahdollisuusId(),
-                            getOsaamiset(polunSuunnitelma)))
+                            getOsaamiset(polunSuunnitelma),
+                            polunSuunnitelma.getLuotu()))
                 .collect(Collectors.toSet()),
             entity.getOsaamiset());
   }
@@ -191,7 +192,12 @@ public final class Mapper {
     Set<URI> osaamiset = getOsaamiset(entity);
     UUID koulutusMahdollisuusId = entity.getKoulutusmahdollisuusId();
     return new PolunSuunnitelmaDto(
-        entity.getId(), entity.getNimi(), entity.getKuvaus(), koulutusMahdollisuusId, osaamiset);
+        entity.getId(),
+        entity.getNimi(),
+        entity.getKuvaus(),
+        koulutusMahdollisuusId,
+        osaamiset,
+        entity.getLuotu());
   }
 
   private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {

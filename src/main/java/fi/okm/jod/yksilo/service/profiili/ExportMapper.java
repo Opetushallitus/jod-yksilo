@@ -204,6 +204,7 @@ public final class ExportMapper {
             entity.getNimi(),
             entity.getKuvaus(),
             entity.getKoulutusmahdollisuusId(),
-            entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()));
+            entity.getOsaamiset().stream().map(Osaaminen::getUri).collect(Collectors.toSet()),
+            entity.getLuotu());
   }
 }
