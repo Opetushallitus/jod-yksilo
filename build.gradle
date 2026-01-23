@@ -2,7 +2,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 buildscript {
   dependencies {
-    classpath("org.flywaydb:flyway-database-postgresql:11.20.0")
+    classpath("org.flywaydb:flyway-database-postgresql:11.20.2")
   }
 }
 
@@ -20,7 +20,7 @@ plugins {
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
   id "com.github.ben-manes.versions" version "0.53.0"
-  id "org.flywaydb.flyway" version "11.20.0"
+  id "org.flywaydb.flyway" version "11.20.2"
 }
 
 group = 'fi.okm.jod'
@@ -43,7 +43,7 @@ repositories {
 
 ext {
   spotbugsVersion = "4.9.8"
-  setProperty("flyway.version", "11.20.0")
+  setProperty("flyway.version", "11.20.2")
   setProperty("commons-lang3.version", "3.18.0")
 }
 
@@ -87,7 +87,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-cloudwatch2'
   implementation 'io.zipkin.aws:brave-propagation-aws'
 
-  implementation platform('software.amazon.awssdk:bom:2.40.16')
+  implementation platform('software.amazon.awssdk:bom:2.41.13')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -107,8 +107,8 @@ dependencies {
   implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
 
   // OpenAPI API description and Swagger UI
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.14'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.15'
+  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -159,7 +159,7 @@ tasks.named('test', Test) {
 }
 
 checkstyle {
-  toolVersion = '12.1.1'
+  toolVersion = '13.0.0'
   showViolations = true
 
   def archive = configurations.checkstyle.filter {
