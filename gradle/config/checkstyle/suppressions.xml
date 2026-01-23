@@ -12,6 +12,7 @@
   <suppress checks="Indentation"/>
   <suppress checks="LineLength"/>
   <suppress checks="EmptyLineSeparator"/>
+  <suppress checks="TextBlockGoogleStyleFormatting"/>
 
   <!-- other suppressions -->
   <suppress checks="OverloadMethodsDeclarationOrder"/>
