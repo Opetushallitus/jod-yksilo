@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.controller.koski;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -23,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
@@ -104,19 +102,14 @@ class IntegraatioKoskiControllerTest {
     var mockDataInJson =
         objectMapper.readTree(
             TestUtil.getContentFromFile(EDUCATIONS_HISTORY_KOSKI_RESPONSE, KoskiService.class));
-    when(koskiOauth2Service.fetchDataFromResourceServer(mockAuthorizedClient))
+    when(koskiOauth2Service.fetchDataFromResourceServer(
+            any(JodUser.class), eq(mockAuthorizedClient)))
         .thenReturn(mockDataInJson);
-    doAnswer(invocationOnMock -> null)
-        .when(koskiOauth2Service)
-        .checkPersonIdMatches(any(JodUser.class), any(JsonNode.class));
-    when(koskiService.getKoulutusData(mockDataInJson)).thenCallRealMethod();
+    when(koskiService.mapKoulutusData(mockDataInJson)).thenCallRealMethod();
 
     var expectedResponseJson =
         TestUtil.getContentFromFile(GET_EDUCATIONS_DATA_API_RESPONSE, KoskiService.class);
     performGetEducationsDataFromKoski(status().isOk(), expectedResponseJson);
-
-    verify(koskiOauth2Service).fetchDataFromResourceServer(mockAuthorizedClient);
-    verify(koskiService).getKoulutusData(mockDataInJson);
   }
 
   @Test
@@ -146,7 +139,8 @@ class IntegraatioKoskiControllerTest {
   @Test
   void shouldReturnForbidden_whenTokenExpired() throws Exception {
     var oauth2AuthorizedClient = prepareOauth2Client();
-    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
+    when(koskiOauth2Service.fetchDataFromResourceServer(
+            any(JodUser.class), eq(oauth2AuthorizedClient)))
         .thenThrow(new PermissionRequiredException("Token expired."));
 
     var expectedResponseJson =
@@ -154,8 +148,6 @@ class IntegraatioKoskiControllerTest {
         {"errorCode":"PERMISSION_REQUIRED","errorDetails":["Token expired."]}
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
-
-    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   private void performGetEducationsDataFromKoski(
@@ -171,7 +163,8 @@ class IntegraatioKoskiControllerTest {
   @Test
   void shouldReturnInternalServerError_whenFetchingDataFails() throws Exception {
     var oauth2AuthorizedClient = prepareOauth2Client();
-    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
+    when(koskiOauth2Service.fetchDataFromResourceServer(
+            any(JodUser.class), eq(oauth2AuthorizedClient)))
         .thenThrow(new ResourceServerException("Fail to get data from Koski resource server."));
 
     var expectedResponseJson =
@@ -179,15 +172,13 @@ class IntegraatioKoskiControllerTest {
         {"errorCode":"SERVICE_ERROR","errorDetails":["Fail to get data from Koski resource server."]}
         """;
     performGetEducationsDataFromKoski(status().isInternalServerError(), expectedResponseJson);
-
-    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   @WithUserDetails("test")
   @Test
   void shouldReturnWrongPersonError_whenPersonalIdDoesNotMatch() throws Exception {
-    var oauth2AuthorizedClient = prepareOauth2Client();
-    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
+    var client = prepareOauth2Client();
+    when(koskiOauth2Service.fetchDataFromResourceServer(any(JodUser.class), eq(client)))
         .thenThrow(new WrongPersonException(UUID.randomUUID()));
 
     var expectedResponseJson =
@@ -207,7 +198,8 @@ class IntegraatioKoskiControllerTest {
   @Test
   void shouldReturnNoDataError_whenUserHaveNoDataInKoski() throws Exception {
     var oauth2AuthorizedClient = prepareOauth2Client();
-    when(koskiOauth2Service.fetchDataFromResourceServer(oauth2AuthorizedClient))
+    when(koskiOauth2Service.fetchDataFromResourceServer(
+            any(JodUser.class), eq(oauth2AuthorizedClient)))
         .thenThrow(
             new NoDataException(
                 "omadataoauth2-error-94996a6c-a856-4dfd-8aee-da7edd578fe1: Oppijaa 1.2.246.562.24.51212001781 ei löydy tai käyttäjällä ei ole oikeuksia tietojen katseluun."));
@@ -217,8 +209,6 @@ class IntegraatioKoskiControllerTest {
         {"errorCode":"DATA_NOT_FOUND","errorDetails":["The user either has no data or lacks access to retrieve it."]}
         """;
     performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
-
-    verify(koskiOauth2Service).fetchDataFromResourceServer(oauth2AuthorizedClient);
   }
 
   @WithUserDetails("test")

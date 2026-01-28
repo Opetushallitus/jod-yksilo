@@ -68,22 +68,19 @@ public class IntegraatioKoskiController {
     if (authorizedClient == null) {
       throw new PermissionRequiredException(jodUser.getId());
     }
+    koskiOauth2Service.unauthorize(authentication, request, response);
 
     try {
-      var dataInJson = koskiOauth2Service.fetchDataFromResourceServer(authorizedClient);
-      koskiOauth2Service.checkPersonIdMatches(jodUser, dataInJson);
-      var educationHistories = koskiService.getKoulutusData(dataInJson);
+      var dataInJson = koskiOauth2Service.fetchDataFromResourceServer(jodUser, authorizedClient);
+      var educationHistories = koskiService.mapKoulutusData(dataInJson);
       log.atInfo()
           .addMarker(LogMarker.AUDIT)
           .log("User {} education history imported", jodUser.getId());
-      koskiOauth2Service.unauthorize(authentication, request, response);
       return ResponseEntity.ok(educationHistories);
-
     } catch (WrongPersonException e) {
       log.atWarn()
           .addMarker(LogMarker.AUDIT)
           .log("User {} tried to access another person's Koski data.", jodUser.getId());
-      koskiOauth2Service.unauthorize(authentication, request, response);
       throw e;
     }
   }

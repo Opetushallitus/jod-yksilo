@@ -19,28 +19,22 @@ import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.profiili.Mapper;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @ConditionalOnBean(KoskiOauth2Config.class)
 @Service
 @Slf4j
 public class KoskiService {
-
-  private static final String KOULUTUSMODUULI_FIELD = "koulutusmoduuli";
 
   private final KoulutusRepository koulutusRepository;
 
@@ -49,135 +43,119 @@ public class KoskiService {
     log.info("Creating KoskiService");
   }
 
-  private static JsonNode readJsonProperty(JsonNode jsonNode, String... paths) {
-    for (String path : paths) {
-      if (jsonNode == null) {
-        return null;
-      }
-      jsonNode = jsonNode.path(path);
-    }
-    return jsonNode.isMissingNode() ? null : jsonNode;
-  }
-
-  public List<KoulutusDto> getKoulutusData(JsonNode koskiResponse) {
-    JsonNode opinnot = readJsonProperty(koskiResponse, "opiskeluoikeudet");
-    if (opinnot == null || !opinnot.isArray()) {
-      return Collections.emptyList();
+  public List<KoulutusDto> mapKoulutusData(JsonNode koskiResponse) {
+    if (koskiResponse == null) {
+      return List.of();
     }
 
-    return StreamSupport.stream(opinnot.spliterator(), false)
-        .map(
-            o -> {
+    var opinnot = koskiResponse.path("opiskeluoikeudet");
+
+    return opinnot
+        .valueStream()
+        .flatMap(
+            node -> {
               var toimija =
-                  readJsonProperty(o, "oppilaitos") != null
-                      ? readJsonProperty(o, "oppilaitos")
-                      : readJsonProperty(o, "koulutustoimija");
-              var nimet = readJsonProperty(toimija, "nimi");
-              var localizedNimi = getLocalizedString(nimet);
+                  getLocalizedString(
+                      node.has("oppilaitos")
+                          ? node.path("oppilaitos").path("nimi")
+                          : node.path("koulutustoimija").path("nimi"));
 
-              var suoritukset = readJsonProperty(o, "suoritukset");
-              LocalizedString localizedKuvaus = null;
-              if (suoritukset != null && suoritukset.isArray() && !suoritukset.isEmpty()) {
-                var tunnisteNimiNode =
-                    readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "tunniste", "nimi");
-                var nimiNode = readJsonProperty(suoritukset.get(0), KOULUTUSMODUULI_FIELD, "nimi");
-                localizedKuvaus =
-                    getLocalizedKuvaus(
-                        getLocalizedString(tunnisteNimiNode),
-                        nimiNode == null ? null : getLocalizedString(nimiNode));
+              if (toimija == null) {
+                log.info(
+                    "Koski opiskeluoikeus {} is missing toimija name, skipping",
+                    node.path("oid").asText());
+                return Stream.of();
               }
-              var alkoi = getLocalDate(o, "alkamispäivä");
-              var loppui = getLocalDate(o, "päättymispäivä");
-              var osasuoritukset =
-                  suoritukset != null
-                      ? getOsasuoritukset(readJsonProperty(suoritukset.get(0), "osasuoritukset"))
-                      : null;
 
-              return new KoulutusDto(
-                  null,
-                  localizedNimi,
-                  localizedKuvaus,
-                  alkoi,
-                  loppui,
-                  null,
-                  true,
-                  null,
-                  osasuoritukset);
+              var alkoi = getLocalDate(node.path("alkamispäivä"));
+              var loppui = getLocalDate(node.path("päättymispäivä"));
+              var suoritukset = node.path("suoritukset");
+
+              LocalizedString kuvaus = null;
+              Set<String> osasuoritukset = null;
+              if (suoritukset.isArray() && !suoritukset.isEmpty()) {
+                var moduuli = suoritukset.path(0).path("koulutusmoduuli");
+                var tunniste = getLocalizedString(moduuli.path("tunniste").path("nimi"));
+                var nimi = getLocalizedString(moduuli.path("nimi"));
+                kuvaus = join(tunniste, nimi);
+                osasuoritukset = getOsasuoritukset(suoritukset.path(0).path("osasuoritukset"));
+              }
+
+              return Stream.of(
+                  new KoulutusDto(
+                      null, toimija, kuvaus, alkoi, loppui, null, true, null, osasuoritukset));
             })
         .toList();
   }
 
   private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
-    var osasuorituksetList = new HashSet<String>();
-    if (osasuoritukset != null && osasuoritukset.isArray() && !osasuoritukset.isEmpty()) {
-      for (var jsonNode : osasuoritukset) {
-        var nimiNode = readJsonProperty(jsonNode, KOULUTUSMODUULI_FIELD, "nimi");
-        if (nimiNode != null && !nimiNode.isEmpty()) {
-          osasuorituksetList.add(getLocalizedString(nimiNode).get(Kieli.FI));
-        }
-      }
-    }
-    return osasuorituksetList;
+    return osasuoritukset == null
+        ? Set.of()
+        : osasuoritukset
+            .valueStream()
+            .map(
+                node ->
+                    node.path("koulutusmoduuli").path("nimi").path(Kieli.FI.getKoodi()).textValue())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
   }
 
-  static LocalizedString getLocalizedKuvaus(
-      LocalizedString localizedKuvaus, LocalizedString localizedKuvausNimi) {
-    if (localizedKuvaus == null) {
+  /**
+   * Joins two LocalizedString instances by concatenating their values with ": " as separator.
+   *
+   * <p>Only the language keys present in the lhs are included in the result.
+   */
+  @SuppressWarnings("unchecked")
+  static LocalizedString join(LocalizedString lhs, LocalizedString rhs) {
+
+    if (lhs == null || rhs == null) {
+      return lhs;
+    }
+
+    return new LocalizedString(
+        Map.ofEntries(
+            lhs.asMap().entrySet().stream()
+                .map(
+                    entry ->
+                        (rhs.get(entry.getKey()) instanceof String s)
+                            ? Map.entry(entry.getKey(), String.join(": ", entry.getValue(), s))
+                            : entry)
+                .toArray(Map.Entry[]::new)));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static LocalizedString getLocalizedString(JsonNode text) {
+    if (text == null || text.isEmpty() || !text.isObject()) {
       return null;
     }
-    if (localizedKuvausNimi == null || localizedKuvausNimi.asMap().isEmpty()) {
-      return localizedKuvaus;
-    }
-    return new LocalizedString(
-        localizedKuvaus.asMap().entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> {
-                      String additionalDetailText = localizedKuvausNimi.get(entry.getKey());
-                      return StringUtils.hasText(additionalDetailText)
-                          ? entry.getValue() + ": " + additionalDetailText
-                          : entry.getValue();
-                    },
-                    (v1, v2) -> v1,
-                    () -> new EnumMap<>(Kieli.class))));
-  }
 
-  private static LocalizedString getLocalizedString(JsonNode nimet) {
-    if (nimet == null || nimet.isMissingNode()) {
-      return new LocalizedString(Collections.emptyMap());
-    }
-
-    Map<Kieli, String> localizedValues =
+    var values =
         Stream.of(Kieli.values())
-            .map(kieli -> Map.entry(kieli, getString(nimet, kieli.name().toLowerCase())))
-            .filter(entry -> !entry.getValue().isEmpty())
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue,
-                    (a, b) -> a,
-                    () -> new EnumMap<>(Kieli.class)));
+            .map(
+                kieli ->
+                    (text.path(kieli.getKoodi()).textValue() instanceof String value)
+                        ? Map.entry(kieli, value)
+                        : null)
+            .filter(Objects::nonNull)
+            .toArray(Map.Entry[]::new);
 
-    return new LocalizedString(localizedValues);
+    return LocalizedString.fromJsonNormalized(Map.ofEntries(values));
   }
 
-  private static String getString(JsonNode nimet, String path) {
-    JsonNode node = readJsonProperty(nimet, path);
-    return node != null && node.isTextual() ? node.asText() : "";
-  }
-
-  private static LocalDate getLocalDate(JsonNode nimet, String path) {
-    JsonNode node = readJsonProperty(nimet, path);
+  private static LocalDate getLocalDate(JsonNode node) {
     return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
   }
 
+  private static final Set<OsaamisenTunnistusStatus> statuses =
+      Set.of(OsaamisenTunnistusStatus.DONE, OsaamisenTunnistusStatus.FAIL);
+
   @Transactional(readOnly = true)
   public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
-    var statusesToReturn = Set.of(OsaamisenTunnistusStatus.DONE, OsaamisenTunnistusStatus.FAIL);
-    var koulutusList =
-        koulutusRepository.findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
-            user.getId(), uuids, statusesToReturn);
-    return koulutusList.stream().map(Mapper::mapKoulutus).toList();
+    return koulutusRepository
+        .findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
+            user.getId(), uuids, statuses)
+        .stream()
+        .map(Mapper::mapKoulutus)
+        .toList();
   }
 }
