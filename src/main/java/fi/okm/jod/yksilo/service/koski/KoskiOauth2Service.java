@@ -58,7 +58,34 @@ public class KoskiOauth2Service {
         koskiConfig.getRegistrationId(), authentication, request);
   }
 
-  public void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) {
+  public JsonNode fetchDataFromResourceServer(
+      JodUser user, OAuth2AuthorizedClient auth2AuthorizedClient) {
+    var accessToken = auth2AuthorizedClient.getAccessToken();
+    if (Instant.now().isAfter(Objects.requireNonNull(accessToken.getExpiresAt()))) {
+      throw new PermissionRequiredException("Token expired.");
+    }
+    try {
+      var data =
+          restClient
+              .post()
+              .uri(koskiConfig.getResourceServer())
+              .headers(headers -> headers.setBearerAuth(accessToken.getTokenValue()))
+              .accept(MediaType.APPLICATION_JSON)
+              .retrieve()
+              .body(JsonNode.class);
+      checkPersonIdMatches(user, data);
+      return data;
+
+    } catch (HttpClientErrorException e) {
+      if (e.getStatusCode().value() == HttpStatus.SC_NOT_FOUND) {
+        log.debug("Resource server returned: {}", e.getMessage());
+        throw new NoDataException(e.getMessage());
+      }
+      throw new ResourceServerException("Fail to get data from Koski resource server.", e);
+    }
+  }
+
+  private void checkPersonIdMatches(JodUser jodUser, JsonNode jsonData) {
     var jodUserPersonId = jodUser.getPersonId();
     var oauth2PersonId = getPersonId(jsonData);
     if (oauth2PersonId == null) {
@@ -81,28 +108,5 @@ public class KoskiOauth2Service {
       Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
     authorizedClientRepository.removeAuthorizedClient(
         getRegistrationId(), authentication, request, response);
-  }
-
-  public JsonNode fetchDataFromResourceServer(OAuth2AuthorizedClient auth2AuthorizedClient) {
-    var accessToken = auth2AuthorizedClient.getAccessToken();
-    if (Instant.now().isAfter(Objects.requireNonNull(accessToken.getExpiresAt()))) {
-      throw new PermissionRequiredException("Token expired.");
-    }
-    try {
-      return restClient
-          .post()
-          .uri(koskiConfig.getResourceServer())
-          .headers(headers -> headers.setBearerAuth(accessToken.getTokenValue()))
-          .accept(MediaType.APPLICATION_JSON)
-          .retrieve()
-          .body(JsonNode.class);
-
-    } catch (HttpClientErrorException e) {
-      if (e.getStatusCode().value() == HttpStatus.SC_NOT_FOUND) {
-        log.debug("Resource server returned: {}", e.getMessage());
-        throw new NoDataException(e.getMessage());
-      }
-      throw new ResourceServerException("Fail to get data from Koski resource server.", e);
-    }
   }
 }

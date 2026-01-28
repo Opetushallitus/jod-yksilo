@@ -60,7 +60,7 @@ class KoskiServiceTest extends AbstractServiceTest {
   @Test
   void getKoulutusData() throws JsonProcessingException {
     var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
-    var koskiData = koskiService.getKoulutusData(objectMapper.readTree(content));
+    var koskiData = koskiService.mapKoulutusData(objectMapper.readTree(content));
 
     assertEquals(2, koskiData.size());
     var koulutusDto = koskiData.getFirst();
@@ -123,7 +123,7 @@ class KoskiServiceTest extends AbstractServiceTest {
         new LocalizedString(Map.of(Kieli.FI, "Avoimen opinnot", Kieli.SV, "Öppna studier"));
     var name = new LocalizedString(Map.of(Kieli.FI, "Lisätietoja", Kieli.EN, "Additional info"));
 
-    var result = KoskiService.getLocalizedKuvaus(description, name);
+    var result = KoskiService.join(description, name);
 
     assertNotNull(result);
     assertEquals(2, result.asMap().size());
