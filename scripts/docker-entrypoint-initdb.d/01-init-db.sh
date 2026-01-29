@@ -3,11 +3,14 @@
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'EOSQL'
     CREATE ROLE yksilo WITH LOGIN PASSWORD 'yksilo';
     GRANT CONNECT,CREATE,TEMPORARY ON DATABASE yksilo TO yksilo;
+    CREATE ROLE dataloader WITH LOGIN PASSWORD 'dataloader';
+    GRANT CONNECT,TEMPORARY ON DATABASE yksilo TO dataloader;
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "yksilo" <<'EOSQL'
     BEGIN;
     CREATE SCHEMA IF NOT EXISTS yksilo;
+    GRANT USAGE ON SCHEMA yksilo TO dataloader;
     GRANT ALL PRIVILEGES ON SCHEMA yksilo TO yksilo;
     CREATE ROLE tunnistus;
     CREATE SCHEMA IF NOT EXISTS tunnistus AUTHORIZATION tunnistus;

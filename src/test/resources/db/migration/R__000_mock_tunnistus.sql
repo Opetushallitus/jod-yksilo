@@ -1,3 +1,5 @@
+CREATE ROLE dataloader;
+
 -- mock tunnistus schema for tests
 CREATE SCHEMA IF NOT EXISTS tunnistus;
 
