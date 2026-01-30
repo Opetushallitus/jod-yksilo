@@ -9,9 +9,4 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
-import java.util.List;
-
-public record TyollisyysDto(
-    Integer tyollisetKokoMaa,
-    List<KoulutusAlaDto> koulutusalaTyollisyydet,
-    List<KoulutusAsteDto> koulutusasteTyollisyydet) {}
+public record KoulutusAsteDto(String koulutusasteKoodi, Double osuus) {}
