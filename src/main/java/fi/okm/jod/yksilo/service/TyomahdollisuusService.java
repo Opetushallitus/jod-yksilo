@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAsteDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyollisyysDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
@@ -122,7 +123,9 @@ public class TyomahdollisuusService {
     }
     final TyollisyysDto tyollisyysData =
         new TyollisyysDto(
-            ammattiryhma.getTyollistenMaara(), getTyollisetKoulutusAloittain(ammattiryhma));
+            ammattiryhma.getTyollistenMaara(),
+            getTyollisetKoulutusAloittain(ammattiryhma),
+            getTyollisetKoulutusAsteittain(ammattiryhma));
     return new AmmattiryhmaFullDto(
         ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
@@ -144,6 +147,24 @@ public class TyomahdollisuusService {
       if (entry.path("osuus").isNumber()) {
         result.add(
             new KoulutusAlaDto(entry.path("koulutusala").asText(), entry.path("osuus").asDouble()));
+      }
+    }
+    return result;
+  }
+
+  private static List<KoulutusAsteDto> getTyollisetKoulutusAsteittain(
+      final Ammattiryhma ammattiryhma) {
+    JsonNode node = ammattiryhma.getData().path("tyollisetKoulutusAsteittain");
+    if (node.isMissingNode() || !node.isArray()) {
+      return new ArrayList<>();
+    }
+
+    List<KoulutusAsteDto> result = new ArrayList<>();
+    for (JsonNode entry : node) {
+      if (entry.path("osuus").isNumber()) {
+        result.add(
+            new KoulutusAsteDto(
+                entry.path("koulutusaste").asText(), entry.path("osuus").asDouble()));
       }
     }
     return result;
