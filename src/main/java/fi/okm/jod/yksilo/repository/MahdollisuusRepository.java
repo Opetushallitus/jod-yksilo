@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.entity.MahdollisuusView;
+import fi.okm.jod.yksilo.service.profiili.Mapper;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Comparator;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, UUID> {
@@ -33,23 +35,23 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
       //  The j.id in GROUP BY is needed because SIZE() becomes a correlated
       //  subquery that refers to the j.id.
       """
-      SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
-        k.id,
-        k.tyyppi as koulutusmahdollisuusTyyppi,
-        CAST(k.kesto.mediaani AS double) as kestoMediaani,
-        CAST(k.kesto.maksimi AS double) as kestoMaksimi,
-        CAST(k.kesto.minimi AS double) as kestoMinimi,
-        CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
-        COUNT(osaamiset) as hits
-      )
-      FROM Koulutusmahdollisuus k
-      JOIN k.jakaumat j
-      JOIN j.arvot osaamiset
-      WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
-      AND osaamiset.arvo IN :missingOsaamiset
-      GROUP BY k.id, j.id
-      ORDER BY matchRatio DESC
-      """)
+          SELECT NEW fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto(
+            k.id,
+            k.tyyppi as koulutusmahdollisuusTyyppi,
+            CAST(k.kesto.mediaani AS double) as kestoMediaani,
+            CAST(k.kesto.maksimi AS double) as kestoMaksimi,
+            CAST(k.kesto.minimi AS double) as kestoMinimi,
+            CAST(COUNT(osaamiset) AS double) / SIZE(osaamiset) as matchRatio,
+            COUNT(osaamiset) as hits
+          )
+          FROM Koulutusmahdollisuus k
+          JOIN k.jakaumat j
+          JOIN j.arvot osaamiset
+          WHERE k.aktiivinen = true AND j.tyyppi = 'OSAAMINEN'
+          AND osaamiset.arvo IN :missingOsaamiset
+          GROUP BY k.id, j.id
+          ORDER BY matchRatio DESC
+          """)
   List<SuunnitelmaEhdotusDto> getPolunVaiheSuggestions(Collection<String> missingOsaamiset);
 
   @Transactional(readOnly = true)
@@ -60,18 +62,18 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
         findByKieli(lang, JpaSort.unsafe(direction, "otsikko"));
     return mahdollisuudet.stream()
         .sorted(createOtsikkoComparator(lang))
-        .map(
-            m ->
-                new MahdollisuusDto(
-                    m.getId(),
-                    m.getTyyppi(),
-                    m.getAmmattiryhma(),
-                    m.getAineisto(),
-                    m.getKoulutusTyyppi(),
-                    m.getMaakunnat(),
-                    m.getKesto(),
-                    m.getKestoMinimi(),
-                    m.getKestoMaksimi()))
+        .map(Mapper::mapMahdollisuusView)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  default List<MahdollisuusDto> searchMahdollisuusIds(String query, Kieli lang) {
+    // Cache
+    // collate() is HQL extension
+    final List<MahdollisuusView> mahdollisuudet = searchTextByKieli(query, lang.name());
+    return mahdollisuudet.stream()
+        .sorted(createOtsikkoComparator(lang))
+        .map(Mapper::mapMahdollisuusView)
         .toList();
   }
 
@@ -82,4 +84,30 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
   }
 
   List<MahdollisuusView> findByKieli(Kieli kieli, JpaSort unsafe);
+
+  @Query(
+      value =
+          """
+    SELECT * FROM mahdollisuus_view mv
+      WHERE mv.kieli = :lang
+      AND mv.id IN (
+        SELECT k.koulutusmahdollisuus_id FROM koulutusmahdollisuus_kaannos k
+        WHERE k.kaannos_key = :lang
+          AND (
+            k.otsikko ILIKE CONCAT('%', :q, '%')
+            OR k.kuvaus ILIKE CONCAT('%', :q, '%')
+            OR k.tiivistelma ILIKE CONCAT('%', :q, '%')
+          )
+        UNION
+        SELECT t.tyomahdollisuus_id FROM tyomahdollisuus_kaannos t
+        WHERE t.kaannos_key = :lang
+          AND (
+            t.otsikko ILIKE CONCAT('%', :q, '%')
+            OR t.kuvaus ILIKE CONCAT('%', :q, '%')
+            OR t.tiivistelma ILIKE CONCAT('%', :q, '%')
+          )
+      )
+    """,
+      nativeQuery = true)
+  List<MahdollisuusView> searchTextByKieli(@Param("q") String q, @Param("lang") String lang);
 }

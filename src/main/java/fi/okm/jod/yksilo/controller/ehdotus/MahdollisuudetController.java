@@ -166,7 +166,7 @@ class MahdollisuudetController {
                 new EhdotusDto(
                     entry.getKey(),
                     EhdotusMetadata.empty(
-                        entry.getValue().tyypi(),
+                        entry.getValue().tyyppi(),
                         entry.getValue().ammattiryhma(),
                         entry.getValue().aineisto(),
                         entry.getValue().koulutusTyyppi(),
@@ -189,7 +189,7 @@ class MahdollisuudetController {
               // Retrieve the result or create a new Suggestion if not found
               Suggestion suggestion =
                   Optional.ofNullable(suggestions.get(entry.getKey()))
-                      .orElseGet(supplyEmptySuggestion(entry.getKey(), entry.getValue().tyypi()));
+                      .orElseGet(supplyEmptySuggestion(entry.getKey(), entry.getValue().tyyppi()));
 
               // Create and return EhdotusDto
               return new EhdotusDto(

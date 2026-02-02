@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public record MahdollisuusDto(
     UUID id,
-    MahdollisuusTyyppi tyypi,
+    MahdollisuusTyyppi tyyppi,
     String ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     KoulutusmahdollisuusTyyppi koulutusTyyppi,

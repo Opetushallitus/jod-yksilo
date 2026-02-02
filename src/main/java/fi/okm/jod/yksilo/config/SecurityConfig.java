@@ -104,6 +104,7 @@ public class SecurityConfig {
                         "/api/ehdotus/**",
                         "/api/osaamiset",
                         "/api/ammatit",
+                        "/api/haku",
                         "/api/tyomahdollisuudet/**",
                         "/api/koulutusmahdollisuudet/**",
                         "/api/keskustelut/**",
