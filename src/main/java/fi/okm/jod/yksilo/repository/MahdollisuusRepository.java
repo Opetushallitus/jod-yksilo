@@ -69,6 +69,7 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
                     m.getAineisto(),
                     m.getKoulutusTyyppi(),
                     m.getMaakunnat(),
+                    m.getToimialat(),
                     m.getKesto(),
                     m.getKestoMinimi(),
                     m.getKestoMaksimi()))
