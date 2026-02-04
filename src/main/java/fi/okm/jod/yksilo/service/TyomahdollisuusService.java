@@ -15,7 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
-import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAsteDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusasteDto;
+import fi.okm.jod.yksilo.dto.tyomahdollisuus.MaakuntaDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyollisyysDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
@@ -125,7 +126,8 @@ public class TyomahdollisuusService {
         new TyollisyysDto(
             ammattiryhma.getTyollistenMaara(),
             getTyollisetKoulutusAloittain(ammattiryhma),
-            getTyollisetKoulutusAsteittain(ammattiryhma));
+            getTyollisetKoulutusAsteittain(ammattiryhma),
+            getTyollisetMaakunnittain(ammattiryhma));
     return new AmmattiryhmaFullDto(
         ammattiryhmaUri,
         ammattiryhma.getMediaaniPalkka(),
@@ -152,19 +154,35 @@ public class TyomahdollisuusService {
     return result;
   }
 
-  private static List<KoulutusAsteDto> getTyollisetKoulutusAsteittain(
+  private static List<KoulutusasteDto> getTyollisetKoulutusAsteittain(
       final Ammattiryhma ammattiryhma) {
     JsonNode node = ammattiryhma.getData().path("tyollisetKoulutusAsteittain");
     if (node.isMissingNode() || !node.isArray()) {
       return new ArrayList<>();
     }
 
-    List<KoulutusAsteDto> result = new ArrayList<>();
+    List<KoulutusasteDto> result = new ArrayList<>();
     for (JsonNode entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
-            new KoulutusAsteDto(
+            new KoulutusasteDto(
                 entry.path("koulutusaste").asText(), entry.path("osuus").asDouble()));
+      }
+    }
+    return result;
+  }
+
+  private static List<MaakuntaDto> getTyollisetMaakunnittain(final Ammattiryhma ammattiryhma) {
+    JsonNode node = ammattiryhma.getData().path("tyollisetMaakunnittain");
+    if (node.isMissingNode() || !node.isArray()) {
+      return new ArrayList<>();
+    }
+
+    List<MaakuntaDto> result = new ArrayList<>();
+    for (JsonNode entry : node) {
+      if (entry.path("osuus").isNumber()) {
+        result.add(
+            new MaakuntaDto(entry.path("maakunta").asText(), entry.path("osuus").asDouble()));
       }
     }
     return result;
