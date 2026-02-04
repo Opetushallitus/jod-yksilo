@@ -9,4 +9,4 @@
 
 package fi.okm.jod.yksilo.dto.tyomahdollisuus;
 
-public record KoulutusAsteDto(String koulutusasteKoodi, Double osuus) {}
+public record MaakuntaDto(String maakuntaKoodi, Double osuus) {}
