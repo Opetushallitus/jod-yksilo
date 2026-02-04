@@ -52,7 +52,8 @@ class MuuOsaaminenServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldAddNewByUpdateYksilonMuuOsaaminen() {
-    service.update(user, Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:3")));
+    service.updateOsaamiset(
+        user, Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:3")));
     var result = service.findAll(user);
     assertEquals(2, result.size());
     assertTrue(result.contains(URI.create("urn:osaaminen:1")), "result contains osaaminen1");
@@ -63,7 +64,7 @@ class MuuOsaaminenServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldDeleteNewByUpdateYksilonMuuOsaaminen() {
-    service.update(user, Collections.emptySet());
+    service.updateOsaamiset(user, Collections.emptySet());
     var result = service.findAll(user);
     assertEquals(0, result.size());
   }

@@ -29,8 +29,8 @@ public record KoulutusDto(
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     LocalDate alkuPvm,
     LocalDate loppuPvm,
-    Set<@NotNull URI> osaamiset,
+    @Size(max = 1000) Set<@NotNull URI> osaamiset,
     Boolean osaamisetOdottaaTunnistusta,
     Boolean osaamisetTunnistusEpaonnistui,
-    Set<String> osasuoritukset)
+    @Size(max = 1000) Set<@NotEmpty @Size(max = 1000) String> osasuoritukset)
     implements ValidInterval {}

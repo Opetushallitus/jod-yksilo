@@ -9,18 +9,23 @@
 
 package fi.okm.jod.yksilo.service.profiili;
 
+import com.google.common.collect.Streams;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.profiili.KiinnostuksetDto;
+import fi.okm.jod.yksilo.entity.Ammatti;
+import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.AmmattiRepository;
 import fi.okm.jod.yksilo.repository.OsaaminenRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,31 +39,35 @@ public class KiinnostusService {
   private final AmmattiRepository ammatit;
 
   @Transactional(readOnly = true)
-  public Set<URI> getOsaamiset(JodUser user) {
-    return Stream.concat(
-            yksilot.findAmmattiKiinnostukset(getYksilo(user)).stream(),
-            yksilot.findOsaamisKiinnostukset(getYksilo(user)).stream())
-        .map(URI::create)
-        .collect(Collectors.toSet());
+  public KiinnostuksetDto get(JodUser user) {
+    var yksilo = getYksilo(user);
+
+    var uris =
+        Streams.concat(
+                yksilo.getAmmattiKiinnostukset().stream().map(Ammatti::getUri),
+                yksilo.getOsaamisKiinnostukset().stream().map(Osaaminen::getUri))
+            .collect(Collectors.toSet());
+
+    return new KiinnostuksetDto(uris, yksilo.getOsaamisKiinnostuksetVapaateksti());
   }
 
-  public void updateOsaamiset(JodUser user, Set<URI> kiinnostukset) {
+  public void update(JodUser user, Set<URI> kiinnostukset) {
     var yksilo = getYksilo(user);
     var osaamisetEntities = osaamiset.findByUriIn(kiinnostukset);
     var ammatitEntities = ammatit.findByUriIn(kiinnostukset);
     if ((osaamisetEntities.size() + ammatitEntities.size()) != kiinnostukset.size()) {
       throw new ServiceValidationException("Invalid kiinnostus");
     }
+
+    if (kiinnostukset.size() > Limits.KIINNOSTUKSET) {
+      throw new ProfileLimitException(ProfileItem.KIINNOSTUKSET);
+    }
+
     yksilo.setOsaamisKiinnostukset(osaamisetEntities);
     yksilo.setAmmattiKiinnostukset(ammatitEntities);
-    yksilo.updated();
-    this.yksilot.save(yksilo);
-  }
 
-  @Transactional(readOnly = true)
-  public LocalizedString getVapaateksti(JodUser user) {
-    var yksilo = getYksilo(user);
-    return yksilo.getOsaamisKiinnostuksetVapaateksti();
+    yksilot.save(yksilo);
+    yksilo.updated();
   }
 
   public void updateVapaateksti(JodUser user, LocalizedString vapaateksti) {

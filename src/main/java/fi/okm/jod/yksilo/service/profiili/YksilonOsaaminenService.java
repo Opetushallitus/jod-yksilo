@@ -23,6 +23,8 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -110,26 +112,30 @@ public class YksilonOsaaminenService {
    */
   private void updateLahteenOsaamiset(
       OsaamisenLahde lahde, Set<Osaaminen> updated, boolean removeOldOsaamiset) {
-    var updatedOsaaminen = new HashSet<>(updated);
+    var added = new HashSet<>(updated);
     var deleted = new ArrayList<YksilonOsaaminen>();
 
     for (var i = lahde.getOsaamiset().iterator(); i.hasNext(); ) {
       var o = i.next();
-      if (updatedOsaaminen.contains(o.getOsaaminen())) {
+      if (added.contains(o.getOsaaminen())) {
         // filter out duplicates
-        updatedOsaaminen.remove(o.getOsaaminen());
+        added.remove(o.getOsaaminen());
       } else if (removeOldOsaamiset) {
         i.remove();
         deleted.add(o);
       }
     }
-    repository.deleteAll(deleted);
 
+    var count = repository.countByYksilo(lahde.getYksilo());
+    if (count - deleted.size() + added.size() > Limits.OSAAMINEN) {
+      throw new ProfileLimitException(ProfileItem.OSAAMINEN);
+    }
+
+    repository.deleteAll(deleted);
     lahde
         .getOsaamiset()
         .addAll(
-            repository.saveAll(
-                updatedOsaaminen.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
+            repository.saveAll(added.stream().map(o -> new YksilonOsaaminen(lahde, o)).toList()));
     lahde.getYksilo().updated();
     this.yksiloRepository.save(lahde.getYksilo());
   }

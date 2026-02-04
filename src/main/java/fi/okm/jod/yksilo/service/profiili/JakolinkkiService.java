@@ -31,6 +31,8 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonOsaaminenRepository;
 import fi.okm.jod.yksilo.repository.projection.JakolinkkiSettings;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +61,10 @@ public class JakolinkkiService {
   public void create(JodUser jodUser, JakolinkkiUpdateDto jakolinkkiDto) {
 
     var yksilo = yksiloService.getYksilo(jodUser);
+
+    if (jakolinkkiRepository.countByYksilo(yksilo) >= Limits.JAKOLINKKI) {
+      throw new ProfileLimitException(ProfileItem.JAKOLINKKI);
+    }
 
     var jakolinkkiId =
         jakolinkkiRepository.createJakolinkki(

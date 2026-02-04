@@ -24,5 +24,4 @@ import java.util.UUID;
 public record KoulutusKokonaisuusDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(min = 1, max = Limits.KOULUTUS_PER_KOKONAISUUS)
-        Set<@Valid @NotNull KoulutusDto> koulutukset) {}
+    @Size(min = 1, max = Limits.KOULUTUS) Set<@Valid @NotNull KoulutusDto> koulutukset) {}

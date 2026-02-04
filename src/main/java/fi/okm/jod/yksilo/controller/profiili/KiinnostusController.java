@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KiinnostuksetDto;
 import fi.okm.jod.yksilo.service.profiili.KiinnostusService;
 import fi.okm.jod.yksilo.validation.FreeText;
+import fi.okm.jod.yksilo.validation.Limits;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -38,15 +39,15 @@ public class KiinnostusController {
 
   @GetMapping("/osaamiset")
   public KiinnostuksetDto getOsaamiset(@AuthenticationPrincipal JodUser user) {
-    return new KiinnostuksetDto(
-        kiinnostusService.getOsaamiset(user), kiinnostusService.getVapaateksti(user));
+    return kiinnostusService.get(user);
   }
 
   @PutMapping("/osaamiset")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void updateOsaamiset(
-      @AuthenticationPrincipal JodUser user, @RequestBody Set<@Valid URI> kiinnostukset) {
-    kiinnostusService.updateOsaamiset(user, kiinnostukset);
+      @AuthenticationPrincipal JodUser user,
+      @RequestBody @Size(max = Limits.KIINNOSTUKSET) Set<@Valid URI> kiinnostukset) {
+    kiinnostusService.update(user, kiinnostukset);
   }
 
   @PutMapping("/vapaateksti")

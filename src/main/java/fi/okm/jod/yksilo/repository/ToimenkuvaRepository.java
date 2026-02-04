@@ -14,7 +14,7 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.TOIMENKUVA;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
-import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -41,5 +41,5 @@ public interface ToimenkuvaRepository
         : Optional.empty();
   }
 
-  int countByTyopaikka(Tyopaikka tyopaikka);
+  int countByTyopaikkaYksilo(Yksilo yksilo);
 }

@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.MuuOsaaminenDto;
 import fi.okm.jod.yksilo.service.profiili.MuuOsaaminenService;
 import fi.okm.jod.yksilo.validation.FreeText;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -32,23 +31,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/profiili/muu-osaaminen"})
-@Tag(name = "profiili/muu-osaaminen", description = "Other osaaminen API of user's profile")
+@Tag(name = "profiili/muu-osaaminen", description = "Other osaaminen API")
 @RequiredArgsConstructor
 public class MuuOsaaminenController {
 
   private final MuuOsaaminenService service;
 
   @GetMapping
-  @Operation(summary = "Gets all other osaaminen of the user")
-  MuuOsaaminenDto findAll(@AuthenticationPrincipal JodUser user) {
-    return new MuuOsaaminenDto(service.findAll(user), service.getVapaateksti(user));
+  MuuOsaaminenDto get(@AuthenticationPrincipal JodUser user) {
+    return service.get(user);
   }
 
   @PutMapping
-  @Operation(summary = "Gets all other osaaminen of the user")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void update(@AuthenticationPrincipal JodUser user, @RequestBody Set<@Valid URI> osaamiset) {
-    service.update(user, osaamiset);
+  void updateOsaamiset(
+      @AuthenticationPrincipal JodUser user, @RequestBody Set<@Valid URI> osaamiset) {
+    service.updateOsaamiset(user, osaamiset);
   }
 
   @PutMapping("/vapaateksti")

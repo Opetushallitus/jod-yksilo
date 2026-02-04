@@ -14,8 +14,8 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.KOULUTUS;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface KoulutusRepository
     extends JpaRepository<Koulutus, UUID>, OsaamisenLahdeRepository<Koulutus> {
 
-  long countByKokonaisuus(KoulutusKokonaisuus kokonaisuus);
+  int countByKokonaisuusYksilo(Yksilo yksilo);
 
   Optional<Koulutus> findByKokonaisuusYksiloIdAndId(UUID yksiloId, UUID id);
 

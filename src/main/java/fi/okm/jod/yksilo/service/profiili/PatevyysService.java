@@ -13,10 +13,11 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.PatevyysRepository;
 import fi.okm.jod.yksilo.repository.ToimintoRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.UUID;
@@ -45,8 +46,8 @@ public class PatevyysService {
             .findByYksiloIdAndId(user.getId(), toimintoId)
             .orElseThrow(ToimenkuvaService::notFound);
 
-    if (patevyydet.countByToiminto(toiminto) >= Limits.PATEVYYS_PER_TOIMINTO) {
-      throw new ServiceValidationException("Too many Pätevyys");
+    if (patevyydet.countByToimintoYksilo(toiminto.getYksilo()) >= Limits.PATEVYYS) {
+      throw new ProfileLimitException(ProfileItem.PATEVYYS);
     }
 
     return add(toiminto, dto).getId();
@@ -71,6 +72,10 @@ public class PatevyysService {
         patevyydet.findBy(user, toimintoId, patevyysId).orElseThrow(PatevyysService::notFound);
     delete(entity);
     toiminnot.deleteEmpty(user.getId(), toimintoId);
+  }
+
+  long countBy(Yksilo yksilo) {
+    return patevyydet.countByToimintoYksilo(yksilo);
   }
 
   Patevyys add(Toiminto toiminto, PatevyysDto dto) {

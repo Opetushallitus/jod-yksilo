@@ -43,7 +43,7 @@ class KiinnostusServiceTest extends AbstractServiceTest {
             URI.create("urn:osaaminen:4"),
             URI.create("urn:osaaminen:5"));
 
-    this.service.updateOsaamiset(user, kiinnostukset);
+    this.service.update(user, kiinnostukset);
     simulateCommit();
 
     final Yksilo yksilo = this.yksilot.getReferenceById(user.getId());
@@ -66,9 +66,9 @@ class KiinnostusServiceTest extends AbstractServiceTest {
   void testUpdateOsaamisKiinnostukset() {
     final Set<URI> kiinnostukset =
         Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
-    service.updateOsaamiset(user, kiinnostukset);
+    service.update(user, kiinnostukset);
     simulateCommit();
-    assertThat(service.getOsaamiset(user)).containsAll(kiinnostukset);
+    assertThat(service.get(user).kiinnostukset()).containsAll(kiinnostukset);
   }
 
   @Test
@@ -76,6 +76,6 @@ class KiinnostusServiceTest extends AbstractServiceTest {
     var vapaateksti = ls("Testi vapaateksti");
     service.updateVapaateksti(user, vapaateksti);
     simulateCommit();
-    assertThat(service.getVapaateksti(user)).isEqualTo(vapaateksti);
+    assertThat(service.get(user).vapaateksti()).isEqualTo(vapaateksti);
   }
 }

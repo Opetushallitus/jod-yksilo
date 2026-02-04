@@ -18,7 +18,8 @@ import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
+import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class TavoiteService {
-
-  public static final int MAX_PAAMAARA_COUNT = 10_000;
 
   private final YksiloRepository yksilot;
   private final TavoiteRepository tavoitteet;
@@ -53,8 +52,8 @@ public class TavoiteService {
                 .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found")),
             dto.tavoite(),
             dto.kuvaus());
-    if (tavoitteet.countByYksilo(yksilo) > MAX_PAAMAARA_COUNT) {
-      throw new ServiceValidationException("Too many Tavoite");
+    if (tavoitteet.countByYksilo(yksilo) > Limits.TAVOITE) {
+      throw new ProfileLimitException(ProfileItem.TAVOITE);
     }
 
     yksilo.updated();

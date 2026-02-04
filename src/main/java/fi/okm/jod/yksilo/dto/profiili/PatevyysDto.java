@@ -27,5 +27,5 @@ public record PatevyysDto(
     @Size(max = 10000) @PrintableString LocalizedString kuvaus,
     @NotNull LocalDate alkuPvm,
     LocalDate loppuPvm,
-    Set<@NotNull URI> osaamiset)
+    @Size(max = 1000) Set<@NotNull URI> osaamiset)
     implements ValidInterval {}

@@ -19,6 +19,7 @@ import fi.okm.jod.yksilo.service.koski.NoDataException;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.ResourceServerException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
@@ -107,6 +108,13 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
       NotFoundException ex, WebRequest request) {
     var info = errorInfo.of(ErrorCode.RESOURCE_NOT_FOUND, List.of(ex.getMessage()));
     return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+  }
+
+  @ExceptionHandler(ProfileLimitException.class)
+  protected ResponseEntity<Object> handleServiceException(
+      ProfileLimitException ex, WebRequest request) {
+    var info = errorInfo.of(ErrorCode.PROFILE_LIMIT_EXCEEDED, List.of(ex.getItem().name()));
+    return handleExceptionInternal(ex, info, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 
   @ExceptionHandler(ServiceValidationException.class)

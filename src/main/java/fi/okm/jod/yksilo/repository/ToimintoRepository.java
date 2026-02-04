@@ -13,7 +13,6 @@ import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,8 +20,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ToimintoRepository extends JpaRepository<Toiminto, UUID> {
   Optional<Toiminto> findByYksiloIdAndId(UUID yksiloId, UUID id);
-
-  List<Toiminto> findByYksiloIdAndIdIn(UUID yksiloId, Set<UUID> ids);
 
   List<Toiminto> findByYksiloId(UUID yksiloId);
 

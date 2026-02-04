@@ -35,5 +35,6 @@ public record ErrorInfo(
     WRONG_PERSON,
     DATA_NOT_FOUND,
     AUTHORIZATION_REQUIRED,
+    PROFILE_LIMIT_EXCEEDED
   }
 }

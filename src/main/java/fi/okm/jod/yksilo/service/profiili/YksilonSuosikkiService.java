@@ -20,6 +20,8 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.repository.YksilonSuosikkiRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
+import fi.okm.jod.yksilo.validation.Limits;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +58,13 @@ public class YksilonSuosikkiService {
    * @return Id of the added or existing suosikki
    */
   public UUID add(JodUser user, UUID kohdeId, SuosikkiTyyppi tyyppi) {
-    var yksilo = yksilot.getReferenceById(user.getId());
+    var yksilo =
+        yksilot.findById(user.getId()).orElseThrow(() -> new NotFoundException("Not found"));
+
+    if (yksilo.getSuosikit().size() >= Limits.SUOSIKKI) {
+      throw new ProfileLimitException(ProfileItem.SUOSIKKI);
+    }
+
     return suosikit
         .findBy(yksilo, tyyppi, kohdeId)
         .map(YksilonSuosikki::getId)
@@ -64,9 +72,9 @@ public class YksilonSuosikkiService {
   }
 
   private UUID saveNewSuosikki(final Yksilo yksilo, UUID kohdeId, SuosikkiTyyppi tyyppi) {
-    final YksilonSuosikki yksilonSuosikki = createSuosikki(yksilo, kohdeId, tyyppi);
+    var suosikki = suosikit.save(createSuosikki(yksilo, kohdeId, tyyppi));
     yksilo.updated();
-    return suosikit.save(yksilonSuosikki).getId();
+    return suosikki.getId();
   }
 
   private YksilonSuosikki createSuosikki(
