@@ -14,7 +14,7 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.PATEVYYS;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Patevyys;
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,5 +44,5 @@ public interface PatevyysRepository
         : Optional.empty();
   }
 
-  int countByToiminto(Toiminto toiminto);
+  int countByToimintoYksilo(Yksilo yksilo);
 }

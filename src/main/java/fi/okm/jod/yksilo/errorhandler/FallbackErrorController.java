@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,10 +67,11 @@ public class FallbackErrorController implements ErrorController {
         && "navigate".equalsIgnoreCase(request.getHeader("Sec-Fetch-Mode"))) {
       // Redirect back to the UI application for errors (likely) related to insufficient
       // authentication.
-      log.info(
-          "Authentication failure {}: {}",
-          status.value(),
-          request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
+      log.atInfo()
+          .addKeyValue("status", status.value())
+          .addKeyValue("requestUri", requestUri)
+          .addKeyValue("reason", request.getAttribute(RequestDispatcher.ERROR_MESSAGE))
+          .log("Authentication failure, redirecting");
 
       return ResponseEntity.status(HttpStatus.SEE_OTHER)
           .location(URI.create(contextPath + "/?error=AUTHENTICATION_FAILURE"))
@@ -86,7 +88,16 @@ public class FallbackErrorController implements ErrorController {
           .log("Request failed: {}", status.value(), exception);
     } else {
       var reason = exception == null ? null : exception.toString();
-      log.atWarn()
+      var level = Level.WARN;
+
+      if (ErrorCode.AUTHENTICATION_FAILURE.equals(errorCode)
+          && requestUri instanceof String uri
+          && uri.endsWith("/api/profiili/yksilo")) {
+        // Common test for valid session
+        level = Level.INFO;
+      }
+
+      log.atLevel(level)
           .addKeyValue("status", status.value())
           .addKeyValue("requestUri", requestUri)
           .addKeyValue("reason", reason)

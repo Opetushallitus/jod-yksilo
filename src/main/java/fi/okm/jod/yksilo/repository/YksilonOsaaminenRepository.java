@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import java.util.Collection;
 import java.util.List;
@@ -39,4 +40,6 @@ public interface YksilonOsaaminenRepository extends JpaRepository<YksilonOsaamin
   long deleteByYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
 
   Optional<YksilonOsaaminen> findByYksiloIdAndId(UUID yksiloId, UUID id);
+
+  long countByYksilo(Yksilo yksilo);
 }

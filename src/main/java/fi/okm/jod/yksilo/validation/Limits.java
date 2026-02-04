@@ -11,14 +11,18 @@ package fi.okm.jod.yksilo.validation;
 
 public final class Limits {
   public static final int TYOPAIKKA = 1_000;
-  public static final int TOIMENKUVA_PER_TYOPAIKKA = 1_000;
-  public static final int KOULUTUS_PER_KOKONAISUUS = 1_000;
+  public static final int TOIMENKUVA = 1_000;
+  public static final int KOULUTUS = 1_000;
   public static final int TOIMINTO = 1_000;
-  public static final int PATEVYYS_PER_TOIMINTO = 1_000;
+  public static final int PATEVYYS = 1_000;
   public static final int KOULUTUSKOKONAISUUS = 1_000;
-  public static final int SUUNNITELMA_PER_PAAMAARA = 1_000;
-  public static final int VAIHE_PER_SUUNNITELMA = 1_000;
+  public static final int SUUNNITELMA = 1000;
   public static final int SIVUN_MAKSIMI_KOKO = 1000;
+  public static final int OSAAMINEN = 100_000;
+  public static final int SUOSIKKI = 1_000;
+  public static final int JAKOLINKKI = 1_000;
+  public static final int KIINNOSTUKSET = 1_000;
+  public static final int TAVOITE = 1000;
 
   /**
    * The maximum size to include in an in query, basically the maximum for @BatchSize-annotation.

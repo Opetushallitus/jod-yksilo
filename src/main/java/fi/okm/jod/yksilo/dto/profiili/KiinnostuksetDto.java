@@ -19,5 +19,5 @@ import lombok.Builder;
 
 @Builder
 public record KiinnostuksetDto(
-    Set<@Valid URI> kiinnostukset,
+    @Size(max = 1000) Set<@Valid URI> kiinnostukset,
     @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {}

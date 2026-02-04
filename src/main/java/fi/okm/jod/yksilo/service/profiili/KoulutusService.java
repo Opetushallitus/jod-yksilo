@@ -14,10 +14,11 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.time.Instant;
@@ -54,8 +55,8 @@ public class KoulutusService {
             .findByYksiloIdAndId(user.getId(), kokonaisuusId)
             .orElseThrow(KoulutusService::notFound);
 
-    if (koulutukset.countByKokonaisuus(kokonaisuus) >= Limits.KOULUTUS_PER_KOKONAISUUS) {
-      throw new ServiceValidationException("Too many Koulutus");
+    if (koulutukset.countByKokonaisuusYksilo(kokonaisuus.getYksilo()) >= Limits.KOULUTUS) {
+      throw new ProfileLimitException(ProfileItem.KOULUTUS);
     }
 
     return add(kokonaisuus, dto).getId();
@@ -84,6 +85,10 @@ public class KoulutusService {
             .orElseThrow(KoulutusService::notFound);
     delete(koulutus);
     kokonaisuudet.deleteEmpty(user.getId(), kokonaisuusId);
+  }
+
+  int countBy(Yksilo yksilo) {
+    return koulutukset.countByKokonaisuusYksilo(yksilo);
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {

@@ -17,7 +17,7 @@ import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -76,7 +76,16 @@ public class TyopaikkaService {
   public SequencedSet<UUID> add(JodUser user, Set<TyopaikkaDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (tyopaikat.countByYksilo(yksilo) + dtos.size() > Limits.TYOPAIKKA) {
-      throw new ServiceValidationException("Too many Tyopaikka");
+      throw new ProfileLimitException(ProfileItem.TYOPAIKKA);
+    }
+
+    var count =
+        dtos.stream()
+            .map(t -> t.toimenkuvat() == null ? 0 : t.toimenkuvat().size())
+            .reduce(0, Integer::sum);
+
+    if (toimenkuvaService.countBy(yksilo) + count > Limits.TOIMENKUVA) {
+      throw new ProfileLimitException(ProfileItem.TOIMENKUVA);
     }
 
     return dtos.stream()

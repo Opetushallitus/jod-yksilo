@@ -22,6 +22,7 @@ import fi.okm.jod.yksilo.repository.PolunSuunnitelmaRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.util.Set;
@@ -57,8 +58,8 @@ public class PolunSuunnitelmaService {
       throw new ServiceValidationException("Invalid Tavoite");
     }
 
-    if (suunnitelmaRepository.countByTavoite(tavoite) >= getSuunnitelmaPerTavoiteLimit()) {
-      throw new ServiceValidationException("Too many Suunnitelmas");
+    if (suunnitelmaRepository.countByTavoiteYksilo(tavoite.getYksilo()) >= getSuunnitelmaLimit()) {
+      throw new ProfileLimitException(ProfileItem.SUUNNITELMA);
     }
 
     return add(tavoite, dto).getId();
@@ -131,7 +132,7 @@ public class PolunSuunnitelmaService {
     return new NotFoundException("Not found");
   }
 
-  static int getSuunnitelmaPerTavoiteLimit() {
-    return Limits.SUUNNITELMA_PER_PAAMAARA;
+  static int getSuunnitelmaLimit() {
+    return Limits.SUUNNITELMA;
   }
 }

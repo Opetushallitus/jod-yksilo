@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.Jakolinkki;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.projection.JakolinkkiDetails;
 import fi.okm.jod.yksilo.repository.projection.JakolinkkiSettings;
 import java.time.Instant;
@@ -60,4 +61,6 @@ public interface JakolinkkiRepository extends JpaRepository<Jakolinkki, UUID> {
       value = "SELECT tunnistus.delete_jakolinkki(:henkiloId, :jakolinkkiId)",
       nativeQuery = true)
   void deleteJakolinkki(String henkiloId, UUID jakolinkkiId);
+
+  long countByYksilo(Yksilo yksilo);
 }

@@ -13,10 +13,11 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.ToimenkuvaRepository;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
 import java.util.UUID;
@@ -49,8 +50,8 @@ public class ToimenkuvaService {
             .findByYksiloIdAndId(user.getId(), tyopaikkaId)
             .orElseThrow(ToimenkuvaService::notFound);
 
-    if (toimenkuvat.countByTyopaikka(tyopaikka) >= Limits.TOIMENKUVA_PER_TYOPAIKKA) {
-      throw new ServiceValidationException("Too many Toimenkuva");
+    if (toimenkuvat.countByTyopaikkaYksilo(tyopaikka.getYksilo()) >= Limits.TOIMENKUVA) {
+      throw new ProfileLimitException(ProfileItem.TOIMENKUVA);
     }
 
     return add(tyopaikka, dto).getId();
@@ -75,6 +76,10 @@ public class ToimenkuvaService {
         toimenkuvat.findBy(user, tyopaikkaId, id).orElseThrow(ToimenkuvaService::notFound);
     delete(toimenkuva);
     tyopaikat.deleteEmpty(user.getId(), tyopaikkaId);
+  }
+
+  int countBy(Yksilo yksilo) {
+    return toimenkuvat.countByTyopaikkaYksilo(yksilo);
   }
 
   Toimenkuva add(Tyopaikka tyopaikka, ToimenkuvaDto dto) {

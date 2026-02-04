@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
+import fi.okm.jod.yksilo.dto.profiili.MuuOsaaminenDto;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -44,7 +45,12 @@ public class MuuOsaaminenService {
         .collect(Collectors.toSet());
   }
 
-  public void update(JodUser user, Set<URI> ids) {
+  @Transactional(readOnly = true)
+  public MuuOsaaminenDto get(JodUser user) {
+    return new MuuOsaaminenDto(findAll(user), getVapaateksti(user));
+  }
+
+  public void updateOsaamiset(JodUser user, Set<URI> ids) {
     osaaminenService.updateLahteenOsaamiset(
         getMuuOsaaminen(yksilot.getReferenceById(user.getId())),
         osaaminenService.getOsaamiset(ids));

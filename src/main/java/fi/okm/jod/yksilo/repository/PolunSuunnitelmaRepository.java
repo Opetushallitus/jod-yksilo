@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.repository;
 
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
-import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,5 +20,5 @@ public interface PolunSuunnitelmaRepository extends JpaRepository<PolunSuunnitel
   Optional<PolunSuunnitelma> findByTavoiteYksiloIdAndTavoiteIdAndId(
       UUID yksiloId, UUID tavoiteId, UUID id);
 
-  long countByTavoite(Tavoite tavoite);
+  long countByTavoiteYksilo(Yksilo yksilo);
 }

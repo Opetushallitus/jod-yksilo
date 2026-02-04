@@ -86,9 +86,7 @@ class PolunSuunnitelmaServiceTest extends AbstractServiceTest {
   void shouldThrowServiceValidationExceptionWhenAddingTooManySuunnitelmas() {
     int testLimit = 3;
     try (var mockedService = mockStatic(PolunSuunnitelmaService.class)) {
-      mockedService
-          .when(PolunSuunnitelmaService::getSuunnitelmaPerTavoiteLimit)
-          .thenReturn(testLimit);
+      mockedService.when(PolunSuunnitelmaService::getSuunnitelmaLimit).thenReturn(testLimit);
       var tavoiteId = addTavoite(ls("tavoite"));
 
       // Add the maximum allowed number of Suunnitelmas

@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,6 +72,15 @@ public class KoulutusKokonaisuusService {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (kokonaisuudet.countByYksilo(yksilo) + dtos.size() > Limits.KOULUTUSKOKONAISUUS) {
       throw new ServiceValidationException("Too many KoulutusKokonaisuus");
+    }
+
+    var count =
+        dtos.stream()
+            .map(k -> k.koulutukset() == null ? 0 : k.koulutukset().size())
+            .reduce(0, Integer::sum);
+
+    if (koulutusService.countBy(yksilo) + count > Limits.KOULUTUS) {
+      throw new ProfileLimitException(ProfileItem.KOULUTUS);
     }
 
     return dtos.stream()

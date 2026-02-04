@@ -24,5 +24,4 @@ import java.util.UUID;
 public record ToimintoDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
-    @Size(min = 1, max = Limits.PATEVYYS_PER_TOIMINTO)
-        Set<@Valid @NotNull PatevyysDto> patevyydet) {}
+    @Size(min = 1, max = Limits.PATEVYYS) Set<@Valid @NotNull PatevyysDto> patevyydet) {}

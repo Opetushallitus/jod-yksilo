@@ -16,7 +16,7 @@ import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.repository.ToimintoRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
+import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -57,8 +57,18 @@ public class ToimintoService {
   public SequencedSet<UUID> add(JodUser user, Set<ToimintoDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (toiminnot.countByYksilo(yksilo) + dtos.size() > Limits.TOIMINTO) {
-      throw new ServiceValidationException("Too many Toiminto");
+      throw new ProfileLimitException(ProfileItem.TOIMINTO);
     }
+
+    var count =
+        dtos.stream()
+            .map(t -> t.patevyydet() == null ? 0 : t.patevyydet().size())
+            .reduce(0, Integer::sum);
+
+    if (patevyysService.countBy(yksilo) + count > Limits.PATEVYYS) {
+      throw new ProfileLimitException(ProfileItem.PATEVYYS);
+    }
+
     return dtos.stream()
         .map(
             dto -> {

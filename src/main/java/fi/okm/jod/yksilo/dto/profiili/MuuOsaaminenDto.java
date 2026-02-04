@@ -19,5 +19,5 @@ import lombok.Builder;
 
 @Builder
 public record MuuOsaaminenDto(
-    Set<@Valid URI> muuOsaaminen,
+    @Size(max = 1000) Set<@Valid URI> muuOsaaminen,
     @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {}
