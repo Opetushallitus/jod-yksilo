@@ -106,23 +106,95 @@ SET data='{
       }
     ]
   },
-  "kuntaJakauma": {
-    "kokonaismaara": 18,
-    "tyhjienMaara": 5,
-    "arvot": [
-      {
-        "arvo": "Helsinki",
-        "prosenttiosuus": 50
-      },
-      {
-        "arvo": "Espoo",
-        "prosenttiosuus": 30
-      },
-      {
-        "arvo": "Vantaa",
-        "prosenttiosuus": 20
-      }
-    ]
+  "sijainti": {
+    "kuntaJakauma": {
+      "kokonaismaara": 24,
+      "tyhjienMaara": 0,
+      "arvot": [
+        {
+          "arvo": "049",
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": "091",
+          "prosenttiosuus": 20.833333333333336
+        },
+        {
+          "arvo": "092",
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 109,
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": 167,
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": 179,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 202,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 698,
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": 837,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 853,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 905,
+          "prosenttiosuus": 4.166666666666666
+        }
+      ]
+    },
+    "maakuntaJakauma": {
+      "kokonaismaara": 24,
+      "tyhjienMaara": 0,
+      "arvot": [
+        {
+          "arvo": "01",
+          "prosenttiosuus": 33.33333333333333
+        },
+        {
+          "arvo": "02",
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": "05",
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": "06",
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 12,
+          "prosenttiosuus": 8.333333333333332
+        },
+        {
+          "arvo": 13,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 15,
+          "prosenttiosuus": 4.166666666666666
+        },
+        {
+          "arvo": 19,
+          "prosenttiosuus": 8.333333333333332
+        }
+      ]
+    }
   }
 }'
 WHERE id = '30080e88-f292-48a3-9835-41950817abd3'::uuid;
