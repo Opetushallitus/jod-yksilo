@@ -20,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class SearchService {
+public class MahdollisuudetSearchService {
 
   private final MahdollisuusRepository mahdollisuusRepository;
 
   public List<MahdollisuusDto> search(Kieli lang, String query) {
-    return mahdollisuusRepository.searchMahdollisuusIds(query, lang);
+    return mahdollisuusRepository.searchBy(query, lang);
   }
 }

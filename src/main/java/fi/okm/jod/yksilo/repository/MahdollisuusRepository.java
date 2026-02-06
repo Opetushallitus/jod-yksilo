@@ -13,17 +13,15 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.entity.MahdollisuusView;
-import fi.okm.jod.yksilo.service.profiili.Mapper;
-import java.text.Collator;
+import fi.okm.jod.yksilo.entity.MahdollisuusView_;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, UUID> {
@@ -56,58 +54,74 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
 
   @Transactional(readOnly = true)
   default List<MahdollisuusDto> findMahdollisuusIds(Kieli lang, Sort.Direction direction) {
-    // Cache
-    // collate() is HQL extension
-    final List<MahdollisuusView> mahdollisuudet =
-        findByKieli(lang, JpaSort.unsafe(direction, "otsikko"));
-    return mahdollisuudet.stream()
-        .sorted(createOtsikkoComparator(lang))
-        .map(Mapper::mapMahdollisuusView)
-        .toList();
+    return findByKieli(lang, collate(direction, lang));
   }
 
   @Transactional(readOnly = true)
-  default List<MahdollisuusDto> searchMahdollisuusIds(String query, Kieli lang) {
-    // Cache
-    // collate() is HQL extension
-    final List<MahdollisuusView> mahdollisuudet = searchTextByKieli(query, lang.name());
-    return mahdollisuudet.stream()
-        .sorted(createOtsikkoComparator(lang))
-        .map(Mapper::mapMahdollisuusView)
-        .toList();
+  default List<MahdollisuusDto> searchBy(String query, Kieli lang) {
+    return searchByImpl(query, lang, collate(Direction.ASC, lang));
   }
 
-  private Comparator<MahdollisuusView> createOtsikkoComparator(Kieli lang) {
-    Collator collator = Collator.getInstance(lang.toLocale());
-    collator.setStrength(Collator.PRIMARY);
-    return Comparator.comparing(MahdollisuusView::getOtsikko, collator);
+  private JpaSort collate(Direction direction, Kieli lang) {
+    var collation =
+        switch (lang) {
+          case FI -> "fi-x-icu";
+          case SV -> "sv-x-icu";
+          case EN -> "en-x-icu";
+        };
+    // Note. collate is HQL extension
+    return JpaSort.unsafe(
+            direction, "collate(trim(" + MahdollisuusView_.OTSIKKO + ") as `" + collation + "`)")
+        .and(direction, MahdollisuusView_.id);
   }
-
-  List<MahdollisuusView> findByKieli(Kieli kieli, JpaSort unsafe);
 
   @Query(
-      value =
-          """
-    SELECT * FROM mahdollisuus_view mv
-      WHERE mv.kieli = :lang
-      AND mv.id IN (
-        SELECT k.koulutusmahdollisuus_id FROM koulutusmahdollisuus_kaannos k
-        WHERE k.kaannos_key = :lang
-          AND (
-            k.otsikko ILIKE CONCAT('%', :q, '%')
-            OR k.kuvaus ILIKE CONCAT('%', :q, '%')
-            OR k.tiivistelma ILIKE CONCAT('%', :q, '%')
+      """
+          SELECT NEW fi.okm.jod.yksilo.dto.MahdollisuusDto(
+                mv.id,
+                mv.tyyppi,
+                mv.ammattiryhma,
+                mv.aineisto,
+                mv.koulutusTyyppi,
+                mv.maakunnat,
+                mv.kesto,
+                mv.kestoMinimi,
+                mv.kestoMaksimi
           )
-        UNION
-        SELECT t.tyomahdollisuus_id FROM tyomahdollisuus_kaannos t
-        WHERE t.kaannos_key = :lang
-          AND (
-            t.otsikko ILIKE CONCAT('%', :q, '%')
-            OR t.kuvaus ILIKE CONCAT('%', :q, '%')
-            OR t.tiivistelma ILIKE CONCAT('%', :q, '%')
+          FROM MahdollisuusView mv WHERE mv.kieli = :kieli
+          """)
+  List<MahdollisuusDto> findByKieli(Kieli kieli, JpaSort sort);
+
+  @Query(
+      """
+          SELECT NEW fi.okm.jod.yksilo.dto.MahdollisuusDto(
+                mv.id,
+                mv.tyyppi,
+                mv.ammattiryhma,
+                mv.aineisto,
+                mv.koulutusTyyppi,
+                mv.maakunnat,
+                mv.kesto,
+                mv.kestoMinimi,
+                mv.kestoMaksimi
           )
-      )
-    """,
-      nativeQuery = true)
-  List<MahdollisuusView> searchTextByKieli(@Param("q") String q, @Param("lang") String lang);
+          FROM MahdollisuusView mv
+          WHERE mv.kieli = :lang
+          AND (mv.tyyppi = 'KOULUTUSMAHDOLLISUUS' AND mv.id IN (
+            SELECT k.id FROM Koulutusmahdollisuus k JOIN k.kaannos kk ON KEY(kk) = :lang
+            WHERE
+                 kk.otsikko ILIKE CONCAT('%', :text, '%')
+                 OR kk.kuvaus ILIKE CONCAT('%', :text, '%')
+                 OR kk.tiivistelma ILIKE CONCAT('%', :text, '%')
+             )
+           OR mv.tyyppi = 'TYOMAHDOLLISUUS' AND mv.id IN (
+             SELECT t.id FROM Tyomahdollisuus t JOIN t.kaannos tk ON KEY(tk) = :lang
+             WHERE
+                 tk.otsikko ILIKE CONCAT('%', :text, '%')
+                 OR tk.kuvaus ILIKE CONCAT('%', :text, '%')
+                 OR tk.tiivistelma ILIKE CONCAT('%', :text, '%')
+           )
+          )
+          """)
+  List<MahdollisuusDto> searchByImpl(String text, Kieli lang, JpaSort sort);
 }

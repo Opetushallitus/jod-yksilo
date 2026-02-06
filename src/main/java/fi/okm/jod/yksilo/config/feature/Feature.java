@@ -15,5 +15,6 @@ public enum Feature {
   TAVOITE,
   KOSKI,
   JAKOLINKKI,
+  MAHDOLLISUUDET_HAKU,
   TMT_INTEGRATION
 }
