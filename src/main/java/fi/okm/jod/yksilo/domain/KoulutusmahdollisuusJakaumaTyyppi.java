@@ -17,7 +17,8 @@ public enum KoulutusmahdollisuusJakaumaTyyppi {
   MAKSULLISUUS,
   OPETUSTAPA,
   AIKA,
-  KUNTA;
+  KUNTA,
+  MAAKUNTA;
 
   private final String propertyName;
 

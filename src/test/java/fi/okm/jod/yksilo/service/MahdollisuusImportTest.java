@@ -133,7 +133,7 @@ class MahdollisuusImportTest {
     assertEquals(3, entity.getKoulutukset().size(), "1 more koulutus was added.");
     assertKesto(entity.getKesto(), 6, 51, 121);
     var jakaumat = entity.getJakaumat();
-    assertEquals(6, jakaumat.size());
+    assertEquals(KoulutusmahdollisuusJakaumaTyyppi.values().length, jakaumat.size());
     assertJakauma(
         jakaumat.get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN),
         90,
@@ -168,7 +168,7 @@ class MahdollisuusImportTest {
 
     assertKesto(entity.getKesto(), 5, 50, 120);
     var jakaumat = entity.getJakaumat();
-    assertEquals(6, jakaumat.size());
+    assertEquals(KoulutusmahdollisuusJakaumaTyyppi.values().length, jakaumat.size());
     assertJakauma(
         jakaumat.get(KoulutusmahdollisuusJakaumaTyyppi.OSAAMINEN),
         100,
@@ -260,7 +260,9 @@ class MahdollisuusImportTest {
     assertKesto(entity.getKesto(), 6, 51, 121);
     var jakaumat = entity.getJakaumat();
     assertEquals(
-        5, jakaumat.size(), "1 koulutusalaJakauma was removed, so it should be 1 less now.");
+        KoulutusmahdollisuusJakaumaTyyppi.values().length - 1,
+        jakaumat.size(),
+        "1 koulutusalaJakauma was removed, so it should be 1 less now.");
     assertNull(jakaumat.get(KoulutusmahdollisuusJakaumaTyyppi.KOULUTUSALA));
     assertFalse(
         assertJakauma(
