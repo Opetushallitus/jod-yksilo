@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.service.profiili;
 import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.OsaamisenLahde;
-import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
@@ -28,7 +27,6 @@ import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
-import fi.okm.jod.yksilo.entity.MahdollisuusView;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Patevyys;
@@ -238,18 +236,5 @@ public final class Mapper {
         ? null
         : new SuosikkiDto(
             entity.getId(), entity.getKohdeId(), entity.getTyyppi(), entity.getLuotu());
-  }
-
-  public static MahdollisuusDto mapMahdollisuusView(MahdollisuusView m) {
-    return new MahdollisuusDto(
-        m.getId(),
-        m.getTyyppi(),
-        m.getAmmattiryhma(),
-        m.getAineisto(),
-        m.getKoulutusTyyppi(),
-        m.getMaakunnat(),
-        m.getKesto(),
-        m.getKestoMinimi(),
-        m.getKestoMaksimi());
   }
 }
