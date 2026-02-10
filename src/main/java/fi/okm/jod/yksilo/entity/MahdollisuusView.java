@@ -53,6 +53,9 @@ public class MahdollisuusView {
   @Column(name = "maakunnat")
   private List<String> maakunnat;
 
+  @Column(name = "toimialat")
+  private List<String> toimialat;
+
   @Column(name = "kesto")
   private Double kesto;
 
