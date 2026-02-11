@@ -20,6 +20,8 @@ import fi.okm.jod.yksilo.config.SecurityConfig;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceRequest;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceResponse;
+import fi.okm.jod.yksilo.controller.KeskusteluController.Tila;
+import fi.okm.jod.yksilo.controller.KeskusteluController.UusiKeskustelu;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
@@ -64,7 +66,9 @@ class KeskusteluControllerTest {
         .perform(
             post("/api/keskustelut")
                 .contentType("application/json")
-                .content(mapper.writeValueAsString(ls(Kieli.FI, "START"))))
+                .content(
+                    mapper.writeValueAsString(
+                        new UusiKeskustelu(ls(Kieli.FI, "START"), Tila.KIINNOSTUKSET))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.vastaus").value("START"));
   }
@@ -78,7 +82,9 @@ class KeskusteluControllerTest {
                 post("/api/keskustelut")
                     .session(session)
                     .contentType("application/json")
-                    .content(mapper.writeValueAsString(ls(Kieli.FI, "START"))))
+                    .content(
+                        mapper.writeValueAsString(
+                            new UusiKeskustelu(ls(Kieli.FI, "START"), Tila.KIINNOSTUKSET))))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -101,7 +107,9 @@ class KeskusteluControllerTest {
             post("/api/keskustelut")
                 .session(session)
                 .contentType("application/json")
-                .content(mapper.writeValueAsString(ls(Kieli.FI, "START"))))
+                .content(
+                    mapper.writeValueAsString(
+                        new UusiKeskustelu(ls(Kieli.FI, "START"), Tila.KIINNOSTUKSET))))
         .andExpect(status().isOk());
 
     mockMvc
