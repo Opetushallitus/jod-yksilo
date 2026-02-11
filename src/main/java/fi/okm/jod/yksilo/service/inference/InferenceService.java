@@ -9,12 +9,9 @@
 
 package fi.okm.jod.yksilo.service.inference;
 
-import java.util.UUID;
 import org.springframework.core.ParameterizedTypeReference;
 
 public interface InferenceService<T, R> {
 
   R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType);
-
-  record InferenceSession<R>(R data, UUID sessionId) {}
 }
