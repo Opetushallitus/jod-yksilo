@@ -28,7 +28,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(21)
+    languageVersion = JavaLanguageVersion.of(25)
   }
 }
 
@@ -210,6 +210,10 @@ jacocoTestReport {
 spotbugs {
   toolVersion = spotbugsVersion
   excludeFilter = file('gradle/config/spotbugs/exclusions.xml')
+  jvmArgs = [
+      '--sun-misc-unsafe-memory-access=allow',
+      '--enable-native-access=ALL-UNNAMED',
+  ]
 }
 
 spotbugsMain {
@@ -270,6 +274,11 @@ openApi {
   apiDocsUrl = "http://localhost:${port}/yksilo/openapi/openapi.json"
   waitTimeInSeconds = 30
   customBootRun {
+    // for netty, see https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe
+    jvmArgs = [
+        '--sun-misc-unsafe-memory-access=allow',
+        '--enable-native-access=ALL-UNNAMED',
+    ]
     environment = [COMPOSE_PROJECT_NAME: "jod-yksilo-openapi"]
     args = ["--spring.main.lazy-initialization=true",
             "--server.port=${port}",
@@ -372,6 +381,23 @@ tasks.register('validateFlywayMigrationNames') {
       }
     }
   }
+}
+
+// suppress warnings due to Netty
+// see https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe
+
+tasks.withType(Test).configureEach {
+  jvmArgs = [
+      '--sun-misc-unsafe-memory-access=allow',
+      '--enable-native-access=ALL-UNNAMED',
+  ]
+}
+
+tasks.withType(JavaExec).configureEach {
+  jvmArgs = [
+      '--sun-misc-unsafe-memory-access=allow',
+      '--enable-native-access=ALL-UNNAMED',
+  ]
 }
 
 check.dependsOn validateFlywayMigrationNames
