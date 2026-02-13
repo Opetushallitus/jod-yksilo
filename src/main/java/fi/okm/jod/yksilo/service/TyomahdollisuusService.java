@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.service;
 
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
@@ -38,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 @Service
 @Transactional(readOnly = true)
@@ -148,7 +148,8 @@ public class TyomahdollisuusService {
     for (JsonNode entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
-            new KoulutusAlaDto(entry.path("koulutusala").asText(), entry.path("osuus").asDouble()));
+            new KoulutusAlaDto(
+                entry.path("koulutusala").asString(), entry.path("osuus").asDouble()));
       }
     }
     return result;
@@ -166,7 +167,7 @@ public class TyomahdollisuusService {
       if (entry.path("osuus").isNumber()) {
         result.add(
             new KoulutusasteDto(
-                entry.path("koulutusaste").asText(), entry.path("osuus").asDouble()));
+                entry.path("koulutusaste").asString(), entry.path("osuus").asDouble()));
       }
     }
     return result;
@@ -182,7 +183,7 @@ public class TyomahdollisuusService {
     for (JsonNode entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
-            new MaakuntaDto(entry.path("maakunta").asText(), entry.path("osuus").asDouble()));
+            new MaakuntaDto(entry.path("maakunta").asString(), entry.path("osuus").asDouble()));
       }
     }
     return result;

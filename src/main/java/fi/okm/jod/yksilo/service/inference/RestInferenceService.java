@@ -14,7 +14,7 @@ import java.time.Duration;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -25,8 +25,7 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
 
   private final RestClient restClient;
 
-  public RestInferenceService(
-      RestClient.Builder restClientBuilder, MappingJackson2HttpMessageConverter messageConverter) {
+  public RestInferenceService(RestClient.Builder restClientBuilder) {
 
     var requestFactory =
         ClientHttpRequestFactoryBuilder.jdk()
@@ -37,10 +36,9 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
     this.restClient =
         restClientBuilder
             .requestFactory(requestFactory)
-            .messageConverters(
+            .configureMessageConverters(
                 converters -> {
-                  converters.clear();
-                  converters.add(messageConverter);
+                  converters.withJsonConverter(new JacksonJsonHttpMessageConverter());
                 })
             .build();
   }

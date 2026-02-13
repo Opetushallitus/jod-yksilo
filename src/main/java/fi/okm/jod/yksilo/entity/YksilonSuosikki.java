@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.entity;
 import fi.okm.jod.yksilo.domain.SuosikkiTyyppi;
 import fi.okm.jod.yksilo.entity.koulutusmahdollisuus.Koulutusmahdollisuus;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,15 +27,15 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
-import org.hibernate.annotations.Check;
 
 @Entity
 @Getter
-@Table(indexes = {@Index(columnList = "yksilo_id")})
-// TODO: move constraint to migration tool and add koulutusmahdollisuus type when available
-@Check(
-    constraints =
-        "(tyomahdollisuus_id IS NULL OR koulutusmahdollisuus_id IS NULL) AND ((tyyppi = 'TYOMAHDOLLISUUS' and tyomahdollisuus_id IS NOT NULL) OR (tyyppi = 'KOULUTUSMAHDOLLISUUS' and koulutusmahdollisuus_id IS NOT NULL))")
+@Table(
+    indexes = {@Index(columnList = "yksilo_id")},
+    check =
+        @CheckConstraint(
+            constraint =
+                "(tyomahdollisuus_id IS NULL OR koulutusmahdollisuus_id IS NULL) AND ((tyyppi = 'TYOMAHDOLLISUUS' and tyomahdollisuus_id IS NOT NULL) OR (tyyppi = 'KOULUTUSMAHDOLLISUUS' and koulutusmahdollisuus_id IS NOT NULL))"))
 public class YksilonSuosikki {
   @GeneratedValue @Id private UUID id;
 

@@ -15,32 +15,35 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
+import lombok.Getter;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.util.CollectionUtils;
 
-@SuppressWarnings({"java:S4544", "serial"})
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties(ignoreUnknown = true)
-final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
+class JodSaml2Principal implements JodUser, AuthenticatedPrincipal {
 
   private final UUID id;
+  @Getter private final Map<String, List<Object>> attributes;
 
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   JodSaml2Principal(
-      @JsonProperty("name") String name,
       @JsonProperty("attributes") Map<String, List<Object>> attributes,
-      @JsonProperty("sessionIndexes") List<String> sessionIndexes,
-      @JsonProperty("registrationId") String relyingPartyRegistrationId,
       @JsonProperty("id") UUID id) {
-    super(name, attributes, sessionIndexes);
-    super.setRelyingPartyRegistrationId(relyingPartyRegistrationId);
     this.id = requireNonNull(id);
+    this.attributes = requireNonNull(attributes);
+  }
+
+  @Override
+  @JsonIgnore
+  public String getName() {
+    return getQualifiedPersonId();
   }
 
   @Override
@@ -85,10 +88,11 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
     return Optional.ofNullable(getFirstAttribute(attribute.getUri()));
   }
 
-  @Override
-  @JsonProperty("registrationId")
-  public String getRelyingPartyRegistrationId() {
-    return super.getRelyingPartyRegistrationId();
+  @Nullable
+  @SuppressWarnings("unchecked")
+  private <A> A getFirstAttribute(String name) {
+    List<A> values = (List<A>) attributes.get(name);
+    return CollectionUtils.firstElement(values);
   }
 
   // for SpotBugs, intentionally using the inherited equals and hashCode

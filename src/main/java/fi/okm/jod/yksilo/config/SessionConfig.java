@@ -11,27 +11,29 @@ package fi.okm.jod.yksilo.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
+import fi.okm.jod.yksilo.domain.JodUser;
 import io.lettuce.core.RedisCredentialsProvider;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
+import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConfiguration.WithAuthentication;
 import org.springframework.data.redis.connection.lettuce.RedisCredentialsProviderFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.lang.NonNull;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
+import org.springframework.security.jackson.SecurityJacksonModules;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 @Configuration(proxyBeanMethods = false)
 public class SessionConfig implements BeanClassLoaderAware {
@@ -52,10 +54,15 @@ public class SessionConfig implements BeanClassLoaderAware {
   @Bean
   public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
     // Create a custom ObjectMapper that uses Spring Security’s Jackson modules.
-    var mapper = new ObjectMapper();
-    mapper.registerModules(SecurityJackson2Modules.getModules(this.loader));
-    mapper.addMixIn(InferenceSession.class, SessionMixin.class);
-    return new GenericJackson2JsonRedisSerializer(mapper);
+
+    var validatorBuilder = BasicPolymorphicTypeValidator.builder().allowIfSubType(JodUser.class);
+
+    var mapper =
+        JsonMapper.builder()
+            .addModules(SecurityJacksonModules.getModules(this.loader, validatorBuilder))
+            .addMixIn(InferenceSession.class, SessionMixin.class)
+            .build();
+    return new GenericJacksonJsonRedisSerializer(mapper);
   }
 
   @Bean

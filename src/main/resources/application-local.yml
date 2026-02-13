@@ -6,3 +6,9 @@ logging:
   level:
     sql: DEBUG
     fi.okm.jod: DEBUG
+
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: false

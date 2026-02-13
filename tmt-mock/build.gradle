@@ -19,7 +19,8 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.springframework.boot:spring-boot-starter-web'
+  // Spring Boot 4: renamed starters
+  implementation 'org.springframework.boot:spring-boot-starter-webmvc'
   implementation 'org.springframework.boot:spring-boot-starter-validation'
   implementation 'com.nimbusds:nimbus-jose-jwt:9.48'
   implementation project(':tmt-profiili-api')

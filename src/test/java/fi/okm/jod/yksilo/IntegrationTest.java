@@ -9,24 +9,27 @@
 
 package fi.okm.jod.yksilo;
 
+import fi.okm.jod.yksilo.testutil.TestTracingConfig;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Execution(ExecutionMode.CONCURRENT)
 @ResourceLock("SLOW")
+@Import(TestTracingConfig.class)
 public abstract class IntegrationTest {
 
   @ServiceConnection
-  private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
+  private static final PostgreSQLContainer POSTGRES_CONTAINER =
       TestUtil.createPostgreSqlContainer();
 
   @ServiceConnection

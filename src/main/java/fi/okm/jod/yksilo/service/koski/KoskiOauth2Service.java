@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
@@ -18,9 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
 
 @Slf4j
 @ConditionalOnBean(KoskiOauth2Config.class)
@@ -77,7 +77,7 @@ public class KoskiOauth2Service {
       return data;
 
     } catch (HttpClientErrorException e) {
-      if (e.getStatusCode().value() == HttpStatus.SC_NOT_FOUND) {
+      if (e.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
         log.debug("Resource server returned: {}", e.getMessage());
         throw new NoDataException(e.getMessage());
       }
@@ -101,7 +101,7 @@ public class KoskiOauth2Service {
       return null;
     }
     var hetu = jsonData.path("henkilö").path("hetu");
-    return hetu.isMissingNode() ? null : hetu.asText();
+    return hetu.isMissingNode() ? null : hetu.asString();
   }
 
   public void unauthorize(
