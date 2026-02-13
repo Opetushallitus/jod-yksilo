@@ -1,4 +1,4 @@
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-al2023-headless AS baseimage
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:25-al2023-headless AS baseimage
 
 RUN :\
     && dnf -qy update \
@@ -22,9 +22,13 @@ RUN chmod +x /opt/app /opt/app/lib
 USER app
 WORKDIR /opt/app
 
-ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=40 -XX:MaxMetaspaceSize=256m"
-ENTRYPOINT ["/bin/bash","-c",\
- "exec /usr/bin/java -XX:+ExitOnOutOfMemoryError \
- $JAVA_OPTIONS -jar /opt/app/application.jar \"$@\"", "--"]
+ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=384m"
+# For netty: https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe
+ENV NATIVE_OPTIONS="--sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED"
+
+ENTRYPOINT ["/bin/bash","-c","exec /usr/bin/java -XX:+ExitOnOutOfMemoryError \
+ $NATIVE_OPTIONS \
+ $JAVA_UNSAFE_OPTIONS \
+ -jar /opt/app/application.jar \"$@\"", "--"]
 
 VOLUME ["/tmp"]
