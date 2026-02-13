@@ -9,17 +9,17 @@
 
 package fi.okm.jod.yksilo.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfo.ErrorCode;
 import fi.okm.jod.yksilo.errorhandler.TomcatErrorReportValve;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.core.StandardHost;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /** Overrides the low-level Tomcat error report valve to force JSON error responses in all cases. */
 @Component
@@ -38,7 +38,7 @@ class TomcatCustomizer implements WebServerFactoryCustomizer<TomcatServletWebSer
       this.unspecifiedError =
           mapper.writeValueAsString(
               new ErrorInfo(ErrorInfo.ErrorCode.UNSPECIFIED_ERROR, null, null));
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       // SHOULD NOT HAPPEN
       throw new IllegalStateException("Mapping failed", e);
     }

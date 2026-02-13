@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,6 +16,7 @@ import lombok.Getter;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Ammattiryhma-table is populated every night by lambda-function. Lambda-function gets all
@@ -32,11 +32,11 @@ public class Ammattiryhma extends JodEntity {
   private String escoUri;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
+  @Column(columnDefinition = "jsonb", nullable = false)
   private JsonNode data;
 
   public String getKohtaanto() {
-    return data.path("kohtaanto").optional("tyyppi").map(JsonNode::asText).orElse(null);
+    return data.path("kohtaanto").optional("tyyppi").map(JsonNode::asString).orElse(null);
   }
 
   public Integer getTyollistenMaara() {

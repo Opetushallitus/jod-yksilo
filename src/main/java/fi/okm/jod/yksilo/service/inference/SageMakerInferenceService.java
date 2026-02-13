@@ -9,12 +9,10 @@
 
 package fi.okm.jod.yksilo.service.inference;
 
-import brave.Tracer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceOverloadedException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
-import java.io.IOException;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
@@ -27,6 +25,7 @@ import software.amazon.awssdk.services.sagemakerruntime.model.ModelErrorExceptio
 import software.amazon.awssdk.services.sagemakerruntime.model.ModelNotReadyException;
 import software.amazon.awssdk.services.sagemakerruntime.model.SageMakerRuntimeException;
 import software.amazon.awssdk.services.sagemakerruntime.model.ServiceUnavailableException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @Profile("cloud")
@@ -51,7 +50,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
-              .customAttributes(tracer.currentSpan().context().traceIdString())
+              .customAttributes(tracer.currentSpan().context().traceId())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();
@@ -60,7 +59,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       var javaType = objectMapper.getTypeFactory().constructType(responseType.getType());
       return objectMapper.readValue(response.body().asInputStream(), javaType);
 
-    } catch (IOException e) {
+    } catch (tools.jackson.core.JacksonException e) {
       throw new ServiceException("Invoking SageMaker failed", e);
     } catch (ModelNotReadyException | ServiceUnavailableException e) {
       log.warn("SageMaker service unavailable: {}", e.getMessage());
