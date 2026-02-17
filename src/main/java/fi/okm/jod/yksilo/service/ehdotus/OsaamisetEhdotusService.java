@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -44,7 +44,6 @@ public class OsaamisetEhdotusService {
       OsaaminenService osaamiset,
       AmmattiService ammatit,
       RestClient.Builder restClientBuilder,
-      MappingJackson2HttpMessageConverter messageConverter,
       @Value("${jod.recommendation.skills.baseUrl}") String baseUrl) {
     log.info("Creating OsaamisetEhdotusService, baseUrl: {}", baseUrl);
 
@@ -66,11 +65,8 @@ public class OsaamisetEhdotusService {
     this.restClient =
         restClientBuilder
             .requestFactory(requestFactory)
-            .messageConverters(
-                converters -> {
-                  converters.clear();
-                  converters.add(messageConverter);
-                })
+            .configureMessageConverters(
+                configurer -> configurer.withJsonConverter(new JacksonJsonHttpMessageConverter()))
             .baseUrl(baseUrl)
             .defaultHeader(HttpHeaders.USER_AGENT, "fi.okm.jod.yksilo")
             .build();

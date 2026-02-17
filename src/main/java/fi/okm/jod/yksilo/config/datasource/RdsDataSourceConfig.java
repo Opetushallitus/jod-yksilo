@@ -9,11 +9,13 @@
 
 package fi.okm.jod.yksilo.config.datasource;
 
+import static java.util.Objects.requireNonNull;
+
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -32,7 +34,11 @@ public class RdsDataSourceConfig {
     var builder =
         DataSourceBuilder.create(properties.getClassLoader())
             .type(RdsIamAuthHikariDataSource.class);
-    var dataSource = builder.url(properties.getUrl()).username(properties.getUsername()).build();
+    var dataSource =
+        builder
+            .url(requireNonNull(properties.getUrl(), "Datasource URL required"))
+            .username(properties.getUsername())
+            .build();
     dataSource.setAuthTokenProvider(rdsAuthTokenProvider);
     return dataSource;
   }

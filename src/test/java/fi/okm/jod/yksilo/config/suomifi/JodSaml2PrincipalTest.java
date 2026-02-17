@@ -61,11 +61,8 @@ class JodSaml2PrincipalTest {
   }
 
   private static JodSaml2Principal createJodSaml2User(Map<String, List<Object>> attributes) {
-    var name = "John Doe";
-    var sessionIndexes = List.of("index1", "index2");
-    var relyingPartyRegistrationId = "relyingParty123";
     var id = UUID.randomUUID();
 
-    return new JodSaml2Principal(name, attributes, sessionIndexes, relyingPartyRegistrationId, id);
+    return new JodSaml2Principal(attributes, id);
   }
 }

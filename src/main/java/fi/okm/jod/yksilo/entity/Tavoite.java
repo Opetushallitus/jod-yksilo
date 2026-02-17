@@ -18,6 +18,7 @@ import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusJakaumaTyyppi;
 import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -46,12 +47,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Check;
 
 @Entity
 @Getter
-@Table(indexes = {@Index(columnList = "yksilo_id")})
-@Check(constraints = "(tyomahdollisuus_id IS NULL) != (koulutusmahdollisuus_id IS NULL)")
+@Table(
+    indexes = {@Index(columnList = "yksilo_id")},
+    check = {
+      @CheckConstraint(
+          constraint = "(tyomahdollisuus_id IS NULL) != (koulutusmahdollisuus_id IS NULL)")
+    })
 public class Tavoite {
   @GeneratedValue @Id private UUID id;
 
@@ -62,7 +66,7 @@ public class Tavoite {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @Setter
   private Tyomahdollisuus tyomahdollisuus;
 

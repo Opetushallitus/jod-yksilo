@@ -47,7 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public final class Mapper {
 

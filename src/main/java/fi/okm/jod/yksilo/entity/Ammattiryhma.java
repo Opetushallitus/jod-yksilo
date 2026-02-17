@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode; // Hibernate 7 still uses Jackson 2
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -32,7 +32,7 @@ public class Ammattiryhma extends JodEntity {
   private String escoUri;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
+  @Column(columnDefinition = "jsonb", nullable = false)
   private JsonNode data;
 
   public String getKohtaanto() {
