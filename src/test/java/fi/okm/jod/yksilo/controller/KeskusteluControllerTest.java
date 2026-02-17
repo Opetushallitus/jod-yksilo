@@ -14,8 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.SecurityConfig;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceRequest;
@@ -30,12 +28,14 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(value = KeskusteluController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class, SecurityConfig.class})
@@ -91,7 +91,7 @@ class KeskusteluControllerTest {
     var response = mapper.readValue(result.getResponse().getContentAsString(), JsonNode.class);
     mockMvc
         .perform(
-            post("/api/keskustelut/{id}", response.path("id").asText())
+            post("/api/keskustelut/{id}", response.path("id").asString())
                 .session(session)
                 .contentType("application/json")
                 .content(mapper.writeValueAsString(ls(Kieli.FI, "CONTINUE"))))

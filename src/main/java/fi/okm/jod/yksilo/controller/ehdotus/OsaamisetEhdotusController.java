@@ -12,7 +12,6 @@ package fi.okm.jod.yksilo.controller.ehdotus;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.service.ehdotus.OsaamisetEhdotusService;
 import fi.okm.jod.yksilo.service.ehdotus.OsaamisetEhdotusService.Ehdotus;
-import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -35,7 +34,6 @@ class OsaamisetEhdotusController {
   private final OsaamisetEhdotusService service;
 
   @PostMapping
-  @Timed
   public ResponseEntity<List<Ehdotus>> createEhdotus(
       @RequestBody @NotNull @Size(min = 2, max = 10_000) LocalizedString kuvaus) {
     if (kuvaus.asMap().size() > 1) {

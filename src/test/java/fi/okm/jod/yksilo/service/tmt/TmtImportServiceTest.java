@@ -17,7 +17,6 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.external.tmt.model.EmploymentDtoExternalGet;
@@ -47,7 +46,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -64,7 +63,7 @@ import org.springframework.web.client.RestClient;
 class TmtImportServiceTest extends AbstractServiceTest {
   @Autowired private TmtImportService tmtImportService;
   @Autowired private TestConfig testConfig;
-  @Autowired private MappingJackson2HttpMessageConverter converter;
+  @Autowired private JacksonJsonHttpMessageConverter converter;
   @Autowired private TyopaikkaService tyopaikkaService;
 
   @TestConfiguration
@@ -93,8 +92,8 @@ class TmtImportServiceTest extends AbstractServiceTest {
     }
 
     @Bean
-    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-      return new MappingJackson2HttpMessageConverter();
+    JacksonJsonHttpMessageConverter jacksonJsonHttpMessageConverter() {
+      return new JacksonJsonHttpMessageConverter();
     }
   }
 
@@ -105,7 +104,7 @@ class TmtImportServiceTest extends AbstractServiceTest {
 
   @Test
   @Execution(ExecutionMode.SAME_THREAD)
-  void shouldImportProfile() throws JsonProcessingException {
+  void shouldImportProfile() {
 
     var profile = new FullProfileDtoExternalGet();
     profile.employments(
@@ -123,8 +122,7 @@ class TmtImportServiceTest extends AbstractServiceTest {
         .andExpect(header("KIPA-Subscription-Key", "key"))
         .andRespond(
             withSuccess(
-                converter.getObjectMapper().writeValueAsString(profile),
-                MediaType.APPLICATION_JSON));
+                converter.getMapper().writeValueAsString(profile), MediaType.APPLICATION_JSON));
 
     var accessToken =
         new OAuth2AccessToken(
@@ -140,7 +138,7 @@ class TmtImportServiceTest extends AbstractServiceTest {
 
   @Test
   @Execution(ExecutionMode.SAME_THREAD)
-  void shouldIgnoreInvalidData() throws JsonProcessingException {
+  void shouldIgnoreInvalidData() {
 
     var profile = new FullProfileDtoExternalGet();
     profile.employments(
@@ -159,8 +157,7 @@ class TmtImportServiceTest extends AbstractServiceTest {
         .andExpect(header("KIPA-Subscription-Key", "key"))
         .andRespond(
             withSuccess(
-                converter.getObjectMapper().writeValueAsString(profile),
-                MediaType.APPLICATION_JSON));
+                converter.getMapper().writeValueAsString(profile), MediaType.APPLICATION_JSON));
 
     var accessToken =
         new OAuth2AccessToken(

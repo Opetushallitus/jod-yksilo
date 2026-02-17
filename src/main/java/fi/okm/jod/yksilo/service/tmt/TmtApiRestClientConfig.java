@@ -10,29 +10,29 @@
 package fi.okm.jod.yksilo.service.tmt;
 
 import java.time.Duration;
-import java.util.List;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 class TmtApiRestClientConfig {
   @Bean
-  RestClient tmtRestClient(
-      RestClient.Builder builder, MappingJackson2HttpMessageConverter messageConverter) {
+  RestClient tmtRestClient(RestClient.Builder builder, JsonMapper mapper) {
     var requestFactory =
         ClientHttpRequestFactoryBuilder.jdk()
             .build(
-                ClientHttpRequestFactorySettings.defaults()
+                HttpClientSettings.defaults()
                     .withConnectTimeout(Duration.ofSeconds(10))
                     .withReadTimeout(Duration.ofSeconds(30)));
 
     return builder
         .requestFactory(requestFactory)
-        .messageConverters(List.of(messageConverter))
+        .configureMessageConverters(
+            converters -> converters.withJsonConverter(new JacksonJsonHttpMessageConverter(mapper)))
         .build();
   }
 }

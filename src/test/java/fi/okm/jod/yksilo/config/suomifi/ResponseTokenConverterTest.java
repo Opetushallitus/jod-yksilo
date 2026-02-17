@@ -28,7 +28,7 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticatedPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.Saml2ResponseAssertionAccessor;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(
@@ -127,7 +127,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
   void shouldFailIfIdentifierMissing() {
     assertThrows(
         BadCredentialsException.class,
-        () -> converter.upsertUser(() -> "invalid", Kieli.EN, PersonIdentifierType.EIDAS));
+        () -> converter.upsertUser(new MockPrincipal(null), Kieli.EN, PersonIdentifierType.EIDAS));
   }
 
   @Test
@@ -183,10 +183,12 @@ class ResponseTokenConverterTest extends IntegrationTest {
     }
   }
 
-  record MockPrincipal(FinnishPersonIdentifier identifier) implements Saml2AuthenticatedPrincipal {
+  record MockPrincipal(FinnishPersonIdentifier identifier)
+      implements Saml2ResponseAssertionAccessor {
+
     @Override
-    public String getName() {
-      return identifier.asString();
+    public String getNameId() {
+      return "";
     }
 
     @Override
@@ -195,15 +197,10 @@ class ResponseTokenConverterTest extends IntegrationTest {
     }
 
     @Override
-    public String getRelyingPartyRegistrationId() {
-      return "jodsuomifi";
-    }
-
-    @Override
     public Map<String, List<Object>> getAttributes() {
       return Map.of(
           Attribute.NATIONAL_IDENTIFICATION_NUMBER.getUri(),
-          List.of(identifier.asString()),
+          List.of(identifier == null ? List.of() : identifier.asString()),
           Attribute.KOTIKUNTA_KUNTANUMERO.getUri(),
           List.of("508"),
           Attribute.GIVEN_NAME.getUri(),
@@ -211,22 +208,23 @@ class ResponseTokenConverterTest extends IntegrationTest {
           Attribute.SN.getUri(),
           List.of("Meikäläinen"));
     }
+
+    @Override
+    public String getResponseValue() {
+      return "";
+    }
   }
 
-  record MockEidasPrincipal(String identifier) implements Saml2AuthenticatedPrincipal {
+  record MockEidasPrincipal(String identifier) implements Saml2ResponseAssertionAccessor {
+
     @Override
-    public String getName() {
-      return identifier;
+    public String getNameId() {
+      return "";
     }
 
     @Override
     public List<String> getSessionIndexes() {
       return List.of();
-    }
-
-    @Override
-    public String getRelyingPartyRegistrationId() {
-      return "jodsuomifi";
     }
 
     @Override
@@ -240,6 +238,11 @@ class ResponseTokenConverterTest extends IntegrationTest {
           List.of("John"),
           Attribute.FAMILY_NAME.getUri(),
           List.of("Doe"));
+    }
+
+    @Override
+    public String getResponseValue() {
+      return "";
     }
   }
 }
