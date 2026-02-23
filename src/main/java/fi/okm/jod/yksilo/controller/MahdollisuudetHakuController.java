@@ -17,7 +17,7 @@ import fi.okm.jod.yksilo.service.MahdollisuudetSearchService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import java.util.List;
+import java.util.SequencedCollection;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class MahdollisuudetHakuController {
   private final MahdollisuudetSearchService searchService;
 
   @GetMapping
-  public ResponseEntity<List<MahdollisuusDto>> search(
+  public ResponseEntity<SequencedCollection<MahdollisuusDto>> search(
       @RequestParam(defaultValue = "fi") Kieli kieli,
       @RequestParam @NotEmpty @Size(min = 3, max = 400) String teksti) {
 

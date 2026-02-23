@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,8 +59,13 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
   }
 
   @Transactional(readOnly = true)
-  default List<MahdollisuusDto> searchBy(String query, Kieli lang) {
-    return searchByImpl(query, lang, collate(Direction.ASC, lang));
+  default List<UUID> searchBy(String query, Kieli lang) {
+    return searchByImpl(escape(query), lang.name());
+  }
+
+  private static String escape(String query) {
+    // Escape special characters for ILIKE query
+    return query.replaceAll("([%_\\\\])", "\\\\$0]");
   }
 
   private JpaSort collate(Direction direction, Kieli lang) {
@@ -93,37 +99,29 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
           """)
   List<MahdollisuusDto> findByKieli(Kieli kieli, JpaSort sort);
 
-  @Query(
+  @NativeQuery(
       """
-          SELECT NEW fi.okm.jod.yksilo.dto.MahdollisuusDto(
-                mv.id,
-                mv.tyyppi,
-                mv.ammattiryhma,
-                mv.aineisto,
-                mv.koulutusTyyppi,
-                mv.maakunnat,
-                mv.toimialat,
-                mv.kesto,
-                mv.kestoMinimi,
-                mv.kestoMaksimi
-          )
-          FROM MahdollisuusView mv
-          WHERE mv.kieli = :lang
-          AND (mv.tyyppi = 'KOULUTUSMAHDOLLISUUS' AND mv.id IN (
-            SELECT k.id FROM Koulutusmahdollisuus k JOIN k.kaannos kk ON KEY(kk) = :lang
-            WHERE
-                 kk.otsikko ILIKE CONCAT('%', :text, '%')
-                 OR kk.kuvaus ILIKE CONCAT('%', :text, '%')
-                 OR kk.tiivistelma ILIKE CONCAT('%', :text, '%')
-             )
-           OR mv.tyyppi = 'TYOMAHDOLLISUUS' AND mv.id IN (
-             SELECT t.id FROM Tyomahdollisuus t JOIN t.kaannos tk ON KEY(tk) = :lang
-             WHERE
-                 tk.otsikko ILIKE CONCAT('%', :text, '%')
-                 OR tk.kuvaus ILIKE CONCAT('%', :text, '%')
-                 OR tk.tiivistelma ILIKE CONCAT('%', :text, '%')
-           )
-          )
+          SELECT m.id
+          FROM (SELECT kk.koulutusmahdollisuus_id AS id,
+                       (similarity(kk.otsikko, :text) * 2 + similarity(kk.tiivistelma, :text) +
+                        similarity(kk.kuvaus, :text)) AS similarity
+                FROM koulutusmahdollisuus_kaannos kk
+                WHERE kk.kaannos_key = :lang
+                  AND (
+                    kk.otsikko ILIKE '%' || :text || '%'
+                        OR kk.tiivistelma ILIKE '%' || :text || '%'
+                        OR kk.kuvaus ILIKE '%' || :text || '%')
+                UNION ALL
+                SELECT tk.tyomahdollisuus_id AS id,
+                       (similarity(tk.otsikko, :text) * 2 + similarity(tk.tiivistelma, :text) +
+                        similarity(tk.kuvaus, :text)) AS similarity
+                FROM tyomahdollisuus_kaannos tk
+                WHERE tk.kaannos_key = :lang
+                  AND (
+                    tk.otsikko ILIKE '%' || :text || '%'
+                        OR tk.tiivistelma ILIKE '%' || :text || '%'
+                        OR tk.kuvaus ILIKE '%' || :text || '%')) m
+          ORDER BY similarity DESC;
           """)
-  List<MahdollisuusDto> searchByImpl(String text, Kieli lang, JpaSort sort);
+  List<UUID> searchByImpl(String text, String lang);
 }

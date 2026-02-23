@@ -12,12 +12,16 @@ package fi.okm.jod.yksilo.dto;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import java.util.List;
 import java.util.UUID;
 
+@Schema(accessMode = AccessMode.READ_ONLY)
 public record MahdollisuusDto(
-    UUID id,
-    MahdollisuusTyyppi tyyppi,
+    @Schema(requiredMode = RequiredMode.REQUIRED) UUID id,
+    @Schema(requiredMode = RequiredMode.REQUIRED) MahdollisuusTyyppi tyyppi,
     String ammattiryhma,
     TyomahdollisuusAineisto aineisto,
     KoulutusmahdollisuusTyyppi koulutusTyyppi,
