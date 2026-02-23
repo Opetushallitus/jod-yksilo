@@ -349,6 +349,7 @@ tasks.register("generateSchemaDocs", JavaExec) {
 flyway {
   defaultSchema = 'yksilo'
   schemas = ['yksilo', 'koulutusmahdollisuus_data', 'tyomahdollisuus_data', 'esco_data']
+  outOfOrder = true
 }
 
 tasks.register('validateFlywayMigrationNames') {
