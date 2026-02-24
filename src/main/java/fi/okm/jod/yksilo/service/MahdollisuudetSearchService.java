@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.repository.MahdollisuusRepository;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import java.util.List;
+import java.util.Objects;
 import java.util.SequencedCollection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort.Direction;
@@ -36,6 +37,6 @@ public class MahdollisuudetSearchService {
     var mahdollisuudet =
         mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(Direction.ASC, lang);
 
-    return ids.stream().map(mahdollisuudet::get).toList();
+    return ids.stream().map(mahdollisuudet::get).filter(Objects::nonNull).toList();
   }
 }
