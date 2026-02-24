@@ -105,8 +105,9 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
           FROM (SELECT kk.koulutusmahdollisuus_id AS id,
                        (similarity(kk.otsikko, :text) * 2 + similarity(kk.tiivistelma, :text) +
                         similarity(kk.kuvaus, :text)) AS similarity
-                FROM koulutusmahdollisuus_kaannos kk
+                FROM koulutusmahdollisuus_kaannos kk JOIN yksilo.koulutusmahdollisuus k ON kk.koulutusmahdollisuus_id = k.id
                 WHERE kk.kaannos_key = :lang
+                  AND k.aktiivinen = TRUE
                   AND (
                     kk.otsikko ILIKE '%' || :text || '%'
                         OR kk.tiivistelma ILIKE '%' || :text || '%'
@@ -115,8 +116,9 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
                 SELECT tk.tyomahdollisuus_id AS id,
                        (similarity(tk.otsikko, :text) * 2 + similarity(tk.tiivistelma, :text) +
                         similarity(tk.kuvaus, :text)) AS similarity
-                FROM tyomahdollisuus_kaannos tk
+                FROM tyomahdollisuus_kaannos tk JOIN yksilo.tyomahdollisuus t ON tk.tyomahdollisuus_id = t.id
                 WHERE tk.kaannos_key = :lang
+                  AND t.aktiivinen = TRUE
                   AND (
                     tk.otsikko ILIKE '%' || :text || '%'
                         OR tk.tiivistelma ILIKE '%' || :text || '%'
