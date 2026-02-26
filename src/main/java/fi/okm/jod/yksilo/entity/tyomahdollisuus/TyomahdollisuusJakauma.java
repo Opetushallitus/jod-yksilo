@@ -50,6 +50,7 @@ public class TyomahdollisuusJakauma implements Jakauma<TyomahdollisuusJakaumaTyy
   @ElementCollection
   @BatchSize(size = 100)
   @CollectionTable(
+      name = "tyomahdollisuus_jakauma_arvot",
       uniqueConstraints = {
         @UniqueConstraint(
             name = "tyomahdollisuus_jakauma_id_arvo",

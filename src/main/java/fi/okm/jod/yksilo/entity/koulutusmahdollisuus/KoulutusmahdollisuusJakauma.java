@@ -50,6 +50,7 @@ public class KoulutusmahdollisuusJakauma implements Jakauma<Koulutusmahdollisuus
   @ElementCollection
   @BatchSize(size = 100)
   @CollectionTable(
+      name = "koulutusmahdollisuus_jakauma_arvot",
       uniqueConstraints = {
         @UniqueConstraint(
             name = "koulutusmahdollisuus_jakauma_id_arvo",

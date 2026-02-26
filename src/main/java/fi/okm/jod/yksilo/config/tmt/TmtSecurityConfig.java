@@ -19,13 +19,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.Duration;
-import java.util.List;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -173,14 +172,10 @@ public class TmtSecurityConfig {
   }
 
   private static RestClient createRestClient(RestClient.Builder builder, String subscriptionKey) {
-    var messageConverters =
-        List.of(
-            new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter());
-
     var requestFactory =
         ClientHttpRequestFactoryBuilder.jdk()
             .build(
-                ClientHttpRequestFactorySettings.defaults()
+                HttpClientSettings.defaults()
                     .withConnectTimeout(Duration.ofSeconds(5))
                     .withReadTimeout(Duration.ofSeconds(10)));
 
@@ -188,7 +183,11 @@ public class TmtSecurityConfig {
         .requestFactory(requestFactory)
         .defaultHeader("KIPA-Subscription-Key", subscriptionKey)
         .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())
-        .messageConverters(messageConverters)
+        .configureMessageConverters(
+            converters ->
+                converters
+                    .addCustomConverter(new OAuth2AccessTokenResponseHttpMessageConverter())
+                    .addCustomConverter(new FormHttpMessageConverter()))
         .build();
   }
 

@@ -2,7 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
   id 'java-library'
-  id "org.openapi.generator" version "7.19.0"
+  id "org.openapi.generator" version "7.20.0"
 }
 
 repositories {
@@ -17,7 +17,8 @@ java {
 
 dependencies {
   implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.4'
+  // Jackson 3 for Spring Boot 4
+  implementation 'tools.jackson.core:jackson-databind:3.0.4'
 }
 
 tasks.register("openApiGenerateP51", GenerateTask) {

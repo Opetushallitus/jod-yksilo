@@ -23,14 +23,15 @@ import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
-import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider.ResponseToken;
-import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticatedPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider.ResponseAuthenticationConverter;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider.ResponseToken;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AssertionAuthentication;
 import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2ResponseAssertionAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -51,7 +52,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
       PlatformTransactionManager transactionManager,
       HttpSession session,
       JodAuthenticationProperties authenticationProperties) {
-    this.converter = OpenSaml4AuthenticationProvider.createDefaultResponseAuthenticationConverter();
+    this.converter = new ResponseAuthenticationConverter();
     this.yksilot = yksilot;
 
     var template = new TransactionTemplate(transactionManager);
@@ -64,8 +65,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
 
   @Override
   public Saml2Authentication convert(@NonNull ResponseToken responseToken) {
-    if (converter.convert(responseToken) instanceof Saml2Authentication authentication
-        && authentication.getPrincipal() instanceof Saml2AuthenticatedPrincipal principal) {
+    if (converter.convert(responseToken) instanceof Saml2AssertionAuthentication authentication) {
 
       // https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/59116c3014bbb10001966f70
       // Tekninen rajapintakuvaus / Tunnistusvastaus / Tunnistustapahtuman vahvuus
@@ -97,10 +97,13 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
             default -> null;
           };
 
-      var jodUser = upsertUser(principal, selectedLanguage, pid);
+      var jodUser = upsertUser(authentication.getCredentials(), selectedLanguage, pid);
 
-      return new Saml2Authentication(
-          jodUser, authentication.getSaml2Response(), authentication.getAuthorities());
+      return new Saml2AssertionAuthentication(
+          jodUser,
+          authentication.getCredentials(),
+          authentication.getAuthorities(),
+          authentication.getRelyingPartyRegistrationId());
     }
 
     throw new BadCredentialsException("Invalid response token");
@@ -108,21 +111,17 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
 
   /* package private for testing */
   JodSaml2Principal upsertUser(
-      Saml2AuthenticatedPrincipal principal, Kieli selectedLanguage, PersonIdentifierType pid) {
-    var personId = principal.<String>getFirstAttribute(pid.getAttribute().getUri());
+      Saml2ResponseAssertionAccessor assertionAccessor,
+      Kieli selectedLanguage,
+      PersonIdentifierType pid) {
+    var personId = assertionAccessor.<String>getFirstAttribute(pid.getAttribute().getUri());
     if (personId == null || personId.isBlank()) {
       throw new BadCredentialsException("Invalid person identifier");
     }
     return transactionTemplate.execute(
         status -> {
           var id = yksilot.findIdByHenkiloId(pid.asQualifiedIdentifier(personId));
-          var jodUser =
-              new JodSaml2Principal(
-                  principal.getName(),
-                  principal.getAttributes(),
-                  principal.getSessionIndexes(),
-                  principal.getRelyingPartyRegistrationId(),
-                  id);
+          var jodUser = new JodSaml2Principal(assertionAccessor.getAttributes(), id);
           yksilot.updateName(
               pid.asQualifiedIdentifier(personId), jodUser.givenName(), jodUser.familyName());
 
@@ -145,14 +144,14 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
                             }
                             if (it.getKotikunta() != null) {
                               it.setKotikunta(
-                                  principal.getFirstAttribute(
+                                  assertionAccessor.getFirstAttribute(
                                       Attribute.KOTIKUNTA_KUNTANUMERO.getUri()));
                             }
                             yield it;
                           }
                           case EIDAS -> {
                             var birthDate =
-                                principal.<String>getFirstAttribute(
+                                assertionAccessor.<String>getFirstAttribute(
                                     Attribute.DATE_OF_BIRTH.getUri());
                             if (it.getSyntymavuosi() != null) {
                               it.setSyntymavuosi(

@@ -20,7 +20,6 @@ import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.validation.Limits;
-import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -58,7 +57,6 @@ public class IntegraatioKoskiController {
 
   @GetMapping("/koulutukset")
   @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
-  @Timed
   ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
       @AuthenticationPrincipal JodUser jodUser,
       Authentication authentication,

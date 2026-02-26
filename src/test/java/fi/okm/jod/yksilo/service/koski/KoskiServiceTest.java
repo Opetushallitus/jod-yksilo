@@ -16,8 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.controller.koski.TestKoskiOauth2Config;
@@ -39,9 +37,11 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @TestPropertySource(properties = "jod.koski.enabled=true")
 @Import({
@@ -58,7 +58,7 @@ class KoskiServiceTest extends AbstractServiceTest {
   @Autowired private ObjectMapper objectMapper;
 
   @Test
-  void getKoulutusData() throws JsonProcessingException {
+  void getKoulutusData() throws JacksonException {
     var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
     var koskiData = koskiService.mapKoulutusData(objectMapper.readTree(content));
 

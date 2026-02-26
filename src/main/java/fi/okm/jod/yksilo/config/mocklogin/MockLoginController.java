@@ -15,13 +15,16 @@ import static fi.okm.jod.yksilo.config.SessionLoginAttribute.LANG;
 import fi.okm.jod.yksilo.domain.Kieli;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @ConditionalOnBean(MockLoginConfig.class)
@@ -29,12 +32,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 class MockLoginController {
 
   @GetMapping(value = "/login", produces = "text/html")
-  @ResponseBody
-  public String login(
+  public void login(
       @RequestParam(required = false) URI callback,
       @RequestParam(required = false) Kieli lang,
       CsrfToken csrf,
-      HttpServletRequest request) {
+      HttpServletRequest request,
+      HttpServletResponse response)
+      throws IOException {
 
     if (callback != null && callback.getPath() != null) {
       request.getSession().setAttribute(CALLBACK.getKey(), callback.getPath());
@@ -43,7 +47,8 @@ class MockLoginController {
       request.getSession().setAttribute(LANG.getKey(), lang.toString());
     }
 
-    return """
+    var html =
+        """
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -124,7 +129,18 @@ class MockLoginController {
         </body>
         </html>
         """
-        .replace("{contextPath}", request.getContextPath())
-        .replace("{csrf}", csrf.getToken());
+            .replace("{contextPath}", request.getContextPath())
+            .replace("{csrf}", csrf.getToken());
+
+    response.setContentType(MediaType.TEXT_HTML_VALUE);
+    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+    response.getWriter().write(html);
+
+    // Implementation note:
+    // If we return the HTML directly as String, Spring Session fails to set the session cookie,
+    // apparently due to change in Tomcat 11
+    // (org.apache.catalina.connector.OutputBuffer.updateBytesWritten). One could argue that
+    // the session cookie should be set eagerly and not wait until the response body is written.
+
   }
 }

@@ -20,9 +20,9 @@ import jakarta.validation.constraints.Size;
 
 public record YksiloDto(
     @Schema(accessMode = Schema.AccessMode.READ_ONLY) PersonIdentifierType tunnisteTyyppi,
-    boolean tervetuloapolku,
-    boolean lupaLuovuttaaTiedotUlkopuoliselle,
-    boolean lupaKayttaaTekoalynKoulutukseen,
+    Boolean tervetuloapolku,
+    Boolean lupaLuovuttaaTiedotUlkopuoliselle,
+    Boolean lupaKayttaaTekoalynKoulutukseen,
     Integer syntymavuosi,
     Sukupuoli sukupuoli,
     @Pattern(regexp = "[0-9]{3}") String kotikunta,

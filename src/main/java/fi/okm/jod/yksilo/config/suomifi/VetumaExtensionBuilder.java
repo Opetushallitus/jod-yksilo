@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import javax.xml.namespace.QName;
 import lombok.Getter;
 import lombok.Setter;
-import net.shibboleth.utilities.java.support.xml.ElementSupport;
+import net.shibboleth.shared.xml.ElementSupport;
 import org.opensaml.core.xml.AbstractXMLObject;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;

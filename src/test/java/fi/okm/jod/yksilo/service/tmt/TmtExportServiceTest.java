@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -60,8 +60,8 @@ class TmtExportServiceTest extends AbstractServiceTest {
     }
 
     @Bean
-    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-      return new MappingJackson2HttpMessageConverter();
+    JacksonJsonHttpMessageConverter jacksonJsonHttpMessageConverter() {
+      return new JacksonJsonHttpMessageConverter();
     }
   }
 

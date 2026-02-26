@@ -48,16 +48,16 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.core.Saml2X509Credential.Saml2X509CredentialType;
-import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider;
 import org.springframework.security.saml2.provider.service.registration.InMemoryRelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.OpenSamlAssertingPartyDetails;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
-import org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver;
+import org.springframework.security.saml2.provider.service.web.authentication.OpenSaml5AuthenticationRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2AuthenticationRequestResolver;
-import org.springframework.security.saml2.provider.service.web.authentication.logout.OpenSaml4LogoutRequestResolver;
+import org.springframework.security.saml2.provider.service.web.authentication.logout.OpenSaml5LogoutRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestResolver;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -153,7 +153,7 @@ public class Saml2LoginConfig {
     var authenticationEventHandler = new AuthenticationEventHandler(redirectStrategy);
     var profileDeletionHandler = new ProfileDeletionHandler(yksiloService);
 
-    var authProvider = new OpenSaml4AuthenticationProvider();
+    var authProvider = new OpenSaml5AuthenticationProvider();
     authProvider.setResponseAuthenticationConverter(converter);
 
     return http.securityMatcher("/saml2/**", "/login/**", "/logout/**")
@@ -198,7 +198,7 @@ public class Saml2LoginConfig {
   Saml2AuthenticationRequestResolver authenticationRequestResolver(
       RelyingPartyRegistrationRepository registrations, JodAuthenticationProperties properties) {
 
-    final var resolver = new OpenSaml4AuthenticationRequestResolver(registrations);
+    final var resolver = new OpenSaml5AuthenticationRequestResolver(registrations);
     final var builder = new AuthnContextBuilder();
 
     resolver.setAuthnRequestCustomizer(
@@ -226,7 +226,7 @@ public class Saml2LoginConfig {
   @Bean
   Saml2LogoutRequestResolver logoutRequestResolver(
       RelyingPartyRegistrationRepository registrations) {
-    var resolver = new OpenSaml4LogoutRequestResolver(registrations);
+    var resolver = new OpenSaml5LogoutRequestResolver(registrations);
     resolver.setParametersConsumer(
         parameters -> {
           final LogoutRequest logoutRequest = parameters.getLogoutRequest();

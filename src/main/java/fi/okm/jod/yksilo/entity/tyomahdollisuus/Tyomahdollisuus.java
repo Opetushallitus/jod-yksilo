@@ -24,7 +24,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.MapKey;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import java.net.URI;
@@ -48,7 +48,7 @@ public class Tyomahdollisuus {
   @OneToMany(mappedBy = "tyomahdollisuus", fetch = FetchType.LAZY)
   @BatchSize(size = 100)
   @MapKeyEnumerated(EnumType.STRING)
-  @MapKeyColumn(name = "tyyppi")
+  @MapKey(name = "tyyppi")
   private Map<TyomahdollisuusJakaumaTyyppi, TyomahdollisuusJakauma> jakaumat;
 
   @ManyToOne

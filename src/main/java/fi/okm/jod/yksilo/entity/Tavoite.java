@@ -46,12 +46,10 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Check;
 
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "yksilo_id")})
-@Check(constraints = "(tyomahdollisuus_id IS NULL) != (koulutusmahdollisuus_id IS NULL)")
 public class Tavoite {
   @GeneratedValue @Id private UUID id;
 
@@ -62,7 +60,7 @@ public class Tavoite {
   @JoinColumn(updatable = false, nullable = false)
   private Yksilo yksilo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @Setter
   private Tyomahdollisuus tyomahdollisuus;
 

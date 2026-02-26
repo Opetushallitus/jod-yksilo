@@ -2,7 +2,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 buildscript {
   dependencies {
-    classpath("org.flywaydb:flyway-database-postgresql:11.20.2")
+    classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
   }
 }
 
@@ -20,7 +20,7 @@ plugins {
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
   id "com.github.ben-manes.versions" version "0.53.0"
-  id "org.flywaydb.flyway" version "11.20.2"
+  id "org.flywaydb.flyway" version "${flywayVersion}"
 }
 
 group = 'fi.okm.jod'
@@ -33,7 +33,7 @@ java {
 }
 
 compileJava {
-  options.compilerArgs << '-Xlint:all,-processing,-serial'
+  options.compilerArgs << '-Xlint:all,-processing,-serial,-classfile,-rawtypes'
 }
 
 repositories {
@@ -43,8 +43,6 @@ repositories {
 
 ext {
   spotbugsVersion = "4.9.8"
-  setProperty("flyway.version", "11.20.2")
-  setProperty("commons-lang3.version", "3.18.0")
 }
 
 configurations {
@@ -63,52 +61,44 @@ configurations {
 
 dependencies {
   implementation project(':tmt-profiili-api')
+  implementation 'org.springframework.boot:spring-boot-starter-aspectj'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
-  implementation 'org.springframework.boot:spring-boot-starter-security'
-  implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+  implementation 'org.springframework.boot:spring-boot-starter-webmvc'
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.springframework.boot:spring-boot-starter-validation'
   implementation 'org.springframework.boot:spring-boot-starter-cache'
-  implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-  implementation 'org.springframework.boot:spring-boot-starter-aop'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+  implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
+  implementation 'org.springframework.boot:spring-boot-starter-security-saml2'
+  implementation 'org.springframework.boot:spring-boot-starter-restclient'
+  implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+  implementation 'org.springframework.boot:spring-boot-starter-session-data-redis'
+  implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
 
-  implementation 'org.springframework.session:spring-session-data-redis'
+  implementation 'org.springframework.boot:spring-boot-starter-flyway'
+  implementation "org.flywaydb:flyway-database-postgresql"
 
-  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2')
+  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
-  implementation 'org.springframework.security:spring-security-saml2-service-provider'
-
-  implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-  implementation 'io.micrometer:micrometer-registry-cloudwatch2'
-  implementation 'io.zipkin.aws:brave-propagation-aws'
-
-  implementation platform('software.amazon.awssdk:bom:2.41.13')
+  implementation platform('software.amazon.awssdk:bom:2.41.34')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
-  implementation 'software.amazon.awssdk:cloudwatch'
 
   implementation 'com.google.guava:guava:33.5.0-jre'
 
-  implementation "org.flywaydb:flyway-core"
-  implementation "org.flywaydb:flyway-database-postgresql"
+  implementation "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"
+  implementation "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"
 
   // Caffeine cache implementation
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
 
-  //override OpenSAML dependencies
-  implementation 'org.bouncycastle:bcpkix-jdk18on:1.83'
-  implementation 'org.bouncycastle:bcutil-jdk18on:1.83'
-  implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
-
-  // OpenAPI API description and Swagger UI
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.15'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1'
+  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -117,16 +107,20 @@ dependencies {
   runtimeOnly 'org.postgresql:postgresql'
 
   annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-  annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
+  annotationProcessor 'org.hibernate.orm:hibernate-processor'
   annotationProcessor 'org.projectlombok:lombok'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-  testImplementation 'org.springframework.security:spring-security-test'
 
-  testImplementation "org.testcontainers:postgresql"
-  testImplementation 'org.testcontainers:junit-jupiter'
+  testImplementation "org.testcontainers:testcontainers-postgresql"
+  testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
   testImplementation 'org.junit.jupiter:junit-jupiter'
+  testImplementation 'org.apache.commons:commons-lang3'
 
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -265,6 +259,11 @@ sonar {
     property "sonar.host.url", "https://sonarcloud.io"
     property "sonar.java.spotbugs.reportPaths", "build/reports/spotbugs/main.xml"
     property "sonar.cpd.exclusions", "src/**/entity/*.java"
+
+    //global issue exclusions (due to not compatible with e.g. spotless)
+    property "sonar.issue.ignore.multicriteria", "e1"
+    property "sonar.issue.ignore.multicriteria.e1.ruleKey", "java:S8445"
+    property "sonar.issue.ignore.multicriteria.e1.resourceKey", "src/**/*.java"
   }
 }
 
@@ -287,7 +286,7 @@ openApi {
             "--logging.level.fi.okm.jod=ERROR",
             "--spring.config.additional-location=${projectDir}/src/test/resources/application-default.yml",
             "--spring.docker.compose.file=${projectDir}/compose-test.yml",
-            "--spring.docker.compose.stop.command=stop",]
+            "--spring.docker.compose.stop.command=down",]
   }
 }
 
@@ -302,9 +301,9 @@ static int majorVersion(String version) {
 static boolean isPreReleaseVersion(String version) {
   return version.containsIgnoreCase("alpha")
       || version.containsIgnoreCase("beta")
-      || version.matches(".*[.-]M\\d+")
-      || version.matches(".*[.-]RC\\d+")
-      || version.matches(".*[.-]CR\\d+")
+      || version.matches(".*[.-](?i:M)\\d+")
+      || version.matches(".*[.-](?i:RC)\\d+")
+      || version.matches(".*[.-](?i:CR)\\d+")
 }
 
 tasks.named("dependencyUpdates", DependencyUpdatesTask).configure {
