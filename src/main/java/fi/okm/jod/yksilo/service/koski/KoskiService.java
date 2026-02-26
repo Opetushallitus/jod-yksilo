@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.service.koski;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
@@ -30,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 @ConditionalOnBean(KoskiOauth2Config.class)
 @Service
@@ -63,7 +63,7 @@ public class KoskiService {
               if (toimija == null) {
                 log.info(
                     "Koski opiskeluoikeus {} is missing toimija name, skipping",
-                    node.path("oid").asText());
+                    node.path("oid").stringValue());
                 return Stream.of();
               }
 
@@ -95,7 +95,10 @@ public class KoskiService {
             .valueStream()
             .map(
                 node ->
-                    node.path("koulutusmoduuli").path("nimi").path(Kieli.FI.getKoodi()).textValue())
+                    node.path("koulutusmoduuli")
+                        .path("nimi")
+                        .path(Kieli.FI.getKoodi())
+                        .stringValue(null))
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
   }
@@ -133,7 +136,7 @@ public class KoskiService {
         Stream.of(Kieli.values())
             .map(
                 kieli ->
-                    (text.path(kieli.getKoodi()).textValue() instanceof String value)
+                    (text.path(kieli.getKoodi()).stringValue(null) instanceof String value)
                         ? Map.entry(kieli, value)
                         : null)
             .filter(Objects::nonNull)
@@ -143,7 +146,7 @@ public class KoskiService {
   }
 
   private static LocalDate getLocalDate(JsonNode node) {
-    return node != null && node.isTextual() ? LocalDate.parse(node.asText()) : null;
+    return node != null && node.isString() ? LocalDate.parse(node.asString()) : null;
   }
 
   private static final Set<OsaamisenTunnistusStatus> statuses =

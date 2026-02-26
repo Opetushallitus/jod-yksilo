@@ -16,10 +16,10 @@ Licensed under the European Union Public Licence EUPL-1.2 or later.
 
 ## Getting Started
 
-The backend application is a Spring Boot 3 application that requires Java 21 and uses Gradle
+The backend application is a Spring Boot 4.0 application that requires Java 25 and uses Gradle
 as a build tool.
 
-* Install a OpenJDK 21 distribution (
+* Install a OpenJDK 25 distribution (
   e.g. [Eclipse Temurin™](https://adoptium.net/temurin/releases/)).
 * Clone the repository.
 * Run the application with `./gradlew bootRun`.
@@ -39,10 +39,14 @@ Code style is enforced using Spotless and Checkstyle (based on Google Java Style
 * You can format the code with `./gradlew spotlessApply`.
 * If using IntelliJ IDEA, the Checkstyle-IDEA and google-java-format plugins are recommended.
 
+#### Naming and variable declaration guidelines
+
 * Variable declarations should prefer local type inference (`var`) over explicit types where type is
   clear from the context (e.g. already present on the right-hand side of the assignment, or
   otherwise impled).
-* Naming is hard, so avoid unnecessary intermediate variables, unless they improve readability.
+* Naming is hard, avoid unnecessary intermediate variables, unless they improve readability.
+  * For example, instead of `var methodResult = someMethod(); return methodResult;`, simply
+    use `return someMethod();`.
 * When naming things, do not repeat information that is already present in the context (e.g.
   enclosing class name or method argument types).
 

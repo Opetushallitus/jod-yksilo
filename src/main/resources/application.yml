@@ -32,8 +32,9 @@ spring:
     baseline-description: baseline
   session:
     timeout: 15m
-    redis:
-      repository-type: default
+    data:
+      redis:
+        repository-type: default
   transaction:
     default-timeout: 30s
   cache:
@@ -55,15 +56,16 @@ spring:
         await-termination-period: 30s
   lifecycle:
     timeout-per-shutdown-phase: 60s
+  web:
+    error:
+      include-stacktrace: never
+      whitelabel:
+        enabled: false
+      include-exception: false
 
 server:
   compression:
     enabled: true
-  error:
-    whitelabel:
-      enabled: false
-    include-stacktrace: never
-    include-exception: false
   servlet:
     context-path: /yksilo
 
@@ -93,6 +95,13 @@ logging:
             PageNotFound: off
 
 management:
+  # AppSignals already provides a lot of signals, enable only selected custom metrics
+  metrics:
+     enable:
+       all: false
+       hikaricp: true
+       tomcat: true
+
   observations:
     annotations:
       enabled: true

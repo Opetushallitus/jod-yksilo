@@ -24,5 +24,7 @@ public abstract class JodEntity {
   @CreationTimestamp
   protected Instant luotu;
 
-  @UpdateTimestamp protected Instant muokattu;
+  @Column(nullable = false)
+  @UpdateTimestamp
+  protected Instant muokattu;
 }

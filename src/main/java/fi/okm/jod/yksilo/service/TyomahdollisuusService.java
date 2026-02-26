@@ -11,7 +11,6 @@ package fi.okm.jod.yksilo.service;
 
 import static fi.okm.jod.yksilo.service.JakaumaMapper.mapJakauma;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaBasicDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.AmmattiryhmaFullDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.KoulutusAlaDto;
@@ -139,13 +138,13 @@ public class TyomahdollisuusService {
 
   private static List<KoulutusAlaDto> getTyollisetKoulutusAloittain(
       final Ammattiryhma ammattiryhma) {
-    JsonNode node = ammattiryhma.getData().path("tyollisetKoulutusAloittain");
+    var node = ammattiryhma.getData().path("tyollisetKoulutusAloittain");
     if (node.isMissingNode() || !node.isArray()) {
       return new ArrayList<>();
     }
 
     List<KoulutusAlaDto> result = new ArrayList<>();
-    for (JsonNode entry : node) {
+    for (var entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
             new KoulutusAlaDto(entry.path("koulutusala").asText(), entry.path("osuus").asDouble()));
@@ -156,13 +155,13 @@ public class TyomahdollisuusService {
 
   private static List<KoulutusasteDto> getTyollisetKoulutusAsteittain(
       final Ammattiryhma ammattiryhma) {
-    JsonNode node = ammattiryhma.getData().path("tyollisetKoulutusAsteittain");
+    var node = ammattiryhma.getData().path("tyollisetKoulutusAsteittain");
     if (node.isMissingNode() || !node.isArray()) {
       return new ArrayList<>();
     }
 
     List<KoulutusasteDto> result = new ArrayList<>();
-    for (JsonNode entry : node) {
+    for (var entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
             new KoulutusasteDto(
@@ -173,13 +172,13 @@ public class TyomahdollisuusService {
   }
 
   private static List<MaakuntaDto> getTyollisetMaakunnittain(final Ammattiryhma ammattiryhma) {
-    JsonNode node = ammattiryhma.getData().path("tyollisetMaakunnittain");
+    var node = ammattiryhma.getData().path("tyollisetMaakunnittain");
     if (node.isMissingNode() || !node.isArray()) {
       return new ArrayList<>();
     }
 
     List<MaakuntaDto> result = new ArrayList<>();
-    for (JsonNode entry : node) {
+    for (var entry : node) {
       if (entry.path("osuus").isNumber()) {
         result.add(
             new MaakuntaDto(entry.path("maakunta").asText(), entry.path("osuus").asDouble()));

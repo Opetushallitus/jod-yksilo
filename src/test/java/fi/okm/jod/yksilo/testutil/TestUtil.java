@@ -11,7 +11,7 @@ package fi.okm.jod.yksilo.testutil;
 
 import java.nio.charset.StandardCharsets;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class TestUtil {
@@ -35,8 +35,8 @@ public class TestUtil {
     }
   }
 
-  public static PostgreSQLContainer<?> createPostgreSqlContainer() {
-    return new PostgreSQLContainer<>(TestUtil.POSTGRES_VERSION)
+  public static PostgreSQLContainer createPostgreSqlContainer() {
+    return new PostgreSQLContainer(TestUtil.POSTGRES_VERSION)
         .withEnv("LANG", "en_US.UTF-8")
         .withEnv("LC_ALL", "en_US.UTF-8")
         .withInitScript("db/setup.sql");

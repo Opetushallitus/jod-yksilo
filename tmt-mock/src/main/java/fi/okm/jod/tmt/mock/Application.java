@@ -10,8 +10,6 @@
 package fi.okm.jod.tmt.mock;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -47,7 +45,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -56,6 +53,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootApplication
 @RestController
@@ -70,7 +68,7 @@ public class Application {
   }
 
   public static final String BEARER_PREFIX = "Bearer ";
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
   private final Map<String, Outcome> issuedTokens = new ConcurrentHashMap<>();
   private final Map<UUID, Outcome> issuedCodes = new ConcurrentHashMap<>();
   private final JWSSigner signer;
@@ -86,13 +84,16 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
-  Application(Jackson2ObjectMapperBuilder objectMapperBuilder, Environment env)
+  Application(JsonMapper.Builder objectMapperBuilder, Environment env)
       throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, JOSEException {
     var keyGenerator = KeyPairGenerator.getInstance("EC");
     var curve = new ECGenParameterSpec("secp256r1");
     keyGenerator.initialize(curve);
     var keyPair = keyGenerator.generateKeyPair();
-    this.objectMapper = objectMapperBuilder.serializationInclusion(Include.NON_EMPTY).build();
+    this.objectMapper =
+        objectMapperBuilder
+            .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(Include.NON_EMPTY))
+            .build();
     this.signer = new ECDSASigner((ECPrivateKey) keyPair.getPrivate());
     this.verifier = new ECDSAVerifier((ECPublicKey) keyPair.getPublic());
     this.clientId = env.getProperty("mock.client-id", "dummy-client-id");
@@ -294,13 +295,9 @@ public class Application {
         auth,
         () -> {
           profile = objectMapper.convertValue(profileDto, FullProfileDtoExternalGet.class);
-          try {
-            log.info(
-                "Imported profile\n{}",
-                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profile));
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
+          log.info(
+              "Imported profile\n{}",
+              objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(profile));
           return ResponseEntity.noContent().build();
         });
   }

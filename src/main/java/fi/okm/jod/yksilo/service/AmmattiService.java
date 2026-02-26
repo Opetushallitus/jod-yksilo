@@ -27,9 +27,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service

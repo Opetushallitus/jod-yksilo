@@ -12,8 +12,6 @@ spring:
       - aws-secretsmanager:${jod.saml2.credentials-secret-arn}?prefix=jod.saml2.relying-party.
   cloud:
     aws:
-      cloudwatch:
-        enabled: true
       parameterstore:
         enabled: true
         reload:
@@ -38,12 +36,13 @@ spring:
         await-termination-period: 30s
   lifecycle:
     timeout-per-shutdown-phase: 60s
+  web:
+    error:
+      include-stacktrace: never
+      include-exception: false
 server:
   forward-headers-strategy: none
   shutdown: graceful
-  error:
-    include-stacktrace: never
-    include-exception: false
   tomcat:
     custom:
       secure-connector: true
@@ -68,11 +67,6 @@ management:
     web:
       exposure:
         include: "health"
-  cloudwatch:
-    metrics:
-      export:
-        namespace: "jod/yksilo"
-        batch-size: 20
 
 jod:
   integraatio:

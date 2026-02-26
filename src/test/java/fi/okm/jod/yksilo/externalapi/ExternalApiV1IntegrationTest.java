@@ -20,7 +20,8 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +33,7 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @SqlConfig(separator = ";;;")
+@AutoConfigureTestRestTemplate
 class ExternalApiV1IntegrationTest extends IntegrationTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
@@ -81,12 +83,12 @@ class ExternalApiV1IntegrationTest extends IntegrationTest {
             .queryParam("koko", "5000")
             .encode()
             .toUriString();
-    final ResponseEntity<SivuDto<ExtProfiiliDto>> response =
+    final ResponseEntity<String> response =
         this.testRestTemplate.exchange(
             profiilitUrlWithParams,
             HttpMethod.GET,
             new HttpEntity<>(headersWithAuthentication()),
-            new ParameterizedTypeReference<>() {});
+            String.class);
     assertEquals(HttpStatusCode.valueOf(400), response.getStatusCode());
   }
 

@@ -22,25 +22,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
+import lombok.Getter;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.util.CollectionUtils;
 
-@SuppressWarnings({"java:S4544", "serial"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties(ignoreUnknown = true)
-final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal implements JodUser {
+class JodSaml2Principal implements AuthenticatedPrincipal, JodUser {
 
   private final UUID id;
+  @Getter private final Map<String, List<Object>> attributes;
 
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   JodSaml2Principal(
-      @JsonProperty("name") String name,
       @JsonProperty("attributes") Map<String, List<Object>> attributes,
-      @JsonProperty("sessionIndexes") List<String> sessionIndexes,
-      @JsonProperty("registrationId") String relyingPartyRegistrationId,
       @JsonProperty("id") UUID id) {
-    super(name, attributes, sessionIndexes);
-    super.setRelyingPartyRegistrationId(relyingPartyRegistrationId);
     this.id = requireNonNull(id);
+    this.attributes = requireNonNull(attributes);
+  }
+
+  @Override
+  @JsonIgnore
+  public String getName() {
+    return getQualifiedPersonId();
   }
 
   @Override
@@ -85,20 +90,10 @@ final class JodSaml2Principal extends DefaultSaml2AuthenticatedPrincipal impleme
     return Optional.ofNullable(getFirstAttribute(attribute.getUri()));
   }
 
-  @Override
-  @JsonProperty("registrationId")
-  public String getRelyingPartyRegistrationId() {
-    return super.getRelyingPartyRegistrationId();
-  }
-
-  // for SpotBugs, intentionally using the inherited equals and hashCode
-  @Override
-  public boolean equals(Object object) {
-    return super.equals(object);
-  }
-
-  @Override
-  public int hashCode() {
-    return super.hashCode();
+  @Nullable
+  @SuppressWarnings("unchecked")
+  private <A> A getFirstAttribute(String name) {
+    List<A> values = (List<A>) attributes.get(name);
+    return CollectionUtils.firstElement(values);
   }
 }
