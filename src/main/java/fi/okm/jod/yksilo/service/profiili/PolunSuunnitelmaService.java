@@ -39,7 +39,6 @@ public class PolunSuunnitelmaService {
   private final KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
   private final PolunSuunnitelmaRepository suunnitelmaRepository;
   private final OsaaminenRepository osaamisetRepository;
-  private final MuuOsaaminenService muuOsaaminenService;
 
   @Transactional(readOnly = true)
   public PolunSuunnitelmaDto get(JodUser user, UUID tavoiteId, UUID id) {
@@ -110,7 +109,6 @@ public class PolunSuunnitelmaService {
     if (osaamiset != null) {
       var entities = getOsaamiset(dto.osaamiset());
       entity.setOsaamiset(entities);
-      muuOsaaminenService.add(entity.getTavoite().getYksilo(), entities);
     }
     suunnitelmaRepository.save(entity);
   }
