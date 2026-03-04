@@ -188,7 +188,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
     eventHandler.doHandleOsaamisetTunnistusEvent(
         new OsaamisetTunnistusEvent(user, List.of(koulutus1)));
 
-    verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.FAIL, sageMakerResponse.osaamiset());
+    verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.DONE, sageMakerResponse.osaamiset());
     verify(inferenceService)
         .infer(ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {});
   }

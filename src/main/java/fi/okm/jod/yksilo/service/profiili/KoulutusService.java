@@ -130,11 +130,7 @@ public class KoulutusService {
   public void completeOsaamisetTunnistus(
       Koulutus koulutus, OsaamisenTunnistusStatus newStatus, @Nullable Set<URI> newOsaamiset) {
     koulutus.setOsaamisenTunnistusStatus(newStatus);
-    if (newStatus.compareTo(OsaamisenTunnistusStatus.DONE) == 0
-        && (newOsaamiset == null || newOsaamiset.isEmpty())) {
-      koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.FAIL);
-
-    } else if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
+    if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
       osaamiset.addLahteenOsaamiset(koulutus, osaamiset.getOsaamiset(newOsaamiset));
     }
     koulutukset.save(koulutus);
