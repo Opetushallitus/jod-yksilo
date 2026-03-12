@@ -27,6 +27,7 @@ public record MahdollisuusDto(
     KoulutusmahdollisuusTyyppi koulutusTyyppi,
     List<String> maakunnat,
     List<String> toimialat,
+    List<String> koulutusalat,
     Double kesto,
     Double kestoMinimi,
     Double kestoMaksimi) {}
