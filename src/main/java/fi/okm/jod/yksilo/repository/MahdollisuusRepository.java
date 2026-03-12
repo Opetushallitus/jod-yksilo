@@ -91,6 +91,7 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
                 mv.koulutusTyyppi,
                 mv.maakunnat,
                 mv.toimialat,
+                mv.koulutusalat,
                 mv.kesto,
                 mv.kestoMinimi,
                 mv.kestoMaksimi
