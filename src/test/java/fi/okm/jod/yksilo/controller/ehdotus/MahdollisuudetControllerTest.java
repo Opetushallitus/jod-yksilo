@@ -87,7 +87,15 @@ class MahdollisuudetControllerTest {
   void whenEmptySkillsShouldReturnEmptySet() throws Exception {
     var luoEhdotusDto =
         new MahdollisuudetController.LuoEhdotusDto(
-            Collections.emptySet(), null, 0.5, Collections.emptySet(), null, 0.5, 0.5, 0.5);
+            Collections.emptySet(),
+            null,
+            0.5,
+            Collections.emptySet(),
+            null,
+            0.5,
+            0.5,
+            0.5,
+            Collections.emptySet());
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -229,7 +237,8 @@ class MahdollisuudetControllerTest {
             null,
             0.5,
             0.5,
-            0.5);
+            0.5,
+            Collections.emptySet());
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -392,7 +401,8 @@ class MahdollisuudetControllerTest {
             null,
             0.5,
             0.5,
-            0.5);
+            0.5,
+            Collections.emptySet());
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
@@ -524,7 +534,8 @@ class MahdollisuudetControllerTest {
             null,
             0.5,
             0.5,
-            0.5);
+            0.5,
+            Collections.emptySet());
 
     var listOfIds = IntStream.range(0, 6).mapToObj(i -> UUID.randomUUID()).toList();
 
