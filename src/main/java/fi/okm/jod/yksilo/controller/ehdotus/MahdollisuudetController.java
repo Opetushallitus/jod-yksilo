@@ -107,7 +107,7 @@ class MahdollisuudetController {
                     ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
                 .collect(Collectors.toSet());
 
-    final var osaamisetText = ehdotus.osaamisetText;
+    final var osaamisetVapaateksti = ehdotus.osaamisetVapaateksti;
 
     final var kiinnostukset =
         ehdotus.kiinnostukset() == null
@@ -117,12 +117,12 @@ class MahdollisuudetController {
                     ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
                 .collect(Collectors.toSet());
 
-    final var kiinnostuksetText = ehdotus.kiinnostuksetText;
+    final var kiinnostuksetVapaateksti = ehdotus.kiinnostuksetVapaateksti;
 
     if (osaamiset.isEmpty()
-        && (osaamisetText == null || osaamisetText.isBlank())
+        && (osaamisetVapaateksti == null || osaamisetVapaateksti.isBlank())
         && kiinnostukset.isEmpty()
-        && (kiinnostuksetText == null || kiinnostuksetText.isBlank())) {
+        && (kiinnostuksetVapaateksti == null || kiinnostuksetVapaateksti.isBlank())) {
       // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
       // metadata
       return populateEmptyEhdotusDtos(mahdollisuusIds);
@@ -142,13 +142,14 @@ class MahdollisuudetController {
         new Request(
             new Data(
                 osaamiset,
-                ehdotus.osaamisetText,
+                ehdotus.osaamisetVapaateksti,
                 ehdotus.osaamisPainotus,
                 kiinnostukset,
-                ehdotus.kiinnostuksetText,
+                ehdotus.kiinnostuksetVapaateksti,
                 ehdotus.kiinnostusPainotus,
                 ehdotus.escoListPainotus,
-                ehdotus.openTextPainotus));
+                ehdotus.openTextPainotus,
+                ehdotus.kuvaukset));
 
     return inferenceService
         .infer(endpoints.get(lang), request, new ParameterizedTypeReference<>() {})
@@ -250,7 +251,8 @@ class MahdollisuudetController {
         String kiinnostuksetText,
         double kiinnostusPainotus,
         double escoListPainotus,
-        double openTextPainotus) {}
+        double openTextPainotus,
+        Set<String> kuvaukset) {}
   }
 
   /**
@@ -326,23 +328,32 @@ class MahdollisuudetController {
   /**
    * This record models the create ehdotus request.
    *
-   * @param osaamisPainotus This is the emphasis of osaamiset (skills related to know how).
    * @param osaamiset This is the list of skills ESCO URIs which are considered as skills of the
    *     customer related to know how.
-   * @param kiinnostusPainotus is the emphasis of kiinnostus (skills related to personal fields of
-   *     interests).
+   * @param osaamisetVapaateksti This is the free-form text related to osaamiset. This can be used
+   *     to provide additional information about the skills of the customer that
+   * @param osaamisPainotus This is the emphasis of osaamiset (skills related to know how).
    * @param kiinnostukset This is the list of skills ESCO URIs which are considered as skills of the
    *     customer related to kiinnostus.
+   * @param kiinnostuksetVapaateksti This is the free text related to kiinnostukset. This can be
+   *     used to provide additional information about the skills of the customer that
+   * @param kiinnostusPainotus is the emphasis of kiinnostus (skills related to personal fields of
+   *     interests).
+   * @param escoListPainotus is the emphasis of osaamiset and kiinnostukset which are in ESCO list.
+   * @param openTextPainotus is the emphasis of osaamiset and kiinnostukset which are provided as
+   *     open text or not in ESCO list.
+   * @param kuvaukset This is a list of description from the profile.
    */
   public record LuoEhdotusDto(
       @Size(max = 1000) Set<@Valid URI> osaamiset,
-      @Size(max = 10000) String osaamisetText,
+      @Size(max = 10000) String osaamisetVapaateksti,
       double osaamisPainotus,
       @Size(max = 1000) Set<@Valid URI> kiinnostukset,
-      @Size(max = 10000) String kiinnostuksetText,
+      @Size(max = 10000) String kiinnostuksetVapaateksti,
       double kiinnostusPainotus,
       double escoListPainotus,
-      double openTextPainotus) {}
+      double openTextPainotus,
+      @Size(max = 1000) Set<@Size(max = 10000) String> kuvaukset) {}
 
   @SuppressWarnings("serial")
   static class Response extends ArrayList<fi.okm.jod.yksilo.controller.ehdotus.Suggestion> {}
