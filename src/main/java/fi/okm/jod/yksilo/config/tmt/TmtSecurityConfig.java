@@ -153,7 +153,7 @@ public class TmtSecurityConfig {
           && request.getParameter("callback") instanceof String cb
           && request.getSession(false) instanceof HttpSession session) {
         session.setAttribute(
-            SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), URI.create(cb).getPath());
+            SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), URI.create(cb).normalize().getPath());
       }
       filterChain.doFilter(request, response);
     }

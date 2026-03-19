@@ -45,7 +45,7 @@ class LoginController {
       request.getSession().setAttribute(LANG.getKey(), lang.toString());
     }
     if (callback != null && callback.getPath() != null) {
-      request.getSession().setAttribute(CALLBACK.getKey(), callback.getPath());
+      request.getSession().setAttribute(CALLBACK.getKey(), callback.normalize().getPath());
     }
 
     response.sendRedirect(

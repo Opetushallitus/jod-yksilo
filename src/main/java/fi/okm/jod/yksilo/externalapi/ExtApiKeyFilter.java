@@ -16,6 +16,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.security.core.Authentication;
@@ -26,11 +28,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class ExtApiKeyFilter extends OncePerRequestFilter {
 
   public static final String API_KEY_HEADER_NAME = "Jod-Ext-Api-Key";
-  private final String expectedApiKey;
+  private final byte[] expectedApiKey;
 
   // Constructor takes the expected API key as parameter
   public ExtApiKeyFilter(String expectedApiKey) {
-    this.expectedApiKey = Objects.requireNonNull(expectedApiKey, "Api key should not be null");
+    this.expectedApiKey =
+        Objects.requireNonNull(expectedApiKey, "Api key should not be null")
+            .getBytes(StandardCharsets.UTF_8);
   }
 
   @Override
@@ -38,7 +42,8 @@ public class ExtApiKeyFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     String apiKey = request.getHeader(API_KEY_HEADER_NAME);
-    if (expectedApiKey.equals(apiKey)) {
+    if (apiKey != null
+        && MessageDigest.isEqual(expectedApiKey, apiKey.getBytes(StandardCharsets.UTF_8))) {
       Authentication auth =
           new ApiKeyAuthentication(
               apiKey, List.of(new SimpleGrantedAuthority(JodRole.EXTERNAL_API.name())));

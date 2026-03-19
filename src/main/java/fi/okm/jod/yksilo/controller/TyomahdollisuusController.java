@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +47,7 @@ public class TyomahdollisuusController {
   public SivuDto<TyomahdollisuusDto> findAll(
       @RequestParam(required = false, defaultValue = "0") @Min(0) int sivu,
       @RequestParam(required = false, defaultValue = "10") @Min(1) @Max(1000) int koko,
-      @RequestParam(required = false) Set<UUID> id) {
+      @RequestParam(required = false) @Size(max = 1000) Set<UUID> id) {
     if (id == null) {
       Pageable pageable = PageRequest.of(sivu, koko);
       return new SivuDto<>(tyomahdollisuusService.findAll(pageable));
