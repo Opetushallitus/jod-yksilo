@@ -65,7 +65,7 @@ public interface MahdollisuusRepository extends JpaRepository<MahdollisuusView, 
 
   private static String escape(String query) {
     // Escape special characters for ILIKE query
-    return query.replaceAll("([%_\\\\])", "\\\\$0]");
+    return query.replaceAll("([%_\\\\])", "\\\\$1");
   }
 
   private JpaSort collate(Direction direction, Kieli lang) {

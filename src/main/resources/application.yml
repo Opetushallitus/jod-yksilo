@@ -87,7 +87,6 @@ springdoc:
 logging:
   level:
     root: INFO
-    fi.okm.jod.yksilo.service.tmt: DEBUG
     org:
       springframework:
         web:

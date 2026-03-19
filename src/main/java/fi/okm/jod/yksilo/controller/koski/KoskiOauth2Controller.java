@@ -49,7 +49,7 @@ public class KoskiOauth2Controller {
   public void redirectToOauth2AuthorizationUrl(
       HttpServletRequest request, HttpServletResponse response, @RequestParam URI callback)
       throws IOException {
-    var callbackPath = callback.getPath();
+    var callbackPath = callback.normalize().getPath();
     request
         .getSession()
         .setAttribute(SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), callbackPath);
@@ -133,6 +133,6 @@ public class KoskiOauth2Controller {
   }
 
   private static String createRedirectUrl(String callbackUrl, Object value) {
-    return UriComponentsBuilder.fromUriString(callbackUrl).queryParam("koski", value).toUriString();
+    return UriComponentsBuilder.fromPath(callbackUrl).queryParam("koski", value).toUriString();
   }
 }
