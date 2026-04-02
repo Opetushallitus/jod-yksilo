@@ -304,7 +304,6 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldShareUserBasicInformation() {
-    yksiloRepository.updateName(user.getQualifiedPersonId(), user.givenName(), user.familyName());
     yksiloRepository.updateEmail(user.getQualifiedPersonId(), "test@example.com");
     var yksilo = yksiloRepository.findById(user.id()).orElseThrow();
     yksilo.setKotikunta("934");
@@ -340,7 +339,6 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
 
   @Test
   void shouldStopSharingNameAndEmail() {
-    yksiloRepository.updateName(user.getQualifiedPersonId(), user.givenName(), user.familyName());
     yksiloRepository.updateEmail(user.getQualifiedPersonId(), "test@example.com");
 
     createJakolinkki(defaultDto().withNimiJaettu(true).withEmailJaettu(true));
@@ -650,8 +648,6 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
             .withSyntymavuosiJaettu(true));
 
     var content = jakolinkkiService.getContent(ulkoinenIdOfSingleLink());
-    assertNull(content.etunimi());
-    assertNull(content.sukunimi());
     assertNull(content.email());
     assertNull(content.kotikunta());
     assertNull(content.syntymavuosi());
@@ -664,7 +660,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     simulateCommit();
 
     yksiloRepository.deleteById(user.getId());
-    yksiloRepository.removeId(user.getId());
+    yksiloRepository.removeId(user.getQualifiedPersonId(), user.getId());
 
     assertThrows(NotFoundException.class, () -> jakolinkkiService.get(user, jakolinkkiId));
   }

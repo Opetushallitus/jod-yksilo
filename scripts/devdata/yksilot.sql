@@ -20,7 +20,8 @@ $$
   BEGIN
     FOR yksilo_index IN 1..yksiloiden_maara
       LOOP
-        SELECT tunnistus.generate_yksilo_id(concat('MOCK:user_testdata', yksilo_index::text))
+        SELECT tunnistus.upsert_yksilo(CONCAT('MOCK:user_testdata', yksilo_index::TEXT), NULL,
+                                      'Mock', 'User' || yksilo_index)
         INTO yid;
 
         IF EXISTS(SELECT id FROM yksilo WHERE id = yid) THEN
@@ -33,8 +34,8 @@ $$
           LOOP
             SELECT id
             INTO osaamis_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi from osaaminen) as ir
-            where rivi = i;
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi FROM osaaminen) AS ir
+            WHERE rivi = i;
             INSERT INTO yksilon_osaaminen(id, lahde, osaaminen_id, yksilo_id)
             VALUES (gen_random_uuid(), 'MUU_OSAAMINEN', osaamis_id, yid);
           END LOOP;
@@ -44,8 +45,8 @@ $$
           LOOP
             SELECT id
             INTO osaamis_kiinnostus_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi from osaaminen) as ir
-            where rivi = i + 20;
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi FROM osaaminen) AS ir
+            WHERE rivi = i + 20;
             INSERT INTO yksilo_osaamis_kiinnostukset(osaamis_kiinnostukset_id, yksilo_id)
             VALUES (osaamis_kiinnostus_id, yid);
           END LOOP;
@@ -55,8 +56,8 @@ $$
           LOOP
             SELECT id
             INTO ammatti_kiinnostus_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi from ammatti) as ir
-            where rivi = i;
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi FROM ammatti) AS ir
+            WHERE rivi = i;
             INSERT INTO yksilo_ammatti_kiinnostukset(ammatti_kiinnostukset_id, yksilo_id)
             VALUES (ammatti_kiinnostus_id, yid);
           END LOOP;
@@ -66,10 +67,10 @@ $$
           LOOP
             SELECT id
             INTO suosikki_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi from tyomahdollisuus) as ir
-            where rivi = i;
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi FROM tyomahdollisuus) AS ir
+            WHERE rivi = i;
             INSERT INTO yksilon_suosikki(id, luotu, tyomahdollisuus_id, tyyppi, yksilo_id)
-            VALUES (gen_random_uuid(), now(), suosikki_id, 'TYOMAHDOLLISUUS', yid);
+            VALUES (gen_random_uuid(), NOW(), suosikki_id, 'TYOMAHDOLLISUUS', yid);
           END LOOP;
 
         -- yksilon koulutus suosikit
@@ -77,11 +78,11 @@ $$
           LOOP
             SELECT id
             INTO suosikki_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi
-                  from koulutusmahdollisuus) as ir
-            where rivi = (i + 1);
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi
+                  FROM koulutusmahdollisuus) AS ir
+            WHERE rivi = (i + 1);
             INSERT INTO yksilon_suosikki(id, luotu, koulutusmahdollisuus_id, tyyppi, yksilo_id)
-            VALUES (gen_random_uuid(), now(), suosikki_id, 'KOULUTUSMAHDOLLISUUS', yid);
+            VALUES (gen_random_uuid(), NOW(), suosikki_id, 'KOULUTUSMAHDOLLISUUS', yid);
           END LOOP;
 
         -- yksilon päämäärät
@@ -89,11 +90,11 @@ $$
           LOOP
             SELECT id
             INTO tavoite_id
-            from (select id, row_number() OVER (ORDER BY id) as rivi
-                  from tyomahdollisuus) as ir
-            where rivi = (i + 20);
+            FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rivi
+                  FROM tyomahdollisuus) AS ir
+            WHERE rivi = (i + 20);
             INSERT INTO tavoite(id, luotu, tyomahdollisuus_id, yksilo_id)
-            VALUES (gen_random_uuid(), now(), tavoite_id, yid);
+            VALUES (gen_random_uuid(), NOW(), tavoite_id, yid);
           END LOOP;
 
 

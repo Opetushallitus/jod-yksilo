@@ -32,7 +32,7 @@ public record TestJodUser(UUID id, FinnishPersonIdentifier personIdentifier) imp
 
   @Override
   public String familyName() {
-    return "User";
+    return "User-" + getPersonId();
   }
 
   @Override

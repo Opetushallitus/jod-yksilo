@@ -1,0 +1,54 @@
+plugins {
+  id 'java'
+  id 'org.springframework.boot'
+  id 'io.spring.dependency-management'
+  id "com.diffplug.spotless"
+}
+
+group = 'fi.okm.jod'
+version = '0.0.1-SNAPSHOT'
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+  annotationProcessor 'org.projectlombok:lombok'
+  compileOnly 'org.projectlombok:lombok'
+
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test', Test) {
+  useJUnitPlatform()
+}
+
+spotless {
+  java {
+    target 'src/*/**/*.java'
+    googleJavaFormat()
+    licenseHeader '''\
+    /*
+     * Copyright (c) $YEAR The Finnish Ministry of Education and Culture, The Finnish
+     * The Ministry of Economic Affairs and Employment, The Finnish National Agency of
+     * Education (Opetushallitus) and The Finnish Development and Administration centre
+     * for ELY Centres and TE Offices (KEHA).
+     *
+     * Licensed under the EUPL-1.2-or-later.
+     */
+
+     '''.stripIndent()
+  }
+}
+
+bootRun {
+  enabled = false
+}

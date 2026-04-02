@@ -17,9 +17,13 @@ import lombok.Getter;
 public enum Attribute {
   // Suomi.fi National attributes
   NATIONAL_IDENTIFICATION_NUMBER("urn:oid:1.2.246.21"),
+  // Kutsumanimi
   GIVEN_NAME("urn:oid:2.5.4.42"),
+  // Sukunimi
   SN("urn:oid:2.5.4.4"),
+  // Nimi, common name (surname first)
   CN("urn:oid:2.5.4.3"),
+  // Koko nimi in preferred display order
   DISPLAY_NAME("urn:oid:2.16.840.1.113730.3.1.241"),
   VAKINAINEN_ULKOMAINEN_LAHIOSOITE("urn:oid:1.2.246.517.2002.2.11"),
   VAKINAINEN_ULKOMAINEN_LAHIOSOITE_PAIKKAKUNTA_JA_VALTIO_S("urn:oid:1.2.246.517.2002.2.12"),
@@ -40,6 +44,7 @@ public enum Attribute {
 
   // eIDAS attributes
   PERSON_IDENTIFIER("http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier"),
+  // also national attribute Etunimet (all first names)
   FIRST_NAME("http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName"),
   FAMILY_NAME("http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"),
   DATE_OF_BIRTH("http://eidas.europa.eu/attributes/naturalperson/DateOfBirth");

@@ -98,7 +98,9 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
     transactionTemplate.execute(
         status -> {
           var yksiloUser =
-              new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + UUID.randomUUID()));
+              new Yksilo(
+                  yksiloRepository.upsertTunnistusData(
+                      "TEST:" + UUID.randomUUID(), null, null, null));
           entityManager.persist(yksiloUser);
           user = new TestJodUser(yksiloUser.getId());
 

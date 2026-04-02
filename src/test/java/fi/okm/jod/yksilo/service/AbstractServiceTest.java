@@ -47,14 +47,20 @@ public abstract class AbstractServiceTest {
     var id1 = FinnishPersonIdentifier.of("010199-9986");
     var id2 = FinnishPersonIdentifier.of("010199-9997");
 
-    var yksilo = new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + id1.asString()));
+    var yksilo =
+        new Yksilo(
+            yksiloRepository.upsertTunnistusData(
+                "TEST:" + id1.asString(), null, "Test", "User-" + id1.asString()));
     yksilo.setTervetuloapolku(true);
     this.user = new TestJodUser(entityManager.persist(yksilo).getId(), id1);
     // Create a second user with a different ID for testing purposes
     this.user2 =
         new TestJodUser(
             entityManager
-                .persist(new Yksilo(yksiloRepository.findIdByHenkiloId("TEST:" + id2.asString())))
+                .persist(
+                    new Yksilo(
+                        yksiloRepository.upsertTunnistusData(
+                            "TEST:" + id2.asString(), null, "Test", "User-" + id2.asString())))
                 .getId(),
             id2);
   }

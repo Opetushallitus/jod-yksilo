@@ -47,7 +47,7 @@ public class ProfileUpdatedAspectTest extends IntegrationTest {
     logger.addAppender(appender);
     mockAppender = appender;
 
-    var id = yksilot.findIdByHenkiloId("TEST:" + UUID.randomUUID());
+    var id = yksilot.upsertTunnistusData("TEST:" + UUID.randomUUID(), null, null, null);
     var yksilo = new Yksilo(id);
     yksilot.save(yksilo);
     jodUser = new TestJodUser(id);

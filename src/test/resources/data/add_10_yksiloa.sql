@@ -14,7 +14,7 @@ $$
 
     FOR yksilo_index IN 1..10
       LOOP
-        SELECT tunnistus.generate_yksilo_id(CONCAT('MOCK:user_testdata:', yksilo_index::TEXT))
+        SELECT tunnistus.upsert_yksilo(CONCAT('MOCK:user_testdata:', yksilo_index::TEXT), NULL, NULL, NULL)
         INTO yid;
         INSERT INTO yksilo(id) VALUES (yid) ON CONFLICT DO NOTHING;
 

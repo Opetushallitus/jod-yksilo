@@ -28,6 +28,13 @@ services:
     ports:
       - "127.0.0.1:8580:8080"
 
+  onr-mock-api:
+    build:
+      context: ./onr-mock
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8480:8080"
+
   tmt-osaamissuosittelija-api:
     build:
       dockerfile: Dockerfile.osaamissuosittelija
