@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 public class TestUtil {
 
@@ -35,13 +36,36 @@ public class TestUtil {
     }
   }
 
+  private static final String INITDB_DIR = "/docker-entrypoint-initdb.d/";
+  private static final String INITDB_SRC = "scripts/docker-entrypoint-initdb.d/";
+
+  /**
+   * Creates a PostgreSQL test container that replicates the exact same setup as local dev
+   * (compose.yml).
+   *
+   * <p>The container is initialized as the default {@code test} superuser, which runs the init
+   * scripts. The {@code getUsername()} and {@code getPassword()} methods are overridden, so that
+   * {@code @ServiceConnection} configures Spring's datasource to connect as the non-superuser.
+   */
+  @SuppressWarnings({"resource"})
   public static PostgreSQLContainer createPostgreSqlContainer() {
-    return new PostgreSQLContainer(TestUtil.POSTGRES_VERSION)
+    return new PostgreSQLContainer(TestUtil.POSTGRES_VERSION) {
+      @Override
+      public String getUsername() {
+        return "yksilo";
+      }
+
+      @Override
+      public String getPassword() {
+        return "yksilo";
+      }
+    }.withDatabaseName("yksilo")
         .withEnv("LANG", "en_US.UTF-8")
         .withEnv("LC_ALL", "en_US.UTF-8")
-        .withInitScript("db/setup.sql");
+        .withCopyToContainer(MountableFile.forHostPath(INITDB_SRC), INITDB_DIR);
   }
 
+  @SuppressWarnings({"resource"})
   public static GenericContainer<?> createRedisContainer() {
     return new GenericContainer<>(DockerImageName.parse(REDIS_VERSION)).withExposedPorts(6379);
   }

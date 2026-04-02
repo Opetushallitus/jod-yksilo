@@ -231,6 +231,7 @@ bootJar {
 }
 
 bootRun.dependsOn(":tmt-mock:build")
+bootRun.dependsOn(":onr-mock:build")
 
 springBoot {
   buildInfo {

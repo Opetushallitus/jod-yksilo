@@ -122,7 +122,7 @@ public class YksiloService {
 
   public void delete(JodUser user) {
     yksilot.deleteById(user.getId());
-    yksilot.removeId(user.getId());
+    yksilot.removeId(user.getQualifiedPersonId(), user.getId());
     log.atInfo().addMarker(LogMarker.AUDIT).log("Deleted user {} profile", user.getId());
   }
 

@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.config.suomifi;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import fi.okm.jod.yksilo.IntegrationTest;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
@@ -21,15 +23,18 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.service.onr.OppijanumeroService;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.saml2.provider.service.authentication.Saml2ResponseAssertionAccessor;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @TestPropertySource(
     properties = {
@@ -42,10 +47,15 @@ class ResponseTokenConverterTest extends IntegrationTest {
   @Autowired private ResponseTokenConverter converter;
   @Autowired private YksiloRepository yksilot;
   @Autowired private DataSource dataSource;
+  @MockitoBean private OppijanumeroService oppijanumeroService;
 
   @Test
   void shouldCreateUser() {
     var nationalId = FinnishPersonIdentifier.of("010199-9997");
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000001"));
+
     var jodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.SV, PersonIdentifierType.FIN);
     var yksilo = yksilot.findById(jodUser.getId()).orElseThrow();
@@ -63,9 +73,16 @@ class ResponseTokenConverterTest extends IntegrationTest {
   @Test
   void shouldUpdateUser() {
     var nationalId = FinnishPersonIdentifier.of("010199X9986");
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000002"));
+
     var id =
-        yksilot.findIdByHenkiloId(
-            PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()));
+        yksilot.upsertTunnistusData(
+            PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()),
+            "ONR:1.2.246.562.24.00000000002",
+            null,
+            null);
 
     {
       var yksilo = new Yksilo(id);
@@ -92,10 +109,17 @@ class ResponseTokenConverterTest extends IntegrationTest {
 
   @Test
   void shouldSkipOptedOutAttributesWhenUpdatingExistingUser() {
-    var nationalId = FinnishPersonIdentifier.of("010199X9986");
+    var nationalId = FinnishPersonIdentifier.of("010199X9975");
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000003"));
+
     var id =
-        yksilot.findIdByHenkiloId(
-            PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()));
+        yksilot.upsertTunnistusData(
+            PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString()),
+            "ONR:1.2.246.562.24.00000000003",
+            null,
+            null);
 
     var principal = new MockPrincipal(nationalId);
     var kotikunta = principal.<String>getFirstAttribute(Attribute.KOTIKUNTA_KUNTANUMERO.getUri());
@@ -124,6 +148,109 @@ class ResponseTokenConverterTest extends IntegrationTest {
   }
 
   @Test
+  void shouldBackfillOppijanumeroForExistingUserWithout() {
+    var nationalId = FinnishPersonIdentifier.of("010100A998M");
+    var qualifiedId = PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString());
+    var oppijanumero = "ONR:1.2.246.562.24.00000000004";
+
+    // Create user without oppijanumero (simulates pre-Stage1 user)
+    var id = yksilot.upsertTunnistusData(qualifiedId, null, null, null);
+    yksilot.save(new Yksilo(id));
+
+    // Verify oppijanumero is initially missing
+    var before = yksilot.findTunnistusDataByHenkiloId(qualifiedId).orElseThrow();
+    assertNull(before.oppijanumero());
+
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of(oppijanumero));
+
+    var jodUser =
+        converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
+
+    assertEquals(id, jodUser.getId());
+
+    // Verify oppijanumero was actually persisted
+    var after = yksilot.findTunnistusDataByHenkiloId(qualifiedId).orElseThrow();
+    assertNotNull(after.oppijanumero());
+
+    // Verify the oppijanumero identifier also resolves to the same user via read_yksilo_name
+    assertName(oppijanumero, "Matti", "Meikäläinen");
+  }
+
+  @Test
+  void shouldLinkFinLoginToExistingMpassidFirstAccount() {
+    var oppijanumero = "ONR:1.2.246.562.24.00000000005";
+
+    // Simulate MPASSid-first account: oppijanumero only, no henkilo_id
+    var mpassidId = yksilot.upsertTunnistusData(null, oppijanumero, null, null);
+    yksilot.save(new Yksilo(mpassidId));
+
+    // Now a FIN user logs in and ONR resolves to the same oppijanumero
+    var nationalId = FinnishPersonIdentifier.of("020200A900X");
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of(oppijanumero));
+
+    var jodUser =
+        converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
+
+    // FIN login should land on the same account created by MPASSid
+    assertEquals(mpassidId, jodUser.getId());
+
+    // Both identifiers should now resolve via name lookup
+    var qualifiedFin = PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString());
+    assertName(qualifiedFin, "Matti", "Meikäläinen");
+    assertName(oppijanumero, "Matti", "Meikäläinen");
+
+    // After linking, the account should have oppijanumero set
+    var linked = yksilot.findTunnistusDataByHenkiloId(qualifiedFin).orElseThrow();
+    assertNotNull(linked.oppijanumero());
+
+    // Subsequent FIN login should still resolve to the same account
+    var returning =
+        converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
+    assertEquals(mpassidId, returning.getId());
+  }
+
+  @Test
+  void shouldKeepAccountsSeparateWhenOppijanumeroAlreadyInUse() {
+    var oppijanumero = "ONR:1.2.246.562.24.00000000006";
+
+    // MPASSid-first account: oppijanumero only, no henkilo_id
+    var mpassidId = yksilot.upsertTunnistusData(null, oppijanumero, "Matti", "Meikäläinen");
+    yksilot.save(new Yksilo(mpassidId));
+
+    // Suomi.fi account already exists with hetu, but no oppijanumero
+    var nationalId = FinnishPersonIdentifier.of("030300A900C");
+    var qualifiedFin = PersonIdentifierType.FIN.asQualifiedIdentifier(nationalId.asString());
+    var suomifiId = yksilot.upsertTunnistusData(qualifiedFin, null, null, null);
+    yksilot.save(new Yksilo(suomifiId));
+
+    assertNotEquals(mpassidId, suomifiId);
+
+    // ONR returns the same oppijanumero that already belongs to the MPASSid account
+    when(oppijanumeroService.fetchOppijanumero(
+            nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
+        .thenReturn(Optional.of(oppijanumero));
+
+    // Login via Suomi.fi should succeed, keeping accounts separate
+    var jodUser =
+        converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
+
+    // Should land on the existing Suomi.fi account, not the MPASSid one
+    assertEquals(suomifiId, jodUser.getId());
+
+    // Oppijanumero should remain null on the Suomi.fi account
+    var suomifiData = yksilot.findTunnistusDataByHenkiloId(qualifiedFin).orElseThrow();
+    assertNull(suomifiData.oppijanumero());
+
+    // The MPASSid account should be untouched
+    var mpassidData = yksilot.findTunnistusDataByOppijanumero(oppijanumero).orElseThrow();
+    assertEquals(mpassidId, mpassidData.yksiloId());
+  }
+
+  @Test
   void shouldFailIfIdentifierMissing() {
     assertThrows(
         BadCredentialsException.class,
@@ -145,7 +272,9 @@ class ResponseTokenConverterTest extends IntegrationTest {
   @Test
   void shouldUpdateEidasUserWhenSavingDemographicDataIsAllowed() {
     var eidasId = "FI/DE/XYZ789";
-    var id = yksilot.findIdByHenkiloId(PersonIdentifierType.EIDAS.asQualifiedIdentifier(eidasId));
+    var id =
+        yksilot.upsertTunnistusData(
+            PersonIdentifierType.EIDAS.asQualifiedIdentifier(eidasId), null, null, null);
     {
       var yksilo = new Yksilo(id);
       yksilo.setSyntymavuosi(1900);
@@ -203,6 +332,8 @@ class ResponseTokenConverterTest extends IntegrationTest {
           List.of(identifier == null ? List.of() : identifier.asString()),
           Attribute.KOTIKUNTA_KUNTANUMERO.getUri(),
           List.of("508"),
+          Attribute.FIRST_NAME.getUri(),
+          List.of("Matti Kalevi"),
           Attribute.GIVEN_NAME.getUri(),
           List.of("Matti"),
           Attribute.SN.getUri(),

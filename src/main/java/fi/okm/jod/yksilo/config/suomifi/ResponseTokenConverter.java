@@ -19,11 +19,17 @@ import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.repository.YksiloRepository.TunnistusData;
+import fi.okm.jod.yksilo.service.onr.OppijanumeroService;
+import fi.okm.jod.yksilo.service.onr.OppijanumeroServiceException;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -46,12 +52,14 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   private final Converter<ResponseToken, Saml2Authentication> converter;
   private final JodAuthenticationProperties authenticationProperties;
   private final HttpSession session;
+  private final OppijanumeroService oppijanumeroService;
 
   public ResponseTokenConverter(
       YksiloRepository yksilot,
       PlatformTransactionManager transactionManager,
       HttpSession session,
-      JodAuthenticationProperties authenticationProperties) {
+      JodAuthenticationProperties authenticationProperties,
+      ObjectProvider<OppijanumeroService> oppijanumeroService) {
     this.converter = new ResponseAuthenticationConverter();
     this.yksilot = yksilot;
 
@@ -61,6 +69,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     this.transactionTemplate = template;
     this.authenticationProperties = authenticationProperties;
     this.session = session;
+    this.oppijanumeroService = oppijanumeroService.getIfAvailable();
   }
 
   @Override
@@ -97,7 +106,8 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
             default -> null;
           };
 
-      var jodUser = upsertUser(authentication.getCredentials(), selectedLanguage, pid);
+      var jodUser =
+          upsertUser(requireNonNull(authentication.getCredentials()), selectedLanguage, pid);
 
       return new Saml2AssertionAuthentication(
           jodUser,
@@ -110,66 +120,136 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
   }
 
   /* package private for testing */
+  @SuppressWarnings("java:S3776")
   JodSaml2Principal upsertUser(
       Saml2ResponseAssertionAccessor assertionAccessor,
       Kieli selectedLanguage,
       PersonIdentifierType pid) {
-    var personId = assertionAccessor.<String>getFirstAttribute(pid.getAttribute().getUri());
+
+    var personId = getAttribute(assertionAccessor, pid.getAttribute()).orElse(null);
     if (personId == null || personId.isBlank()) {
       throw new BadCredentialsException("Invalid person identifier");
     }
+
+    var etunimet =
+        getAttribute(assertionAccessor, Attribute.FIRST_NAME)
+            .orElseThrow(() -> new BadCredentialsException("Missing first name"));
+    var kutsumanimi = getAttribute(assertionAccessor, Attribute.GIVEN_NAME).orElse(etunimet);
+    var sukunimi =
+        getAttribute(assertionAccessor, Attribute.SN)
+            .or(() -> getAttribute(assertionAccessor, Attribute.FAMILY_NAME))
+            .orElseThrow(() -> new BadCredentialsException("Missing family name"));
+
+    var henkiloId = pid.asQualifiedIdentifier(personId);
+    var tunnistusData = yksilot.findTunnistusDataByHenkiloId(henkiloId).orElse(null);
+
+    final String oppijanumero;
+    var onr = tunnistusData != null ? tunnistusData.oppijanumero() : null;
+    if (pid == PersonIdentifierType.FIN && onr == null && oppijanumeroService != null) {
+      try {
+        onr =
+            oppijanumeroService
+                .fetchOppijanumero(personId, etunimet, kutsumanimi, sukunimi)
+                .orElse(null);
+      } catch (OppijanumeroServiceException e) {
+        // until MPASSid is enabled, ignore ONR errors and allow login without oppijanumero.
+        log.atWarn()
+            .addMarker(LogMarker.AUDIT)
+            .addKeyValue("userId", tunnistusData == null ? null : tunnistusData.yksiloId())
+            .log("Failed to fetch oppijanumero from ONR", e);
+      }
+    }
+    oppijanumero = onr;
+
     return transactionTemplate.execute(
-        status -> {
-          var id = yksilot.findIdByHenkiloId(pid.asQualifiedIdentifier(personId));
-          var jodUser = new JodSaml2Principal(assertionAccessor.getAttributes(), id);
-          yksilot.updateName(
-              pid.asQualifiedIdentifier(personId), jodUser.givenName(), jodUser.familyName());
+        _ -> {
+          String effectiveOnr = oppijanumero;
+          UUID yksiloId;
+
+          // When the Suomi.fi account already exists and the fetched oppijanumero is already
+          // associated with a different account (e.g. created via MPASSid), keep the accounts
+          // separate instead of failing.
+          if (tunnistusData != null
+              && oppijanumero != null
+              && tunnistusData.oppijanumero() == null) {
+            var id = tunnistusData.yksiloId();
+            var existing = yksilot.findTunnistusDataByOppijanumero(oppijanumero).orElse(null);
+            if (existing != null && !existing.yksiloId().equals(id)) {
+              log.atWarn()
+                  .addMarker(LogMarker.AUDIT)
+                  .addKeyValue("userId", id)
+                  .addKeyValue("existingUserId", existing.yksiloId())
+                  .log(
+                      "Duplicate accounts detected: oppijanumero already associated with another account, proceeding without linking");
+              effectiveOnr = null;
+            }
+          }
+
+          if (tunnistusData != null
+              && tunnistusData.equals(
+                  new TunnistusData(
+                      tunnistusData.yksiloId(), effectiveOnr, kutsumanimi, sukunimi))) {
+            yksiloId = tunnistusData.yksiloId();
+          } else {
+            yksiloId = yksilot.upsertTunnistusData(henkiloId, effectiveOnr, kutsumanimi, sukunimi);
+          }
 
           var yksilo =
               yksilot
-                  .findById(id)
+                  .findById(yksiloId)
                   .map(
-                      it -> {
-                        if (it.getValittuKieli() != null) {
-                          it.setValittuKieli(selectedLanguage);
-                        }
-                        return switch (pid) {
-                          case FIN -> {
-                            var personIdentifier = FinnishPersonIdentifier.of(personId);
-                            if (it.getSyntymavuosi() != null) {
-                              it.setSyntymavuosi(personIdentifier.getBirthYear());
-                            }
-                            if (it.getSukupuoli() != null) {
-                              it.setSukupuoli(personIdentifier.getGender());
-                            }
-                            if (it.getKotikunta() != null) {
-                              it.setKotikunta(
-                                  assertionAccessor.getFirstAttribute(
-                                      Attribute.KOTIKUNTA_KUNTANUMERO.getUri()));
-                            }
-                            yield it;
-                          }
-                          case EIDAS -> {
-                            var birthDate =
-                                assertionAccessor.<String>getFirstAttribute(
-                                    Attribute.DATE_OF_BIRTH.getUri());
-                            if (it.getSyntymavuosi() != null) {
-                              it.setSyntymavuosi(
-                                  birthDate == null ? null : LocalDate.parse(birthDate).getYear());
-                            }
-                            yield it;
-                          }
-                        };
-                      })
+                      it -> updateAttibutes(it, pid, personId, assertionAccessor, selectedLanguage))
                   .orElseGet(
                       () -> {
                         log.atInfo()
                             .addMarker(LogMarker.AUDIT)
-                            .log("Creating new user with id {}", id);
-                        return new Yksilo(id);
+                            .log("Creating new user with id {}", yksiloId);
+                        return new Yksilo(yksiloId);
                       });
           yksilot.save(yksilo);
-          return jodUser;
+          return new JodSaml2Principal(assertionAccessor.getAttributes(), yksiloId);
         });
+  }
+
+  private static Yksilo updateAttibutes(
+      Yksilo yksilo,
+      PersonIdentifierType pid,
+      String personId,
+      Saml2ResponseAssertionAccessor assertionAccessor,
+      Kieli selectedLanguage) {
+    if (yksilo.getValittuKieli() != null) {
+      yksilo.setValittuKieli(selectedLanguage);
+    }
+    return switch (pid) {
+      case FIN -> {
+        var personIdentifier = FinnishPersonIdentifier.of(personId);
+        if (yksilo.getSyntymavuosi() != null) {
+          yksilo.setSyntymavuosi(personIdentifier.getBirthYear());
+        }
+        if (yksilo.getSukupuoli() != null) {
+          yksilo.setSukupuoli(personIdentifier.getGender());
+        }
+        if (yksilo.getKotikunta() != null) {
+          yksilo.setKotikunta(
+              getAttribute(assertionAccessor, Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null));
+        }
+        yield yksilo;
+      }
+      case EIDAS -> {
+        if (yksilo.getSyntymavuosi() != null) {
+          var birthDate =
+              getAttribute(assertionAccessor, Attribute.DATE_OF_BIRTH)
+                  .map(d -> LocalDate.parse(d).getYear())
+                  .orElse(null);
+          yksilo.setSyntymavuosi(birthDate);
+        }
+        yield yksilo;
+      }
+    };
+  }
+
+  private static Optional<String> getAttribute(
+      Saml2ResponseAssertionAccessor assertionAccessor, Attribute attribute) {
+    return Optional.ofNullable(assertionAccessor.getFirstAttribute(attribute.getUri()));
   }
 }
