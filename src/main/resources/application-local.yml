@@ -12,3 +12,11 @@ management:
     metrics:
       export:
         enabled: false
+  simple:
+    metrics:
+      export:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics"

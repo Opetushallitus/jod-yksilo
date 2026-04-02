@@ -98,6 +98,7 @@ management:
   metrics:
      enable:
        all: false
+       fi.okm.jod.yksilo: true
        hikaricp: true
        tomcat: true
 
