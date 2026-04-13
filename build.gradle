@@ -84,7 +84,7 @@ dependencies {
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
-  implementation platform('software.amazon.awssdk:bom:2.41.34')
+  implementation platform('software.amazon.awssdk:bom:2.42.33')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -97,8 +97,8 @@ dependencies {
   // Caffeine cache implementation
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
 
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3'
+  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'

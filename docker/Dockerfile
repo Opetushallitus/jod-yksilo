@@ -1,4 +1,4 @@
-FROM public.ecr.aws/aws-observability/adot-autoinstrumentation-java:v2.23.0 AS adot
+FROM public.ecr.aws/aws-observability/adot-autoinstrumentation-java:v2.26.1 AS adot
 FROM public.ecr.aws/amazoncorretto/amazoncorretto:25-al2023-headless AS baseimage
 
 RUN :\
