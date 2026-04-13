@@ -75,7 +75,7 @@ public class OnrClientConfig {
                 .build(
                     HttpClientSettings.defaults()
                         .withConnectTimeout(Duration.ofSeconds(5))
-                        .withReadTimeout(Duration.ofSeconds(10))))
+                        .withReadTimeout(Duration.ofSeconds(3))))
         .build();
   }
 }
