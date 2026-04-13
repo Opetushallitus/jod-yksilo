@@ -10,12 +10,17 @@
 package fi.okm.jod.yksilo.service.onr;
 
 import fi.okm.jod.yksilo.domain.OppijanumeroUtils;
+import fi.okm.jod.yksilo.service.onr.OppijanumeroService.TuontiResult.Tiedot;
+import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -24,6 +29,7 @@ import org.springframework.web.client.RestClientException;
 @ConditionalOnProperty(name = "jod.onr.base-url")
 public class OppijanumeroService {
 
+  private static final long MAX_WAIT_TIME = Duration.ofSeconds(3).toNanos();
   private final RestClient restClient;
   private final String oidPrefix;
 
@@ -49,34 +55,77 @@ public class OppijanumeroService {
   public Optional<String> fetchOppijanumero(
       String hetu, String etunimet, String kutsumanimi, String sukunimi) {
     try {
-      log.debug("Fetching oppijanumero from ONR");
-      var checkResult =
+      log.info("Fetching oppijanumero from ONR");
+      var correlationId = UUID.randomUUID().toString();
+      var result =
           restClient
-              .post()
-              .uri("/henkilo/exists")
+              .put()
+              .uri("/yleistunniste")
               .contentType(MediaType.APPLICATION_JSON)
-              .body(new HenkiloExistenceCheckDto(etunimet, kutsumanimi, sukunimi, hetu))
+              .body(
+                  new YleistunnisteInput(
+                      List.of(
+                          new Tunniste(
+                              correlationId, new Henkilo(etunimet, kutsumanimi, sukunimi, hetu)))))
               .retrieve()
-              .body(ExistenceCheckResult.class);
+              .body(OppijatuontiPerustiedotDto.class);
 
-      if (checkResult == null || checkResult.oid() == null) {
-        log.info("Person not found in ONR");
-        return Optional.empty();
-      }
-
-      var haeResult =
-          restClient
-              .get()
-              .uri("/yleistunniste/hae/{oid}", checkResult.oid())
-              .retrieve()
-              .body(HaeResult.class);
-
-      if (haeResult == null || haeResult.oppijanumero() == null) {
+      if (result == null) {
         throw new OppijanumeroServiceException(
             "Failed to fetch oppijanumero from ONR: empty response");
       }
 
-      return Optional.of(OppijanumeroUtils.qualify(haeResult.oppijanumero(), oidPrefix));
+      String oppijanumero = null;
+      var start = System.nanoTime();
+      for (var retries = 5; retries > 0; retries--) {
+        try {
+          var tuontiResult =
+              restClient
+                  .get()
+                  .uri("/yleistunniste/tuonti={id}", result.id())
+                  .retrieve()
+                  .body(TuontiResult.class);
+
+          if (tuontiResult != null && tuontiResult.kasitelty()) {
+            if (tuontiResult.henkilot() != null && !tuontiResult.henkilot().isEmpty()) {
+              if (tuontiResult.henkilot().getFirst() instanceof Tiedot tiedot
+                  && correlationId.equals(tiedot.tunniste())) {
+                if (tiedot.henkilo() != null) {
+                  oppijanumero = tiedot.henkilo().oppijanumero();
+                  break;
+                }
+              }
+            }
+            throw new OppijanumeroServiceException(
+                "Failed to fetch oppijanumero from ONR: unexpected response");
+          }
+        } catch (HttpClientErrorException.Forbidden e) {
+          // it seems a request can fail if we are too fast (zero TuontiRivi == 403)
+          log.info("Received 403 Forbidden from ONR: {}", e.getMessage());
+        }
+
+        var elapsed = (System.nanoTime() - start);
+        if (elapsed > MAX_WAIT_TIME) {
+          log.info("Exceeded max wait time for ONR response after {} ms", elapsed / 1_000_000);
+          break;
+        }
+
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException _) {
+          Thread.currentThread().interrupt();
+          log.info("Interrupted while waiting for ONR response");
+          break;
+        }
+      }
+
+      if (oppijanumero == null) {
+        log.info("ONR did not return oppijanumero within expected time");
+        return Optional.empty();
+      }
+
+      log.info("Got response from ONR: {}", oppijanumero);
+      return Optional.of(OppijanumeroUtils.qualify(oppijanumero, oidPrefix));
 
     } catch (RestClientException e) {
       throw new OppijanumeroServiceException("Failed to fetch oppijanumero from ONR", e);
@@ -85,11 +134,17 @@ public class OppijanumeroService {
     }
   }
 
-  record HenkiloExistenceCheckDto(
-      String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
+  record YleistunnisteInput(List<Tunniste> henkilot) {}
 
-  record ExistenceCheckResult(String oid) {}
+  record Tunniste(String tunniste, Henkilo henkilo) {}
 
-  record HaeResult(String oid, String oppijanumero, boolean passivoitu) {}
-  ;
+  record Henkilo(String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
+
+  record OppijatuontiPerustiedotDto(long id) {}
+
+  record TuontiResult(long id, boolean kasitelty, List<Tiedot> henkilot) {
+    record Tiedot(String tunniste, Oppija henkilo, boolean conflict) {}
+
+    record Oppija(String oid, String oppijanumero, boolean passivoitu) {}
+  }
 }

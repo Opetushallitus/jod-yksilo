@@ -9,15 +9,21 @@
 
 package fi.okm.jod.onr.mock;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,6 +36,9 @@ public class Application {
 
   private static final String OID_PREFIX = "1.2.246.562.98.";
   private static final String BEARER_PREFIX = "Bearer ";
+
+  private final AtomicLong tuontiIdSequence = new AtomicLong(1);
+  private final ConcurrentHashMap<Long, FilteredResult> tuontiResults = new ConcurrentHashMap<>();
 
   public static void main(String[] args) {
     log.info("Starting ONR Mock API");
@@ -53,6 +62,8 @@ public class Application {
             "expires_in",
             3600));
   }
+
+  // -- DTOs for POST /yleistunniste/hae --
 
   record TunnesteHakuDto(String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
 
@@ -78,12 +89,7 @@ public class Application {
           .build();
     }
 
-    // Generate a deterministic OID from hetu so the same person always gets the same result.
-    // Use 10 digits derived from hetu hash (range 1000000000–9999999999), then append IBM check
-    // digit.
-    long hash = request.hetu().hashCode();
-    long number = 1_000_000_000L + Math.abs(hash) % 9_000_000_000L;
-    var oid = OID_PREFIX + number + luhnChecksum(number);
+    var oid = generateOid(request.hetu());
 
     log.info(
         "Resolved yleistunniste for {} ({}) {} (hetu={}...): {}",
@@ -94,6 +100,106 @@ public class Application {
         oid);
 
     return ResponseEntity.ok(new HakuResult(oid, oid));
+  }
+
+  // -- DTOs for PUT /yleistunniste (batch creation) --
+
+  record YleistunnisteInput(String sahkoposti, List<YleistunnisteInputRow> henkilot) {}
+
+  record YleistunnisteInputRow(String tunniste, HenkiloInput henkilo) {}
+
+  record HenkiloInput(String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
+
+  record OppijaTuontiPerustiedotReadDto(
+      long id, int kasiteltavia, int kasiteltyja, boolean kasitelty) {}
+
+  // -- DTOs for GET /yleistunniste/tuonti={id} --
+
+  record FilteredResult(
+      long id, boolean kasitelty, int kasiteltavia, int kasiteltyja, List<FilteredRow> henkilot) {}
+
+  record FilteredRow(String tunniste, FilteredStudent henkilo, boolean conflict) {}
+
+  record FilteredStudent(String oid, String oppijanumero, boolean passivoitu) {}
+
+  /**
+   * Mock implementation of ONR PUT /yleistunniste endpoint. Processes the batch synchronously and
+   * stores the result for retrieval via GET /yleistunniste/tuonti={id}.
+   */
+  @PutMapping("/yleistunniste")
+  ResponseEntity<?> createYleistunniste(
+      @RequestHeader("Authorization") String auth, @RequestBody YleistunnisteInput request) {
+
+    if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
+      return ResponseEntity.of(
+              ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Bearer token required"))
+          .build();
+    }
+
+    if (request.henkilot() == null || request.henkilot().isEmpty()) {
+      return ResponseEntity.of(
+              ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "henkilot is required"))
+          .build();
+    }
+
+    var id = tuontiIdSequence.getAndIncrement();
+    var count = request.henkilot().size();
+
+    // Process each person and generate deterministic OIDs
+    var rows =
+        request.henkilot().stream()
+            .map(
+                row -> {
+                  var oid = generateOid(row.henkilo().hetu());
+                  log.info(
+                      "PUT /yleistunniste: tunniste={}, hetu={}... -> {}",
+                      row.tunniste(),
+                      row.henkilo().hetu().substring(0, Math.min(6, row.henkilo().hetu().length())),
+                      oid);
+                  return new FilteredRow(
+                      row.tunniste(), new FilteredStudent(oid, oid, false), false);
+                })
+            .toList();
+
+    var result = new FilteredResult(id, true, count, count, rows);
+    tuontiResults.put(id, result);
+
+    log.info("PUT /yleistunniste: created tuonti id={} with {} henkilot", id, count);
+    return ResponseEntity.ok(new OppijaTuontiPerustiedotReadDto(id, count, count, true));
+  }
+
+  /**
+   * Mock implementation of ONR GET /yleistunniste/tuonti={id} endpoint. Returns the pre-computed
+   * results from the corresponding PUT request.
+   */
+  @GetMapping("/yleistunniste/tuonti={id}")
+  ResponseEntity<?> getTuontiById(
+      @RequestHeader("Authorization") String auth, @PathVariable("id") long id) {
+
+    if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
+      return ResponseEntity.of(
+              ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Bearer token required"))
+          .build();
+    }
+
+    var result = tuontiResults.get(id);
+    if (result == null) {
+      return ResponseEntity.of(
+              ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Tuonti not found: " + id))
+          .build();
+    }
+
+    log.info("GET /yleistunniste/tuonti={}: returning {} henkilot", id, result.henkilot().size());
+    return ResponseEntity.ok(result);
+  }
+
+  // -- Shared helpers --
+
+  /** Generates a deterministic OID from hetu using hash + Luhn checksum. */
+  private static String generateOid(String hetu) {
+    long hash = hetu.hashCode();
+    long number = 1_000_000_000L + Math.abs(hash) % 9_000_000_000L;
+    return OID_PREFIX + number + luhnChecksum(number);
   }
 
   private static String missingField(TunnesteHakuDto request) {
