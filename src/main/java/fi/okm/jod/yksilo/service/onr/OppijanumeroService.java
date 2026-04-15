@@ -124,7 +124,6 @@ public class OppijanumeroService {
         return Optional.empty();
       }
 
-      log.info("Got response from ONR: {}", oppijanumero);
       return Optional.of(OppijanumeroUtils.qualify(oppijanumero, oidPrefix));
 
     } catch (RestClientException e) {

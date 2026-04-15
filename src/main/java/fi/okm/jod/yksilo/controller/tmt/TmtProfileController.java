@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -43,6 +44,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Tag(name = "/api/integraatiot/tmt")
 @Slf4j
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
+@PreAuthorize("hasRole('FULL_USER')")
 public class TmtProfileController {
 
   public static final String ERROR_PARAM = "error";

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/oauth2")
 @Hidden
 @FeatureRequired(Feature.KOSKI)
+@PreAuthorize("hasRole('FULL_USER')")
 public class KoskiOauth2Controller {
 
   private final KoskiOauth2Service koskiOauth2Service;
