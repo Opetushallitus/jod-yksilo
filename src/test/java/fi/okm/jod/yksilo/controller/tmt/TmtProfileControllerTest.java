@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller.tmt;
 
+import static fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl.ROLE_FULL_USER;
+import static fi.okm.jod.yksilo.config.mocklogin.MockJodUserImpl.ROLE_USER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -98,11 +100,36 @@ class TmtProfileControllerTest {
     mvc.perform(post("/api/integraatiot/tmt/haku").with(csrf())).andExpect(status().is(400));
   }
 
+  @Test
+  @WithUserDetails
+  void shouldForbidExportWithoutFullUserRole() throws Exception {
+    mvc.perform(post("/api/integraatiot/tmt/vienti").with(csrf()).with(oauth2Client("tmt-vienti")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithUserDetails
+  void shouldForbidImportWithoutFullUserRole() throws Exception {
+    mvc.perform(post("/api/integraatiot/tmt/haku").with(csrf()).with(oauth2Client("tmt-haku")))
+        .andExpect(status().isForbidden());
+  }
+
   @TestConfiguration
   static class Config {
     @Bean
     UserDetailsService mockUserDetailsService() {
-      return username -> new MockJodUserImpl(username, UUID.nameUUIDFromBytes(username.getBytes()));
+      return username ->
+          switch (username) {
+            case "test" ->
+                new MockJodUserImpl(
+                    username,
+                    UUID.nameUUIDFromBytes(username.getBytes()),
+                    ROLE_FULL_USER,
+                    ROLE_USER);
+            default ->
+                new MockJodUserImpl(
+                    username, UUID.nameUUIDFromBytes(username.getBytes()), ROLE_USER);
+          };
     }
 
     @Bean

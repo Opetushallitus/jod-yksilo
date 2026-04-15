@@ -25,6 +25,7 @@ import fi.okm.jod.yksilo.service.onr.OppijanumeroServiceException;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider.ResponseAuthenticationConverter;
 import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider.ResponseToken;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AssertionAuthentication;
@@ -109,10 +111,13 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
       var jodUser =
           upsertUser(requireNonNull(authentication.getCredentials()), selectedLanguage, pid);
 
+      var authorities = new ArrayList<>(authentication.getAuthorities());
+      authorities.add(new SimpleGrantedAuthority("ROLE_FULL_USER"));
+
       return new Saml2AssertionAuthentication(
           jodUser,
           authentication.getCredentials(),
-          authentication.getAuthorities(),
+          authorities,
           authentication.getRelyingPartyRegistrationId());
     }
 

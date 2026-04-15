@@ -30,14 +30,25 @@ public class MockJodUserImpl implements UserDetails, JodUser {
 
   private final String username;
   @Getter private final UUID id;
+  private final Set<GrantedAuthority> authorities;
 
   @JsonCreator
   public MockJodUserImpl(@JsonProperty("username") String username, @JsonProperty("id") UUID id) {
+    this(username, id, ROLE_USER);
+  }
+
+  public MockJodUserImpl(
+      @JsonProperty("username") String username,
+      @JsonProperty("id") UUID id,
+      GrantedAuthority... authorities) {
     this.username = username;
     this.id = id;
+    this.authorities = Set.of(authorities);
   }
 
   public static final SimpleGrantedAuthority ROLE_USER = new SimpleGrantedAuthority("ROLE_USER");
+  public static final SimpleGrantedAuthority ROLE_FULL_USER =
+      new SimpleGrantedAuthority("ROLE_FULL_USER");
 
   @Override
   @JsonIgnore
@@ -77,7 +88,7 @@ public class MockJodUserImpl implements UserDetails, JodUser {
   @Override
   @JsonIgnore
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return Set.of(ROLE_USER);
+    return authorities;
   }
 
   @Override
