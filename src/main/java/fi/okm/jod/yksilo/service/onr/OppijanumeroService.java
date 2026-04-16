@@ -13,11 +13,13 @@ import fi.okm.jod.yksilo.domain.OppijanumeroUtils;
 import fi.okm.jod.yksilo.service.onr.OppijanumeroService.TuontiResult.Tiedot;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.retry.RetryException;
+import org.springframework.core.retry.RetryPolicy;
+import org.springframework.core.retry.RetryTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -29,14 +31,24 @@ import org.springframework.web.client.RestClientException;
 @ConditionalOnProperty(name = "jod.onr.base-url")
 public class OppijanumeroService {
 
-  private static final long MAX_WAIT_TIME = Duration.ofSeconds(3).toNanos();
   private final RestClient restClient;
   private final String oidPrefix;
+  private final RetryTemplate retryTemplate;
 
   public OppijanumeroService(
       @Qualifier("onrRestClient") RestClient restClient, OnrConfiguration config) {
     this.restClient = restClient;
     this.oidPrefix = config.getOidPrefix();
+    this.retryTemplate =
+        new RetryTemplate(
+            RetryPolicy.builder()
+                .maxRetries(4)
+                .delay(Duration.ofMillis(500))
+                .maxDelay(Duration.ofSeconds(1))
+                .timeout(Duration.ofSeconds(5))
+                .includes(HttpClientErrorException.Forbidden.class, IllegalStateException.class)
+                .build());
+
     log.info(
         "Initialized OppijanumeroService with prefix {} and base URL {}",
         this.oidPrefix,
@@ -52,11 +64,11 @@ public class OppijanumeroService {
    *     href="https://virkailija.testiopintopolku.fi/oppijanumerorekisteri-service/swagger-ui/">ONR
    *     API</a>
    */
-  public Optional<String> fetchOppijanumero(
+  public String fetchOppijanumero(
       String hetu, String etunimet, String kutsumanimi, String sukunimi) {
     try {
-      log.info("Fetching oppijanumero from ONR");
       var correlationId = UUID.randomUUID().toString();
+      log.info("Fetching oppijanumero from ONR, correlationId {}", correlationId);
       var result =
           restClient
               .put()
@@ -68,65 +80,47 @@ public class OppijanumeroService {
                           new Tunniste(
                               correlationId, new Henkilo(etunimet, kutsumanimi, sukunimi, hetu)))))
               .retrieve()
-              .body(OppijatuontiPerustiedotDto.class);
+              .requiredBody(OppijatuontiPerustiedotDto.class);
+      var onr = fetchOppijanumero(result, correlationId);
+      log.info("Successfully fetched oppijanumero from ONR,  correlationId {}", correlationId);
+      return onr;
+    } catch (RestClientException | IllegalStateException e) {
+      throw new OppijanumeroServiceException("Failed to fetch Oppijanumero", e);
+    }
+  }
 
-      if (result == null) {
-        throw new OppijanumeroServiceException(
-            "Failed to fetch oppijanumero from ONR: empty response");
-      }
+  private String fetchOppijanumero(OppijatuontiPerustiedotDto tuonti, String correlationId) {
+    try {
+      var result =
+          retryTemplate.execute(
+              () -> {
+                var response =
+                    restClient
+                        .get()
+                        .uri("/yleistunniste/tuonti={id}", tuonti.id())
+                        .retrieve()
+                        .requiredBody(TuontiResult.class);
 
-      String oppijanumero = null;
-      var start = System.nanoTime();
-      for (var retries = 5; retries > 0; retries--) {
-        try {
-          var tuontiResult =
-              restClient
-                  .get()
-                  .uri("/yleistunniste/tuonti={id}", result.id())
-                  .retrieve()
-                  .body(TuontiResult.class);
-
-          if (tuontiResult != null && tuontiResult.kasitelty()) {
-            if (tuontiResult.henkilot() != null && !tuontiResult.henkilot().isEmpty()) {
-              if (tuontiResult.henkilot().getFirst() instanceof Tiedot tiedot
-                  && correlationId.equals(tiedot.tunniste())) {
-                if (tiedot.henkilo() != null) {
-                  oppijanumero = tiedot.henkilo().oppijanumero();
-                  break;
+                if (!response.kasitelty()) {
+                  throw new IllegalStateException("ONR has not processed the request yet");
                 }
-              }
-            }
-            throw new OppijanumeroServiceException(
-                "Failed to fetch oppijanumero from ONR: unexpected response");
-          }
-        } catch (HttpClientErrorException.Forbidden e) {
-          // it seems a request can fail if we are too fast (zero TuontiRivi == 403)
-          log.info("Received 403 Forbidden from ONR: {}", e.getMessage());
-        }
+                return response;
+              });
 
-        var elapsed = (System.nanoTime() - start);
-        if (elapsed > MAX_WAIT_TIME) {
-          log.info("Exceeded max wait time for ONR response after {} ms", elapsed / 1_000_000);
-          break;
-        }
-
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException _) {
-          Thread.currentThread().interrupt();
-          log.info("Interrupted while waiting for ONR response");
-          break;
-        }
+      if (result.henkilot() != null
+          && !result.henkilot().isEmpty()
+          && result.henkilot().getFirst()
+              instanceof Tiedot(String tunniste, TuontiResult.Oppija henkilo, boolean conflict)
+          && correlationId.equals(tunniste)
+          && !conflict
+          && henkilo != null
+          && henkilo.oppijanumero() != null
+          && !henkilo.passivoitu()) {
+        return OppijanumeroUtils.qualify(henkilo.oppijanumero(), oidPrefix);
+      } else {
+        throw new OppijanumeroServiceException("Unexpected response from ONR");
       }
-
-      if (oppijanumero == null) {
-        log.info("ONR did not return oppijanumero within expected time");
-        return Optional.empty();
-      }
-
-      return Optional.of(OppijanumeroUtils.qualify(oppijanumero, oidPrefix));
-
-    } catch (RestClientException e) {
+    } catch (RetryException e) {
       throw new OppijanumeroServiceException("Failed to fetch oppijanumero from ONR", e);
     } catch (IllegalArgumentException e) {
       throw new OppijanumeroServiceException("ONR returned invalid oppijanumero", e);

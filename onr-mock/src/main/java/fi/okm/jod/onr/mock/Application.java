@@ -65,7 +65,7 @@ public class Application {
 
   // -- DTOs for POST /yleistunniste/hae --
 
-  record TunnesteHakuDto(String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
+  record TunnisteHakuDto(String etunimet, String kutsumanimi, String sukunimi, String hetu) {}
 
   record HakuResult(String oid, String oppijanumero) {}
 
@@ -75,7 +75,7 @@ public class Application {
    */
   @PostMapping("/yleistunniste/hae")
   ResponseEntity<HakuResult> yleistunnisteenHaku(
-      @RequestHeader("Authorization") String auth, @RequestBody TunnesteHakuDto request) {
+      @RequestHeader("Authorization") String auth, @RequestBody TunnisteHakuDto request) {
     if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
       return ResponseEntity.of(
               ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Bearer token required"))
@@ -127,7 +127,7 @@ public class Application {
    * stores the result for retrieval via GET /yleistunniste/tuonti={id}.
    */
   @PutMapping("/yleistunniste")
-  ResponseEntity<?> createYleistunniste(
+  ResponseEntity<OppijaTuontiPerustiedotReadDto> createYleistunniste(
       @RequestHeader("Authorization") String auth, @RequestBody YleistunnisteInput request) {
 
     if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
@@ -173,7 +173,7 @@ public class Application {
    * results from the corresponding PUT request.
    */
   @GetMapping("/yleistunniste/tuonti={id}")
-  ResponseEntity<?> getTuontiById(
+  ResponseEntity<FilteredResult> getTuontiById(
       @RequestHeader("Authorization") String auth, @PathVariable("id") long id) {
 
     if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
@@ -202,7 +202,7 @@ public class Application {
     return OID_PREFIX + number + luhnChecksum(number);
   }
 
-  private static String missingField(TunnesteHakuDto request) {
+  private static String missingField(TunnisteHakuDto request) {
     if (request.hetu() == null || request.hetu().isBlank()) {
       return "hetu";
     }
