@@ -27,7 +27,6 @@ import fi.okm.jod.yksilo.service.onr.OppijanumeroService;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +53,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
     var nationalId = FinnishPersonIdentifier.of("010199-9997");
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000001"));
+        .thenReturn("ONR:1.2.246.562.24.00000000001");
 
     var jodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.SV, PersonIdentifierType.FIN);
@@ -75,7 +74,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
     var nationalId = FinnishPersonIdentifier.of("010199X9986");
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000002"));
+        .thenReturn("ONR:1.2.246.562.24.00000000002");
 
     var id =
         yksilot.upsertTunnistusData(
@@ -112,7 +111,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
     var nationalId = FinnishPersonIdentifier.of("010199X9975");
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of("ONR:1.2.246.562.24.00000000003"));
+        .thenReturn("ONR:1.2.246.562.24.00000000003");
 
     var id =
         yksilot.upsertTunnistusData(
@@ -163,7 +162,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
 
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of(oppijanumero));
+        .thenReturn(oppijanumero);
 
     var jodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
@@ -190,7 +189,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
     var nationalId = FinnishPersonIdentifier.of("020200A900X");
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of(oppijanumero));
+        .thenReturn(oppijanumero);
 
     var jodUser =
         converter.upsertUser(new MockPrincipal(nationalId), Kieli.FI, PersonIdentifierType.FIN);
@@ -232,7 +231,7 @@ class ResponseTokenConverterTest extends IntegrationTest {
     // ONR returns the same oppijanumero that already belongs to the MPASSid account
     when(oppijanumeroService.fetchOppijanumero(
             nationalId.asString(), "Matti Kalevi", "Matti", "Meikäläinen"))
-        .thenReturn(Optional.of(oppijanumero));
+        .thenReturn(oppijanumero);
 
     // Login via Suomi.fi should succeed, keeping accounts separate
     var jodUser =

@@ -152,12 +152,9 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
     var onr = tunnistusData != null ? tunnistusData.oppijanumero() : null;
     if (pid == PersonIdentifierType.FIN && onr == null && oppijanumeroService != null) {
       try {
-        onr =
-            oppijanumeroService
-                .fetchOppijanumero(personId, etunimet, kutsumanimi, sukunimi)
-                .orElse(null);
+        onr = oppijanumeroService.fetchOppijanumero(personId, etunimet, kutsumanimi, sukunimi);
       } catch (OppijanumeroServiceException e) {
-        // until MPASSid is enabled, ignore ONR errors and allow login without oppijanumero.
+        // Ignore ONR errors and allow login without oppijanumero.
         log.atWarn()
             .addMarker(LogMarker.AUDIT)
             .addKeyValue("userId", tunnistusData == null ? null : tunnistusData.yksiloId())
@@ -203,7 +200,8 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
               yksilot
                   .findById(yksiloId)
                   .map(
-                      it -> updateAttibutes(it, pid, personId, assertionAccessor, selectedLanguage))
+                      it ->
+                          updateAttributes(it, pid, personId, assertionAccessor, selectedLanguage))
                   .orElseGet(
                       () -> {
                         log.atInfo()
@@ -216,7 +214,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
         });
   }
 
-  private static Yksilo updateAttibutes(
+  private static Yksilo updateAttributes(
       Yksilo yksilo,
       PersonIdentifierType pid,
       String personId,
