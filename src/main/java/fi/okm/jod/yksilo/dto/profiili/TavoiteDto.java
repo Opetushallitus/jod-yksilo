@@ -14,6 +14,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.validation.FreeText;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +30,7 @@ public record TavoiteDto(
     MahdollisuusTyyppi mahdollisuusTyyppi,
     UUID mahdollisuusId,
     @Size(max = 200) @PrintableString LocalizedString tavoite,
-    @Size(max = 10000) @PrintableString LocalizedString kuvaus,
+    @Size(max = 10000) @FreeText LocalizedString kuvaus,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) Instant luotu,
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY)
         Set<PolunSuunnitelmaYhteenvetoDto> suunnitelmat,

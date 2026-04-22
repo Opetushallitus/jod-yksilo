@@ -13,7 +13,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.validation.PrintableString;
+import fi.okm.jod.yksilo.validation.FreeText;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
@@ -21,4 +21,4 @@ import java.util.UUID;
 
 public record TavoiteYhteenvetoDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
-    @Size(max = 10000) @PrintableString LocalizedString tavoite) {}
+    @Size(max = 10000) @FreeText LocalizedString tavoite) {}
