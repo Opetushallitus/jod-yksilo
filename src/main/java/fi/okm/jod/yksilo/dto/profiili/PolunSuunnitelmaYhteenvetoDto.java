@@ -13,6 +13,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
+import fi.okm.jod.yksilo.validation.FreeText;
 import fi.okm.jod.yksilo.validation.PrintableString;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
@@ -26,7 +27,7 @@ import java.util.UUID;
 public record PolunSuunnitelmaYhteenvetoDto(
     @Null(groups = Add.class) @Schema(accessMode = READ_ONLY) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
-    @NotEmpty @PrintableString @Size(max = 200) LocalizedString kuvaus,
+    @NotEmpty @FreeText @Size(max = 200) LocalizedString kuvaus,
     UUID koulutusmahdollisuusId,
     @Null(groups = Add.class) Set<URI> osaamiset,
     Instant luotu) {}

@@ -10,7 +10,7 @@
 package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.validation.PrintableString;
+import fi.okm.jod.yksilo.validation.FreeText;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
@@ -20,4 +20,4 @@ import lombok.Builder;
 @Builder
 public record KiinnostuksetDto(
     @Size(max = 1000) Set<@Valid URI> kiinnostukset,
-    @Size(max = 10000) @PrintableString LocalizedString vapaateksti) {}
+    @Size(max = 10000) @FreeText LocalizedString vapaateksti) {}
