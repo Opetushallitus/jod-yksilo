@@ -127,6 +127,8 @@ jod:
   ai-tunnistus:
     osaamiset:
       endpoint: ""
+  mpassid:
+    enabled: false
   koodistot:
     # ISO-639-1 alpha-2 codes
     # Source: https://data.stat.fi/api/classifications/v2/classifications/kieli_1_20101115

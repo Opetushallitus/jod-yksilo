@@ -9,7 +9,8 @@
 
 package fi.okm.jod.yksilo.config.tmt;
 
-import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
+import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.RequireRoleFilter;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.FilterChain;
@@ -118,7 +119,7 @@ public class TmtSecurityConfig {
                                     createAccessTokenResponseClient(restClient))))
         .addFilterBefore(
             new CallbackFilter(registrationId), OAuth2AuthorizationRequestRedirectFilter.class)
-        .addFilterBefore(new DenyUnauthenticatedFilter(), CallbackFilter.class)
+        .addFilterBefore(new RequireRoleFilter(JodRole.FULL_USER), CallbackFilter.class)
         .build();
   }
 

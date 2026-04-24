@@ -17,10 +17,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.EnumSet;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,15 +43,25 @@ public class YksiloController {
 
   @GetMapping
   public YksiloCsrfDto get(
-      @AuthenticationPrincipal JodUser user, @Parameter(hidden = true) CsrfToken csrfToken) {
-    var yksilo = yksiloService.get(user);
-
-    return new YksiloCsrfDto(
-        user.givenName(),
-        user.familyName(),
-        new CsrfTokenDto(
-            csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()),
-        yksilo.tervetuloapolku());
+      @Parameter(hidden = true) CsrfToken csrfToken, Authentication authentication) {
+    if (authentication.getPrincipal() instanceof JodUser user) {
+      var yksilo = yksiloService.get(user);
+      var capabilities = EnumSet.noneOf(Capability.class);
+      capabilities.add(Capability.PROFILE);
+      if (authentication.getAuthorities().stream()
+          .anyMatch(a -> "ROLE_FULL_USER".equals(a.getAuthority()))) {
+        capabilities.add(Capability.TMT);
+        capabilities.add(Capability.KOSKI);
+      }
+      return new YksiloCsrfDto(
+          user.givenName(),
+          user.familyName(),
+          yksilo.tervetuloapolku(),
+          capabilities,
+          new CsrfTokenDto(
+              csrfToken.getToken(), csrfToken.getHeaderName(), csrfToken.getParameterName()));
+    }
+    throw new InsufficientAuthenticationException("User is not authenticated");
   }
 
   @GetMapping("/tiedot-ja-luvat")
@@ -70,8 +84,18 @@ public class YksiloController {
   }
 
   public record YksiloCsrfDto(
-      String etunimi, String sukunimi, @NotNull CsrfTokenDto csrf, boolean tervetuloapolku) {}
+      String etunimi,
+      String sukunimi,
+      boolean tervetuloapolku,
+      @NotNull Set<Capability> toiminnot,
+      @NotNull CsrfTokenDto csrf) {}
 
   public record CsrfTokenDto(
       @NotNull String token, @NotNull String headerName, @NotNull String parameterName) {}
+
+  public enum Capability {
+    PROFILE,
+    TMT,
+    KOSKI
+  }
 }
