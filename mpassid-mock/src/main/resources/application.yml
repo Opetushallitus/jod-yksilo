@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: MPASSid & ONR Mock
+
+mock:
+  issuer: "http://localhost:8380/oidc"
+
+logging:
+  level:
+    root: error
+    fi.okm.jod: info

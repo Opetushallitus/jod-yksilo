@@ -28,12 +28,13 @@ services:
     ports:
       - "127.0.0.1:8580:8080"
 
-  onr-mock-api:
+
+  mpassid-mock-api:
     build:
-      context: ./onr-mock
+      context: ./mpassid-mock
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:8480:8080"
+      - "127.0.0.1:8380:8080"
 
   tmt-osaamissuosittelija-api:
     build:

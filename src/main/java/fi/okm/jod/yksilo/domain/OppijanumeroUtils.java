@@ -11,21 +11,17 @@ package fi.okm.jod.yksilo.domain;
 
 public final class OppijanumeroUtils {
 
-  public static final String PREFIX = "ONR:";
-  public static final String HENKILO_OID_NODE = ".24.";
+  public static final long HENKILO_OID_NODE = 24;
 
   private OppijanumeroUtils() {}
 
-  /**
-   * Validates the raw oppijanumero against the given OID prefix and returns the ONR:-prefixed
-   * value.
-   */
-  public static String qualify(String rawOppijanumero, String oidPrefix) {
-    if (!isValid(oidPrefix, rawOppijanumero)) {
+  /** Validates the raw oppijanumero against the given OID prefix. */
+  public static String validate(String oppijanumero, String oidPrefix, boolean validateChecksum) {
+    if (!isValid(oidPrefix, oppijanumero, validateChecksum)) {
       throw new IllegalArgumentException(
           "Invalid oppijanumero format: expected OID starting with " + oidPrefix);
     }
-    return PREFIX + rawOppijanumero;
+    return oppijanumero;
   }
 
   /**
@@ -44,12 +40,27 @@ public final class OppijanumeroUtils {
    *     reference number checksum</a>
    */
   public static boolean isValid(String oidPrefix, String rawOppijanumero) {
+    return isValid(oidPrefix, rawOppijanumero, true);
+  }
+
+  public static boolean isValid(
+      String oidPrefix, String rawOppijanumero, boolean validateChecksum) {
     if (rawOppijanumero == null || !rawOppijanumero.startsWith(oidPrefix)) {
       return false;
     }
+
+    int onrIndex = rawOppijanumero.lastIndexOf(".");
+    int nodeIndex = rawOppijanumero.lastIndexOf(".", onrIndex - 1);
+
+    if (onrIndex < 0 || nodeIndex < 0 || onrIndex + 1 >= rawOppijanumero.length()) {
+      return false;
+    }
+
     long value;
+    long nodeValue;
     try {
-      value = Long.parseLong(rawOppijanumero, oidPrefix.length(), rawOppijanumero.length(), 10);
+      value = Long.parseLong(rawOppijanumero, onrIndex + 1, rawOppijanumero.length(), 10);
+      nodeValue = Long.parseLong(rawOppijanumero, nodeIndex + 1, onrIndex, 10);
     } catch (NumberFormatException _) {
       return false;
     }
@@ -62,9 +73,10 @@ public final class OppijanumeroUtils {
     int checkDigit = (int) (value % 10);
     long payload = value / 10;
 
-    boolean useIbm = oidPrefix.endsWith(HENKILO_OID_NODE);
+    boolean useIbm = nodeValue == HENKILO_OID_NODE;
     int expected = useIbm ? ibmChecksum(payload) : luhnChecksum(payload);
-    return checkDigit == expected;
+
+    return !validateChecksum || checkDigit == expected;
   }
 
   /** Computes the IBM (Finnish reference number) checksum for the given payload. */
