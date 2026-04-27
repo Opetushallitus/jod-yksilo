@@ -1,6 +1,6 @@
 -- Generated yksilo SQL migrations
 -- database: yksilo, username: yksilo
--- Generated at: 2026-04-01T06:52:07.630Z
+-- Generated at: 2026-04-22T07:07:37.907Z
 
 ------------------------------------------------------------------------
 -- Migration: yksilo-app-role
@@ -9,107 +9,61 @@ BEGIN;
 CREATE SCHEMA IF NOT EXISTS "yksilo";
 ALTER SCHEMA "yksilo" OWNER TO "yksilo";
 GRANT ALL PRIVILEGES ON SCHEMA "yksilo" TO "yksilo";
-REVOKE ALL ON SCHEMA "yksilo" FROM PUBLIC;
+REVOKE ALL ON SCHEMA "yksilo" FROM public;
 COMMIT;
 
 ------------------------------------------------------------------------
 -- Migration: yksilo-tunnistus-schema
 ------------------------------------------------------------------------
 BEGIN;
-DO
-$$
-  BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'tunnistus') THEN CREATE ROLE "tunnistus";
-    END IF;
-  EXCEPTION
-    WHEN duplicate_object THEN NULL;
-  END
-$$;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'tunnistus') THEN CREATE ROLE "tunnistus"; END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE SCHEMA IF NOT EXISTS "tunnistus";
 ALTER SCHEMA "tunnistus" OWNER TO "tunnistus";
-REVOKE ALL ON SCHEMA "tunnistus" FROM PUBLIC;
+REVOKE ALL ON SCHEMA "tunnistus" FROM public;
 SET LOCAL ROLE "tunnistus";
-CREATE TABLE IF NOT EXISTS henkilo
-(
-  yksilo_id  UUID PRIMARY KEY,
-  henkilo_id VARCHAR(300) NOT NULL UNIQUE
-);
+CREATE TABLE IF NOT EXISTS henkilo (yksilo_id UUID PRIMARY KEY, henkilo_id VARCHAR(300) NOT NULL UNIQUE);
 ALTER TABLE henkilo
-  ADD COLUMN IF NOT EXISTS email    VARCHAR(254),
-  ADD COLUMN IF NOT EXISTS etunimi  TEXT,
-  ADD COLUMN IF NOT EXISTS sukunimi TEXT,
-  ADD COLUMN IF NOT EXISTS luotu    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN IF NOT EXISTS muokattu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
-CREATE OR REPLACE FUNCTION generate_yksilo_id(henkilo_id VARCHAR(300)) RETURNS UUID AS
-$$
+ADD COLUMN IF NOT EXISTS email VARCHAR(254),
+ADD COLUMN IF NOT EXISTS etunimi TEXT,
+ADD COLUMN IF NOT EXISTS sukunimi TEXT,
+ADD COLUMN IF NOT EXISTS luotu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS muokattu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+CREATE OR REPLACE FUNCTION generate_yksilo_id(henkilo_id VARCHAR(300)) RETURNS UUID AS $$
 DECLARE
   id UUID;
 BEGIN
-  INSERT INTO henkilo(yksilo_id, henkilo_id)
-  VALUES (gen_random_uuid(), $1)
-  ON CONFLICT DO NOTHING
-  RETURNING yksilo_id INTO id;
+  INSERT INTO henkilo(yksilo_id, henkilo_id) VALUES (gen_random_uuid(), $1) ON CONFLICT DO NOTHING RETURNING yksilo_id INTO id;
   IF id IS NULL THEN
     SELECT h.yksilo_id FROM henkilo h WHERE h.henkilo_id = $1 INTO id;
   END IF;
   RETURN id;
-END
-$$ LANGUAGE PLPGSQL SECURITY DEFINER
-                    SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION read_yksilo_email(henkilo_id VARCHAR(300)) RETURNS VARCHAR(254) AS
-$$
+END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION read_yksilo_email(henkilo_id VARCHAR(300)) RETURNS VARCHAR(254) AS $$
 DECLARE
   email VARCHAR(254);
 BEGIN
   SELECT h.email INTO email FROM henkilo h WHERE h.henkilo_id = $1;
   RETURN email;
-END
-$$ LANGUAGE PLPGSQL SECURITY DEFINER
-                    SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION update_yksilo_email(henkilo_id VARCHAR(300), email VARCHAR(254)) RETURNS VOID AS
-$$
+END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION update_yksilo_email(henkilo_id VARCHAR(300), email VARCHAR(254)) RETURNS VOID AS $$
 BEGIN
   UPDATE henkilo SET email = $2, muokattu = CURRENT_TIMESTAMP WHERE henkilo.henkilo_id = $1;
-END
-$$ LANGUAGE PLPGSQL SECURITY DEFINER
-                    SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION read_yksilo_name(henkilo_id VARCHAR(300))
-  RETURNS TABLE
-          (
-            etunimi  TEXT,
-            sukunimi TEXT
-          )
-AS
-$$
+END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION read_yksilo_name(henkilo_id VARCHAR(300)) RETURNS TABLE(etunimi TEXT, sukunimi TEXT) AS $$
 BEGIN
   RETURN QUERY SELECT h.etunimi, h.sukunimi FROM henkilo h WHERE h.henkilo_id = $1;
-END
-$$ LANGUAGE PLPGSQL SECURITY DEFINER
-                    SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION update_yksilo_name(henkilo_id VARCHAR(300), etunimi TEXT, sukunimi TEXT) RETURNS VOID AS
-$$
+END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION update_yksilo_name(henkilo_id VARCHAR(300), etunimi TEXT, sukunimi TEXT) RETURNS VOID AS $$
 BEGIN
-  UPDATE henkilo
-  SET etunimi  = $2,
-      sukunimi = $3,
-      muokattu = CURRENT_TIMESTAMP
-  WHERE henkilo.henkilo_id = $1;
-END
-$$ LANGUAGE PLPGSQL SECURITY DEFINER
-                    SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS
-$$
-DELETE
-FROM henkilo
-WHERE yksilo_id = $1
-RETURNING yksilo_id
-$$ LANGUAGE SQL SECURITY DEFINER
-                SET search_path = "tunnistus", pg_temp;
-ALTER TABLE henkilo
-  ENABLE ROW LEVEL SECURITY;
+  UPDATE henkilo SET etunimi = $2, sukunimi = $3, muokattu = CURRENT_TIMESTAMP WHERE henkilo.henkilo_id = $1;
+END $$ LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION remove_yksilo_id(yksilo_id UUID) RETURNS UUID AS $$
+DELETE FROM henkilo WHERE yksilo_id = $1 RETURNING yksilo_id
+$$ LANGUAGE SQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+ALTER TABLE henkilo ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS select_none_policy ON henkilo;
-CREATE POLICY select_none_policy ON henkilo FOR SELECT TO "yksilo" USING (FALSE);
-GRANT SELECT (yksilo_id) ON henkilo TO "yksilo";
+CREATE POLICY select_none_policy ON henkilo FOR SELECT TO "yksilo" USING (false);
+GRANT SELECT(yksilo_id) ON henkilo TO "yksilo";
 RESET ROLE;
 COMMIT;
 
@@ -118,9 +72,9 @@ COMMIT;
 ------------------------------------------------------------------------
 BEGIN;
 SET LOCAL ROLE "tunnistus";
-REVOKE ALL ON FUNCTION generate_yksilo_id, update_yksilo_email, update_yksilo_name, remove_yksilo_id, read_yksilo_email, read_yksilo_name FROM PUBLIC;
+REVOKE ALL ON FUNCTION generate_yksilo_id, update_yksilo_email, update_yksilo_name, remove_yksilo_id, read_yksilo_email, read_yksilo_name FROM public;
 GRANT EXECUTE ON FUNCTION generate_yksilo_id, update_yksilo_email, update_yksilo_name, remove_yksilo_id, read_yksilo_email, read_yksilo_name TO yksilo;
-GRANT REFERENCES (yksilo_id) ON henkilo TO "yksilo";
+GRANT REFERENCES(yksilo_id) ON henkilo TO "yksilo";
 GRANT USAGE ON SCHEMA "tunnistus" TO "yksilo";
 RESET ROLE;
 COMMIT;
@@ -129,18 +83,10 @@ COMMIT;
 -- Migration: yksilo-dataloader
 ------------------------------------------------------------------------
 BEGIN;
-DO
-$$
-  BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dataloader') THEN CREATE ROLE "dataloader";
-    END IF;
-  EXCEPTION
-    WHEN duplicate_object THEN NULL;
-  END
-$$;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dataloader') THEN CREATE ROLE "dataloader"; END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 ALTER ROLE dataloader WITH LOGIN;
 GRANT rds_iam TO dataloader;
-GRANT CONNECT, TEMPORARY ON DATABASE "yksilo" TO "dataloader";
+GRANT CONNECT,TEMPORARY ON DATABASE "yksilo" TO "dataloader";
 GRANT USAGE ON SCHEMA yksilo TO dataloader;
 GRANT USAGE ON SCHEMA aws_s3 TO "dataloader";
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA aws_s3 TO "dataloader";
@@ -151,147 +97,84 @@ COMMIT;
 ------------------------------------------------------------------------
 BEGIN;
 SET LOCAL ROLE "tunnistus";
-CREATE TABLE IF NOT EXISTS jakolinkki
-(
+CREATE TABLE IF NOT EXISTS jakolinkki(
   jakolinkki_id UUID PRIMARY KEY,
-  ulkoinen_id   UUID         NOT NULL UNIQUE,
-  henkilo_id    VARCHAR(300) NOT NULL REFERENCES henkilo (henkilo_id) ON DELETE CASCADE,
-  voimassa_asti TIMESTAMPTZ  NOT NULL,
-  nimi_jaettu   BOOLEAN      NOT NULL DEFAULT FALSE,
-  email_jaettu  BOOLEAN      NOT NULL DEFAULT FALSE,
-  luotu         TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  muokattu      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ulkoinen_id UUID NOT NULL UNIQUE,
+  henkilo_id VARCHAR(300) NOT NULL REFERENCES henkilo(henkilo_id) ON DELETE CASCADE,
+  voimassa_asti TIMESTAMPTZ NOT NULL,
+  nimi_jaettu BOOLEAN NOT NULL DEFAULT FALSE,
+  email_jaettu BOOLEAN NOT NULL DEFAULT FALSE,
+  luotu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  muokattu TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE OR REPLACE FUNCTION create_jakolinkki(henkilo_id VARCHAR(300), voimassa_asti TIMESTAMPTZ,
-                                             nimi_jaettu BOOLEAN DEFAULT FALSE,
-                                             email_jaettu BOOLEAN DEFAULT FALSE)
-  RETURNS UUID AS
-$$
+CREATE OR REPLACE FUNCTION create_jakolinkki(henkilo_id VARCHAR(300), voimassa_asti TIMESTAMPTZ, nimi_jaettu BOOLEAN DEFAULT FALSE, email_jaettu BOOLEAN DEFAULT FALSE)
+RETURNS UUID AS $$
 DECLARE
   linkki_id UUID;
 BEGIN
   BEGIN
-    INSERT INTO jakolinkki(jakolinkki_id, ulkoinen_id, henkilo_id, voimassa_asti, nimi_jaettu,
-                           email_jaettu)
+    INSERT INTO jakolinkki(jakolinkki_id, ulkoinen_id, henkilo_id, voimassa_asti, nimi_jaettu, email_jaettu)
     VALUES (gen_random_uuid(), gen_random_uuid(), $1, $2, $3, $4)
     RETURNING jakolinkki_id INTO linkki_id;
     RETURN linkki_id;
-  EXCEPTION
-    WHEN unique_violation THEN RETURN NULL;
+    EXCEPTION WHEN unique_violation THEN RETURN NULL;
     WHEN foreign_key_violation THEN RETURN NULL;
   END;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;;
 CREATE OR REPLACE FUNCTION update_jakolinkki(
   in_henkilo_id VARCHAR(300), in_jakolinkki_id UUID, in_voimassa_asti TIMESTAMPTZ,
   in_nimi_jaettu BOOLEAN DEFAULT FALSE, in_email_jaettu BOOLEAN DEFAULT FALSE
-) RETURNS BOOLEAN AS
-$$
-DECLARE
-  rows_updated INTEGER;
+) RETURNS BOOLEAN AS $$
+DECLARE rows_updated INTEGER;
 BEGIN
   UPDATE jakolinkki
-  SET voimassa_asti = in_voimassa_asti,
-      nimi_jaettu   = in_nimi_jaettu,
-      email_jaettu  = in_email_jaettu,
-      muokattu      = CURRENT_TIMESTAMP
-  WHERE henkilo_id = in_henkilo_id
-    AND jakolinkki_id = in_jakolinkki_id;
+  SET voimassa_asti = in_voimassa_asti, nimi_jaettu = in_nimi_jaettu, email_jaettu = in_email_jaettu, muokattu = CURRENT_TIMESTAMP
+  WHERE henkilo_id = in_henkilo_id AND jakolinkki_id = in_jakolinkki_id;
   GET DIAGNOSTICS rows_updated = ROW_COUNT;
   RETURN rows_updated > 0;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION delete_jakolinkki(in_henkilo_id VARCHAR(300), in_jakolinkki_id UUID)
-  RETURNS BOOLEAN AS
-$$
-DECLARE
-  rows_deleted INTEGER;
+RETURNS BOOLEAN AS $$
+DECLARE rows_deleted INTEGER;
 BEGIN
   DELETE FROM jakolinkki WHERE henkilo_id = in_henkilo_id AND jakolinkki_id = in_jakolinkki_id;
   GET DIAGNOSTICS rows_deleted = ROW_COUNT;
   RETURN rows_deleted > 0;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
 DROP FUNCTION IF EXISTS tunnistus.get_jakolinkit(in_henkilo_id VARCHAR);
 CREATE FUNCTION get_jakolinkit(in_henkilo_id VARCHAR(300))
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            ulkoinen_id   UUID,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+RETURNS TABLE (jakolinkki_id UUID, ulkoinen_id UUID, voimassa_asti TIMESTAMPTZ, nimi_jaettu BOOLEAN, email_jaettu BOOLEAN) AS $$
 BEGIN
   RETURN QUERY SELECT j.jakolinkki_id, j.ulkoinen_id, j.voimassa_asti, j.nimi_jaettu, j.email_jaettu
-               FROM jakolinkki j
-               WHERE j.henkilo_id = in_henkilo_id;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;
+  FROM jakolinkki j WHERE j.henkilo_id = in_henkilo_id;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION get_jakolinkki(in_henkilo_id VARCHAR(300), in_jakolinkki_id UUID)
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            ulkoinen_id   UUID,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+RETURNS TABLE (jakolinkki_id UUID, ulkoinen_id UUID, voimassa_asti TIMESTAMPTZ, nimi_jaettu BOOLEAN, email_jaettu BOOLEAN) AS $$
 BEGIN
   RETURN QUERY SELECT j.jakolinkki_id, j.ulkoinen_id, j.voimassa_asti, j.nimi_jaettu, j.email_jaettu
-               FROM jakolinkki j
-               WHERE j.jakolinkki_id = in_jakolinkki_id
-                 AND j.henkilo_id = in_henkilo_id;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;
+  FROM jakolinkki j WHERE j.jakolinkki_id = in_jakolinkki_id AND j.henkilo_id = in_henkilo_id;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION get_jakolinkki_by_ulkoinen_id(in_ulkoinen_id UUID)
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            email         VARCHAR(254),
-            etunimi       TEXT,
-            sukunimi      TEXT,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+RETURNS TABLE (jakolinkki_id UUID, email VARCHAR(254), etunimi TEXT, sukunimi TEXT, voimassa_asti TIMESTAMPTZ, nimi_jaettu BOOLEAN, email_jaettu BOOLEAN) AS $$
 BEGIN
   RETURN QUERY SELECT j.jakolinkki_id,
-                      CASE WHEN j.email_jaettu THEN h.email ELSE NULL END,
-                      CASE WHEN j.nimi_jaettu THEN h.etunimi ELSE NULL END,
-                      CASE WHEN j.nimi_jaettu THEN h.sukunimi ELSE NULL END,
-                      j.voimassa_asti,
-                      j.nimi_jaettu,
-                      j.email_jaettu
-               FROM jakolinkki j
-                      JOIN henkilo h ON h.henkilo_id = j.henkilo_id
-               WHERE j.ulkoinen_id = in_ulkoinen_id
-                 AND j.voimassa_asti > CURRENT_TIMESTAMP;
-END
-$$
-  LANGUAGE PLPGSQL SECURITY DEFINER
-                   SET search_path = "tunnistus", pg_temp;
-ALTER TABLE jakolinkki
-  ENABLE ROW LEVEL SECURITY;
+    CASE WHEN j.email_jaettu THEN h.email ELSE NULL END,
+    CASE WHEN j.nimi_jaettu THEN h.etunimi ELSE NULL END,
+    CASE WHEN j.nimi_jaettu THEN h.sukunimi ELSE NULL END,
+    j.voimassa_asti, j.nimi_jaettu, j.email_jaettu
+  FROM jakolinkki j JOIN henkilo h ON h.henkilo_id = j.henkilo_id
+  WHERE j.ulkoinen_id = in_ulkoinen_id AND j.voimassa_asti > CURRENT_TIMESTAMP;
+END $$
+LANGUAGE PLPGSQL SECURITY DEFINER SET search_path = "tunnistus", pg_temp;
+ALTER TABLE jakolinkki ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS select_none_policy ON jakolinkki;
-CREATE POLICY select_none_policy ON jakolinkki FOR SELECT TO "yksilo" USING (FALSE);
-GRANT SELECT (jakolinkki_id) ON jakolinkki TO "yksilo";
+CREATE POLICY select_none_policy ON jakolinkki FOR SELECT TO "yksilo" USING (false);
+GRANT SELECT(jakolinkki_id) ON jakolinkki TO "yksilo";
 RESET ROLE;
 COMMIT;
 
@@ -300,9 +183,9 @@ COMMIT;
 ------------------------------------------------------------------------
 BEGIN;
 SET LOCAL ROLE "tunnistus";
-REVOKE ALL ON FUNCTION create_jakolinkki, update_jakolinkki, delete_jakolinkki, get_jakolinkit, get_jakolinkki_by_ulkoinen_id FROM PUBLIC;
+REVOKE ALL ON FUNCTION create_jakolinkki, update_jakolinkki, delete_jakolinkki, get_jakolinkit, get_jakolinkki_by_ulkoinen_id FROM public;
 GRANT EXECUTE ON FUNCTION create_jakolinkki, update_jakolinkki, delete_jakolinkki, get_jakolinkit, get_jakolinkki_by_ulkoinen_id TO "yksilo";
-GRANT REFERENCES (jakolinkki_id) ON jakolinkki TO "yksilo";
+GRANT REFERENCES(jakolinkki_id) ON jakolinkki TO "yksilo";
 RESET ROLE;
 COMMIT;
 
@@ -311,24 +194,20 @@ COMMIT;
 ------------------------------------------------------------------------
 BEGIN;
 SET LOCAL ROLE "tunnistus";
-ALTER TABLE henkilo
-  ADD COLUMN oppijanumero VARCHAR(300) UNIQUE;
-ALTER TABLE henkilo
-  ALTER COLUMN henkilo_id DROP NOT NULL;
-ALTER TABLE henkilo
-  ADD CONSTRAINT chk_henkilo_identifier
-    CHECK (henkilo_id IS NOT NULL OR oppijanumero IS NOT NULL);
-ALTER TABLE jakolinkki
-  ADD COLUMN yksilo_id UUID;
+ALTER TABLE henkilo ADD COLUMN oppijanumero VARCHAR(300) UNIQUE;
+ALTER TABLE henkilo ALTER COLUMN henkilo_id DROP NOT NULL;
+ALTER TABLE henkilo ADD CONSTRAINT chk_henkilo_identifier
+CHECK (henkilo_id IS NOT NULL OR oppijanumero IS NOT NULL);
+ALTER TABLE jakolinkki ADD COLUMN yksilo_id UUID;
 UPDATE jakolinkki j
 SET yksilo_id = h.yksilo_id
 FROM henkilo h
 WHERE h.henkilo_id = j.henkilo_id;
 ALTER TABLE jakolinkki
-  ALTER COLUMN yksilo_id SET NOT NULL,
-  ADD CONSTRAINT fk_jakolinkki_yksilo
-    FOREIGN KEY (yksilo_id) REFERENCES henkilo (yksilo_id) ON DELETE CASCADE,
-  DROP COLUMN henkilo_id;
+ALTER COLUMN yksilo_id SET NOT NULL,
+ADD CONSTRAINT fk_jakolinkki_yksilo
+  FOREIGN KEY (yksilo_id) REFERENCES henkilo (yksilo_id) ON DELETE CASCADE,
+DROP COLUMN henkilo_id;
 DROP FUNCTION IF EXISTS create_jakolinkki(VARCHAR, TIMESTAMPTZ, BOOLEAN, BOOLEAN);
 DROP FUNCTION IF EXISTS update_jakolinkki(VARCHAR, UUID, TIMESTAMPTZ, BOOLEAN, BOOLEAN);
 DROP FUNCTION IF EXISTS delete_jakolinkki(VARCHAR, UUID);
@@ -347,8 +226,7 @@ CREATE OR REPLACE FUNCTION upsert_yksilo(
   p_oppijanumero VARCHAR(300),
   p_etunimi TEXT,
   p_sukunimi TEXT
-) RETURNS UUID AS
-$$
+) RETURNS UUID AS $$
 DECLARE
   id UUID;
 BEGIN
@@ -360,28 +238,24 @@ BEGIN
   USING (VALUES (p_henkilo_id, p_oppijanumero)) AS p(id, onr)
   ON h.henkilo_id = p.id OR h.oppijanumero = p.onr
   WHEN MATCHED AND h.henkilo_id IS NULL AND p.id IS NOT NULL THEN
-    UPDATE
-    SET henkilo_id = p.id,
-        etunimi    = COALESCE(p_etunimi, h.etunimi),
-        sukunimi   = COALESCE(p_sukunimi, h.sukunimi),
-        muokattu   = CURRENT_TIMESTAMP
+    UPDATE SET henkilo_id = p.id,
+               etunimi    = COALESCE(p_etunimi, h.etunimi),
+               sukunimi   = COALESCE(p_sukunimi, h.sukunimi),
+               muokattu   = CURRENT_TIMESTAMP
   WHEN MATCHED AND h.oppijanumero IS NULL AND p.onr IS NOT NULL THEN
-    UPDATE
-    SET oppijanumero = p.onr,
-        etunimi      = COALESCE(p_etunimi, h.etunimi),
-        sukunimi     = COALESCE(p_sukunimi, h.sukunimi),
-        muokattu     = CURRENT_TIMESTAMP
+    UPDATE SET oppijanumero = p.onr,
+               etunimi      = COALESCE(p_etunimi, h.etunimi),
+               sukunimi     = COALESCE(p_sukunimi, h.sukunimi),
+               muokattu     = CURRENT_TIMESTAMP
   WHEN MATCHED AND (h.etunimi, h.sukunimi) IS DISTINCT FROM (p_etunimi, p_sukunimi) THEN
-    UPDATE
-    SET etunimi  = p_etunimi,
-        sukunimi = p_sukunimi,
-        muokattu = CURRENT_TIMESTAMP
+    UPDATE SET etunimi  = COALESCE(p_etunimi, h.etunimi),
+               sukunimi = COALESCE(p_sukunimi, h.sukunimi),
+               muokattu = CURRENT_TIMESTAMP
   WHEN NOT MATCHED THEN
     INSERT (yksilo_id, henkilo_id, oppijanumero, etunimi, sukunimi)
     VALUES (gen_random_uuid(), p.id, p.onr, p_etunimi, p_sukunimi);
 
-  SELECT h.yksilo_id
-  INTO STRICT id
+  SELECT h.yksilo_id INTO STRICT id
   FROM henkilo h
   WHERE h.henkilo_id = p_henkilo_id
      OR h.oppijanumero = p_oppijanumero;
@@ -391,18 +265,16 @@ END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION find_yksilo_by_henkilo_id(p_henkilo_id VARCHAR(300))
-  RETURNS TABLE
-          (
-            yksilo_id    UUID,
-            oppijanumero VARCHAR(300),
-            etunimi      TEXT,
-            sukunimi     TEXT
-          )
+  RETURNS TABLE (
+    yksilo_id    UUID,
+    oppijanumero VARCHAR(300),
+    etunimi      TEXT,
+    sukunimi     TEXT
+  )
   LANGUAGE SQL
   SECURITY DEFINER
   SET search_path = "tunnistus", pg_temp
-BEGIN
-  ATOMIC
+BEGIN ATOMIC
   SELECT h.yksilo_id, h.oppijanumero, h.etunimi, h.sukunimi
   FROM henkilo h
   WHERE h.henkilo_id = p_henkilo_id;
@@ -418,8 +290,7 @@ CREATE OR REPLACE FUNCTION find_yksilo_by_oppijanumero(p_oppijanumero VARCHAR(30
   LANGUAGE SQL
   SECURITY DEFINER
   SET search_path = "tunnistus", pg_temp
-BEGIN
-  ATOMIC
+BEGIN ATOMIC
   SELECT h.yksilo_id, h.oppijanumero, h.etunimi, h.sukunimi
   FROM henkilo h
   WHERE h.oppijanumero = p_oppijanumero;
@@ -427,17 +298,14 @@ END;
 CREATE OR REPLACE FUNCTION remove_yksilo(
   p_identifier VARCHAR(300),
   p_yksilo_id UUID
-) RETURNS UUID AS
-$$
-DELETE
-FROM henkilo
-WHERE yksilo_id = p_yksilo_id
-  AND (henkilo_id = p_identifier OR oppijanumero = p_identifier)
-RETURNING yksilo_id
+) RETURNS UUID AS $$
+  DELETE FROM henkilo
+  WHERE yksilo_id = p_yksilo_id
+    AND (henkilo_id = p_identifier OR oppijanumero = p_identifier)
+  RETURNING yksilo_id
 $$ LANGUAGE SQL SECURITY DEFINER
                 SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION read_yksilo_email(henkilo_id VARCHAR(300)) RETURNS VARCHAR(254) AS
-$$
+CREATE OR REPLACE FUNCTION read_yksilo_email(henkilo_id VARCHAR(300)) RETURNS VARCHAR(254) AS $$
 DECLARE
   email VARCHAR(254);
 BEGIN
@@ -446,8 +314,7 @@ BEGIN
 END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION update_yksilo_email(henkilo_id VARCHAR(300), email VARCHAR(254)) RETURNS VOID AS
-$$
+CREATE OR REPLACE FUNCTION update_yksilo_email(henkilo_id VARCHAR(300), email VARCHAR(254)) RETURNS VOID AS $$
 BEGIN
   UPDATE henkilo
   SET email    = $2,
@@ -458,13 +325,7 @@ END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION read_yksilo_name(henkilo_id VARCHAR(300))
-  RETURNS TABLE
-          (
-            etunimi  TEXT,
-            sukunimi TEXT
-          )
-AS
-$$
+  RETURNS TABLE (etunimi TEXT, sukunimi TEXT) AS $$
 BEGIN
   RETURN QUERY
     SELECT h.etunimi, h.sukunimi
@@ -474,8 +335,7 @@ BEGIN
 END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
-CREATE OR REPLACE FUNCTION update_yksilo_name(henkilo_id VARCHAR(300), etunimi TEXT, sukunimi TEXT) RETURNS VOID AS
-$$
+CREATE OR REPLACE FUNCTION update_yksilo_name(henkilo_id VARCHAR(300), etunimi TEXT, sukunimi TEXT) RETURNS VOID AS $$
 BEGIN
   UPDATE henkilo
   SET etunimi  = $2,
@@ -499,14 +359,12 @@ CREATE OR REPLACE FUNCTION create_jakolinkki(
   voimassa_asti TIMESTAMPTZ,
   nimi_jaettu BOOLEAN DEFAULT FALSE,
   email_jaettu BOOLEAN DEFAULT FALSE
-) RETURNS UUID AS
-$$
+) RETURNS UUID AS $$
 DECLARE
   linkki_id          UUID;
   resolved_yksilo_id UUID;
 BEGIN
-  SELECT h.yksilo_id
-  INTO resolved_yksilo_id
+  SELECT h.yksilo_id INTO resolved_yksilo_id
   FROM henkilo h
   WHERE h.henkilo_id = $1
      OR h.oppijanumero = $1;
@@ -516,8 +374,7 @@ BEGIN
   END IF;
 
   BEGIN
-    INSERT INTO jakolinkki(jakolinkki_id, ulkoinen_id, yksilo_id, voimassa_asti, nimi_jaettu,
-                           email_jaettu)
+    INSERT INTO jakolinkki(jakolinkki_id, ulkoinen_id, yksilo_id, voimassa_asti, nimi_jaettu, email_jaettu)
     VALUES (gen_random_uuid(), gen_random_uuid(), resolved_yksilo_id, $2, $3, $4)
     RETURNING jakolinkki_id INTO linkki_id;
     RETURN linkki_id;
@@ -533,16 +390,14 @@ CREATE OR REPLACE FUNCTION update_jakolinkki(
   in_voimassa_asti TIMESTAMPTZ,
   in_nimi_jaettu BOOLEAN,
   in_email_jaettu BOOLEAN
-) RETURNS BOOLEAN AS
-$$
+) RETURNS BOOLEAN AS $$
 BEGIN
   UPDATE jakolinkki
   SET voimassa_asti = in_voimassa_asti,
-      muokattu      = CURRENT_TIMESTAMP,
+      muokattu     = CURRENT_TIMESTAMP,
       nimi_jaettu   = in_nimi_jaettu,
       email_jaettu  = in_email_jaettu
-  WHERE yksilo_id = (SELECT h.yksilo_id
-                     FROM henkilo h
+  WHERE yksilo_id = (SELECT h.yksilo_id FROM henkilo h
                      WHERE h.henkilo_id = in_identifier
                         OR h.oppijanumero = in_identifier)
     AND jakolinkki_id = in_jakolinkki_id;
@@ -553,13 +408,10 @@ $$ LANGUAGE PLPGSQL SECURITY DEFINER
 CREATE OR REPLACE FUNCTION delete_jakolinkki(
   in_identifier VARCHAR(300),
   in_jakolinkki_id UUID
-) RETURNS BOOLEAN AS
-$$
+) RETURNS BOOLEAN AS $$
 BEGIN
-  DELETE
-  FROM jakolinkki
-  WHERE yksilo_id = (SELECT h.yksilo_id
-                     FROM henkilo h
+  DELETE FROM jakolinkki
+  WHERE yksilo_id = (SELECT h.yksilo_id FROM henkilo h
                      WHERE h.henkilo_id = in_identifier
                         OR h.oppijanumero = in_identifier)
     AND jakolinkki_id = in_jakolinkki_id;
@@ -568,42 +420,35 @@ END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION get_jakolinkit(in_identifier VARCHAR(300))
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            ulkoinen_id   UUID,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+  RETURNS TABLE (
+    jakolinkki_id UUID,
+    ulkoinen_id   UUID,
+    voimassa_asti TIMESTAMPTZ,
+    nimi_jaettu   BOOLEAN,
+    email_jaettu  BOOLEAN
+  ) AS $$
 BEGIN
   RETURN QUERY
     SELECT j.jakolinkki_id, j.ulkoinen_id, j.voimassa_asti, j.nimi_jaettu, j.email_jaettu
     FROM jakolinkki j
-           JOIN henkilo h ON h.yksilo_id = j.yksilo_id
+      JOIN henkilo h ON h.yksilo_id = j.yksilo_id
     WHERE h.henkilo_id = in_identifier
        OR h.oppijanumero = in_identifier;
 END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION get_jakolinkki(in_identifier VARCHAR(300), in_jakolinkki_id UUID)
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            ulkoinen_id   UUID,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+  RETURNS TABLE (
+    jakolinkki_id UUID,
+    ulkoinen_id   UUID,
+    voimassa_asti TIMESTAMPTZ,
+    nimi_jaettu   BOOLEAN,
+    email_jaettu  BOOLEAN
+  ) AS $$
 DECLARE
   resolved_yksilo_id UUID;
 BEGIN
-  SELECT h.yksilo_id
-  INTO resolved_yksilo_id
+  SELECT h.yksilo_id INTO resolved_yksilo_id
   FROM henkilo h
   WHERE h.henkilo_id = $1
      OR h.oppijanumero = $1;
@@ -617,18 +462,15 @@ END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
 CREATE OR REPLACE FUNCTION get_jakolinkki_by_ulkoinen_id(in_ulkoinen_id UUID)
-  RETURNS TABLE
-          (
-            jakolinkki_id UUID,
-            email         VARCHAR(254),
-            etunimi       TEXT,
-            sukunimi      TEXT,
-            voimassa_asti TIMESTAMPTZ,
-            nimi_jaettu   BOOLEAN,
-            email_jaettu  BOOLEAN
-          )
-AS
-$$
+  RETURNS TABLE (
+    jakolinkki_id UUID,
+    email         VARCHAR(254),
+    etunimi       TEXT,
+    sukunimi      TEXT,
+    voimassa_asti TIMESTAMPTZ,
+    nimi_jaettu   BOOLEAN,
+    email_jaettu  BOOLEAN
+  ) AS $$
 BEGIN
   RETURN QUERY
     SELECT j.jakolinkki_id,
@@ -639,7 +481,7 @@ BEGIN
            j.nimi_jaettu,
            j.email_jaettu
     FROM jakolinkki j
-           JOIN henkilo h ON h.yksilo_id = j.yksilo_id
+      JOIN henkilo h ON h.yksilo_id = j.yksilo_id
     WHERE j.ulkoinen_id = in_ulkoinen_id
       AND j.voimassa_asti > CURRENT_TIMESTAMP;
 END
@@ -654,37 +496,51 @@ COMMIT;
 BEGIN;
 SET LOCAL ROLE "tunnistus";
 REVOKE ALL ON FUNCTION
-  upsert_yksilo,
-  find_yksilo_by_henkilo_id,
-  find_yksilo_by_oppijanumero,
-  create_jakolinkki,
-  update_jakolinkki,
-  update_yksilo_email,
-  update_yksilo_name,
-  delete_jakolinkki,
-  get_jakolinkit,
-  get_jakolinkki,
-  get_jakolinkki_by_ulkoinen_id,
-  remove_yksilo,
-  read_yksilo_email,
-  read_yksilo_name
-  FROM PUBLIC;
+upsert_yksilo,
+find_yksilo_by_henkilo_id,
+find_yksilo_by_oppijanumero,
+create_jakolinkki,
+update_jakolinkki,
+update_yksilo_email,
+update_yksilo_name,
+delete_jakolinkki,
+get_jakolinkit,
+get_jakolinkki,
+get_jakolinkki_by_ulkoinen_id,
+remove_yksilo,
+read_yksilo_email,
+read_yksilo_name
+FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION
-  upsert_yksilo,
-  find_yksilo_by_henkilo_id,
-  find_yksilo_by_oppijanumero,
-  create_jakolinkki,
-  update_jakolinkki,
-  update_yksilo_email,
-  update_yksilo_name,
-  delete_jakolinkki,
-  get_jakolinkit,
-  get_jakolinkki,
-  get_jakolinkki_by_ulkoinen_id,
-  remove_yksilo,
-  read_yksilo_email,
-  read_yksilo_name
-  TO "yksilo";
+upsert_yksilo,
+find_yksilo_by_henkilo_id,
+find_yksilo_by_oppijanumero,
+create_jakolinkki,
+update_jakolinkki,
+update_yksilo_email,
+update_yksilo_name,
+delete_jakolinkki,
+get_jakolinkit,
+get_jakolinkki,
+get_jakolinkki_by_ulkoinen_id,
+remove_yksilo,
+read_yksilo_email,
+read_yksilo_name
+TO "yksilo";
 RESET ROLE;
+COMMIT;
+
+------------------------------------------------------------------------
+-- Migration: yksilo-onr-updater
+------------------------------------------------------------------------
+BEGIN;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'onrupdater') THEN CREATE ROLE "onrupdater"; END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+ALTER ROLE onrupdater WITH LOGIN;
+GRANT rds_iam TO onrupdater;
+GRANT CONNECT,TEMPORARY ON DATABASE "yksilo" TO "onrupdater";
+GRANT USAGE ON SCHEMA tunnistus TO onrupdater;
+GRANT SELECT, UPDATE(oppijanumero, muokattu) ON tunnistus.henkilo TO onrupdater;
+DROP POLICY IF EXISTS onrupdater_update_henkilo ON tunnistus.henkilo;
+CREATE POLICY onrupdater_update_henkilo ON tunnistus.henkilo FOR ALL TO onrupdater USING (true);
 COMMIT;
 

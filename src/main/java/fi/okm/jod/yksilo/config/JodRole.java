@@ -14,5 +14,6 @@ package fi.okm.jod.yksilo.config;
  */
 public enum JodRole {
   USER,
-  EXTERNAL_API
+  EXTERNAL_API,
+  FULL_USER
 }

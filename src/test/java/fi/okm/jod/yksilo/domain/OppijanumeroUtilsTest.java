@@ -20,21 +20,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class OppijanumeroUtilsTest {
 
-  private static final String TEST_OID_PREFIX = "1.2.246.562.98.";
-  private static final String HENKILO_OID_PREFIX = "1.2.246.562.24.";
+  private static final String OID_PREFIX = "1.2.246.562.";
+  private static final String TEST_OID_PREFIX = OID_PREFIX + "98.";
+  private static final String HENKILO_OID_PREFIX = OID_PREFIX + "24.";
 
   @Test
-  void qualifyShouldPrefixValidOppijanumeroWithLuhnChecksum() {
-    assertEquals(
-        "ONR:1.2.246.562.98.10000000009",
-        OppijanumeroUtils.qualify("1.2.246.562.98.10000000009", TEST_OID_PREFIX));
-  }
-
-  @Test
-  void qualifyShouldPrefixValidOppijanumeroWithIbmChecksum() {
-    assertEquals(
-        "ONR:1.2.246.562.24.10000000003",
-        OppijanumeroUtils.qualify("1.2.246.562.24.10000000003", HENKILO_OID_PREFIX));
+  void ibmChecksumShouldMatchTestVectors() {
+    assertEquals(4, OppijanumeroUtils.ibmChecksum(617435L));
+    assertEquals(0, OppijanumeroUtils.ibmChecksum(1111111111L));
   }
 
   @Test
@@ -49,9 +42,12 @@ class OppijanumeroUtilsTest {
         "1.2.246.562.98.10000000009", // Luhn checksum
         "1.2.246.562.98.12345678903", // Luhn checksum
         "1.2.246.562.98.11111111115", // Luhn checksum
+        "1.2.246.562.24.10000000003", // IBM checksum
+        "1.2.246.562.24.12345678907", // IBM checksum
+        "1.2.246.562.24.98765432103", // IBM checksum (also valid for Luhn)
       })
-  void isValidShouldAcceptValidLuhnOppijanumero(String input) {
-    assertTrue(OppijanumeroUtils.isValid(TEST_OID_PREFIX, input));
+  void isValidShouldAcceptValidOppijanumero(String input) {
+    assertTrue(OppijanumeroUtils.isValid(OID_PREFIX, input));
   }
 
   @ParameterizedTest

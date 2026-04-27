@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/yksilo
+    username: postgres
+    password: postgres
+
+logging:
+  level:
+    fi.okm.jod.onr.task: DEBUG
+    org.springframework.core.retry.RetryTemplate: DEBUG
+
+jod:
+  onr:
+    base-url: http://localhost:8380/onr
+    oid-prefix: "1.2.246.562.98."
+    oauth2:
+      client-id: mock-client
+      client-secret: mock-secret
+      token-uri: http://localhost:8380/onr/oauth2/token
+  onr-task:
+    batch-size: 10
+    batch-delay-ms: 500
+
