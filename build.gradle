@@ -19,7 +19,7 @@ plugins {
   id "org.sonarqube" version "6.3.1.5724"
   id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 
-  id "com.github.ben-manes.versions" version "0.53.0"
+  id "com.github.ben-manes.versions" version "0.54.0"
   id "org.flywaydb.flyway" version "${flywayVersion}"
 }
 
@@ -78,18 +78,18 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-flyway'
   implementation "org.flywaydb:flyway-database-postgresql"
 
-  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0')
+  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.1')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
-  implementation platform('software.amazon.awssdk:bom:2.42.33')
+  implementation platform('software.amazon.awssdk:bom:2.42.41')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
 
-  implementation 'com.google.guava:guava:33.5.0-jre'
+  implementation 'com.google.guava:guava:33.6.0-jre'
 
   implementation "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"
   implementation "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"
