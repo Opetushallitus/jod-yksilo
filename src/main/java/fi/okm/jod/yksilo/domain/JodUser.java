@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.domain;
 
-import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.config.login.Attribute;
 import java.util.Optional;
 import java.util.UUID;
 

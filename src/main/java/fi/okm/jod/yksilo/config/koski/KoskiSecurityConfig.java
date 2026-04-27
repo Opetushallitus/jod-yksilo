@@ -9,7 +9,8 @@
 
 package fi.okm.jod.yksilo.config.koski;
 
-import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
+import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.RequireRoleFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +62,8 @@ public class KoskiSecurityConfig {
               client.authorizedClientRepository(authorizedClientRepository);
             })
         .addFilterBefore(
-            new DenyUnauthenticatedFilter(), OAuth2AuthorizationRequestRedirectFilter.class)
+            new RequireRoleFilter(JodRole.FULL_USER),
+            OAuth2AuthorizationRequestRedirectFilter.class)
         .build();
   }
 

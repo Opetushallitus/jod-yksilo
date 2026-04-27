@@ -11,5 +11,4 @@ pluginManagement {
 rootProject.name = 'jod-yksilo'
 include 'tmt-profiili-api'
 include 'tmt-mock'
-include 'onr-mock'
-
+include 'mpassid-mock'
