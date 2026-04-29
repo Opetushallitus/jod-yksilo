@@ -10,19 +10,27 @@
 package fi.okm.jod.yksilo.controller.ehdotus;
 
 import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
+import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
 import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
+import fi.okm.jod.yksilo.service.profiili.KoulutusService;
+import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,10 +39,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedMap;
 import java.util.Set;
@@ -48,6 +58,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -66,6 +77,9 @@ class MahdollisuudetController {
   private final MahdollisuudetService mahdollisuudetService;
   private final OsaaminenService osaaminenService;
   private final AmmattiService ammattiService;
+  private final ToimenkuvaService toimenkuvaService;
+  private final KoulutusService koulutusService;
+  private final PatevyysService patevyysService;
 
   @ConfigurationProperties("jod.recommendation.mahdollisuus")
   public record EndpointProperties(Map<Kieli, String> endpoints) {}
@@ -75,12 +89,18 @@ class MahdollisuudetController {
       EndpointProperties properties,
       MahdollisuudetService mahdollisuudetService,
       OsaaminenService osaaminenService,
-      AmmattiService ammattiService) {
+      AmmattiService ammattiService,
+      ToimenkuvaService toimenkuvaService,
+      KoulutusService koulutusService,
+      PatevyysService patevyysService) {
     this.inferenceService = inferenceService;
     this.endpoints = properties.endpoints();
     this.mahdollisuudetService = mahdollisuudetService;
     this.osaaminenService = osaaminenService;
     this.ammattiService = ammattiService;
+    this.toimenkuvaService = toimenkuvaService;
+    this.koulutusService = koulutusService;
+    this.patevyysService = patevyysService;
 
     log.info("Creating MahdollisuudetController, endpoint: {}", endpoints);
   }
@@ -89,7 +109,8 @@ class MahdollisuudetController {
   public List<EhdotusDto> createEhdotus(
       @RequestHeader(value = HttpHeaders.CONTENT_LANGUAGE, defaultValue = "fi") Kieli lang,
       @RequestParam(defaultValue = "asc") Sort.Direction sort,
-      @RequestBody @Valid LuoEhdotusDto ehdotus) {
+      @RequestBody @Valid LuoEhdotusDto ehdotus,
+      @AuthenticationPrincipal JodUser user) {
     log.info("Creating the suggestions");
 
     if (endpoints.get(lang) == null) {
@@ -119,24 +140,34 @@ class MahdollisuudetController {
 
     final var kiinnostuksetVapaateksti = ehdotus.kiinnostuksetVapaateksti;
 
+    final var kuvaukset =
+        ehdotus.kuvaukset() == null ? Set.<LuoEhdotusKuvausDto>of() : ehdotus.kuvaukset();
+
     if (osaamiset.isEmpty()
         && (osaamisetVapaateksti == null || osaamisetVapaateksti.isBlank())
         && kiinnostukset.isEmpty()
-        && (kiinnostuksetVapaateksti == null || kiinnostuksetVapaateksti.isBlank())) {
-      // if osaamiset and kiinnostukset is empty return list of työmahdollisuuksia with empty
-      // metadata
+        && (kiinnostuksetVapaateksti == null || kiinnostuksetVapaateksti.isBlank())
+        && kuvaukset.isEmpty()) {
       return populateEmptyEhdotusDtos(mahdollisuusIds);
     }
 
+    final Set<KuvausData> kuvauksetData =
+        (user != null && ehdotus.kuvaukset != null)
+            ? fetchKuvauksetData(user, lang, ehdotus.kuvaukset)
+            : Set.of();
+
     // fetch kohtaanto results from inference endpoint and populate ehdotus DTOs
-    final List<EhdotusDto> ehdotusDtos =
-        populateEhdotusDtos(
-            mahdollisuusIds, performInferenceRequest(lang, ehdotus, osaamiset, kiinnostukset));
-    return ehdotusDtos;
+    return populateEhdotusDtos(
+        mahdollisuusIds,
+        performInferenceRequest(lang, ehdotus, osaamiset, kiinnostukset, kuvauksetData));
   }
 
   private Map<UUID, Suggestion> performInferenceRequest(
-      Kieli lang, LuoEhdotusDto ehdotus, Set<URI> osaamiset, Set<URI> kiinnostukset) {
+      Kieli lang,
+      LuoEhdotusDto ehdotus,
+      Set<URI> osaamiset,
+      Set<URI> kiinnostukset,
+      Set<KuvausData> kuvaukset) {
     // TODO: add language support when supported by kohtaanto inference endpoint
     var request =
         new Request(
@@ -149,7 +180,7 @@ class MahdollisuudetController {
                 ehdotus.kiinnostusPainotus,
                 ehdotus.escoListPainotus,
                 ehdotus.openTextPainotus,
-                ehdotus.kuvaukset));
+                kuvaukset));
 
     return inferenceService
         .infer(endpoints.get(lang), request, new ParameterizedTypeReference<>() {})
@@ -220,6 +251,89 @@ class MahdollisuudetController {
         .toList();
   }
 
+  private Set<KuvausData> fetchKuvauksetData(
+      JodUser user, Kieli lang, Set<LuoEhdotusKuvausDto> kuvaukset) {
+    var idsByType =
+        kuvaukset.stream()
+            .collect(
+                Collectors.groupingBy(
+                    LuoEhdotusKuvausDto::tyyppi,
+                    Collectors.mapping(LuoEhdotusKuvausDto::id, Collectors.toSet())));
+
+    var toimenkuvaMap =
+        fetchByType(
+            idsByType,
+            OsaamisenLahdeTyyppi.TOIMENKUVA,
+            ids -> toimenkuvaService.findAllByIds(user, ids));
+    var koulutusMap =
+        fetchByType(
+            idsByType,
+            OsaamisenLahdeTyyppi.KOULUTUS,
+            ids -> koulutusService.findAllByIds(user, ids));
+    var patevyysMap =
+        fetchByType(
+            idsByType,
+            OsaamisenLahdeTyyppi.PATEVYYS,
+            ids -> patevyysService.findAllByIds(user, ids));
+
+    return kuvaukset.stream()
+        .map(k -> toKuvausData(k, lang, toimenkuvaMap, koulutusMap, patevyysMap))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  private static <T> Map<UUID, T> fetchByType(
+      Map<OsaamisenLahdeTyyppi, Set<UUID>> idsByType,
+      OsaamisenLahdeTyyppi tyyppi,
+      java.util.function.Function<Set<UUID>, Map<UUID, T>> fetcher) {
+    var ids = idsByType.get(tyyppi);
+    return (ids == null || ids.isEmpty()) ? Map.of() : fetcher.apply(ids);
+  }
+
+  private static KuvausData toKuvausData(
+      LuoEhdotusKuvausDto kuvaus,
+      Kieli lang,
+      Map<UUID, ToimenkuvaDto> toimenkuvaMap,
+      Map<UUID, KoulutusDto> koulutusMap,
+      Map<UUID, PatevyysDto> patevyysMap) {
+    return switch (kuvaus.tyyppi()) {
+      case TOIMENKUVA -> {
+        var d = toimenkuvaMap.get(kuvaus.id());
+        yield d == null
+            ? null
+            : new KuvausData(
+                d.nimi().get(lang),
+                d.kuvaus() != null ? d.kuvaus().get(lang) : null,
+                d.alkuPvm(),
+                d.loppuPvm());
+      }
+      case KOULUTUS -> {
+        var d = koulutusMap.get(kuvaus.id());
+        yield d == null
+            ? null
+            : new KuvausData(
+                d.nimi().get(lang),
+                d.kuvaus() != null ? d.kuvaus().get(lang) : null,
+                d.alkuPvm(),
+                d.loppuPvm());
+      }
+      case PATEVYYS -> {
+        var d = patevyysMap.get(kuvaus.id());
+        yield d == null
+            ? null
+            : new KuvausData(
+                d.nimi().get(lang),
+                d.kuvaus() != null ? d.kuvaus().get(lang) : null,
+                d.alkuPvm(),
+                d.loppuPvm());
+      }
+      default -> {
+        log.warn("Unexpected kuvaus tyyppi: {}", kuvaus.tyyppi());
+        yield null;
+      }
+    };
+  }
+
   private static Supplier<Suggestion> supplyEmptySuggestion(UUID key, MahdollisuusTyyppi tyyppi) {
     return () -> {
       log.warn("kohtaanto id {} not found from tyomahdollisuus or koulutus IDs", key);
@@ -252,8 +366,10 @@ class MahdollisuudetController {
         double kiinnostusPainotus,
         double escoListPainotus,
         double openTextPainotus,
-        Set<String> kuvaukset) {}
+        Set<KuvausData> kuvaukset) {}
   }
+
+  public record KuvausData(String otsikko, String kuvaus, LocalDate alkuPvm, LocalDate loppuPvm) {}
 
   /**
    * This record describes metadata related to the proposal, based on which the proposals can be
@@ -353,7 +469,9 @@ class MahdollisuudetController {
       double kiinnostusPainotus,
       double escoListPainotus,
       double openTextPainotus,
-      @Size(max = 1000) Set<@Size(max = 10000) String> kuvaukset) {}
+      @Size(max = 1000) Set<LuoEhdotusKuvausDto> kuvaukset) {}
+
+  public record LuoEhdotusKuvausDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {}
 
   @SuppressWarnings("serial")
   static class Response extends ArrayList<fi.okm.jod.yksilo.controller.ehdotus.Suggestion> {}
