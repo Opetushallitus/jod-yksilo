@@ -54,9 +54,9 @@ public class PatevyysService {
   }
 
   @Transactional(readOnly = true)
-  public PatevyysDto get(JodUser user, UUID id, UUID patevyysId) {
+  public PatevyysDto get(JodUser user, UUID toimintoId, UUID id) {
     return patevyydet
-        .findBy(user, id, patevyysId)
+        .findBy(user, toimintoId, id)
         .map(Mapper::mapPatevyys)
         .orElseThrow(PatevyysService::notFound);
   }
