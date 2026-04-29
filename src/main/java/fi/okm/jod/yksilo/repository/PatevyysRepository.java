@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Yksilo;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,6 +44,9 @@ public interface PatevyysRepository
         ? lahde.id().flatMap(lahdeId -> findByToimintoYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
+
+  @EntityGraph(attributePaths = {"toiminto", "toiminto.yksilo"})
+  List<Patevyys> findByToimintoYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
 
   int countByToimintoYksilo(Yksilo yksilo);
 }

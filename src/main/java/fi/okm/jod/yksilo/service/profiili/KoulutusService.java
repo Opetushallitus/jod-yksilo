@@ -23,9 +23,11 @@ import fi.okm.jod.yksilo.validation.Limits;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,11 +65,17 @@ public class KoulutusService {
   }
 
   @Transactional(readOnly = true)
-  public KoulutusDto get(JodUser user, UUID tyopaikkaId, UUID id) {
+  public KoulutusDto get(JodUser user, UUID kokonaisuusId, UUID id) {
     return koulutukset
-        .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), tyopaikkaId, id)
+        .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), kokonaisuusId, id)
         .map(Mapper::mapKoulutus)
         .orElseThrow(KoulutusService::notFound);
+  }
+
+  @Transactional(readOnly = true)
+  public Map<UUID, KoulutusDto> findAllByIds(JodUser user, Set<UUID> ids) {
+    return koulutukset.findByKokonaisuusYksiloIdAndIdIn(user.getId(), ids).stream()
+        .collect(Collectors.toMap(Koulutus::getId, Mapper::mapKoulutus));
   }
 
   public void update(JodUser user, UUID kokonaisuus, KoulutusDto dto) {

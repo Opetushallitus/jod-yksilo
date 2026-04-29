@@ -15,6 +15,8 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
 import fi.okm.jod.yksilo.entity.Yksilo;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -40,6 +42,9 @@ public interface ToimenkuvaRepository
         ? lahde.id().flatMap(lahdeId -> findByTyopaikkaYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
+
+  @EntityGraph(attributePaths = {"tyopaikka", "tyopaikka.yksilo"})
+  List<Toimenkuva> findByTyopaikkaYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
 
   int countByTyopaikkaYksilo(Yksilo yksilo);
 }

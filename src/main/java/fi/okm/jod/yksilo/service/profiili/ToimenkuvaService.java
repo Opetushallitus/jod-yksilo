@@ -20,7 +20,10 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +66,12 @@ public class ToimenkuvaService {
         .findBy(user, tyopaikkaId, id)
         .map(Mapper::mapToimenkuva)
         .orElseThrow(ToimenkuvaService::notFound);
+  }
+
+  @Transactional(readOnly = true)
+  public Map<UUID, ToimenkuvaDto> findAllByIds(JodUser user, Set<UUID> ids) {
+    return toimenkuvat.findByTyopaikkaYksiloIdAndIdIn(user.getId(), ids).stream()
+        .collect(Collectors.toMap(Toimenkuva::getId, Mapper::mapToimenkuva));
   }
 
   public void update(JodUser user, UUID tyopaikka, ToimenkuvaDto dto) {

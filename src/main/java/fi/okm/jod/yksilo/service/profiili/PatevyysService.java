@@ -20,7 +20,10 @@ import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,11 +57,17 @@ public class PatevyysService {
   }
 
   @Transactional(readOnly = true)
-  public PatevyysDto get(JodUser user, UUID id, UUID patevyysId) {
+  public PatevyysDto get(JodUser user, UUID toimintoId, UUID id) {
     return patevyydet
-        .findBy(user, id, patevyysId)
+        .findBy(user, toimintoId, id)
         .map(Mapper::mapPatevyys)
         .orElseThrow(PatevyysService::notFound);
+  }
+
+  @Transactional(readOnly = true)
+  public Map<UUID, PatevyysDto> findAllByIds(JodUser user, Set<UUID> ids) {
+    return patevyydet.findByToimintoYksiloIdAndIdIn(user.getId(), ids).stream()
+        .collect(Collectors.toMap(Patevyys::getId, Mapper::mapPatevyys));
   }
 
   public void update(JodUser user, UUID toimintoId, PatevyysDto dto) {
