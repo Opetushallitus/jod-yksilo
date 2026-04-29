@@ -63,9 +63,9 @@ public class KoulutusService {
   }
 
   @Transactional(readOnly = true)
-  public KoulutusDto get(JodUser user, UUID tyopaikkaId, UUID id) {
+  public KoulutusDto get(JodUser user, UUID kokonaisuusId, UUID id) {
     return koulutukset
-        .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), tyopaikkaId, id)
+        .findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(user.getId(), kokonaisuusId, id)
         .map(Mapper::mapKoulutus)
         .orElseThrow(KoulutusService::notFound);
   }
