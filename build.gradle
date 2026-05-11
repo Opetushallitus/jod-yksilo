@@ -81,6 +81,7 @@ dependencies {
   implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.1')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
+  implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
@@ -88,6 +89,7 @@ dependencies {
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
+  implementation 'software.amazon.awssdk:s3'
 
   implementation 'com.google.guava:guava:33.6.0-jre'
 
@@ -322,7 +324,7 @@ tasks.register("generateSchemaDocs", JavaExec) {
   mainClass = 'org.schemaspy.Main'
   outputs.dir("build/schemaspy")
   args = ['-t', 'pgsql11',
-          '-host', 'localhost',
+          '-host', '127.0.0.1',
           '-port', '45432',
           '-db', 'yksilo',
           '-u', 'postgres',
@@ -340,6 +342,7 @@ tasks.register("generateSchemaDocs", JavaExec) {
         bootRun.classpath.asPath,
         bootRun.mainClass.get(),
         "--spring.main.lazy-initialization=true",
+        "--spring.config.additional-location=${projectDir}/src/test/resources/application-default.yml",
         "--spring.docker.compose.file=${projectDir}/compose-test.yml",
         "--spring.docker.compose.stop.command=down",
         "--server.port=${port}")

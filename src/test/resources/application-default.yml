@@ -5,6 +5,10 @@ logging:
   exception-conversion-word:
 
 spring:
+  cloud:
+    aws:
+      sqs:
+        enabled: false
   main:
     lazy-initialization: true
   datasource:
@@ -22,8 +26,10 @@ management:
         enabled: false
 
 jod:
+  cv:
+    request-queue: http://localhost:8430
   external-api:
-    apiKey: "9g43fg49873gr97gtd3d343f7g3497gf"
+    apiKey: "dummy-api-key"
   integraatio:
     koski:
       hosts:

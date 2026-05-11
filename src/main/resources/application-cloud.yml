@@ -12,6 +12,9 @@ spring:
       - aws-secretsmanager:${jod.saml2.credentials-secret-arn}?prefix=jod.saml2.relying-party.
   cloud:
     aws:
+      sqs:
+        enabled: true
+        queue-not-found-strategy: fail
       parameterstore:
         enabled: true
         reload:
