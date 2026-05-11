@@ -34,7 +34,6 @@ import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -384,21 +383,21 @@ class MahdollisuudetController {
    */
   public record EhdotusMetadata(
       @NotNull MahdollisuusTyyppi tyyppi,
-      @Nullable String ammattiryhma,
-      @Nullable TyomahdollisuusAineisto aineisto,
-      @Nullable KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
-      @Nullable List<String> maakunnat,
-      @Nullable List<String> toimialat,
-      @Nullable List<String> koulutusalat,
-      @Nullable Double kesto,
-      @Nullable Double kestoMinimi,
-      @Nullable Double kestoMaksimi,
-      @Nullable Double pisteet,
-      @Nullable Trendi trendi,
-      @Nullable Long osaamisia,
+      String ammattiryhma,
+      TyomahdollisuusAineisto aineisto,
+      KoulutusmahdollisuusTyyppi koulutusmahdollisuusTyyppi,
+      List<String> maakunnat,
+      List<String> toimialat,
+      List<String> koulutusalat,
+      Double kesto,
+      Double kestoMinimi,
+      Double kestoMaksimi,
+      Double pisteet,
+      Trendi trendi,
+      Long osaamisia,
 
       /* Value from 0 to */
-      @Nullable Integer tyollisyysNakyma,
+      Integer tyollisyysNakyma,
       @NotNull Integer aakkosIndeksi) {
 
     public static EhdotusMetadata empty(

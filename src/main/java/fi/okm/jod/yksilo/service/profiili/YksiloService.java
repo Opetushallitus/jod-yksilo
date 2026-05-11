@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class YksiloService {
   private final YksiloRepository yksilot;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional(readOnly = true)
   public YksiloDto get(JodUser user) {
@@ -121,6 +123,8 @@ public class YksiloService {
   }
 
   public void delete(JodUser user) {
+    eventPublisher.publishEvent(new ProfileDeletedEvent(user));
+
     yksilot.deleteById(user.getId());
     yksilot.removeId(user.getQualifiedPersonId(), user.getId());
     log.atInfo().addMarker(LogMarker.AUDIT).log("Deleted user {} profile", user.getId());

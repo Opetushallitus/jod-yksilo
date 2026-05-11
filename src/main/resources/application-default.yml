@@ -1,0 +1,9 @@
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: false
+
+jod:
+  external-api:
+    apiKey: "test-${random.uuid}"
