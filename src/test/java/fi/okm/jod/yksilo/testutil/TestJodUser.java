@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.testutil;
 
-import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.config.login.Attribute;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
 import java.util.Optional;

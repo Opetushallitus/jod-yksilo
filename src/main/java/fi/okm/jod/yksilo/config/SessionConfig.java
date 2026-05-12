@@ -9,13 +9,22 @@
 
 package fi.okm.jod.yksilo.config;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
 import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
+import fi.okm.jod.yksilo.config.login.JodOidcPrincipal;
+import fi.okm.jod.yksilo.config.login.JodSaml2Principal;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
 import fi.okm.jod.yksilo.domain.JodUser;
 import io.lettuce.core.RedisCredentialsProvider;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +38,7 @@ import org.springframework.data.redis.connection.lettuce.RedisCredentialsProvide
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.security.jackson.SecurityJacksonModules;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
@@ -36,6 +46,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 @Configuration(proxyBeanMethods = false)
+@SuppressWarnings("java:S4544")
 public class SessionConfig implements BeanClassLoaderAware {
 
   @Value("${spring.data.redis.cache-name:}")
@@ -55,12 +66,17 @@ public class SessionConfig implements BeanClassLoaderAware {
   public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
     // Create a custom ObjectMapper that uses Spring Security’s Jackson modules.
 
-    var validatorBuilder = BasicPolymorphicTypeValidator.builder().allowIfSubType(JodUser.class);
+    var validatorBuilder =
+        BasicPolymorphicTypeValidator.builder()
+            .allowIfSubType(JodUser.class)
+            .allowIfSubType(URL.class);
 
     var mapper =
         JsonMapper.builder()
             .addModules(SecurityJacksonModules.getModules(this.loader, validatorBuilder))
             .addMixIn(InferenceSession.class, SessionMixin.class)
+            .addMixIn(JodOidcPrincipal.class, JodOidcPrincipalMixin.class)
+            .addMixIn(JodSaml2Principal.class, JodSaml2PrincipalMixin.class)
             .build();
     return new GenericJacksonJsonRedisSerializer(mapper);
   }
@@ -97,5 +113,22 @@ public class SessionConfig implements BeanClassLoaderAware {
                 }
               }
             });
+  }
+
+  @JsonTypeInfo(use = Id.CLASS)
+  @JsonIncludeProperties({"id", "idToken"})
+  public abstract static class JodOidcPrincipalMixin {
+    @JsonCreator
+    JodOidcPrincipalMixin(
+        @JsonProperty("id") UUID id, @JsonProperty("idToken") OidcIdToken idToken) {}
+  }
+
+  @JsonTypeInfo(use = Id.CLASS)
+  @JsonIncludeProperties({"id", "attributes"})
+  public abstract static class JodSaml2PrincipalMixin {
+    @JsonCreator
+    JodSaml2PrincipalMixin(
+        @JsonProperty("id") UUID id,
+        @JsonProperty("attributes") Map<String, List<Object>> attributes) {}
   }
 }

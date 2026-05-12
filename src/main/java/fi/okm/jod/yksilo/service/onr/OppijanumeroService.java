@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.onr;
 
 import fi.okm.jod.yksilo.domain.OppijanumeroUtils;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.service.onr.OppijanumeroService.TuontiResult.Tiedot;
 import java.time.Duration;
 import java.util.List;
@@ -46,7 +47,10 @@ public class OppijanumeroService {
                 .delay(Duration.ofMillis(500))
                 .maxDelay(Duration.ofSeconds(1))
                 .timeout(Duration.ofSeconds(5))
-                .includes(HttpClientErrorException.Forbidden.class, IllegalStateException.class)
+                .includes(
+                    NotReadyException.class,
+                    /* ONR API can return 403 if the result is not ready yet */
+                    HttpClientErrorException.Forbidden.class)
                 .build());
 
     log.info(
@@ -102,7 +106,7 @@ public class OppijanumeroService {
                         .requiredBody(TuontiResult.class);
 
                 if (!response.kasitelty()) {
-                  throw new IllegalStateException("ONR has not processed the request yet");
+                  throw new NotReadyException("ONR has not processed the request yet");
                 }
                 return response;
               });
@@ -116,7 +120,8 @@ public class OppijanumeroService {
           && henkilo != null
           && henkilo.oppijanumero() != null
           && !henkilo.passivoitu()) {
-        return OppijanumeroUtils.qualify(henkilo.oppijanumero(), oidPrefix);
+        return PersonIdentifierType.ONR.asQualifiedIdentifier(
+            OppijanumeroUtils.validate(henkilo.oppijanumero(), oidPrefix, true));
       } else {
         throw new OppijanumeroServiceException("Unexpected response from ONR");
       }
@@ -124,6 +129,13 @@ public class OppijanumeroService {
       throw new OppijanumeroServiceException("Failed to fetch oppijanumero from ONR", e);
     } catch (IllegalArgumentException e) {
       throw new OppijanumeroServiceException("ONR returned invalid oppijanumero", e);
+    }
+  }
+
+  static class NotReadyException extends Exception {
+
+    public NotReadyException(String message) {
+      super(message);
     }
   }
 

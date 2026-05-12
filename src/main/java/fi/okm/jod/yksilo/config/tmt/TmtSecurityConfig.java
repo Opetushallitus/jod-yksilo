@@ -9,7 +9,8 @@
 
 package fi.okm.jod.yksilo.config.tmt;
 
-import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
+import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.RequireRoleFilter;
 import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.FilterChain;
@@ -98,8 +99,7 @@ public class TmtSecurityConfig {
       ClientRegistrationRepository registrationRepository,
       HttpSessionOAuth2AuthorizedClientRepository authorizedClientRepository,
       RestClient restClient,
-      Supplier<String> authorizationEndpoint)
-      throws Exception {
+      Supplier<String> authorizationEndpoint) {
     return http.securityMatcher("/oauth2/*/" + registrationId)
         .requestCache(RequestCacheConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
@@ -118,7 +118,7 @@ public class TmtSecurityConfig {
                                     createAccessTokenResponseClient(restClient))))
         .addFilterBefore(
             new CallbackFilter(registrationId), OAuth2AuthorizationRequestRedirectFilter.class)
-        .addFilterBefore(new DenyUnauthenticatedFilter(), CallbackFilter.class)
+        .addFilterBefore(new RequireRoleFilter(JodRole.FULL_USER), CallbackFilter.class)
         .build();
   }
 

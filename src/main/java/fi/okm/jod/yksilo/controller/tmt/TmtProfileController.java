@@ -44,7 +44,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Tag(name = "/api/integraatiot/tmt")
 @Slf4j
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
-@PreAuthorize("hasRole('FULL_USER')")
+@PreAuthorize("hasRole(T(fi.okm.jod.yksilo.config.JodRole).FULL_USER.name())")
 public class TmtProfileController {
 
   public static final String ERROR_PARAM = "error";

@@ -1,0 +1,26 @@
+spring:
+  main:
+    lazy-initialization: true
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;INIT=CREATE SCHEMA IF NOT EXISTS tunnistus
+    username: sa
+    password: sa
+  sql:
+    init:
+      mode: always
+
+jod:
+  onr:
+    base-url: http://localhost/onr
+    oid-prefix: "1.2.246.562.24."
+    oauth2:
+      client-id: test
+      client-secret: test
+      token-uri: http://localhost/oauth/token
+    retry:
+      initial-poll-delay: 0
+      delay: 0
+  onr-task:
+    batch-size: 100
+    batch-delay-ms: 0

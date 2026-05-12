@@ -1,0 +1,2 @@
+org.springframework.boot.EnvironmentPostProcessor=fi.okm.jod.onr.task.SsmPropertyLoader
+

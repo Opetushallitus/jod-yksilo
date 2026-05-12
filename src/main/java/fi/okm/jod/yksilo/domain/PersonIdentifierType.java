@@ -9,13 +9,14 @@
 
 package fi.okm.jod.yksilo.domain;
 
-import fi.okm.jod.yksilo.config.suomifi.Attribute;
+import fi.okm.jod.yksilo.config.login.Attribute;
 import lombok.Getter;
 
 @Getter
 public enum PersonIdentifierType {
   FIN(Attribute.NATIONAL_IDENTIFICATION_NUMBER),
-  EIDAS(Attribute.PERSON_IDENTIFIER);
+  EIDAS(Attribute.PERSON_IDENTIFIER),
+  ONR(Attribute.OPPIJANUMERO_CLAIM);
 
   private final Attribute attribute;
 

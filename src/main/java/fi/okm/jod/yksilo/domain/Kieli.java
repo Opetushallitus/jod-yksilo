@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.domain;
 
-import java.util.Locale;
+import java.util.Optional;
 import lombok.Getter;
 
 @Getter
@@ -17,14 +17,6 @@ public enum Kieli {
   FI,
   SV,
   EN;
-
-  public Locale toLocale() {
-    return switch (this) {
-      case FI -> Locale.forLanguageTag("fi-FI");
-      case SV -> Locale.forLanguageTag("sv-FI"); // Swedish (Finland)
-      case EN -> Locale.forLanguageTag("en");
-    };
-  }
 
   private final String koodi;
 
@@ -35,5 +27,14 @@ public enum Kieli {
   @Override
   public String toString() {
     return koodi;
+  }
+
+  public static Optional<Kieli> fromKoodi(String koodi) {
+    for (Kieli value : values()) {
+      if (value.koodi.equalsIgnoreCase(koodi)) {
+        return Optional.of(value);
+      }
+    }
+    return Optional.empty();
   }
 }

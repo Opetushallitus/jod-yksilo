@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.config.koski;
 
-import fi.okm.jod.yksilo.config.DenyUnauthenticatedFilter;
+import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.RequireRoleFilter;
+import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +63,8 @@ public class KoskiSecurityConfig {
               client.authorizedClientRepository(authorizedClientRepository);
             })
         .addFilterBefore(
-            new DenyUnauthenticatedFilter(), OAuth2AuthorizationRequestRedirectFilter.class)
+            new RequireRoleFilter(JodRole.FULL_USER),
+            OAuth2AuthorizationRequestRedirectFilter.class)
         .build();
   }
 
@@ -84,8 +87,9 @@ public class KoskiSecurityConfig {
                 customizer ->
                     customizer.additionalParameters(
                         additionalParameters -> {
-                          var lang = request.getParameter("locale");
-                          additionalParameters.put("locale", lang != null ? lang : "fi");
+                          Kieli.fromKoodi(request.getParameter("lang"))
+                              .ifPresent(
+                                  lang -> additionalParameters.put("locale", lang.getKoodi()));
                           additionalParameters.put("response_mode", "form_post");
                         })));
     return resolver;

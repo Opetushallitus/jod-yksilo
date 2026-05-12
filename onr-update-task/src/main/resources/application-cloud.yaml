@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    aws:
+      parameterstore:
+        enabled: false
+
+jod:
+  datasource:
+    iam-auth: true
+
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    root: INFO
+    fi.okm.jod.onr.task: INFO

@@ -14,5 +14,16 @@ package fi.okm.jod.yksilo.config;
  */
 public enum JodRole {
   USER,
-  EXTERNAL_API
+  EXTERNAL_API,
+  FULL_USER;
+
+  private final String authority;
+
+  JodRole() {
+    this.authority = "ROLE_" + name();
+  }
+
+  public String authority() {
+    return authority;
+  }
 }
