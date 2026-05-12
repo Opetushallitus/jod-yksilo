@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: onr-update-task
+  main:
+    web-application-type: none
+    banner-mode: off
+  datasource:
+    hikari:
+      maximum-pool-size: 2
+
+jod:
+  onr:
+    base-url: ${ONR_BASE_URL:}
+    oid-prefix: ${ONR_OID_PREFIX:}
+    oauth2:
+      client-id: ${ONR_OAUTH2_CLIENT_ID:}
+      client-secret: ${ONR_OAUTH2_CLIENT_SECRET:}
+      token-uri: ${ONR_OAUTH2_TOKEN_URI:}
+  onr-task:
+    batch-size: ${ONR_TASK_BATCH_SIZE:100}
+    batch-delay-ms: ${ONR_TASK_BATCH_DELAY_MS:1000}

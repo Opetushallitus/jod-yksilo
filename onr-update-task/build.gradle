@@ -1,0 +1,86 @@
+plugins {
+  id 'java'
+  id 'checkstyle'
+  id "com.diffplug.spotless"
+
+  id 'org.springframework.boot'
+  id 'io.spring.dependency-management'
+}
+
+group = 'fi.okm.jod'
+version = '0.0.1-SNAPSHOT'
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+  implementation 'org.springframework.boot:spring-boot-starter-restclient'
+  implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
+  implementation platform('software.amazon.awssdk:bom:2.42.33')
+  implementation 'software.amazon.awssdk:rds'
+  implementation 'software.amazon.awssdk:ssm'
+  runtimeOnly 'org.postgresql:postgresql'
+  annotationProcessor 'org.projectlombok:lombok'
+  compileOnly 'org.projectlombok:lombok'
+
+  testImplementation 'org.springframework.boot:spring-boot-starter-jdbc-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'tools.jackson.core:jackson-databind'
+  testRuntimeOnly 'com.h2database:h2'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testAnnotationProcessor 'org.projectlombok:lombok'
+  testCompileOnly 'org.projectlombok:lombok'
+}
+
+tasks.named('test', Test) {
+  useJUnitPlatform()
+}
+
+spotless {
+  java {
+    target 'src/*/**/*.java'
+    googleJavaFormat()
+    licenseHeader '''\
+    /*
+     * Copyright (c) $YEAR The Finnish Ministry of Education and Culture, The Finnish
+     * The Ministry of Economic Affairs and Employment, The Finnish National Agency of
+     * Education (Opetushallitus) and The Finnish Development and Administration centre
+     * for ELY Centres and TE Offices (KEHA).
+     *
+     * Licensed under the EUPL-1.2-or-later.
+     */
+
+     '''.stripIndent()
+  }
+}
+
+checkstyle {
+  toolVersion = '13.0.0'
+  showViolations = true
+
+  def archive = configurations.checkstyle.filter {
+    it.name.startsWith("checkstyle")
+  }
+  config = resources.text.fromArchiveEntry(archive, "google_checks.xml")
+  configDirectory = file("${rootProject.rootDir}/gradle/config/checkstyle")
+  configProperties = [
+      'org.checkstyle.google.suppressionfilter.config': "${rootProject.rootDir}/gradle/config/checkstyle/suppressions.xml",
+  ]
+}
+
+checkstyleMain {
+  configProperties += [
+      'org.checkstyle.google.severity': 'error',
+  ]
+}
+

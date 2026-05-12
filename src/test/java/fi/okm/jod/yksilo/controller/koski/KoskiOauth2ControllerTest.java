@@ -79,7 +79,7 @@ class KoskiOauth2ControllerTest {
             .perform(
                 get("/oauth2/authorize/koski").param("callback", fullCallbackUrlWithParameters))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrlPattern(AUTHORIZATION_URL + "?locale=*"))
+            .andExpect(redirectedUrlPattern(AUTHORIZATION_URL + "?lang=*"))
             .andReturn();
 
     var session = result.getRequest().getSession();

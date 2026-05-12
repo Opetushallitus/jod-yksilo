@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import fi.okm.jod.yksilo.config.JodRole;
 import fi.okm.jod.yksilo.domain.JodUser;
 import java.util.Collection;
 import java.util.Set;
@@ -46,9 +47,10 @@ public class MockJodUserImpl implements UserDetails, JodUser {
     this.authorities = Set.of(authorities);
   }
 
-  public static final SimpleGrantedAuthority ROLE_USER = new SimpleGrantedAuthority("ROLE_USER");
+  public static final SimpleGrantedAuthority ROLE_USER =
+      new SimpleGrantedAuthority(JodRole.USER.authority());
   public static final SimpleGrantedAuthority ROLE_FULL_USER =
-      new SimpleGrantedAuthority("ROLE_FULL_USER");
+      new SimpleGrantedAuthority(JodRole.FULL_USER.authority());
 
   @Override
   @JsonIgnore

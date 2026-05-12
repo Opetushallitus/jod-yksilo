@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/integraatiot/koski")
 @Tag(name = "integraatiot-koski")
 @FeatureRequired(Feature.KOSKI)
-@PreAuthorize("hasRole('FULL_USER')")
+@PreAuthorize("hasRole(T(fi.okm.jod.yksilo.config.JodRole).FULL_USER.name())")
 public class IntegraatioKoskiController {
 
   private final KoskiOauth2Service koskiOauth2Service;

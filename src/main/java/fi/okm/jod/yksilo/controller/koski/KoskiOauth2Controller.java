@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/oauth2")
 @Hidden
 @FeatureRequired(Feature.KOSKI)
-@PreAuthorize("hasRole('FULL_USER')")
+@PreAuthorize("hasRole(T(fi.okm.jod.yksilo.config.JodRole).FULL_USER.name())")
 public class KoskiOauth2Controller {
 
   private final KoskiOauth2Service koskiOauth2Service;
@@ -60,12 +61,10 @@ public class KoskiOauth2Controller {
   }
 
   private String getAuthorizationUrl(HttpServletRequest request) {
-    var language = request.getParameter("lang") != null ? request.getParameter("lang") : "fi";
-    return UriComponentsBuilder.fromUriString(
-            request.getContextPath()
-                + "/oauth2/authorization/"
-                + koskiOauth2Service.getRegistrationId())
-        .queryParam("locale", language)
+    var language = Kieli.fromKoodi(request.getParameter("lang")).orElse(Kieli.FI);
+    return UriComponentsBuilder.fromUriString(request.getContextPath())
+        .pathSegment("oauth2", "authorization", koskiOauth2Service.getRegistrationId())
+        .queryParam("lang", language.getKoodi())
         .toUriString();
   }
 
