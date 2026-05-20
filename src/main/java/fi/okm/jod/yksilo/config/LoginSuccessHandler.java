@@ -39,9 +39,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     if (request.getSession(false) instanceof HttpSession session) {
 
       if (authentication != null && authentication.getPrincipal() instanceof JodUser user) {
+
         log.atInfo()
             .addMarker(LogMarker.AUDIT)
             .addKeyValue("userId", user.getId())
+            .addKeyValue("method", user.authenticationMethod())
             .log("User {} logged in", user.getId());
 
         session.setMaxInactiveInterval((int) sessionTimeout.toSeconds());

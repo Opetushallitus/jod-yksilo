@@ -78,14 +78,14 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-flyway'
   implementation "org.flywaydb:flyway-database-postgresql"
 
-  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.1')
+  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
-  implementation platform('software.amazon.awssdk:bom:2.42.41')
+  implementation platform('software.amazon.awssdk:bom:2.44.7')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -97,7 +97,7 @@ dependencies {
   implementation "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"
 
   // Caffeine cache implementation
-  implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
+  implementation 'com.github.ben-manes.caffeine:caffeine:3.2.4'
 
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3'
   developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
@@ -140,18 +140,6 @@ dependencies {
     transitive = false
   }
 
-}
-
-tasks.named('test', Test) {
-  useJUnitPlatform()
-  maxHeapSize = "1g"
-  jvmArgs += ['-XX:+EnableDynamicAgentLoading',
-              "-javaagent:${configurations.mockitoAgent.asPath}"]
-  systemProperty('file.encoding', 'UTF-8')
-  testLogging {
-    events("skipped", "failed")
-  }
-  maxParallelForks = 1
 }
 
 checkstyle {
@@ -390,14 +378,23 @@ tasks.register('validateFlywayMigrationNames') {
 // see https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe
 
 tasks.withType(Test).configureEach {
-  jvmArgs = [
+  maxHeapSize = "1g"
+  maxParallelForks = 1
+
+  useJUnitPlatform()
+  systemProperty('file.encoding', 'UTF-8')
+  testLogging {
+    events("skipped", "failed")
+  }
+  jvmArgs += [
+      "-javaagent:${configurations.mockitoAgent.asPath}",
       '--sun-misc-unsafe-memory-access=allow',
       '--enable-native-access=ALL-UNNAMED',
   ]
 }
 
 tasks.withType(JavaExec).configureEach {
-  jvmArgs = [
+  jvmArgs += [
       '--sun-misc-unsafe-memory-access=allow',
       '--enable-native-access=ALL-UNNAMED',
   ]

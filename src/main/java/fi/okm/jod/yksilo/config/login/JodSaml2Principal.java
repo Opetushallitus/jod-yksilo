@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.config.login;
 
 import static java.util.Objects.requireNonNull;
 
+import fi.okm.jod.yksilo.domain.AuthenticationMethod;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.List;
@@ -71,8 +72,14 @@ public class JodSaml2Principal implements AuthenticatedPrincipal, JodUser {
                 .orElse(null));
   }
 
+  @Override
   public Optional<String> getAttribute(Attribute attribute) {
     return Optional.ofNullable(getFirstAttribute(attribute.getUri()));
+  }
+
+  @Override
+  public AuthenticationMethod authenticationMethod() {
+    return AuthenticationMethod.SUOMI_FI;
   }
 
   @Nullable

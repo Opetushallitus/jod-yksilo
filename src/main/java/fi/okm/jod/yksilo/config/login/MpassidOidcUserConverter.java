@@ -75,6 +75,22 @@ public class MpassidOidcUserConverter implements Converter<OidcUserSource, OidcU
     var principal =
         transactionTemplate.execute(
             _ -> {
+              var result = yksilot.hasHenkiloId(qualifiedOppijanumero).orElse(null);
+
+              if (result != null && result.henkiloId()) {
+
+                log.atWarn()
+                    .addMarker(LogMarker.AUDIT)
+                    .addKeyValue("userId", result.yksiloId())
+                    .log("MPASSid authentication attempt for a suomi.fi user");
+
+                throw new OAuth2AuthenticationException(
+                    new OAuth2Error(
+                        "authentication_method_not_allowed",
+                        "MPASSid authentication not allowed for this user",
+                        null));
+              }
+
               var yksiloId =
                   yksilot.upsertTunnistusData(
                       null, qualifiedOppijanumero, idToken.getGivenName(), idToken.getFamilyName());

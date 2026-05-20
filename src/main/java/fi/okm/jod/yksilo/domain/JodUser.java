@@ -28,4 +28,8 @@ public interface JodUser {
   default Optional<String> getAttribute(Attribute attribute) {
     return Optional.empty();
   }
+
+  default AuthenticationMethod authenticationMethod() {
+    return AuthenticationMethod.LOCAL;
+  }
 }

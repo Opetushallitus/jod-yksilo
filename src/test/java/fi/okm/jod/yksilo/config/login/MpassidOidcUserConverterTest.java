@@ -13,10 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fi.okm.jod.yksilo.IntegrationTest;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.repository.YksiloRepository.HasHenkiloId;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,6 +159,34 @@ class MpassidOidcUserConverterTest extends IntegrationTest {
     var data = yksilot.findTunnistusDataByOppijanumero(qualifiedOnr).orElseThrow();
     assertEquals("NewFirst", data.etunimi());
     assertEquals("NewLast", data.sukunimi());
+  }
+
+  @Test
+  void shouldFailWhenAccountLinkedToSuomifi() {
+    // Create a user with both FIN henkilo_id and oppijanumero (simulating Suomi.fi-linked account)
+    var qualifiedFin = PersonIdentifierType.FIN.asQualifiedIdentifier("010199-9986");
+    var qualifiedOnr = "ONR:1.2.246.562.24.30000000009";
+    var existingId =
+        yksilot.upsertTunnistusData(qualifiedFin, qualifiedOnr, "Matti", "Meikäläinen");
+    yksilot.save(new Yksilo(existingId));
+
+    // Verify the account is considered linked
+    assertTrue(yksilot.hasHenkiloId(qualifiedOnr).map(HasHenkiloId::henkiloId).orElse(false));
+
+    // Attempt MPASSid login with the same oppijanumero should fail
+    var request =
+        createUserRequest(
+            Map.of(
+                OPPIJANUMERO_CLAIM_URI,
+                "1.2.246.562.24.30000000009",
+                "given_name",
+                "Matti",
+                "family_name",
+                "Meikäläinen"));
+
+    var exception =
+        assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(request));
+    assertEquals("authentication_method_not_allowed", exception.getError().getErrorCode());
   }
 
   private static OidcUserRequest createUserRequest(Map<String, Object> claims) {

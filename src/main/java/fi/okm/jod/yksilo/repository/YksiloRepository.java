@@ -25,17 +25,24 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
 
   @NativeQuery(
       """
-          SELECT yksilo_id, oppijanumero, etunimi, sukunimi
-          FROM tunnistus.find_yksilo_by_henkilo_id(:henkiloId)
-          """)
+      SELECT yksilo_id, oppijanumero, etunimi, sukunimi
+      FROM tunnistus.find_yksilo_by_henkilo_id(:henkiloId)
+      """)
   Optional<TunnistusData> findTunnistusDataByHenkiloId(String henkiloId);
 
   @NativeQuery(
       """
-          SELECT yksilo_id, oppijanumero, etunimi, sukunimi
-          FROM tunnistus.find_yksilo_by_oppijanumero(:oppijanumero)
-          """)
+      SELECT yksilo_id, oppijanumero, etunimi, sukunimi
+      FROM tunnistus.find_yksilo_by_oppijanumero(:oppijanumero)
+      """)
   Optional<TunnistusData> findTunnistusDataByOppijanumero(String oppijanumero);
+
+  @NativeQuery(
+      """
+      SELECT yksilo_id, henkilo_id
+      FROM tunnistus.has_henkilo_id(:oppijanumero)
+      """)
+  Optional<HasHenkiloId> hasHenkiloId(String oppijanumero);
 
   @Query(
       value = "SELECT tunnistus.upsert_yksilo(:henkiloId, :oppijanumero, :etunimi, :sukunimi)",
@@ -76,4 +83,6 @@ public interface YksiloRepository extends JpaRepository<Yksilo, UUID> {
       @Nullable String oppijanumero,
       @Nullable String etunimi,
       @Nullable String sukunimi) {}
+
+  record HasHenkiloId(UUID yksiloId, boolean henkiloId) {}
 }

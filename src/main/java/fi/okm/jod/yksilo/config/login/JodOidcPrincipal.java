@@ -13,6 +13,7 @@ import static fi.okm.jod.yksilo.config.login.Attribute.OPPIJANUMERO_CLAIM;
 import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.domain.AuthenticationMethod;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.Collection;
@@ -102,5 +103,10 @@ public class JodOidcPrincipal implements OidcUser, JodUser {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return AUTHORITIES;
+  }
+
+  @Override
+  public AuthenticationMethod authenticationMethod() {
+    return AuthenticationMethod.MPASSID;
   }
 }
