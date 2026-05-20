@@ -56,6 +56,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
@@ -426,7 +427,13 @@ public class LoginConfig {
           log.atWarn()
               .addMarker(LogMarker.AUDIT)
               .log("Authentication failure: {}", exception.getMessage());
+
           returnUrl.queryParam("error", "AUTHENTICATION_FAILURE");
+
+          if (exception instanceof OAuth2AuthenticationException oae
+              && "authentication_method_not_allowed".equals(oae.getError().getErrorCode())) {
+            returnUrl.queryParam("reason", "AUTHENTICATION_METHOD_NOT_ALLOWED");
+          }
         }
         targetUrl = returnUrl.toUriString();
       }

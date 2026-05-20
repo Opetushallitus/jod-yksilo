@@ -1,6 +1,6 @@
 -- Generated yksilo SQL migrations
 -- database: yksilo, username: yksilo
--- Generated at: 2026-04-22T07:07:37.907Z
+-- Generated at: 2026-05-20T08:05:50.728Z
 
 ------------------------------------------------------------------------
 -- Migration: yksilo-app-role
@@ -237,6 +237,8 @@ BEGIN
   MERGE INTO henkilo AS h
   USING (VALUES (p_henkilo_id, p_oppijanumero)) AS p(id, onr)
   ON h.henkilo_id = p.id OR h.oppijanumero = p.onr
+  WHEN MATCHED AND h.henkilo_id IS NOT NULL AND p.id IS NULL THEN
+    DO NOTHING -- Prevent overwrites when only oppijanumero is provided but henkilo_id already exists
   WHEN MATCHED AND h.henkilo_id IS NULL AND p.id IS NOT NULL THEN
     UPDATE SET henkilo_id = p.id,
                etunimi    = COALESCE(p_etunimi, h.etunimi),
@@ -258,7 +260,7 @@ BEGIN
   SELECT h.yksilo_id INTO STRICT id
   FROM henkilo h
   WHERE h.henkilo_id = p_henkilo_id
-     OR h.oppijanumero = p_oppijanumero;
+     OR (h.henkilo_id IS NULL AND h.oppijanumero = p_oppijanumero);
 
   RETURN id;
 END
@@ -346,6 +348,20 @@ BEGIN
 END
 $$ LANGUAGE PLPGSQL SECURITY DEFINER
                     SET search_path = "tunnistus", pg_temp;
+CREATE OR REPLACE FUNCTION has_henkilo_id(p_oppijanumero VARCHAR(300))
+  RETURNS TABLE
+  (
+    yksilo_id    UUID,
+    henkilo_id   BOOLEAN
+  )
+  LANGUAGE SQL
+  SECURITY DEFINER
+  SET search_path = "tunnistus", pg_temp
+BEGIN ATOMIC
+  SELECT h.yksilo_id, h.henkilo_id IS NOT NULL as henkilo_id
+  FROM henkilo h
+  WHERE h.oppijanumero = p_oppijanumero;
+END;
 RESET ROLE;
 COMMIT;
 
