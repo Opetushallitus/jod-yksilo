@@ -131,9 +131,10 @@ public class CvService {
             KoulutusKokonaisuusDto::id,
             KoulutusKokonaisuusDto::koulutukset,
             KoulutusDto::id,
-            (k, filtered) -> new KoulutusKokonaisuusDto(k.id(), k.nimi(), filtered)));
+            (k, filtered) ->
+                new KoulutusKokonaisuusDto(k.id(), k.nimi(), k.tuontiLahde(), filtered)));
 
-    tyopaikkaService.add(
+    tyopaikkaService.addFromImport(
         user,
         filterSelected(
             dto.tyopaikat(),
@@ -141,9 +142,9 @@ public class CvService {
             TyopaikkaDto::id,
             TyopaikkaDto::toimenkuvat,
             ToimenkuvaDto::id,
-            (t, filtered) -> new TyopaikkaDto(t.id(), t.nimi(), filtered)));
+            (t, filtered) -> new TyopaikkaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
-    toimintoService.add(
+    toimintoService.addFromImport(
         user,
         filterSelected(
             dto.toiminnot(),
@@ -151,7 +152,7 @@ public class CvService {
             ToimintoDto::id,
             ToimintoDto::patevyydet,
             PatevyysDto::id,
-            (t, filtered) -> new ToimintoDto(t.id(), t.nimi(), filtered)));
+            (t, filtered) -> new ToimintoDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
     tehtavat.delete(tehtava);
   }

@@ -66,14 +66,17 @@ public class TyopaikkaService {
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(TyopaikkaService::notFound);
     entity.setNimi(dto.nimi());
+    entity.setTuontiLahde(null);
     tyopaikat.save(entity);
   }
 
   public UUID add(JodUser user, TyopaikkaDto dto) {
-    return add(user, Set.of(dto)).getFirst();
+    // tuontiLahde is system-controlled metadata
+    var sanitized = new TyopaikkaDto(dto.id(), dto.nimi(), null, dto.toimenkuvat());
+    return addFromImport(user, Set.of(sanitized)).getFirst();
   }
 
-  public SequencedSet<UUID> add(JodUser user, Set<TyopaikkaDto> dtos) {
+  public SequencedSet<UUID> addFromImport(JodUser user, Set<TyopaikkaDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (tyopaikat.countByYksilo(yksilo) + dtos.size() > Limits.TYOPAIKKA) {
       throw new ProfileLimitException(ProfileItem.TYOPAIKKA);
@@ -91,7 +94,9 @@ public class TyopaikkaService {
     return dtos.stream()
         .map(
             dto -> {
-              var entity = tyopaikat.save(new Tyopaikka(yksilo, dto.nimi()));
+              var entity = new Tyopaikka(yksilo, dto.nimi());
+              entity.setTuontiLahde(dto.tuontiLahde());
+              entity = tyopaikat.save(entity);
               if (dto.toimenkuvat() != null) {
                 for (var toimenkuva : dto.toimenkuvat()) {
                   entity.getToimenkuvat().add(toimenkuvaService.add(entity, toimenkuva));

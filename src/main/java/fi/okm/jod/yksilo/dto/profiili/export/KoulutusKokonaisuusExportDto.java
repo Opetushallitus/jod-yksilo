@@ -10,8 +10,9 @@
 package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import java.util.Set;
 import java.util.UUID;
 
 public record KoulutusKokonaisuusExportDto(
-    UUID id, LocalizedString nimi, Set<KoulutusExportDto> koulutukset) {}
+    UUID id, LocalizedString nimi, TuontiLahde tuontiLahde, Set<KoulutusExportDto> koulutukset) {}

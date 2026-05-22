@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.service;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaUpdateDto;
@@ -31,7 +33,6 @@ import org.springframework.context.annotation.Import;
 
 @Import({TyopaikkaService.class, ToimenkuvaService.class, YksilonOsaaminenService.class})
 class TyopaikkaServiceTest extends AbstractServiceTest {
-
   @Autowired TyopaikkaService service;
   @Autowired ToimenkuvaRepository toimenkuvat;
   @Autowired YksilonOsaaminenRepository osaaminen;
@@ -40,14 +41,11 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
   void shouldAddTyopaikka() {
     assertDoesNotThrow(
         () -> {
-          var id = service.add(user, new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), null));
+          var id = service.add(user, new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), null, null));
           entityManager.flush();
-
           var updatedNimi = ls(Kieli.SV, "namn");
           service.update(user, new TyopaikkaUpdateDto(id, updatedNimi));
-
           simulateCommit();
-
           var result = service.findAll(user);
           assertEquals(1, result.size());
           assertEquals(updatedNimi, result.getFirst().nimi());
@@ -64,6 +62,7 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                   new TyopaikkaDto(
                       null,
                       ls(Kieli.FI, "nimi"),
+                      null,
                       Set.of(
                           new ToimenkuvaDto[] {
                             new ToimenkuvaDto(
@@ -74,10 +73,72 @@ class TyopaikkaServiceTest extends AbstractServiceTest {
                                 null,
                                 Set.of(URI.create("urn:osaaminen:1")))
                           })));
-
           simulateCommit();
-
           service.delete(user, id);
         });
+  }
+
+  @Test
+  void shouldIgnoreTuontiLahdeFromUserFacingAdd() {
+    // tuontiLahde supplied by API clients must be silently ignored
+    var id =
+        service.add(
+            user, new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null));
+    simulateCommit();
+    var result = service.get(user, id);
+    assertNull(result.tuontiLahde());
+  }
+
+  @Test
+  void shouldPersistTuontiLahdeForImport() {
+    var id =
+        service
+            .addFromImport(
+                user,
+                Set.of(new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null)))
+            .getFirst();
+    simulateCommit();
+    var result = service.get(user, id);
+    assertEquals(TuontiLahde.TMT_TUONTI, result.tuontiLahde());
+  }
+
+  @Test
+  void shouldClearTuontiLahdeOnTyopaikkaUpdate() {
+    var id =
+        service
+            .addFromImport(
+                user,
+                Set.of(new TyopaikkaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.CV_TUONTI, null)))
+            .getFirst();
+    service.update(user, new TyopaikkaUpdateDto(id, ls(Kieli.SV, "namn")));
+    simulateCommit();
+    var result = service.get(user, id);
+    assertNull(result.tuontiLahde());
+  }
+
+  @Test
+  void shouldPreserveTuontiLahdeAfterImport() {
+    // tuontiLahde must survive child creation during import (same transaction)
+    var id =
+        service
+            .addFromImport(
+                user,
+                Set.of(
+                    new TyopaikkaDto(
+                        null,
+                        ls(Kieli.FI, "nimi"),
+                        TuontiLahde.TMT_TUONTI,
+                        Set.of(
+                            new ToimenkuvaDto(
+                                null,
+                                ls(Kieli.FI, "toimenkuva"),
+                                null,
+                                LocalDate.now(),
+                                null,
+                                Set.of())))))
+            .getFirst();
+    simulateCommit();
+    var result = service.get(user, id);
+    assertEquals(TuontiLahde.TMT_TUONTI, result.tuontiLahde());
   }
 }

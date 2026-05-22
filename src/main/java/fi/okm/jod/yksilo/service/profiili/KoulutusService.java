@@ -61,6 +61,7 @@ public class KoulutusService {
       throw new ProfileLimitException(ProfileItem.KOULUTUS);
     }
 
+    kokonaisuus.setTuontiLahde(null);
     return add(kokonaisuus, dto).getId();
   }
 
@@ -119,6 +120,7 @@ public class KoulutusService {
   }
 
   void update(Koulutus entity, KoulutusDto dto) {
+    entity.getKokonaisuus().setTuontiLahde(null);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
@@ -131,6 +133,7 @@ public class KoulutusService {
   }
 
   void delete(Koulutus koulutus) {
+    koulutus.getKokonaisuus().setTuontiLahde(null);
     osaamiset.deleteAll(koulutus.getOsaamiset());
     koulutukset.delete(koulutus);
   }

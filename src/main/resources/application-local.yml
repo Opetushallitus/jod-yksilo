@@ -1,6 +1,8 @@
 jod:
   external-api:
     apiKey: "test-${random.uuid}"
+  cv:
+    request-queue: http://localhost:8430
 
 logging:
   level:

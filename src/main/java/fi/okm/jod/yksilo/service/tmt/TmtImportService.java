@@ -110,9 +110,9 @@ public class TmtImportService {
     TmtImportDto save(JodUser user, FullProfileDtoExternalGet profile) {
       ImportDto importDto = mapper.map(profile);
       return new TmtImportDto(
-          tyopaikkat.add(user, importDto.tyopaikat()),
+          tyopaikkat.addFromImport(user, importDto.tyopaikat()),
           koulutukset.add(user, importDto.koulutuskokonaisuudet()),
-          toiminnot.add(user, importDto.toiminnot()));
+          toiminnot.addFromImport(user, importDto.toiminnot()));
     }
   }
 }

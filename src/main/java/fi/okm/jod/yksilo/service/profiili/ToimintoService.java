@@ -51,10 +51,12 @@ public class ToimintoService {
   }
 
   public UUID add(JodUser user, ToimintoDto dto) {
-    return add(user, Set.of(dto)).getFirst();
+    // tuontiLahde is system-controlled metadata
+    var sanitized = new ToimintoDto(dto.id(), dto.nimi(), null, dto.patevyydet());
+    return addFromImport(user, Set.of(sanitized)).getFirst();
   }
 
-  public SequencedSet<UUID> add(JodUser user, Set<ToimintoDto> dtos) {
+  public SequencedSet<UUID> addFromImport(JodUser user, Set<ToimintoDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (toiminnot.countByYksilo(yksilo) + dtos.size() > Limits.TOIMINTO) {
       throw new ProfileLimitException(ProfileItem.TOIMINTO);
@@ -72,7 +74,9 @@ public class ToimintoService {
     return dtos.stream()
         .map(
             dto -> {
-              var toiminto = toiminnot.save(new Toiminto(yksilo, dto.nimi()));
+              var toiminto = new Toiminto(yksilo, dto.nimi());
+              toiminto.setTuontiLahde(dto.tuontiLahde());
+              toiminto = toiminnot.save(toiminto);
               if (dto.patevyydet() != null) {
                 for (var patevyys : dto.patevyydet()) {
                   toiminto.getPatevyydet().add(patevyysService.add(toiminto, patevyys));
@@ -89,6 +93,7 @@ public class ToimintoService {
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(() -> new NotFoundException("Toiminto not found"));
     toiminto.setNimi(dto.nimi());
+    toiminto.setTuontiLahde(null);
     toiminnot.flush();
   }
 

@@ -73,6 +73,7 @@ public final class Mapper {
         : new TyopaikkaDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getToimenkuvat().stream()
                 .map(Mapper::mapToimenkuva)
                 .collect(Collectors.toSet()));
@@ -99,6 +100,7 @@ public final class Mapper {
         : new ToimintoDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getPatevyydet().stream().map(Mapper::mapPatevyys).collect(Collectors.toSet()));
   }
 
@@ -122,6 +124,7 @@ public final class Mapper {
         : new KoulutusKokonaisuusDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getKoulutukset().stream().map(Mapper::mapKoulutus).collect(Collectors.toSet()));
   }
 

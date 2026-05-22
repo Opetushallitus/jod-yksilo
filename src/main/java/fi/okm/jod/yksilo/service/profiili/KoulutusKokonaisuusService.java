@@ -58,6 +58,7 @@ public class KoulutusKokonaisuusService {
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
+    // TODO: Refactor tuontiLahde from user-controlled to system-controlled
     return add(user, Set.of(dto)).getFirst();
   }
 
@@ -86,7 +87,9 @@ public class KoulutusKokonaisuusService {
     return dtos.stream()
         .map(
             dto -> {
-              var entity = kokonaisuudet.save(new KoulutusKokonaisuus(yksilo, dto.nimi()));
+              var entity = new KoulutusKokonaisuus(yksilo, dto.nimi());
+              entity.setTuontiLahde(dto.tuontiLahde());
+              entity = kokonaisuudet.save(entity);
               for (var koulutus : dto.koulutukset()) {
                 entity
                     .getKoulutukset()
@@ -110,6 +113,7 @@ public class KoulutusKokonaisuusService {
             .findByYksiloIdAndId(user.getId(), dto.id())
             .orElseThrow(KoulutusKokonaisuusService::notFound);
     entity.setNimi(dto.nimi());
+    entity.setTuontiLahde(null);
     kokonaisuudet.save(entity);
   }
 

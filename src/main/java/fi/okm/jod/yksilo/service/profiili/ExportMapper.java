@@ -94,6 +94,7 @@ public final class ExportMapper {
         : new TyopaikkaExportDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getToimenkuvat().stream()
                 .map(ExportMapper::mapToimenkuva)
                 .collect(Collectors.toSet()));
@@ -119,6 +120,7 @@ public final class ExportMapper {
         : new KoulutusKokonaisuusExportDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getKoulutukset().stream()
                 .map(ExportMapper::mapKoulutus)
                 .collect(Collectors.toSet()));
@@ -146,6 +148,7 @@ public final class ExportMapper {
         : new ToimintoExportDto(
             entity.getId(),
             entity.getNimi(),
+            entity.getTuontiLahde(),
             entity.getPatevyydet().stream()
                 .map(ExportMapper::mapPatevyys)
                 .collect(Collectors.toSet()));
