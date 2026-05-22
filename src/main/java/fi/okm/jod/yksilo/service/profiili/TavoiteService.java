@@ -80,7 +80,7 @@ public class TavoiteService {
     final Tyomahdollisuus tyomahdollisuus =
         tyomahdollisuudet
             .findById(dto.mahdollisuusId())
-            .orElseThrow(() -> new NotFoundException("Koulutusmahdollisuus not found"));
+            .orElseThrow(() -> new NotFoundException("Tyomahdollisuus not found"));
     tavoite.setTyomahdollisuus(tyomahdollisuus);
     yksilo.updated();
     this.tavoitteet.save(tavoite);

@@ -13,12 +13,14 @@ import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -44,6 +47,10 @@ import org.hibernate.annotations.BatchSize;
 @Table(indexes = {@Index(columnList = "yksilo_id")})
 public class Tyopaikka {
   @GeneratedValue @Id private UUID id;
+
+  @Setter
+  @Enumerated(EnumType.STRING)
+  private TuontiLahde tuontiLahde;
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

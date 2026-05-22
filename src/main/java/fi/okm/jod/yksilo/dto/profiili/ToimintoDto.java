@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.dto.profiili;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.Limits;
 import fi.okm.jod.yksilo.validation.PrintableString;
@@ -24,4 +25,5 @@ import java.util.UUID;
 public record ToimintoDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
+    TuontiLahde tuontiLahde,
     @Size(min = 1, max = Limits.PATEVYYS) Set<@Valid @NotNull PatevyysDto> patevyydet) {}

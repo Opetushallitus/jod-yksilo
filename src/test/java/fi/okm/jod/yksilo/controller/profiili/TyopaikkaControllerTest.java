@@ -51,6 +51,7 @@ class TyopaikkaControllerTest {
         new TyopaikkaDto(
             null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
+            null,
             Set.of(
                 new ToimenkuvaDto(
                     null,

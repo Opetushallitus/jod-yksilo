@@ -12,8 +12,10 @@ package fi.okm.jod.yksilo.service;
 import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
@@ -40,7 +42,8 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
           var id =
               service.add(
                   user,
-                  new KoulutusKokonaisuusDto(null, ls(Kieli.FI, "nimi"), Collections.emptySet()));
+                  new KoulutusKokonaisuusDto(
+                      null, ls(Kieli.FI, "nimi"), null, Collections.emptySet()));
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
@@ -64,6 +67,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                   new KoulutusKokonaisuusDto(
                       null,
                       ls(Kieli.FI, "nimi"),
+                      null,
                       Set.of(
                           new KoulutusDto[] {
                             new KoulutusDto(
@@ -83,5 +87,61 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
           service.delete(user, id);
           simulateCommit();
         });
+  }
+
+  @Test
+  void shouldPersistTuontiLahdeForKoulutusKokonaisuus() {
+    var id =
+        service.add(
+            user,
+            new KoulutusKokonaisuusDto(
+                null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, Collections.emptySet()));
+
+    simulateCommit();
+
+    var result = service.get(user, id);
+    assertEquals(TuontiLahde.TMT_TUONTI, result.tuontiLahde());
+  }
+
+  @Test
+  void shouldClearTuontiLahdeOnKoulutusKokonaisuusUpdate() {
+    var id =
+        service.add(
+            user,
+            new KoulutusKokonaisuusDto(
+                null, ls(Kieli.FI, "nimi"), TuontiLahde.CV_TUONTI, Collections.emptySet()));
+
+    service.update(user, new KoulutusKokonaisuusUpdateDto(id, ls(Kieli.SV, "namn")));
+    simulateCommit();
+
+    var result = service.get(user, id);
+    assertNull(result.tuontiLahde());
+  }
+
+  @Test
+  void shouldPreserveTuontiLahdeAfterImport() {
+    // tuontiLahde must survive child creation during import (same transaction)
+    var id =
+        service.add(
+            user,
+            new KoulutusKokonaisuusDto(
+                null,
+                ls(Kieli.FI, "nimi"),
+                TuontiLahde.TMT_TUONTI,
+                Set.of(
+                    new KoulutusDto(
+                        null,
+                        ls(Kieli.FI, "koulutus"),
+                        null,
+                        LocalDate.now(),
+                        null,
+                        Set.of(),
+                        null,
+                        null,
+                        null))));
+    simulateCommit();
+
+    var result = service.get(user, id);
+    assertEquals(TuontiLahde.TMT_TUONTI, result.tuontiLahde());
   }
 }

@@ -14,6 +14,7 @@ import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.KOULUTUS_TILA_KESKEY
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
@@ -77,6 +78,7 @@ class TmtImportMapper {
                         new TyopaikkaDto(
                             null,
                             asLocalizedString(employment.getEmployer()),
+                            TuontiLahde.TMT_TUONTI,
                             Set.of(mapToToimenkuva(employment))))
                 .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
@@ -89,7 +91,8 @@ class TmtImportMapper {
                     education -> {
                       var institutionName = asLocalizedString(education.getDegreeInstitution());
                       var koulutus = mapToKoulutus(education);
-                      return new KoulutusKokonaisuusDto(null, institutionName, Set.of(koulutus));
+                      return new KoulutusKokonaisuusDto(
+                          null, institutionName, TuontiLahde.TMT_TUONTI, Set.of(koulutus));
                     })
                 .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
@@ -163,7 +166,7 @@ class TmtImportMapper {
     var loppuPvm = extractEndDate(project.getInterval());
 
     var patevyys = new PatevyysDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
-    return new ToimintoDto(null, nimi, Set.of(patevyys));
+    return new ToimintoDto(null, nimi, TuontiLahde.TMT_TUONTI, Set.of(patevyys));
   }
 
   private LocalizedString extractDescription(DescriptionItemExternalGet description) {

@@ -57,6 +57,7 @@ public class ToimenkuvaService {
       throw new ProfileLimitException(ProfileItem.TOIMENKUVA);
     }
 
+    tyopaikka.setTuontiLahde(null);
     return add(tyopaikka, dto).getId();
   }
 
@@ -105,6 +106,7 @@ public class ToimenkuvaService {
   }
 
   void update(Toimenkuva entity, ToimenkuvaDto dto) {
+    entity.getTyopaikka().setTuontiLahde(null);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
@@ -116,6 +118,7 @@ public class ToimenkuvaService {
   }
 
   void delete(Toimenkuva toimenkuva) {
+    toimenkuva.getTyopaikka().setTuontiLahde(null);
     osaamiset.deleteAll(toimenkuva.getOsaamiset());
     toimenkuvat.delete(toimenkuva);
   }

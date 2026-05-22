@@ -53,6 +53,7 @@ public class PatevyysService {
       throw new ProfileLimitException(ProfileItem.PATEVYYS);
     }
 
+    toiminto.setTuontiLahde(null);
     return add(toiminto, dto).getId();
   }
 
@@ -101,6 +102,7 @@ public class PatevyysService {
   }
 
   void update(Patevyys entity, PatevyysDto dto) {
+    entity.getToiminto().setTuontiLahde(null);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
@@ -112,6 +114,7 @@ public class PatevyysService {
   }
 
   void delete(Patevyys patevyys) {
+    patevyys.getToiminto().setTuontiLahde(null);
     osaamiset.deleteAll(patevyys.getOsaamiset());
     patevyydet.delete(patevyys);
   }

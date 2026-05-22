@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.profiili.cv;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.CvTehtavaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
@@ -86,7 +87,8 @@ class CvResponseMapper {
             .alkuPvm(education.startDate())
             .loppuPvm(education.endDate())
             .build();
-    return new KoulutusKokonaisuusDto(UUID.randomUUID(), nimi, Set.of(koulutus));
+    return new KoulutusKokonaisuusDto(
+        UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(koulutus));
   }
 
   private List<TyopaikkaDto> mapWorkExperiences(
@@ -112,7 +114,7 @@ class CvResponseMapper {
             workExperience.startDate(),
             workExperience.endDate(),
             null);
-    return new TyopaikkaDto(UUID.randomUUID(), nimi, Set.of(toimenkuva));
+    return new TyopaikkaDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(toimenkuva));
   }
 
   private List<ToimintoDto> mapActivities(
@@ -136,7 +138,7 @@ class CvResponseMapper {
             activity.startDate(),
             activity.endDate(),
             null);
-    return new ToimintoDto(UUID.randomUUID(), nimi, Set.of(patevyys));
+    return new ToimintoDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(patevyys));
   }
 
   private static LocalizedString localizedString(String value, Kieli kieli) {

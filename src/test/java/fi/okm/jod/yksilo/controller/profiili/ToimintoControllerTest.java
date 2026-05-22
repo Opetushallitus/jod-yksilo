@@ -61,6 +61,7 @@ class ToimintoControllerTest {
         new ToimintoDto(
             null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
+            null,
             Set.of(
                 new PatevyysDto(
                     null,
@@ -86,6 +87,7 @@ class ToimintoControllerTest {
         new ToimintoDto(
             null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
+            null,
             Set.of(
                 new PatevyysDto(
                     null,
@@ -120,6 +122,7 @@ class ToimintoControllerTest {
         new ToimintoDto(
             id,
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
+            null,
             Set.of(
                 new PatevyysDto(
                     null,
@@ -145,6 +148,7 @@ class ToimintoControllerTest {
         new ToimintoDto(
             UUID.randomUUID(),
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
+            null,
             Set.of(
                 new PatevyysDto(
                     null,
