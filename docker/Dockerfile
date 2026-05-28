@@ -25,9 +25,9 @@ USER app
 WORKDIR /opt/app
 
 ENV JAVAAGENT_OPTIONS="-javaagent:/opt/app/otel-javaagent.jar"
-# For netty: https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe
-ENV NATIVE_OPTIONS="--sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED"
-ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=384m -XX:+UseCompactObjectHeaders -XX:+UseStringDeduplication -XX:+ExitOnOutOfMemoryError"
+# For netty: https://github.com/netty/netty/wiki/Java-24-and-sun.misc.Unsafe#netty-42-and-unsafe
+ENV NATIVE_OPTIONS="--enable-native-access=ALL-UNNAMED"
+ENV JAVA_OPTIONS="-XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=384m -XX:+UseCompactObjectHeaders -XX:+UseStringDeduplication"
 
 ENTRYPOINT ["/bin/bash","-c","exec /usr/bin/java \
  $NATIVE_OPTIONS \

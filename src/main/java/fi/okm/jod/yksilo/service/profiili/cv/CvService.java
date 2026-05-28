@@ -33,9 +33,12 @@ import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.ProfileDeletedEvent;
 import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -93,7 +96,7 @@ public class CvService {
     }
 
     try {
-      sender.send(new CvRequestMessage(tehtava.getId(), user.getId(), s3Key));
+      sender.send(new CvRequestMessage(tehtava.getId(), user.getId(), s3Key, sha256(pdf)));
     } catch (Exception e) {
       tehtavat.updateTila(tehtava.getId(), CvTehtavaTila.EPAONNISTUNUT);
       // storage handles cleanup (e.g. S3 lifecycle rules)
@@ -181,7 +184,7 @@ public class CvService {
     var deleted =
         tehtavat.deleteExpired(
             Set.of(CvTehtavaTila.VALMIS, CvTehtavaTila.EPAONNISTUNUT),
-            Instant.now().minus(30, ChronoUnit.DAYS));
+            Instant.now().minus(1, ChronoUnit.DAYS));
     if (deleted > 0) {
       log.info("Removed {} expired CV tasks", deleted);
     }
@@ -196,6 +199,15 @@ public class CvService {
 
   private CvTehtavaDto toDto(CvTehtava t) {
     return new CvTehtavaDto(t.getId(), t.getTila(), t.getTulos());
+  }
+
+  private static String sha256(byte[] data) {
+    try {
+      var digest = MessageDigest.getInstance("SHA-256");
+      return HexFormat.of().formatHex(digest.digest(data));
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError("Unexpected: SHA-256 not available", e);
+    }
   }
 
   /**

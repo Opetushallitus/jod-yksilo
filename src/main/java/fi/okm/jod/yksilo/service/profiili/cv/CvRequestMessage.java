@@ -12,4 +12,4 @@ package fi.okm.jod.yksilo.service.profiili.cv;
 import java.util.UUID;
 
 /** Message sent to SQS request queue to trigger CV extraction. */
-public record CvRequestMessage(UUID taskId, UUID userId, String s3Key) {}
+public record CvRequestMessage(UUID taskId, UUID userId, String s3Key, String checksum) {}
