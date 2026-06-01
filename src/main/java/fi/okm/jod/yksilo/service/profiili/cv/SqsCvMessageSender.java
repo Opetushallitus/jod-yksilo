@@ -33,7 +33,11 @@ class SqsCvMessageSender implements CvMessageSender {
 
   @Override
   public void send(CvRequestMessage message) {
-    sqsTemplate.send(properties.requestQueue(), message);
+    sqsTemplate.send(
+        to ->
+            to.queue(properties.requestQueue())
+                .messageGroupId(message.userId().toString())
+                .payload(message));
     log.debug("Sent CV extraction request to SQS for task {}", message.taskId());
   }
 }

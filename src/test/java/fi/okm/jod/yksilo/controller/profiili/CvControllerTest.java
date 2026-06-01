@@ -56,6 +56,8 @@ class CvControllerTest {
   @TestConfiguration
   static class TestConfig {
 
+    private static final int RATE_LIMIT = 1;
+
     @Bean
     UserDetailsService mockUserDetailsService() {
       return username -> new MockJodUserImpl(username, UUID.randomUUID());
@@ -63,7 +65,7 @@ class CvControllerTest {
 
     @Bean
     CvProperties cvProperties() {
-      return new CvProperties(null, null, MAX_SIZE, null, null);
+      return new CvProperties(null, null, MAX_SIZE, RATE_LIMIT, null, null);
     }
   }
 
@@ -106,7 +108,7 @@ class CvControllerTest {
   void shouldRejectIfInFlightTaskExists() throws Exception {
     doThrow(new ServiceConflictException("In-flight task exists"))
         .when(cvService)
-        .checkNoInFlightTask(any());
+        .checkRateLimit(any());
 
     mockMvc
         .perform(

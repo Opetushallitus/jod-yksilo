@@ -12,5 +12,6 @@ package fi.okm.jod.yksilo.domain;
 public enum CvTehtavaTila {
   ODOTTAA,
   VALMIS,
+  POISTETTU,
   EPAONNISTUNUT
 }
