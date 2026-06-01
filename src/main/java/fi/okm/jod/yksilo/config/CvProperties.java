@@ -18,5 +18,6 @@ public record CvProperties(
     @Nullable String s3Bucket,
     @DefaultValue("jod-cv") String s3Prefix,
     @DefaultValue("2097152") int maxSize,
+    @DefaultValue("10") int rateLimit,
     @Nullable String requestQueue,
     @Nullable String responseQueue) {}

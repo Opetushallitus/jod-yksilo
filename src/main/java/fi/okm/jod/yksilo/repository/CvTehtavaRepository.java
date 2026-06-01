@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.CvTehtavaTila;
 import fi.okm.jod.yksilo.entity.CvTehtava;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -24,9 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface CvTehtavaRepository extends JpaRepository<CvTehtava, UUID> {
 
+  record CountByTila(CvTehtavaTila tila, long lukumaara) {}
+
   Optional<CvTehtava> findByIdAndYksilo(UUID id, Yksilo yksilo);
 
-  boolean existsByYksiloAndTila(Yksilo yksilo, CvTehtavaTila tila);
+  @Query(
+      "SELECT t.tila, count(*) AS lukumaara FROM CvTehtava t WHERE t.yksilo = :yksilo AND t.luotu >= :luotu GROUP BY t.tila")
+  List<CountByTila> countByYksiloAndTila(Yksilo yksilo, Instant luotu);
 
   @Transactional
   @Modifying

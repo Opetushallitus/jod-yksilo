@@ -22,4 +22,8 @@ public class ServiceOverloadedException extends ServiceException {
   public ServiceOverloadedException(String message, Throwable cause) {
     super(message, cause);
   }
+
+  public ServiceOverloadedException(String message) {
+    super(message);
+  }
 }

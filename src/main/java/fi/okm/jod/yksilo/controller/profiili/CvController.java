@@ -77,7 +77,7 @@ public class CvController {
       return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).build();
     }
 
-    cvService.checkNoInFlightTask(user);
+    cvService.checkRateLimit(user);
 
     var bytes = request.getInputStream().readNBytes(maxSize + 1);
     if (bytes.length > maxSize) {

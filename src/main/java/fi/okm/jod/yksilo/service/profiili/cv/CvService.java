@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.profiili.cv;
 
 import static java.util.function.Function.identity;
 
+import fi.okm.jod.yksilo.config.CvProperties;
 import fi.okm.jod.yksilo.domain.CvTehtavaTila;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
@@ -28,6 +29,7 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceConflictException;
 import fi.okm.jod.yksilo.service.ServiceException;
+import fi.okm.jod.yksilo.service.ServiceOverloadedException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.ProfileDeletedEvent;
@@ -68,12 +70,24 @@ public class CvService {
   private final KoulutusKokonaisuusService koulutusKokonaisuusService;
   private final TyopaikkaService tyopaikkaService;
   private final ToimintoService toimintoService;
+  private final CvProperties properties;
 
   @Transactional(readOnly = true)
-  public void checkNoInFlightTask(JodUser user) {
-    if (tehtavat.existsByYksiloAndTila(
-        yksilot.getReferenceById(user.getId()), CvTehtavaTila.ODOTTAA)) {
-      throw new ServiceConflictException("In-flight CV task already exists");
+  public void checkRateLimit(JodUser user) {
+    var tilat =
+        tehtavat.countByYksiloAndTila(
+            yksilot.getReferenceById(user.getId()), Instant.now().minus(1, ChronoUnit.DAYS));
+
+    long count = 0;
+    for (var tila : tilat) {
+      if (tila.tila() == CvTehtavaTila.ODOTTAA && tila.lukumaara() > 0) {
+        throw new ServiceConflictException("In-flight CV task already exists");
+      }
+      count += tila.lukumaara();
+    }
+
+    if (count > properties.rateLimit()) {
+      throw new ServiceOverloadedException("CV task rate limit exceeded");
     }
   }
 
@@ -157,7 +171,8 @@ public class CvService {
             PatevyysDto::id,
             (t, filtered) -> new ToimintoDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
-    tehtavat.delete(tehtava);
+    tehtava.setTila(CvTehtavaTila.POISTETTU);
+    tehtava.setTulos(null);
   }
 
   @Transactional
@@ -170,7 +185,8 @@ public class CvService {
     if (tehtava.getTila() == CvTehtavaTila.ODOTTAA) {
       throw new ServiceConflictException("Cannot delete a pending CV task");
     }
-    tehtavat.delete(tehtava);
+    tehtava.setTulos(null);
+    tehtava.setTila(CvTehtavaTila.POISTETTU);
   }
 
   @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
@@ -183,7 +199,7 @@ public class CvService {
     }
     var deleted =
         tehtavat.deleteExpired(
-            Set.of(CvTehtavaTila.VALMIS, CvTehtavaTila.EPAONNISTUNUT),
+            Set.of(CvTehtavaTila.VALMIS, CvTehtavaTila.EPAONNISTUNUT, CvTehtavaTila.POISTETTU),
             Instant.now().minus(1, ChronoUnit.DAYS));
     if (deleted > 0) {
       log.info("Removed {} expired CV tasks", deleted);
