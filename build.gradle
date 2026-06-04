@@ -57,6 +57,7 @@ configurations {
   }
   schemaSpy
   mockitoAgent
+  swaggerUiDocs
 }
 
 dependencies {
@@ -101,6 +102,7 @@ dependencies {
 
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3'
   developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+  swaggerUiDocs 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -304,6 +306,43 @@ tasks.named("dependencyUpdates", DependencyUpdatesTask).configure {
     !isPreReleaseVersion(it.currentVersion) && isPreReleaseVersion(it.candidate.version)
         || (hasMajorVersion(it.currentVersion)
         && majorVersion(it.candidate.version) > majorVersion(it.currentVersion))
+  }
+}
+
+tasks.register('generateSwaggerUiDocs') {
+  dependsOn generateOpenApiDocs
+  inputs.files configurations.swaggerUiDocs
+  inputs.file layout.buildDirectory.file('openapi/openapi.json')
+  def outputDir = layout.buildDirectory.dir('swagger-ui')
+  outputs.dir outputDir
+
+  doLast {
+    def outDir = outputDir.get().asFile
+    outDir.mkdirs()
+
+    configurations.swaggerUiDocs.incoming.artifactView {
+      componentFilter { id -> id.module == 'swagger-ui' }
+    }.files.each { jar ->
+      copy {
+        from zipTree(jar)
+        include 'META-INF/resources/webjars/swagger-ui/**'
+        eachFile { fcd ->
+          // Path inside jar: META-INF/resources/webjars/swagger-ui/<version>/file
+          // Drop first 5 segments so only the file name remains
+          fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(5) as String[])
+        }
+        includeEmptyDirs = false
+        into outDir
+      }
+    }
+
+    copy {
+      from layout.buildDirectory.file('openapi/openapi.json')
+      into outDir
+    }
+
+    def initFile = new File(outDir, 'swagger-initializer.js')
+    initFile.text = initFile.text.replaceFirst(/url:\s*"[^"]*"/, 'url: "openapi.json"')
   }
 }
 
