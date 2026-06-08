@@ -23,6 +23,7 @@ public class FeatureConverter implements Converter<String, Feature> {
     try {
       return Feature.valueOf(source);
     } catch (IllegalArgumentException e) {
+      // Unused or frontend-only
       log.atWarn().log("Unknown feature '{}'", source);
       return null;
     }
