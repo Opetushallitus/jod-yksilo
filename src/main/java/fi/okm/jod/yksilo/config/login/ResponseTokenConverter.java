@@ -132,22 +132,33 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
       Kieli selectedLanguage,
       PersonIdentifierType pid) {
 
-    var personId = getAttribute(assertionAccessor, pid.getAttribute()).orElse(null);
+    final var personId = getAttribute(assertionAccessor, pid.getAttribute()).orElse(null);
     if (personId == null || personId.isBlank()) {
       throw new BadCredentialsException("Invalid person identifier");
     }
 
-    var etunimet =
-        getAttribute(assertionAccessor, Attribute.FIRST_NAME)
-            .orElseThrow(() -> new BadCredentialsException("Missing first name"));
-    var kutsumanimi = getAttribute(assertionAccessor, Attribute.GIVEN_NAME).orElse(etunimet);
-    var sukunimi =
-        getAttribute(assertionAccessor, Attribute.SN)
-            .or(() -> getAttribute(assertionAccessor, Attribute.FAMILY_NAME))
-            .orElseThrow(() -> new BadCredentialsException("Missing family name"));
+    final String sukunimi;
+    final String etunimet;
+    if (authenticationProperties.isLenient()) {
+      sukunimi =
+          getAttribute(assertionAccessor, Attribute.SN)
+              .or(() -> getAttribute(assertionAccessor, Attribute.FAMILY_NAME))
+              .or(() -> getAttribute(assertionAccessor, Attribute.CN))
+              .orElseThrow(() -> new BadCredentialsException("Name required"));
+      etunimet = getAttribute(assertionAccessor, Attribute.FIRST_NAME).orElse(null);
+    } else {
+      sukunimi =
+          getAttribute(assertionAccessor, Attribute.SN)
+              .or(() -> getAttribute(assertionAccessor, Attribute.FAMILY_NAME))
+              .orElseThrow(() -> new BadCredentialsException("Family name required"));
+      etunimet =
+          getAttribute(assertionAccessor, Attribute.FIRST_NAME)
+              .orElseThrow(() -> new BadCredentialsException("First name required"));
+    }
+    final var kutsumanimi = getAttribute(assertionAccessor, Attribute.GIVEN_NAME).orElse(etunimet);
 
-    var henkiloId = pid.asQualifiedIdentifier(personId);
-    var tunnistusData = yksilot.findTunnistusDataByHenkiloId(henkiloId).orElse(null);
+    final var henkiloId = pid.asQualifiedIdentifier(personId);
+    final var tunnistusData = yksilot.findTunnistusDataByHenkiloId(henkiloId).orElse(null);
 
     final String oppijanumero;
     var onr = tunnistusData != null ? tunnistusData.oppijanumero() : null;
