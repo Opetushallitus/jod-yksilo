@@ -22,6 +22,6 @@ class FeatureConfiguration {
   private Map<Feature, Boolean> flags;
 
   boolean isFeatureEnabled(Feature feature) {
-    return flags == null || flags.getOrDefault(feature, true);
+    return flags != null && flags.getOrDefault(feature, false);
   }
 }
