@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "jod.authentication")
 @Getter
@@ -24,10 +25,14 @@ public class JodAuthenticationProperties {
 
   private final String provider;
   private final Map<URI, PersonIdentifierType> supportedMethods;
+  private final boolean lenient;
 
   @ConstructorBinding
   JodAuthenticationProperties(
-      String provider, Map<PersonIdentifierType, List<URI>> supportedMethods) {
+      String provider,
+      Map<PersonIdentifierType, List<URI>> supportedMethods,
+      @DefaultValue("false") boolean lenient) {
+    this.lenient = lenient;
     this.provider = provider;
     // Reversing the map is intentional: PersonIdentifier -> URI is easier to override
     // using SSM parameters, but URI -> PersonIdentifier is more convenient to use
