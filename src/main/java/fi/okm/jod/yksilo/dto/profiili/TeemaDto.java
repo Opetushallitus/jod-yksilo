@@ -26,4 +26,4 @@ public record TeemaDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
     TuontiLahde tuontiLahde,
-    @Size(min = 1, max = Limits.PATEVYYS) Set<@Valid @NotNull PatevyysDto> patevyydet) {}
+    @Size(min = 1, max = Limits.TOIMINTO) Set<@Valid @NotNull ToimintoDto> toiminnot) {}

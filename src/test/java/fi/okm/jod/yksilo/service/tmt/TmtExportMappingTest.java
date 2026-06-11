@@ -18,9 +18,9 @@ import fi.okm.jod.yksilo.domain.MuuOsaaminen;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
+import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
@@ -55,7 +55,7 @@ class TmtExportMappingTest {
 
     assertNotNull(profile.getProjects());
     assertEquals(
-        count(yksilo.getTeemat(), t -> t.getPatevyydet().size()), profile.getProjects().size());
+        count(yksilo.getTeemat(), t -> t.getToiminnot().size()), profile.getProjects().size());
 
     profile
         .getEmployments()
@@ -131,16 +131,16 @@ class TmtExportMappingTest {
                 new MuuOsaaminen(yksilo, Set.of()), new Osaaminen(URI.create("urn:osaaminen:1"))));
 
     var teema = new Teema(yksilo, ls("Teema 1"));
-    var patevyys = new Patevyys(teema);
-    patevyys.setAlkuPvm(LocalDate.now());
-    patevyys.setLoppuPvm(LocalDate.now().plusYears(1));
-    patevyys.setNimi(ls("A".repeat(300)));
-    patevyys.setKuvaus(ls("B".repeat(6000)));
-    patevyys
+    var toiminto = new Toiminto(teema);
+    toiminto.setAlkuPvm(LocalDate.now());
+    toiminto.setLoppuPvm(LocalDate.now().plusYears(1));
+    toiminto.setNimi(ls("A".repeat(300)));
+    toiminto.setKuvaus(ls("B".repeat(6000)));
+    toiminto
         .getOsaamiset()
-        .add(new YksilonOsaaminen(patevyys, new Osaaminen(URI.create("urn:osaaminen:2"))));
-    yksilo.getOsaamiset().addAll(patevyys.getOsaamiset());
-    teema.getPatevyydet().add(patevyys);
+        .add(new YksilonOsaaminen(toiminto, new Osaaminen(URI.create("urn:osaaminen:2"))));
+    yksilo.getOsaamiset().addAll(toiminto.getOsaamiset());
+    teema.getToiminnot().add(toiminto);
     yksilo.getTeemat().add(teema);
 
     var tyopaikka = new Tyopaikka(yksilo, ls("C".repeat(300)));

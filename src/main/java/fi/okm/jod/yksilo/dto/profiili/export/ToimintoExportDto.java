@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-public record PatevyysExportDto(
+public record ToimintoExportDto(
     UUID id,
     LocalDate alkuPvm,
     LocalDate loppuPvm,

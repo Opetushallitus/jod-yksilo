@@ -187,7 +187,7 @@ public class TmtExportService {
             });
 
     yksilo.getTeemat().stream()
-        .flatMap(it -> it.getPatevyydet().stream())
+        .flatMap(it -> it.getToiminnot().stream())
         .limit(PROFILE_ITEM_LIMIT)
         .forEach(
             it -> {

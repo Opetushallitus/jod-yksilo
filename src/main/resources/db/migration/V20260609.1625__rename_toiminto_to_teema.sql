@@ -4,6 +4,10 @@ ALTER TABLE toiminto_kaannos RENAME TO teema_kaannos;
 ALTER TABLE teema_kaannos RENAME COLUMN toiminto_id TO teema_id;
 ALTER TABLE patevyys RENAME COLUMN toiminto_id TO teema_id;
 
+ALTER TABLE teema RENAME CONSTRAINT toiminto_pkey TO teema_pkey;
+ALTER TABLE teema_kaannos RENAME CONSTRAINT toiminto_kaannos_pkey TO teema_kaannos_pkey;
+ALTER TABLE teema_kaannos RENAME CONSTRAINT toiminto_kaannos_kaannos_key_check TO teema_kaannos_kaannos_key_check;
+
 ALTER TABLE jakolinkki_toiminnot RENAME TO jakolinkki_teemat;
 ALTER TABLE jakolinkki_teemat RENAME COLUMN toiminto_id TO teema_id;
 ALTER TABLE jakolinkki_teemat RENAME CONSTRAINT pk_jakolinkki_toiminto TO pk_jakolinkki_teema;

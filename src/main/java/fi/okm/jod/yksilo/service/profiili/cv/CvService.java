@@ -19,9 +19,9 @@ import fi.okm.jod.yksilo.dto.profiili.CvTehtavaDto;
 import fi.okm.jod.yksilo.dto.profiili.CvTehtavaSaveDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.entity.CvTehtava;
 import fi.okm.jod.yksilo.repository.CvTehtavaRepository;
@@ -167,8 +167,8 @@ public class CvService {
             dto.teemat(),
             tulos.teemat(),
             TeemaDto::id,
-            TeemaDto::patevyydet,
-            PatevyysDto::id,
+            TeemaDto::toiminnot,
+            ToimintoDto::id,
             (t, filtered) -> new TeemaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
     tehtava.setTila(CvTehtavaTila.POISTETTU);

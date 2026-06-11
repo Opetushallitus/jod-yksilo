@@ -16,12 +16,12 @@ import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
@@ -29,11 +29,11 @@ import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
-import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
+import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
@@ -101,13 +101,13 @@ public final class Mapper {
             entity.getId(),
             entity.getNimi(),
             entity.getTuontiLahde(),
-            entity.getPatevyydet().stream().map(Mapper::mapPatevyys).collect(Collectors.toSet()));
+            entity.getToiminnot().stream().map(Mapper::mapToiminto).collect(Collectors.toSet()));
   }
 
-  public static PatevyysDto mapPatevyys(Patevyys entity) {
+  public static ToimintoDto mapToiminto(Toiminto entity) {
     return entity == null
         ? null
-        : new PatevyysDto(
+        : new ToimintoDto(
             entity.getId(),
             entity.getNimi(),
             entity.getKuvaus(),

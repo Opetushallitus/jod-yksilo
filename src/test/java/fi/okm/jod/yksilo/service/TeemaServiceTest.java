@@ -18,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaUpdateDto;
-import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.service.profiili.TeemaService;
+import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.time.LocalDate;
 import java.util.Set;
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
-@Import({TeemaService.class, PatevyysService.class, YksilonOsaaminenService.class})
+@Import({TeemaService.class, ToimintoService.class, YksilonOsaaminenService.class})
 class TeemaServiceTest extends AbstractServiceTest {
 
   @Autowired TeemaService service;
@@ -76,7 +76,7 @@ class TeemaServiceTest extends AbstractServiceTest {
                 ls(Kieli.FI, "nimi"),
                 null,
                 Set.of(
-                    new PatevyysDto(
+                    new ToimintoDto(
                         null,
                         ls(Kieli.FI, "nimi"),
                         ls("Kuvaus"),
@@ -146,9 +146,9 @@ class TeemaServiceTest extends AbstractServiceTest {
                         ls(Kieli.FI, "nimi"),
                         TuontiLahde.TMT_TUONTI,
                         Set.of(
-                            new PatevyysDto(
+                            new ToimintoDto(
                                 null,
-                                ls(Kieli.FI, "patevyys"),
+                                ls(Kieli.FI, "toiminto"),
                                 null,
                                 LocalDate.now(),
                                 LocalDate.now(),

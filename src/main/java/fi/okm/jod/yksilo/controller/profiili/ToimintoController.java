@@ -11,9 +11,9 @@ package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,66 +36,66 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/profiili/vapaa-ajan-teemat/{id}/patevyydet")
+@RequestMapping("/api/profiili/vapaa-ajan-teemat/{id}/toiminnot")
 @RequiredArgsConstructor
 @Tag(name = "profiili/vapaa-ajan-teemat")
-class PatevyysController {
-  private final PatevyysService service;
+class ToimintoController {
+  private final ToimintoService service;
 
   @GetMapping
-  @Operation(summary = "Gets all patevyydet of the vapaa-ajan teema")
-  List<PatevyysDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+  @Operation(summary = "Gets all toiminnot of the vapaa-ajan teema")
+  List<ToimintoDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Adds a new patevyys to the vapaa-ajan teema")
+  @Operation(summary = "Adds a new toiminto to the vapaa-ajan teema")
   ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
-      @Validated({Add.class}) @RequestBody PatevyysDto dto,
+      @Validated({Add.class}) @RequestBody ToimintoDto dto,
       @AuthenticationPrincipal JodUser user) {
 
-    var patevyysId = service.add(user, id, dto);
+    var toimintoId = service.add(user, id, dto);
     var location =
         ServletUriComponentsBuilder.fromCurrentRequest()
             .host(null)
-            .path("/{patevyysId}")
-            .buildAndExpand(patevyysId)
+            .path("/{toimintoId}")
+            .buildAndExpand(toimintoId)
             .toUri();
-    return ResponseEntity.created(location).body(new IdDto<>(patevyysId));
+    return ResponseEntity.created(location).body(new IdDto<>(toimintoId));
   }
 
-  @GetMapping("/{patevyysId}")
-  @Operation(summary = "Gets a patevyys of the vapaa-ajan teema")
-  PatevyysDto get(
-      @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
-    return service.get(user, id, patevyysId);
+  @GetMapping("/{toimintoId}")
+  @Operation(summary = "Gets a toiminto of the vapaa-ajan teema")
+  ToimintoDto get(
+      @PathVariable UUID id, @PathVariable UUID toimintoId, @AuthenticationPrincipal JodUser user) {
+    return service.get(user, id, toimintoId);
   }
 
-  @PutMapping("/{patevyysId}")
-  @Operation(summary = "Updates a patevyys of the vapaa-ajan teema (including osaamiset)")
+  @PutMapping("/{toimintoId}")
+  @Operation(summary = "Updates a toiminto of the vapaa-ajan teema (including osaamiset)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
-      @PathVariable UUID patevyysId,
-      @Valid @RequestBody PatevyysDto dto,
+      @PathVariable UUID toimintoId,
+      @Valid @RequestBody ToimintoDto dto,
       @AuthenticationPrincipal JodUser user) {
 
-    if (dto.id() == null || !patevyysId.equals(dto.id())) {
+    if (dto.id() == null || !toimintoId.equals(dto.id())) {
       throw new IllegalArgumentException("Invalid identifier");
     }
     service.update(user, id, dto);
   }
 
-  @DeleteMapping("/{patevyysId}")
+  @DeleteMapping("/{toimintoId}")
   @Operation(
       summary =
-          "Deletes a patevyys of the vapaa-ajan teema (including all osaamiset)."
+          "Deletes a toiminto of the vapaa-ajan teema (including all osaamiset)."
               + " If the teema becomes empty, it will also be deleted.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
-      @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
-    service.delete(user, id, patevyysId);
+      @PathVariable UUID id, @PathVariable UUID toimintoId, @AuthenticationPrincipal JodUser user) {
+    service.delete(user, id, toimintoId);
   }
 }

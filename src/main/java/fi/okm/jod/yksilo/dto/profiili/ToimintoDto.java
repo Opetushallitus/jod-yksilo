@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-public record PatevyysDto(
+public record ToimintoDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @Size(max = 10000) @FreeText LocalizedString kuvaus,

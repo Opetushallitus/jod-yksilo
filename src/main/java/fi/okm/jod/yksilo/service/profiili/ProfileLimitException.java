@@ -16,7 +16,7 @@ import lombok.Getter;
 public class ProfileLimitException extends ServiceValidationException {
   public enum ProfileItem {
     TEEMA,
-    PATEVYYS,
+    TOIMINTO,
     TYOPAIKKA,
     TOIMENKUVA,
     KOULUTUSKOKONAISUUS,

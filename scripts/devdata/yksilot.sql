@@ -163,9 +163,9 @@ $$
               LOOP
                 SELECT gen_random_uuid() INTO aid;
 
-                INSERT INTO patevyys(id, teema_id, alku_pvm) VALUES (aid, kid, NOW());
-                INSERT INTO patevyys_kaannos(patevyys_id, kaannos_key, nimi)
-                VALUES (aid, 'FI', 'Testipatevyys ' || i || j);
+                INSERT INTO toiminto(id, teema_id, alku_pvm) VALUES (aid, kid, NOW());
+                INSERT INTO toiminto_kaannos(toiminto_id, kaannos_key, nimi)
+                VALUES (aid, 'FI', 'Testitoiminto ' || i || j);
 
               END LOOP;
           END LOOP;

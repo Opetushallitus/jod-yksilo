@@ -18,9 +18,9 @@ import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.entity.koodisto.Koulutuskoodi;
@@ -169,8 +169,8 @@ class TmtImportMapper {
     var alkuPvm = extractStartDate(project.getInterval());
     var loppuPvm = extractEndDate(project.getInterval());
 
-    var patevyys = new PatevyysDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
-    return new TeemaDto(null, nimi, TuontiLahde.TMT_TUONTI, Set.of(patevyys));
+    var toiminto = new ToimintoDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
+    return new TeemaDto(null, nimi, TuontiLahde.TMT_TUONTI, Set.of(toiminto));
   }
 
   private LocalizedString extractDescription(DescriptionItemExternalGet description) {

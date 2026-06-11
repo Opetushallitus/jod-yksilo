@@ -15,4 +15,4 @@ import java.util.Set;
 import java.util.UUID;
 
 public record TeemaExportDto(
-    UUID id, LocalizedString nimi, TuontiLahde tuontiLahde, Set<PatevyysExportDto> patevyydet) {}
+    UUID id, LocalizedString nimi, TuontiLahde tuontiLahde, Set<ToimintoExportDto> toiminnot) {}

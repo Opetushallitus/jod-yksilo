@@ -51,7 +51,7 @@ public class TeemaController {
 
   @PostMapping()
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Adds a new vapaa-ajan teema (and optionally patevyydet)")
+  @Operation(summary = "Adds a new vapaa-ajan teema (and optionally toiminnot)")
   ResponseEntity<IdDto<UUID>> add(
       @Validated(Add.class) @RequestBody() TeemaDto dto, @AuthenticationPrincipal JodUser user) {
     var id = service.add(user, dto);
@@ -61,7 +61,7 @@ public class TeemaController {
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get the vapaa-ajan teema (including patevyydet)")
+  @Operation(summary = "Get the vapaa-ajan teema (including toiminnot)")
   TeemaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id);
   }
@@ -82,7 +82,7 @@ public class TeemaController {
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Delete the vapaa-ajan teema (including all patevyydet)")
+  @Operation(summary = "Delete the vapaa-ajan teema (including all toiminnot)")
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);
   }
