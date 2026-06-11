@@ -21,7 +21,7 @@ import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.entity.Jakolinkki;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Tavoite;
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen_;
@@ -185,8 +185,8 @@ public class JakolinkkiService {
         jakolinkki.getKoulutukset().stream()
             .map(KoulutusKokonaisuus::getId)
             .collect(Collectors.toSet());
-    var jaetutToiminnotIds =
-        jakolinkki.getToiminnot().stream().map(Toiminto::getId).collect(Collectors.toSet());
+    var jaetutTemmatIds =
+        jakolinkki.getTeemat().stream().map(Teema::getId).collect(Collectors.toSet());
     var jaetutTavoitteetIds =
         jakolinkki.getTavoitteet().stream().map(Tavoite::getId).collect(Collectors.toSet());
 
@@ -212,9 +212,9 @@ public class JakolinkkiService {
             .filter(k -> jaetutKoulutuksetIds.contains(k.getId()))
             .map(Mapper::mapKoulutusKokonaisuus)
             .collect(Collectors.toSet()),
-        yksilo.getToiminnot().stream()
-            .filter(t -> jaetutToiminnotIds.contains(t.getId()))
-            .map(Mapper::mapToiminto)
+        yksilo.getTeemat().stream()
+            .filter(t -> jaetutTemmatIds.contains(t.getId()))
+            .map(Mapper::mapTeema)
             .collect(Collectors.toSet()),
         jakolinkki.isMuuOsaaminenJaettu() ? mapMuuOsaaminen(yksilo, osaaminenSort) : null,
         mapSuosikit(
@@ -274,9 +274,9 @@ public class JakolinkkiService {
         yksilo.getKoulutusKokonaisuudet().stream()
             .filter(k -> dto.jaetutKoulutukset().contains(k.getId()))
             .collect(Collectors.toSet()));
-    jakolinkki.setToiminnot(
-        yksilo.getToiminnot().stream()
-            .filter(to -> dto.jaetutToiminnot().contains(to.getId()))
+    jakolinkki.setTeemat(
+        yksilo.getTeemat().stream()
+            .filter(to -> dto.jaetutTeemat().contains(to.getId()))
             .collect(Collectors.toSet()));
     jakolinkki.setKoulutusmahdollisuusSuosikitJaettu(
         dto.jaetutSuosikit().contains(SuosikkiTyyppi.KOULUTUSMAHDOLLISUUS));
@@ -336,7 +336,7 @@ public class JakolinkkiService {
         .addMarker(LogMarker.AUDIT)
         .log(
             "User {} {} jakolinkki {} (valid until: {}). Shared: nimi={}, email={}, kotikunta={}, syntymavuosi={}, "
-                + "tyopaikat={}, koulutukset={}, toiminnot={}, muuOsaaminen={}, kiinnostukset={}, "
+                + "tyopaikat={}, koulutukset={}, teemat={}, muuOsaaminen={}, kiinnostukset={}, "
                 + "koulutusmahdollisuusSuosikit={}, tyomahdollisuusSuosikit={}, tavoitteet={}",
             jakolinkki.getYksilo().getId(),
             action,
@@ -348,7 +348,7 @@ public class JakolinkkiService {
             jakolinkki.isSyntymavuosiJaettu(),
             jakolinkki.getTyopaikat().size(),
             jakolinkki.getKoulutukset().size(),
-            jakolinkki.getToiminnot().size(),
+            jakolinkki.getTeemat().size(),
             jakolinkki.isMuuOsaaminenJaettu(),
             jakolinkki.isKiinnostuksetJaettu(),
             jakolinkki.isKoulutusmahdollisuusSuosikitJaettu(),
@@ -383,7 +383,7 @@ public class JakolinkkiService {
         jakolinkki.getKoulutukset().stream()
             .map(KoulutusKokonaisuus::getId)
             .collect(Collectors.toSet()),
-        jakolinkki.getToiminnot().stream().map(Toiminto::getId).collect(Collectors.toSet()),
+        jakolinkki.getTeemat().stream().map(Teema::getId).collect(Collectors.toSet()),
         Arrays.stream(SuosikkiTyyppi.values())
             .filter(
                 st ->

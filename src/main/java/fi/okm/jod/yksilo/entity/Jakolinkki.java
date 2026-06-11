@@ -67,12 +67,12 @@ public class Jakolinkki {
 
   @ManyToMany
   @JoinTable(
-      name = "jakolinkki_toiminnot",
+      name = "jakolinkki_teemat",
       schema = "yksilo",
       joinColumns = @JoinColumn(name = "jakolinkki_id"),
-      inverseJoinColumns = @JoinColumn(name = "toiminto_id"))
+      inverseJoinColumns = @JoinColumn(name = "teema_id"))
   @BatchSize(size = MAX_IN_SIZE)
-  private Set<Toiminto> toiminnot;
+  private Set<Teema> teemat;
 
   @ManyToMany
   @JoinTable(

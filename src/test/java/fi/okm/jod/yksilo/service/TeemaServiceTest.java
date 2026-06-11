@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaUpdateDto;
 import fi.okm.jod.yksilo.service.profiili.PatevyysService;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.time.LocalDate;
 import java.util.Set;
@@ -30,20 +30,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
-@Import({ToimintoService.class, PatevyysService.class, YksilonOsaaminenService.class})
-class ToimintoServiceTest extends AbstractServiceTest {
+@Import({TeemaService.class, PatevyysService.class, YksilonOsaaminenService.class})
+class TeemaServiceTest extends AbstractServiceTest {
 
-  @Autowired ToimintoService service;
+  @Autowired TeemaService service;
 
   @Test
-  void shouldAddToiminto() {
+  void shouldAddTeema() {
     assertDoesNotThrow(
         () -> {
-          var id = service.add(user, new ToimintoDto(null, ls(Kieli.FI, "nimi"), null, null));
+          var id = service.add(user, new TeemaDto(null, ls(Kieli.FI, "nimi"), null, null));
           entityManager.flush();
 
           var updatedNimi = ls(Kieli.SV, "namn");
-          service.update(user, new ToimintoUpdateDto(id, updatedNimi));
+          service.update(user, new TeemaUpdateDto(id, updatedNimi));
 
           simulateCommit();
 
@@ -54,10 +54,10 @@ class ToimintoServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldGetToimintoById() {
+  void shouldGetTeemaById() {
     assertDoesNotThrow(
         () -> {
-          var id = service.add(user, new ToimintoDto(null, ls(Kieli.FI, "nimi"), null, null));
+          var id = service.add(user, new TeemaDto(null, ls(Kieli.FI, "nimi"), null, null));
           entityManager.flush();
           var result = service.get(user, id);
           assertNotNull(result);
@@ -67,11 +67,11 @@ class ToimintoServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldDeleteToiminto() {
+  void shouldDeleteTeema() {
     var id =
         service.add(
             user,
-            new ToimintoDto(
+            new TeemaDto(
                 null,
                 ls(Kieli.FI, "nimi"),
                 null,
@@ -95,8 +95,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
   void shouldIgnoreTuontiLahdeFromUserFacingAdd() {
     // tuontiLahde supplied by API clients must be silently ignored
     var id =
-        service.add(
-            user, new ToimintoDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null));
+        service.add(user, new TeemaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null));
 
     simulateCommit();
 
@@ -110,7 +109,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
         service
             .addFromImport(
                 user,
-                Set.of(new ToimintoDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null)))
+                Set.of(new TeemaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.TMT_TUONTI, null)))
             .getFirst();
 
     simulateCommit();
@@ -120,15 +119,14 @@ class ToimintoServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldClearTuontiLahdeOnToimintoUpdate() {
+  void shouldClearTuontiLahdeOnTeemaUpdate() {
     var id =
         service
             .addFromImport(
-                user,
-                Set.of(new ToimintoDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.CV_TUONTI, null)))
+                user, Set.of(new TeemaDto(null, ls(Kieli.FI, "nimi"), TuontiLahde.CV_TUONTI, null)))
             .getFirst();
 
-    service.update(user, new ToimintoUpdateDto(id, ls(Kieli.SV, "namn")));
+    service.update(user, new TeemaUpdateDto(id, ls(Kieli.SV, "namn")));
     simulateCommit();
 
     var result = service.get(user, id);
@@ -143,7 +141,7 @@ class ToimintoServiceTest extends AbstractServiceTest {
             .addFromImport(
                 user,
                 Set.of(
-                    new ToimintoDto(
+                    new TeemaDto(
                         null,
                         ls(Kieli.FI, "nimi"),
                         TuontiLahde.TMT_TUONTI,

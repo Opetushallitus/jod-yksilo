@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.PatevyysService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
@@ -36,15 +36,15 @@ import org.springframework.context.annotation.Import;
 class PatevyysServiceTest extends AbstractServiceTest {
 
   @Autowired PatevyysService service;
-  private UUID toimintoId;
+  private UUID teemaId;
 
   @BeforeEach
   public void setUp() {
-    var toiminto =
-        new Toiminto(
+    var teema =
+        new Teema(
             entityManager.find(Yksilo.class, user.getId()),
             new LocalizedString(Map.of(Kieli.FI, "Testi")));
-    this.toimintoId = entityManager.persist(toiminto).getId();
+    this.teemaId = entityManager.persist(teema).getId();
     entityManager.flush();
   }
 
@@ -54,7 +54,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
         () -> {
           service.add(
               user,
-              toimintoId,
+              teemaId,
               new PatevyysDto(
                   null,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -65,7 +65,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          var result = service.findAll(user, toimintoId);
+          var result = service.findAll(user, teemaId);
           assertEquals(1, result.size());
         });
   }
@@ -77,7 +77,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
           var id =
               service.add(
                   user,
-                  toimintoId,
+                  teemaId,
                   new PatevyysDto(
                       null,
                       ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -96,7 +96,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
                   URI.create("urn:osaaminen:4"));
           service.update(
               user,
-              toimintoId,
+              teemaId,
               new PatevyysDto(
                   id,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -107,17 +107,17 @@ class PatevyysServiceTest extends AbstractServiceTest {
           entityManager.flush();
           entityManager.clear();
 
-          var result = service.get(user, toimintoId, id);
+          var result = service.get(user, teemaId, id);
           assertEquals(updated, result.osaamiset());
         });
   }
 
   @Test
-  void shouldDeleteEmptyToiminto() {
+  void shouldDeleteEmptyTeema() {
     var id =
         service.add(
             user,
-            toimintoId,
+            teemaId,
             new PatevyysDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -126,16 +126,16 @@ class PatevyysServiceTest extends AbstractServiceTest {
                 null,
                 Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
     simulateCommit();
-    service.delete(user, toimintoId, id);
+    service.delete(user, teemaId, id);
     simulateCommit();
-    assertNull(entityManager.find(Toiminto.class, toimintoId));
+    assertNull(entityManager.find(Teema.class, teemaId));
   }
 
   @Test
-  void shouldKeepNotEmptyToiminto() {
+  void shouldKeepNotEmptyTeema() {
     service.add(
         user,
-        toimintoId,
+        teemaId,
         new PatevyysDto(
             null,
             ls(Kieli.FI, "nimi1", Kieli.SV, "namn"),
@@ -147,7 +147,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
     var id =
         service.add(
             user,
-            toimintoId,
+            teemaId,
             new PatevyysDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
@@ -156,8 +156,8 @@ class PatevyysServiceTest extends AbstractServiceTest {
                 null,
                 Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
     simulateCommit();
-    service.delete(user, toimintoId, id);
+    service.delete(user, teemaId, id);
     simulateCommit();
-    assertNotNull(entityManager.find(Toiminto.class, toimintoId));
+    assertNotNull(entityManager.find(Teema.class, teemaId));
   }
 }

@@ -25,28 +25,27 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PatevyysRepository
     extends JpaRepository<Patevyys, UUID>, OsaamisenLahdeRepository<Patevyys> {
 
-  default Optional<Patevyys> findBy(JodUser user, UUID toimintoId, UUID id) {
-    return findByToimintoYksiloIdAndToimintoIdAndId(user.getId(), toimintoId, id);
+  default Optional<Patevyys> findBy(JodUser user, UUID teemaId, UUID id) {
+    return findByTeemaYksiloIdAndTeemaIdAndId(user.getId(), teemaId, id);
   }
 
-  List<Patevyys> findByToimintoYksiloIdAndToimintoId(UUID yksiloId, UUID toimintoId);
+  List<Patevyys> findByTeemaYksiloIdAndTeemaId(UUID yksiloId, UUID teemaId);
 
-  @EntityGraph(attributePaths = {"toiminto", "toiminto.yksilo"})
-  Optional<Patevyys> findByToimintoYksiloIdAndToimintoIdAndId(
-      UUID yksiloId, UUID toimintoId, UUID id);
+  @EntityGraph(attributePaths = {"teema", "teema.yksilo"})
+  Optional<Patevyys> findByTeemaYksiloIdAndTeemaIdAndId(UUID yksiloId, UUID teemaId, UUID id);
 
-  @EntityGraph(attributePaths = {"toiminto", "toiminto.yksilo"})
-  Optional<Patevyys> findByToimintoYksiloIdAndId(UUID yksiloId, UUID id);
+  @EntityGraph(attributePaths = {"teema", "teema.yksilo"})
+  Optional<Patevyys> findByTeemaYksiloIdAndId(UUID yksiloId, UUID id);
 
   @Override
   default Optional<Patevyys> findBy(JodUser user, OsaamisenLahdeDto lahde) {
     return lahde.tyyppi() == PATEVYYS
-        ? lahde.id().flatMap(lahdeId -> findByToimintoYksiloIdAndId(user.getId(), lahdeId))
+        ? lahde.id().flatMap(lahdeId -> findByTeemaYksiloIdAndId(user.getId(), lahdeId))
         : Optional.empty();
   }
 
-  @EntityGraph(attributePaths = {"toiminto", "toiminto.yksilo"})
-  List<Patevyys> findByToimintoYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
+  @EntityGraph(attributePaths = {"teema", "teema.yksilo"})
+  List<Patevyys> findByTeemaYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
 
-  int countByToimintoYksilo(Yksilo yksilo);
+  int countByTeemaYksilo(Yksilo yksilo);
 }

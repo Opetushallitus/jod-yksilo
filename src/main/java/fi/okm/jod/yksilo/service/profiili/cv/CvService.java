@@ -20,8 +20,8 @@ import fi.okm.jod.yksilo.dto.profiili.CvTehtavaSaveDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.entity.CvTehtava;
 import fi.okm.jod.yksilo.repository.CvTehtavaRepository;
@@ -33,7 +33,7 @@ import fi.okm.jod.yksilo.service.ServiceOverloadedException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.ProfileDeletedEvent;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -69,7 +69,7 @@ public class CvService {
   private final CvMessageSender sender;
   private final KoulutusKokonaisuusService koulutusKokonaisuusService;
   private final TyopaikkaService tyopaikkaService;
-  private final ToimintoService toimintoService;
+  private final TeemaService teemaService;
   private final CvProperties properties;
 
   @Transactional(readOnly = true)
@@ -161,15 +161,15 @@ public class CvService {
             ToimenkuvaDto::id,
             (t, filtered) -> new TyopaikkaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
-    toimintoService.addFromImport(
+    teemaService.addFromImport(
         user,
         filterSelected(
-            dto.toiminnot(),
-            tulos.toiminnot(),
-            ToimintoDto::id,
-            ToimintoDto::patevyydet,
+            dto.teemat(),
+            tulos.teemat(),
+            TeemaDto::id,
+            TeemaDto::patevyydet,
             PatevyysDto::id,
-            (t, filtered) -> new ToimintoDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
+            (t, filtered) -> new TeemaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
     tehtava.setTila(CvTehtavaTila.POISTETTU);
     tehtava.setTulos(null);

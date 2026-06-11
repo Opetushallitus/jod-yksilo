@@ -9,7 +9,7 @@
 
 package fi.okm.jod.yksilo.repository;
 
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.util.List;
 import java.util.Optional;
@@ -18,15 +18,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface ToimintoRepository extends JpaRepository<Toiminto, UUID> {
-  Optional<Toiminto> findByYksiloIdAndId(UUID yksiloId, UUID id);
+public interface TeemaRepository extends JpaRepository<Teema, UUID> {
+  Optional<Teema> findByYksiloIdAndId(UUID yksiloId, UUID id);
 
-  List<Toiminto> findByYksiloId(UUID yksiloId);
+  List<Teema> findByYksiloId(UUID yksiloId);
 
   long countByYksilo(Yksilo yksilo);
 
   @Modifying(flushAutomatically = true)
   @Query(
-      "DELETE FROM Toiminto t WHERE t.id = :id AND t.yksilo.id = :yksiloId AND t.patevyydet IS EMPTY")
+      "DELETE FROM Teema t WHERE t.id = :id AND t.yksilo.id = :yksiloId AND t.patevyydet IS EMPTY")
   void deleteEmpty(UUID yksiloId, UUID id);
 }

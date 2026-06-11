@@ -21,9 +21,9 @@ import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
@@ -38,27 +38,27 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-@WebMvcTest(value = ToimintoController.class)
+@WebMvcTest(value = TeemaController.class)
 @Import({ErrorInfoFactory.class, MappingConfig.class})
-class ToimintoControllerTest {
+class TeemaControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
 
-  @MockitoBean private ToimintoService service;
+  @MockitoBean private TeemaService service;
 
   @Test
   @WithMockUser
-  void shouldFindToiminnot() throws Exception {
-    mockMvc.perform(get("/api/profiili/vapaa-ajan-toiminnot")).andExpect(status().isOk());
+  void shouldFindTeemat() throws Exception {
+    mockMvc.perform(get("/api/profiili/vapaa-ajan-teemat")).andExpect(status().isOk());
   }
 
   @Test
   @WithMockUser
-  void shouldAddToiminto() throws Exception {
+  void shouldAddTeema() throws Exception {
     var dto =
-        new ToimintoDto(
+        new TeemaDto(
             null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
             null,
@@ -73,7 +73,7 @@ class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            post("/api/profiili/vapaa-ajan-toiminnot")
+            post("/api/profiili/vapaa-ajan-teemat")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -82,9 +82,9 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldFailToAddInvalidToiminto() throws Exception {
+  void shouldFailToAddInvalidTeema() throws Exception {
     var dto =
-        new ToimintoDto(
+        new TeemaDto(
             null,
             new LocalizedString(Map.of(Kieli.FI, "testi")),
             null,
@@ -98,7 +98,7 @@ class ToimintoControllerTest {
                     null)));
     mockMvc
         .perform(
-            post("/api/profiili/vapaa-ajan-toiminnot")
+            post("/api/profiili/vapaa-ajan-teemat")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -107,19 +107,19 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldGetToimintoById() throws Exception {
+  void shouldGetTeemaById() throws Exception {
     UUID id = UUID.randomUUID();
 
-    mockMvc.perform(get("/api/profiili/vapaa-ajan-toiminnot/{id}", id)).andExpect(status().isOk());
+    mockMvc.perform(get("/api/profiili/vapaa-ajan-teemat/{id}", id)).andExpect(status().isOk());
   }
 
   @Test
   @WithMockUser
-  void shouldUpdateToiminto() throws Exception {
+  void shouldUpdateTeema() throws Exception {
     UUID id = UUID.randomUUID();
 
     var updatedDto =
-        new ToimintoDto(
+        new TeemaDto(
             id,
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
             null,
@@ -134,7 +134,7 @@ class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            put("/api/profiili/vapaa-ajan-toiminnot/{id}", id)
+            put("/api/profiili/vapaa-ajan-teemat/{id}", id)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedDto)))
@@ -143,9 +143,9 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldFailToUpdateInvalidToiminto() throws Exception {
+  void shouldFailToUpdateInvalidTeema() throws Exception {
     var updatedDto =
-        new ToimintoDto(
+        new TeemaDto(
             UUID.randomUUID(),
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
             null,
@@ -160,7 +160,7 @@ class ToimintoControllerTest {
 
     mockMvc
         .perform(
-            put("/api/profiili/toiminnot/{id}", UUID.randomUUID())
+            put("/api/profiili/teemat/{id}", UUID.randomUUID())
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedDto)))
@@ -169,11 +169,11 @@ class ToimintoControllerTest {
 
   @Test
   @WithMockUser
-  void shouldDeleteToiminto() throws Exception {
+  void shouldDeleteTeema() throws Exception {
     UUID id = UUID.randomUUID();
 
     mockMvc
-        .perform(delete("/api/profiili/vapaa-ajan-toiminnot/{id}", id).with(csrf()))
+        .perform(delete("/api/profiili/vapaa-ajan-teemat/{id}", id).with(csrf()))
         .andExpect(status().isNoContent());
   }
 }

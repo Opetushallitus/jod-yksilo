@@ -21,7 +21,7 @@ public record JakolinkkiContentDto(
     Integer syntymavuosi,
     Set<TyopaikkaDto> tyopaikat,
     Set<KoulutusKokonaisuusDto> koulutusKokonaisuudet,
-    Set<ToimintoDto> toiminnot,
+    Set<TeemaDto> teemat,
     MuuOsaaminenDto muuOsaaminen,
     Set<SuosikkiDto> suosikit,
     KiinnostuksetDto kiinnostukset,

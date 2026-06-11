@@ -45,7 +45,7 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-@Table(indexes = {@Index(columnList = "toiminto_id")})
+@Table(indexes = {@Index(columnList = "teema_id")})
 public class Patevyys implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
@@ -54,7 +54,7 @@ public class Patevyys implements OsaamisenLahde {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(updatable = false, nullable = false)
-  private Toiminto toiminto;
+  private Teema teema;
 
   @Getter(AccessLevel.NONE)
   @ElementCollection
@@ -71,8 +71,8 @@ public class Patevyys implements OsaamisenLahde {
     // For JPA
   }
 
-  public Patevyys(Toiminto toiminto) {
-    this.toiminto = requireNonNull(toiminto);
+  public Patevyys(Teema teema) {
+    this.teema = requireNonNull(teema);
     this.kaannos = new EnumMap<>(Kieli.class);
     this.osaamiset = new HashSet<>();
   }
@@ -94,7 +94,7 @@ public class Patevyys implements OsaamisenLahde {
   }
 
   public Yksilo getYksilo() {
-    return toiminto.getYksilo();
+    return teema.getYksilo();
   }
 
   @Embeddable

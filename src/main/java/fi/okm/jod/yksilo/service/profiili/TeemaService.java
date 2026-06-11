@@ -10,10 +10,10 @@
 package fi.okm.jod.yksilo.service.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoUpdateDto;
-import fi.okm.jod.yksilo.entity.Toiminto;
-import fi.okm.jod.yksilo.repository.ToimintoRepository;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaUpdateDto;
+import fi.okm.jod.yksilo.entity.Teema;
+import fi.okm.jod.yksilo.repository.TeemaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
@@ -31,35 +31,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ToimintoService {
+public class TeemaService {
 
   private final YksiloRepository yksilot;
-  private final ToimintoRepository toiminnot;
+  private final TeemaRepository teemat;
   private final PatevyysService patevyysService;
 
   @Transactional(readOnly = true)
-  public List<ToimintoDto> findAll(JodUser user) {
-    return toiminnot.findByYksiloId(user.getId()).stream().map(Mapper::mapToiminto).toList();
+  public List<TeemaDto> findAll(JodUser user) {
+    return teemat.findByYksiloId(user.getId()).stream().map(Mapper::mapTeema).toList();
   }
 
   @Transactional(readOnly = true)
-  public ToimintoDto get(JodUser user, UUID id) {
-    return toiminnot
+  public TeemaDto get(JodUser user, UUID id) {
+    return teemat
         .findByYksiloIdAndId(user.getId(), id)
-        .map(Mapper::mapToiminto)
+        .map(Mapper::mapTeema)
         .orElseThrow(KoulutusService::notFound);
   }
 
-  public UUID add(JodUser user, ToimintoDto dto) {
+  public UUID add(JodUser user, TeemaDto dto) {
     // tuontiLahde is system-controlled metadata
-    var sanitized = new ToimintoDto(dto.id(), dto.nimi(), null, dto.patevyydet());
+    var sanitized = new TeemaDto(dto.id(), dto.nimi(), null, dto.patevyydet());
     return addFromImport(user, Set.of(sanitized)).getFirst();
   }
 
-  public SequencedSet<UUID> addFromImport(JodUser user, Set<ToimintoDto> dtos) {
+  public SequencedSet<UUID> addFromImport(JodUser user, Set<TeemaDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
-    if (toiminnot.countByYksilo(yksilo) + dtos.size() > Limits.TOIMINTO) {
-      throw new ProfileLimitException(ProfileItem.TOIMINTO);
+    if (teemat.countByYksilo(yksilo) + dtos.size() > Limits.TEEMA) {
+      throw new ProfileLimitException(ProfileItem.TEEMA);
     }
 
     var count =
@@ -74,37 +74,37 @@ public class ToimintoService {
     return dtos.stream()
         .map(
             dto -> {
-              var toiminto = new Toiminto(yksilo, dto.nimi());
-              toiminto.setTuontiLahde(dto.tuontiLahde());
-              toiminto = toiminnot.save(toiminto);
+              var teema = new Teema(yksilo, dto.nimi());
+              teema.setTuontiLahde(dto.tuontiLahde());
+              teema = teemat.save(teema);
               if (dto.patevyydet() != null) {
                 for (var patevyys : dto.patevyydet()) {
-                  toiminto.getPatevyydet().add(patevyysService.add(toiminto, patevyys));
+                  teema.getPatevyydet().add(patevyysService.add(teema, patevyys));
                 }
               }
-              return toiminto.getId();
+              return teema.getId();
             })
         .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
-  public void update(JodUser user, ToimintoUpdateDto dto) {
-    var toiminto =
-        toiminnot
+  public void update(JodUser user, TeemaUpdateDto dto) {
+    var teema =
+        teemat
             .findByYksiloIdAndId(user.getId(), dto.id())
-            .orElseThrow(() -> new NotFoundException("Toiminto not found"));
-    toiminto.setNimi(dto.nimi());
-    toiminto.setTuontiLahde(null);
-    toiminnot.flush();
+            .orElseThrow(() -> new NotFoundException("Teema not found"));
+    teema.setNimi(dto.nimi());
+    teema.setTuontiLahde(null);
+    teemat.flush();
   }
 
   public void delete(JodUser user, UUID id) {
-    var toiminto =
-        toiminnot
+    var teema =
+        teemat
             .findByYksiloIdAndId(user.getId(), id)
-            .orElseThrow(() -> new NotFoundException("Toiminto not found"));
-    for (var patevyys : toiminto.getPatevyydet()) {
+            .orElseThrow(() -> new NotFoundException("Teema not found"));
+    for (var patevyys : teema.getPatevyydet()) {
       patevyysService.delete(patevyys);
     }
-    toiminnot.delete(toiminto);
+    teemat.delete(teema);
   }
 }

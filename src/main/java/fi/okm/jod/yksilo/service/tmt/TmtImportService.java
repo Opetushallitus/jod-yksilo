@@ -17,7 +17,7 @@ import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalGet;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import fi.okm.jod.yksilo.service.tmt.TmtImportMapper.ImportDto;
 import jakarta.transaction.Transactional;
@@ -103,7 +103,7 @@ public class TmtImportService {
   static class ProfilePersister {
     private final KoulutusKokonaisuusService koulutukset;
     private final TyopaikkaService tyopaikkat;
-    private final ToimintoService toiminnot;
+    private final TeemaService teemat;
     private final TmtImportMapper mapper;
 
     @Transactional
@@ -112,7 +112,7 @@ public class TmtImportService {
       return new TmtImportDto(
           tyopaikkat.addFromImport(user, importDto.tyopaikat()),
           koulutukset.add(user, importDto.koulutuskokonaisuudet()),
-          toiminnot.addFromImport(user, importDto.toiminnot()));
+          teemat.addFromImport(user, importDto.teemat()));
     }
   }
 }

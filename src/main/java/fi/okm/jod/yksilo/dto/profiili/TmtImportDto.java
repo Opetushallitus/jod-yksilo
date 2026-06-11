@@ -13,4 +13,4 @@ import java.util.Set;
 import java.util.UUID;
 
 public record TmtImportDto(
-    Set<UUID> tyopaikat, Set<UUID> koulutuskokonaisuudet, Set<UUID> toiminnot) {}
+    Set<UUID> tyopaikat, Set<UUID> koulutuskokonaisuudet, Set<UUID> teemat) {}

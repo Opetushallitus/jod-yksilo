@@ -61,7 +61,7 @@ class CvResponseMapperTest {
 
     assertThat(tulos.koulutuskokonaisuudet()).hasSize(1);
     assertThat(tulos.tyopaikat()).hasSize(1);
-    assertThat(tulos.toiminnot()).hasSize(1);
+    assertThat(tulos.teemat()).hasSize(1);
   }
 
   @Test
@@ -72,7 +72,7 @@ class CvResponseMapperTest {
     for (var tulos : List.of(fromNull, fromEmpty)) {
       assertThat(tulos.koulutuskokonaisuudet()).isEmpty();
       assertThat(tulos.tyopaikat()).isEmpty();
-      assertThat(tulos.toiminnot()).isEmpty();
+      assertThat(tulos.teemat()).isEmpty();
     }
   }
 
@@ -140,13 +140,13 @@ class CvResponseMapperTest {
   void shouldExcludeActivityWithNullName() {
     var tulos = map(withActivity(new CvResponse.Activity("Cat", null, "Desc", DATE, null)));
 
-    assertThat(tulos.toiminnot()).isEmpty();
+    assertThat(tulos.teemat()).isEmpty();
   }
 
   @Test
   void shouldExcludeActivityWithNullStartDate() {
     var tulos = map(withActivity(new CvResponse.Activity("Cat", "Name", "Desc", null, null)));
 
-    assertThat(tulos.toiminnot()).isEmpty();
+    assertThat(tulos.teemat()).isEmpty();
   }
 }

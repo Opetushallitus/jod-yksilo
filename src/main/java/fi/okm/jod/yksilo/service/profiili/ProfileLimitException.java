@@ -15,7 +15,7 @@ import lombok.Getter;
 @SuppressWarnings("serial")
 public class ProfileLimitException extends ServiceValidationException {
   public enum ProfileItem {
-    TOIMINTO,
+    TEEMA,
     PATEVYYS,
     TYOPAIKKA,
     TOIMENKUVA,
