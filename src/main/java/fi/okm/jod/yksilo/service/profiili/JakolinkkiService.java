@@ -185,7 +185,7 @@ public class JakolinkkiService {
         jakolinkki.getKoulutukset().stream()
             .map(KoulutusKokonaisuus::getId)
             .collect(Collectors.toSet());
-    var jaetutTemmatIds =
+    var jaetutTeematIds =
         jakolinkki.getTeemat().stream().map(Teema::getId).collect(Collectors.toSet());
     var jaetutTavoitteetIds =
         jakolinkki.getTavoitteet().stream().map(Tavoite::getId).collect(Collectors.toSet());
@@ -213,7 +213,7 @@ public class JakolinkkiService {
             .map(Mapper::mapKoulutusKokonaisuus)
             .collect(Collectors.toSet()),
         yksilo.getTeemat().stream()
-            .filter(t -> jaetutTemmatIds.contains(t.getId()))
+            .filter(t -> jaetutTeematIds.contains(t.getId()))
             .map(Mapper::mapTeema)
             .collect(Collectors.toSet()),
         jakolinkki.isMuuOsaaminenJaettu() ? mapMuuOsaaminen(yksilo, osaaminenSort) : null,

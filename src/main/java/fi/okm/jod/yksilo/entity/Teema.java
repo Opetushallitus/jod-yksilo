@@ -66,7 +66,7 @@ public class Teema {
 
   @OneToMany(mappedBy = "teema", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 100)
-  private List<Patevyys> patevyydet = new ArrayList<>();
+  private List<Toiminto> toiminnot = new ArrayList<>();
 
   protected Teema() {
     // For JPA

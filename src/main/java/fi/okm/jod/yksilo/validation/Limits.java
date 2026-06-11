@@ -14,7 +14,7 @@ public final class Limits {
   public static final int TOIMENKUVA = 1_000;
   public static final int KOULUTUS = 1_000;
   public static final int TEEMA = 1_000;
-  public static final int PATEVYYS = 1_000;
+  public static final int TOIMINTO = 1_000;
   public static final int KOULUTUSKOKONAISUUS = 1_000;
   public static final int SUUNNITELMA = 1000;
   public static final int SIVUN_MAKSIMI_KOKO = 1000;

@@ -21,16 +21,16 @@ import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
-import fi.okm.jod.yksilo.service.profiili.PatevyysService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
+import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -78,7 +78,7 @@ class MahdollisuudetController {
   private final AmmattiService ammattiService;
   private final ToimenkuvaService toimenkuvaService;
   private final KoulutusService koulutusService;
-  private final PatevyysService patevyysService;
+  private final ToimintoService toimintoService;
 
   @ConfigurationProperties("jod.recommendation.mahdollisuus")
   public record EndpointProperties(Map<Kieli, String> endpoints) {}
@@ -91,7 +91,7 @@ class MahdollisuudetController {
       AmmattiService ammattiService,
       ToimenkuvaService toimenkuvaService,
       KoulutusService koulutusService,
-      PatevyysService patevyysService) {
+      ToimintoService toimintoService) {
     this.inferenceService = inferenceService;
     this.endpoints = properties.endpoints();
     this.mahdollisuudetService = mahdollisuudetService;
@@ -99,7 +99,7 @@ class MahdollisuudetController {
     this.ammattiService = ammattiService;
     this.toimenkuvaService = toimenkuvaService;
     this.koulutusService = koulutusService;
-    this.patevyysService = patevyysService;
+    this.toimintoService = toimintoService;
 
     log.info("Creating MahdollisuudetController, endpoint: {}", endpoints);
   }
@@ -269,14 +269,14 @@ class MahdollisuudetController {
             idsByType,
             OsaamisenLahdeTyyppi.KOULUTUS,
             ids -> koulutusService.findAllByIds(user, ids));
-    var patevyysMap =
+    var toimintoMap =
         fetchByType(
             idsByType,
-            OsaamisenLahdeTyyppi.PATEVYYS,
-            ids -> patevyysService.findAllByIds(user, ids));
+            OsaamisenLahdeTyyppi.TOIMINTO,
+            ids -> toimintoService.findAllByIds(user, ids));
 
     return kuvaukset.stream()
-        .map(k -> toKuvausData(k, lang, toimenkuvaMap, koulutusMap, patevyysMap))
+        .map(k -> toKuvausData(k, lang, toimenkuvaMap, koulutusMap, toimintoMap))
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
@@ -294,7 +294,7 @@ class MahdollisuudetController {
       Kieli lang,
       Map<UUID, ToimenkuvaDto> toimenkuvaMap,
       Map<UUID, KoulutusDto> koulutusMap,
-      Map<UUID, PatevyysDto> patevyysMap) {
+      Map<UUID, ToimintoDto> toimintoMap) {
     return switch (kuvaus.tyyppi()) {
       case TOIMENKUVA -> {
         var d = toimenkuvaMap.get(kuvaus.id());
@@ -316,8 +316,8 @@ class MahdollisuudetController {
                 d.alkuPvm(),
                 d.loppuPvm());
       }
-      case PATEVYYS -> {
-        var d = patevyysMap.get(kuvaus.id());
+      case TOIMINTO -> {
+        var d = toimintoMap.get(kuvaus.id());
         yield d == null
             ? null
             : new KuvausData(

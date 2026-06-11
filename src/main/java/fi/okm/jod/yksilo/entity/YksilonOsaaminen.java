@@ -36,7 +36,7 @@ import lombok.Getter;
       @Index(columnList = "yksilo_id,lahde"),
       @Index(columnList = "koulutus_id"),
       @Index(columnList = "toimenkuva_id"),
-      @Index(columnList = "patevyys_id")
+      @Index(columnList = "toiminto_id")
     })
 public class YksilonOsaaminen {
   @Getter @Id @GeneratedValue private UUID id;
@@ -65,7 +65,7 @@ public class YksilonOsaaminen {
   private Toimenkuva toimenkuva;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  private Patevyys patevyys;
+  private Toiminto toiminto;
 
   protected YksilonOsaaminen() {
     // JPA
@@ -83,9 +83,9 @@ public class YksilonOsaaminen {
         this.lahde = OsaamisenLahdeTyyppi.TOIMENKUVA;
         this.toimenkuva = t;
       }
-      case Patevyys p -> {
-        this.lahde = OsaamisenLahdeTyyppi.PATEVYYS;
-        this.patevyys = p;
+      case Toiminto p -> {
+        this.lahde = OsaamisenLahdeTyyppi.TOIMINTO;
+        this.toiminto = p;
       }
       case MuuOsaaminen ignored -> this.lahde = OsaamisenLahdeTyyppi.MUU_OSAAMINEN;
       default -> throw new IllegalStateException("Unexpected value: " + lahde);
@@ -97,7 +97,7 @@ public class YksilonOsaaminen {
         switch (this.lahde) {
           case KOULUTUS -> this.koulutus;
           case TOIMENKUVA -> this.toimenkuva;
-          case PATEVYYS -> this.patevyys;
+          case TOIMINTO -> this.toiminto;
           case MUU_OSAAMINEN -> null;
         });
   }

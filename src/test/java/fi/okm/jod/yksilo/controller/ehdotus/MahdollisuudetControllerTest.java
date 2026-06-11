@@ -34,8 +34,8 @@ import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
-import fi.okm.jod.yksilo.service.profiili.PatevyysService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
+import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -75,7 +75,7 @@ class MahdollisuudetControllerTest {
 
   @MockitoBean private ToimenkuvaService toimenkuvaService;
   @MockitoBean private KoulutusService koulutusService;
-  @MockitoBean private PatevyysService patevyysService;
+  @MockitoBean private ToimintoService toimintoService;
 
   @MockitoBean
   private InferenceService<MahdollisuudetController.Request, MahdollisuudetController.Response>

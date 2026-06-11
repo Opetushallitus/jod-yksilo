@@ -17,10 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Yksilo;
-import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.net.URI;
 import java.time.LocalDate;
@@ -32,10 +32,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
-@Import({PatevyysService.class, YksilonOsaaminenService.class})
-class PatevyysServiceTest extends AbstractServiceTest {
+@Import({ToimintoService.class, YksilonOsaaminenService.class})
+class ToimintoServiceTest extends AbstractServiceTest {
 
-  @Autowired PatevyysService service;
+  @Autowired ToimintoService service;
   private UUID teemaId;
 
   @BeforeEach
@@ -49,13 +49,13 @@ class PatevyysServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldAddPatevyys() {
+  void shouldAddToiminto() {
     assertDoesNotThrow(
         () -> {
           service.add(
               user,
               teemaId,
-              new PatevyysDto(
+              new ToimintoDto(
                   null,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                   null,
@@ -71,14 +71,14 @@ class PatevyysServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldUpdatePatevyys() {
+  void shouldUpdateToiminto() {
     assertDoesNotThrow(
         () -> {
           var id =
               service.add(
                   user,
                   teemaId,
-                  new PatevyysDto(
+                  new ToimintoDto(
                       null,
                       ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                       null,
@@ -97,7 +97,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
           service.update(
               user,
               teemaId,
-              new PatevyysDto(
+              new ToimintoDto(
                   id,
                   ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                   null,
@@ -118,7 +118,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
         service.add(
             user,
             teemaId,
-            new PatevyysDto(
+            new ToimintoDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                 null,
@@ -136,7 +136,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
     service.add(
         user,
         teemaId,
-        new PatevyysDto(
+        new ToimintoDto(
             null,
             ls(Kieli.FI, "nimi1", Kieli.SV, "namn"),
             null,
@@ -148,7 +148,7 @@ class PatevyysServiceTest extends AbstractServiceTest {
         service.add(
             user,
             teemaId,
-            new PatevyysDto(
+            new ToimintoDto(
                 null,
                 ls(Kieli.FI, "nimi", Kieli.SV, "namn"),
                 null,

@@ -35,7 +35,7 @@ public class TeemaService {
 
   private final YksiloRepository yksilot;
   private final TeemaRepository teemat;
-  private final PatevyysService patevyysService;
+  private final ToimintoService toimintoService;
 
   @Transactional(readOnly = true)
   public List<TeemaDto> findAll(JodUser user) {
@@ -52,7 +52,7 @@ public class TeemaService {
 
   public UUID add(JodUser user, TeemaDto dto) {
     // tuontiLahde is system-controlled metadata
-    var sanitized = new TeemaDto(dto.id(), dto.nimi(), null, dto.patevyydet());
+    var sanitized = new TeemaDto(dto.id(), dto.nimi(), null, dto.toiminnot());
     return addFromImport(user, Set.of(sanitized)).getFirst();
   }
 
@@ -64,11 +64,11 @@ public class TeemaService {
 
     var count =
         dtos.stream()
-            .map(t -> t.patevyydet() == null ? 0 : t.patevyydet().size())
+            .map(t -> t.toiminnot() == null ? 0 : t.toiminnot().size())
             .reduce(0, Integer::sum);
 
-    if (patevyysService.countBy(yksilo) + count > Limits.PATEVYYS) {
-      throw new ProfileLimitException(ProfileItem.PATEVYYS);
+    if (toimintoService.countBy(yksilo) + count > Limits.TOIMINTO) {
+      throw new ProfileLimitException(ProfileItem.TOIMINTO);
     }
 
     return dtos.stream()
@@ -77,9 +77,9 @@ public class TeemaService {
               var teema = new Teema(yksilo, dto.nimi());
               teema.setTuontiLahde(dto.tuontiLahde());
               teema = teemat.save(teema);
-              if (dto.patevyydet() != null) {
-                for (var patevyys : dto.patevyydet()) {
-                  teema.getPatevyydet().add(patevyysService.add(teema, patevyys));
+              if (dto.toiminnot() != null) {
+                for (var toiminto : dto.toiminnot()) {
+                  teema.getToiminnot().add(toimintoService.add(teema, toiminto));
                 }
               }
               return teema.getId();
@@ -102,8 +102,8 @@ public class TeemaService {
         teemat
             .findByYksiloIdAndId(user.getId(), id)
             .orElseThrow(() -> new NotFoundException("Teema not found"));
-    for (var patevyys : teema.getPatevyydet()) {
-      patevyysService.delete(patevyys);
+    for (var toiminto : teema.getToiminnot()) {
+      toimintoService.delete(toiminto);
     }
     teemat.delete(teema);
   }

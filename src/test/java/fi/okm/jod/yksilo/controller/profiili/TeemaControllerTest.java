@@ -20,8 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
+import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import java.time.LocalDate;
@@ -63,9 +63,9 @@ class TeemaControllerTest {
             new LocalizedString(Map.of(Kieli.FI, "testi")),
             null,
             Set.of(
-                new PatevyysDto(
+                new ToimintoDto(
                     null,
-                    ls("Patevyys"),
+                    ls("Toiminto"),
                     ls("Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),
@@ -89,9 +89,9 @@ class TeemaControllerTest {
             new LocalizedString(Map.of(Kieli.FI, "testi")),
             null,
             Set.of(
-                new PatevyysDto(
+                new ToimintoDto(
                     null,
-                    ls("Patevyys"),
+                    ls("Toiminto"),
                     ls("Kuvaus"),
                     LocalDate.of(2024, 5, 1),
                     LocalDate.of(2023, 5, 1),
@@ -124,9 +124,9 @@ class TeemaControllerTest {
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
             null,
             Set.of(
-                new PatevyysDto(
+                new ToimintoDto(
                     null,
-                    ls("Updated Patevyys"),
+                    ls("Updated Toiminto"),
                     ls("Updated Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),
@@ -150,9 +150,9 @@ class TeemaControllerTest {
             new LocalizedString(Map.of(Kieli.FI, "updated testi")),
             null,
             Set.of(
-                new PatevyysDto(
+                new ToimintoDto(
                     null,
-                    ls("Updated Patevyys"),
+                    ls("Updated Toiminto"),
                     ls("Updated Kuvaus"),
                     LocalDate.of(2023, 5, 1),
                     LocalDate.of(2024, 5, 1),

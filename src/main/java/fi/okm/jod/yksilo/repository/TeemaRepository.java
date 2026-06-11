@@ -27,6 +27,6 @@ public interface TeemaRepository extends JpaRepository<Teema, UUID> {
 
   @Modifying(flushAutomatically = true)
   @Query(
-      "DELETE FROM Teema t WHERE t.id = :id AND t.yksilo.id = :yksiloId AND t.patevyydet IS EMPTY")
+      "DELETE FROM Teema t WHERE t.id = :id AND t.yksilo.id = :yksiloId AND t.toiminnot IS EMPTY")
   void deleteEmpty(UUID yksiloId, UUID id);
 }

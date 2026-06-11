@@ -46,7 +46,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "teema_id")})
-public class Patevyys implements OsaamisenLahde {
+public class Toiminto implements OsaamisenLahde {
   @GeneratedValue @Id private UUID id;
 
   @Setter private LocalDate alkuPvm;
@@ -63,15 +63,15 @@ public class Patevyys implements OsaamisenLahde {
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
-  @OneToMany(mappedBy = "patevyys", fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "toiminto", fetch = FetchType.LAZY)
   @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
-  protected Patevyys() {
+  protected Toiminto() {
     // For JPA
   }
 
-  public Patevyys(Teema teema) {
+  public Toiminto(Teema teema) {
     this.teema = requireNonNull(teema);
     this.kaannos = new EnumMap<>(Kieli.class);
     this.osaamiset = new HashSet<>();
