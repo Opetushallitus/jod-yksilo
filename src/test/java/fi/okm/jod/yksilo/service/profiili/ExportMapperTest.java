@@ -16,8 +16,8 @@ import fi.okm.jod.yksilo.dto.profiili.export.KoulutusKokonaisuusExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PatevyysExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PolunSuunnitelmaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TavoiteExportDto;
+import fi.okm.jod.yksilo.dto.profiili.export.TeemaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimenkuvaExportDto;
-import fi.okm.jod.yksilo.dto.profiili.export.ToimintoExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TyopaikkaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksilonSuosikkiExportDto;
@@ -26,8 +26,8 @@ import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
-import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
@@ -49,7 +49,7 @@ class ExportMapperTest {
             "mapToimenkuva",
             "mapKoulutusKokonaisuus",
             "mapKoulutus",
-            "mapToiminto",
+            "mapTeema",
             "mapPatevyys",
             "mapYksilonSuosikki",
             "mapTavoite",
@@ -107,14 +107,13 @@ class ExportMapperTest {
   }
 
   @Test
-  void testToimintoMappingCompleteness() {
-    assertMappingCompleteness(Toiminto.class, ToimintoExportDto.class, Set.of("yksilo"));
+  void testTeemaMappingCompleteness() {
+    assertMappingCompleteness(Teema.class, TeemaExportDto.class, Set.of("yksilo"));
   }
 
   @Test
   void testPatevyysMappingCompleteness() {
-    assertMappingCompleteness(
-        Patevyys.class, PatevyysExportDto.class, Set.of("yksilo", "toiminto"));
+    assertMappingCompleteness(Patevyys.class, PatevyysExportDto.class, Set.of("yksilo", "teema"));
   }
 
   @Test

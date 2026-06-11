@@ -104,7 +104,7 @@ public class CvController {
   @Operation(
       description =
           """
-          Tallentaa valitut koulutukset/toimenkuvat/toiminnot osaamisprofiiliin.
+          Tallentaa valitut työpaikat/koulutukset/teemat osaamisprofiiliin.
           Onnistuneen tallennuksen jälkeen tehtävä poistetaan.
           """)
   public void save(

@@ -17,8 +17,8 @@ import fi.okm.jod.yksilo.dto.profiili.export.MuuOsaaminenExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PatevyysExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.PolunSuunnitelmaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TavoiteExportDto;
+import fi.okm.jod.yksilo.dto.profiili.export.TeemaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.ToimenkuvaExportDto;
-import fi.okm.jod.yksilo.dto.profiili.export.ToimintoExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.TyopaikkaExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksiloExportDto;
 import fi.okm.jod.yksilo.dto.profiili.export.YksilonSuosikkiExportDto;
@@ -29,8 +29,8 @@ import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
-import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
@@ -63,9 +63,7 @@ public final class ExportMapper {
             entity.getKoulutusKokonaisuudet().stream()
                 .map(ExportMapper::mapKoulutusKokonaisuus)
                 .collect(Collectors.toSet()),
-            entity.getToiminnot().stream()
-                .map(ExportMapper::mapToiminto)
-                .collect(Collectors.toSet()),
+            entity.getTeemat().stream().map(ExportMapper::mapTeema).collect(Collectors.toSet()),
             new MuuOsaaminenExportDto(
                 entity.getMuuOsaaminenVapaateksti(),
                 entity.getOsaamiset().stream()
@@ -142,10 +140,10 @@ public final class ExportMapper {
             entity.getOsasuoritukset());
   }
 
-  public static ToimintoExportDto mapToiminto(Toiminto entity) {
+  public static TeemaExportDto mapTeema(Teema entity) {
     return entity == null
         ? null
-        : new ToimintoExportDto(
+        : new TeemaExportDto(
             entity.getId(),
             entity.getNimi(),
             entity.getTuontiLahde(),

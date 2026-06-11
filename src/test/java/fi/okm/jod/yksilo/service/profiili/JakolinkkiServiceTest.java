@@ -30,7 +30,7 @@ import fi.okm.jod.yksilo.entity.Ammatti;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
 import fi.okm.jod.yksilo.entity.Tavoite;
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
@@ -39,7 +39,7 @@ import fi.okm.jod.yksilo.entity.tyomahdollisuus.Tyomahdollisuus;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusmahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TavoiteRepository;
-import fi.okm.jod.yksilo.repository.ToimintoRepository;
+import fi.okm.jod.yksilo.repository.TeemaRepository;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.repository.TyopaikkaRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
@@ -77,7 +77,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
   @Autowired KoulutusmahdollisuusRepository koulutusmahdollisuusRepository;
   @Autowired TyopaikkaRepository tyopaikkaRepository;
   @Autowired KoulutusKokonaisuusRepository koulutusKokonaisuusRepository;
-  @Autowired ToimintoRepository toimintoRepository;
+  @Autowired TeemaRepository teemaRepository;
   @Autowired TavoiteRepository tavoiteRepository;
 
   private Instant sixMonthsFromNowEod() {
@@ -124,8 +124,8 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     koulutusKokonaisuusRepository.save(new KoulutusKokonaisuus(getYksilo(), ls(Kieli.FI, fiName)));
   }
 
-  private void addToiminto(String fiName) {
-    toimintoRepository.save(new Toiminto(getYksilo(), ls(Kieli.FI, fiName)));
+  private void addTeema(String fiName) {
+    teemaRepository.save(new Teema(getYksilo(), ls(Kieli.FI, fiName)));
   }
 
   private void addTavoite(String fiName, Tyomahdollisuus tyomahdollisuus) {
@@ -190,7 +190,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     assertFalse(jakolinkki.muuOsaaminenJaettu());
     assertEquals(0, jakolinkki.jaetutKoulutukset().size());
     assertEquals(0, jakolinkki.jaetutTyopaikat().size());
-    assertEquals(0, jakolinkki.jaetutToiminnot().size());
+    assertEquals(0, jakolinkki.jaetutTeemat().size());
     assertEquals(0, jakolinkki.jaetutSuosikit().size());
   }
 
@@ -205,7 +205,7 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     assertNull(content.muuOsaaminen());
     assertEquals(0, content.koulutusKokonaisuudet().size());
     assertEquals(0, content.tyopaikat().size());
-    assertEquals(0, content.toiminnot().size());
+    assertEquals(0, content.teemat().size());
     assertEquals(0, content.suosikit().size());
   }
 
@@ -443,36 +443,32 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
   }
 
   @Test
-  void shouldShareSelectedToiminnot() {
-    addToiminto("Toiminto 1");
-    addToiminto("Toiminto 2");
-    var toiminnot = toimintoRepository.findByYksiloId(user.id());
-    assertThat(toiminnot).hasSize(2);
+  void shouldShareSelectedTeemat() {
+    addTeema("Teema 1");
+    addTeema("Teema 2");
+    var teemat = teemaRepository.findByYksiloId(user.id());
+    assertThat(teemat).hasSize(2);
     simulateCommit();
 
     createJakolinkki(
         defaultDto()
-            .withJaetutToiminnot(
-                toiminnot.stream().map(Toiminto::getId).collect(Collectors.toSet())));
+            .withJaetutTeemat(teemat.stream().map(Teema::getId).collect(Collectors.toSet())));
 
     var ulkoinenId = ulkoinenIdOfSingleLink();
 
     var content = jakolinkkiService.getContent(ulkoinenId);
-    assertThat(content.toiminnot())
+    assertThat(content.teemat())
         .extracting(t -> t.nimi().get(Kieli.FI))
-        .containsExactlyInAnyOrder("Toiminto 1", "Toiminto 2");
+        .containsExactlyInAnyOrder("Teema 1", "Teema 2");
 
     var jakolinkkiId = singleLinkId();
 
     jakolinkkiService.update(
         user,
-        dtoWithIds(jakolinkkiId, ulkoinenId)
-            .withJaetutToiminnot(Set.of(toiminnot.getFirst().getId())));
+        dtoWithIds(jakolinkkiId, ulkoinenId).withJaetutTeemat(Set.of(teemat.getFirst().getId())));
 
     var after = jakolinkkiService.getContent(ulkoinenId);
-    assertThat(after.toiminnot())
-        .extracting(t -> t.nimi().get(Kieli.FI))
-        .containsExactly("Toiminto 1");
+    assertThat(after.teemat()).extracting(t -> t.nimi().get(Kieli.FI)).containsExactly("Teema 1");
   }
 
   @Test

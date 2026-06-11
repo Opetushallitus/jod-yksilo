@@ -12,10 +12,10 @@ package fi.okm.jod.yksilo.service.profiili;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.entity.Patevyys;
-import fi.okm.jod.yksilo.entity.Toiminto;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.PatevyysRepository;
-import fi.okm.jod.yksilo.repository.ToimintoRepository;
+import fi.okm.jod.yksilo.repository.TeemaRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
@@ -32,64 +32,61 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PatevyysService {
-  private final ToimintoRepository toiminnot;
+  private final TeemaRepository teemat;
   private final PatevyysRepository patevyydet;
   private final YksilonOsaaminenService osaamiset;
 
   @Transactional(readOnly = true)
-  public List<PatevyysDto> findAll(JodUser user, UUID toimintoId) {
-    return patevyydet.findByToimintoYksiloIdAndToimintoId(user.getId(), toimintoId).stream()
+  public List<PatevyysDto> findAll(JodUser user, UUID teemaId) {
+    return patevyydet.findByTeemaYksiloIdAndTeemaId(user.getId(), teemaId).stream()
         .map(Mapper::mapPatevyys)
         .toList();
   }
 
-  public UUID add(JodUser user, UUID toimintoId, PatevyysDto dto) {
-    var toiminto =
-        toiminnot
-            .findByYksiloIdAndId(user.getId(), toimintoId)
-            .orElseThrow(ToimenkuvaService::notFound);
+  public UUID add(JodUser user, UUID teemaId, PatevyysDto dto) {
+    var teema =
+        teemat.findByYksiloIdAndId(user.getId(), teemaId).orElseThrow(ToimenkuvaService::notFound);
 
-    if (patevyydet.countByToimintoYksilo(toiminto.getYksilo()) >= Limits.PATEVYYS) {
+    if (patevyydet.countByTeemaYksilo(teema.getYksilo()) >= Limits.PATEVYYS) {
       throw new ProfileLimitException(ProfileItem.PATEVYYS);
     }
 
-    toiminto.setTuontiLahde(null);
-    return add(toiminto, dto).getId();
+    teema.setTuontiLahde(null);
+    return add(teema, dto).getId();
   }
 
   @Transactional(readOnly = true)
-  public PatevyysDto get(JodUser user, UUID toimintoId, UUID id) {
+  public PatevyysDto get(JodUser user, UUID teemaId, UUID id) {
     return patevyydet
-        .findBy(user, toimintoId, id)
+        .findBy(user, teemaId, id)
         .map(Mapper::mapPatevyys)
         .orElseThrow(PatevyysService::notFound);
   }
 
   @Transactional(readOnly = true)
   public Map<UUID, PatevyysDto> findAllByIds(JodUser user, Set<UUID> ids) {
-    return patevyydet.findByToimintoYksiloIdAndIdIn(user.getId(), ids).stream()
+    return patevyydet.findByTeemaYksiloIdAndIdIn(user.getId(), ids).stream()
         .collect(Collectors.toMap(Patevyys::getId, Mapper::mapPatevyys));
   }
 
-  public void update(JodUser user, UUID toimintoId, PatevyysDto dto) {
-    var entity =
-        patevyydet.findBy(user, toimintoId, dto.id()).orElseThrow(PatevyysService::notFound);
+  public void update(JodUser user, UUID teemaId, PatevyysDto dto) {
+    var entity = patevyydet.findBy(user, teemaId, dto.id()).orElseThrow(PatevyysService::notFound);
     update(entity, dto);
   }
 
-  public void delete(JodUser user, UUID toimintoId, UUID patevyysId) {
+  public void delete(JodUser user, UUID teemaId, UUID patevyysId) {
     var entity =
-        patevyydet.findBy(user, toimintoId, patevyysId).orElseThrow(PatevyysService::notFound);
+        patevyydet.findBy(user, teemaId, patevyysId).orElseThrow(PatevyysService::notFound);
     delete(entity);
-    toiminnot.deleteEmpty(user.getId(), toimintoId);
+    teemat.deleteEmpty(user.getId(), teemaId);
   }
 
   long countBy(Yksilo yksilo) {
-    return patevyydet.countByToimintoYksilo(yksilo);
+    return patevyydet.countByTeemaYksilo(yksilo);
   }
 
-  Patevyys add(Toiminto toiminto, PatevyysDto dto) {
-    var entity = new Patevyys(toiminto);
+  Patevyys add(Teema teema, PatevyysDto dto) {
+    var entity = new Patevyys(teema);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
@@ -102,7 +99,7 @@ public class PatevyysService {
   }
 
   void update(Patevyys entity, PatevyysDto dto) {
-    entity.getToiminto().setTuontiLahde(null);
+    entity.getTeema().setTuontiLahde(null);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
@@ -114,7 +111,7 @@ public class PatevyysService {
   }
 
   void delete(Patevyys patevyys) {
-    patevyys.getToiminto().setTuontiLahde(null);
+    patevyys.getTeema().setTuontiLahde(null);
     osaamiset.deleteAll(patevyys.getOsaamiset());
     patevyydet.delete(patevyys);
   }

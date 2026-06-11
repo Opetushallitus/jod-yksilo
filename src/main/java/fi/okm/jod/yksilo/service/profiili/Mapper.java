@@ -20,8 +20,8 @@ import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
 import fi.okm.jod.yksilo.dto.profiili.PolunSuunnitelmaYhteenvetoDto;
 import fi.okm.jod.yksilo.dto.profiili.SuosikkiDto;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.profiili.YksilonOsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
@@ -32,8 +32,8 @@ import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Patevyys;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
+import fi.okm.jod.yksilo.entity.Teema;
 import fi.okm.jod.yksilo.entity.Toimenkuva;
-import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.entity.YksilonSuosikki;
@@ -94,10 +94,10 @@ public final class Mapper {
             entity.getOsasuoritukset());
   }
 
-  public static ToimintoDto mapToiminto(Toiminto entity) {
+  public static TeemaDto mapTeema(Teema entity) {
     return entity == null
         ? null
-        : new ToimintoDto(
+        : new TeemaDto(
             entity.getId(),
             entity.getNimi(),
             entity.getTuontiLahde(),

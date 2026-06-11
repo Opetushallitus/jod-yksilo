@@ -11,10 +11,10 @@ package fi.okm.jod.yksilo.controller.profiili;
 
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.IdDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoUpdateDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaUpdateDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -37,23 +37,23 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/profiili/vapaa-ajan-toiminnot")
+@RequestMapping("/api/profiili/vapaa-ajan-teemat")
 @RequiredArgsConstructor
-@Tag(name = "profiili/vapaa-ajan-toiminnot")
-public class ToimintoController {
-  private final ToimintoService service;
+@Tag(name = "profiili/vapaa-ajan-teemat")
+public class TeemaController {
+  private final TeemaService service;
 
   @GetMapping
-  @Operation(summary = "Get all vapaa-ajan toiminnot of the user")
-  List<ToimintoDto> findAll(@AuthenticationPrincipal JodUser user) {
+  @Operation(summary = "Get all vapaa-ajan teemat of the user")
+  List<TeemaDto> findAll(@AuthenticationPrincipal JodUser user) {
     return service.findAll(user);
   }
 
   @PostMapping()
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Adds a new vapaa-ajan toiminto (and optionally patevyydet)")
+  @Operation(summary = "Adds a new vapaa-ajan teema (and optionally patevyydet)")
   ResponseEntity<IdDto<UUID>> add(
-      @Validated(Add.class) @RequestBody() ToimintoDto dto, @AuthenticationPrincipal JodUser user) {
+      @Validated(Add.class) @RequestBody() TeemaDto dto, @AuthenticationPrincipal JodUser user) {
     var id = service.add(user, dto);
     var location =
         ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri();
@@ -61,17 +61,17 @@ public class ToimintoController {
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get the vapaa-ajan toiminto (including patevyydet)")
-  ToimintoDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
+  @Operation(summary = "Get the vapaa-ajan teema (including patevyydet)")
+  TeemaDto get(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id);
   }
 
   @PutMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Updates the vapaa-ajan toiminto (shallow update)")
+  @Operation(summary = "Updates the vapaa-ajan teema (shallow update)")
   void update(
       @PathVariable UUID id,
-      @Valid @RequestBody ToimintoUpdateDto dto,
+      @Valid @RequestBody TeemaUpdateDto dto,
       @AuthenticationPrincipal JodUser user) {
 
     if (dto.id() == null || !id.equals(dto.id())) {
@@ -82,7 +82,7 @@ public class ToimintoController {
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Delete the vapaa-ajan toiminto (including all patevyydet)")
+  @Operation(summary = "Delete the vapaa-ajan teema (including all patevyydet)")
   void delete(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     service.delete(user, id);
   }

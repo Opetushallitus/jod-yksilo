@@ -27,8 +27,8 @@ import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.PatevyysService;
+import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
-import fi.okm.jod.yksilo.service.profiili.ToimintoService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import java.time.Instant;
@@ -77,7 +77,7 @@ class TmtImportServiceTest extends AbstractServiceTest {
     ToimenkuvaService.class,
     KoulutusKokonaisuusService.class,
     KoulutusService.class,
-    ToimintoService.class,
+    TeemaService.class,
     PatevyysService.class,
     YksilonOsaaminenService.class
   })

@@ -186,7 +186,7 @@ public class TmtExportService {
               profile.addEducationsItem(item);
             });
 
-    yksilo.getToiminnot().stream()
+    yksilo.getTeemat().stream()
         .flatMap(it -> it.getPatevyydet().stream())
         .limit(PROFILE_ITEM_LIMIT)
         .forEach(

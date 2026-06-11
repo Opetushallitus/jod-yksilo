@@ -14,5 +14,5 @@ import fi.okm.jod.yksilo.domain.TuontiLahde;
 import java.util.Set;
 import java.util.UUID;
 
-public record ToimintoExportDto(
+public record TeemaExportDto(
     UUID id, LocalizedString nimi, TuontiLahde tuontiLahde, Set<PatevyysExportDto> patevyydet) {}

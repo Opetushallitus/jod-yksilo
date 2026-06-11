@@ -36,21 +36,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/profiili/vapaa-ajan-toiminnot/{id}/patevyydet")
+@RequestMapping("/api/profiili/vapaa-ajan-teemat/{id}/patevyydet")
 @RequiredArgsConstructor
-@Tag(name = "profiili/vapaa-ajan-toiminnot")
+@Tag(name = "profiili/vapaa-ajan-teemat")
 class PatevyysController {
   private final PatevyysService service;
 
   @GetMapping
-  @Operation(summary = "Gets all patevyydet of the vapaa-ajan toiminto")
+  @Operation(summary = "Gets all patevyydet of the vapaa-ajan teema")
   List<PatevyysDto> findAll(@PathVariable UUID id, @AuthenticationPrincipal JodUser user) {
     return service.findAll(user, id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Adds a new patevyys to the vapaa-ajan toiminto")
+  @Operation(summary = "Adds a new patevyys to the vapaa-ajan teema")
   ResponseEntity<IdDto<UUID>> add(
       @PathVariable UUID id,
       @Validated({Add.class}) @RequestBody PatevyysDto dto,
@@ -67,14 +67,14 @@ class PatevyysController {
   }
 
   @GetMapping("/{patevyysId}")
-  @Operation(summary = "Gets a patevyys of the vapaa-ajan toiminto")
+  @Operation(summary = "Gets a patevyys of the vapaa-ajan teema")
   PatevyysDto get(
       @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {
     return service.get(user, id, patevyysId);
   }
 
   @PutMapping("/{patevyysId}")
-  @Operation(summary = "Updates a patevyys of the vapaa-ajan toiminto (including osaamiset)")
+  @Operation(summary = "Updates a patevyys of the vapaa-ajan teema (including osaamiset)")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void update(
       @PathVariable UUID id,
@@ -91,8 +91,8 @@ class PatevyysController {
   @DeleteMapping("/{patevyysId}")
   @Operation(
       summary =
-          "Deletes a patevyys of the vapaa-ajan toiminto (including all osaamiset)."
-              + " If the toiminto becomes empty, it will also be deleted.")
+          "Deletes a patevyys of the vapaa-ajan teema (including all osaamiset)."
+              + " If the teema becomes empty, it will also be deleted.")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(
       @PathVariable UUID id, @PathVariable UUID patevyysId, @AuthenticationPrincipal JodUser user) {

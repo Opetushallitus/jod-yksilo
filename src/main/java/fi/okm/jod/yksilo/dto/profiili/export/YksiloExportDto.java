@@ -27,7 +27,7 @@ public record YksiloExportDto(
     String email,
     Set<TyopaikkaExportDto> tyopaikat,
     Set<KoulutusKokonaisuusExportDto> koulutusKokonaisuudet,
-    Set<ToimintoExportDto> toiminnot,
+    Set<TeemaExportDto> teemat,
     MuuOsaaminenExportDto muuOsaaminen,
     KiinnostuksetExportDto kiinnostukset,
     Set<YksilonSuosikkiExportDto> suosikit,

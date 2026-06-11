@@ -45,7 +45,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Getter
 @Table(indexes = {@Index(columnList = "yksilo_id")})
-public class Toiminto {
+public class Teema {
   @GeneratedValue @Id private UUID id;
 
   @Setter
@@ -64,15 +64,15 @@ public class Toiminto {
   @NotEmpty
   private Map<Kieli, Kaannos> kaannos;
 
-  @OneToMany(mappedBy = "toiminto", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "teema", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @BatchSize(size = 100)
   private List<Patevyys> patevyydet = new ArrayList<>();
 
-  protected Toiminto() {
+  protected Teema() {
     // For JPA
   }
 
-  public Toiminto(Yksilo yksilo, LocalizedString nimi) {
+  public Teema(Yksilo yksilo, LocalizedString nimi) {
     this.yksilo = requireNonNull(yksilo);
     var tmp = new EnumMap<Kieli, Kaannos>(Kieli.class);
     nimi.asMap().forEach((key, value) -> tmp.put(key, new Kaannos(value)));

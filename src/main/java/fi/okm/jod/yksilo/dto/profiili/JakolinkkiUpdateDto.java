@@ -41,7 +41,7 @@ public record JakolinkkiUpdateDto(
     boolean kiinnostuksetJaettu,
     Set<UUID> jaetutTyopaikat,
     Set<UUID> jaetutKoulutukset,
-    Set<UUID> jaetutToiminnot,
+    Set<UUID> jaetutTeemat,
     Set<SuosikkiTyyppi> jaetutSuosikit,
     Set<UUID> jaetutTavoitteet) {
 

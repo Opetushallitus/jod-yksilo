@@ -16,8 +16,8 @@ import fi.okm.jod.yksilo.dto.profiili.CvTehtavaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -117,7 +117,7 @@ class CvResponseMapper {
     return new TyopaikkaDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(toimenkuva));
   }
 
-  private List<ToimintoDto> mapActivities(
+  private List<TeemaDto> mapActivities(
       List<CvResponse.Activity> activities, Kieli kieli, Set<ConstraintViolation<?>> violations) {
     if (activities == null) {
       return List.of();
@@ -128,7 +128,7 @@ class CvResponseMapper {
         .toList();
   }
 
-  private ToimintoDto mapActivity(CvResponse.Activity activity, Kieli kieli) {
+  private TeemaDto mapActivity(CvResponse.Activity activity, Kieli kieli) {
     var nimi = localizedString(activity.name(), kieli);
     var patevyys =
         new PatevyysDto(
@@ -138,7 +138,7 @@ class CvResponseMapper {
             activity.startDate(),
             activity.endDate(),
             null);
-    return new ToimintoDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(patevyys));
+    return new TeemaDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(patevyys));
   }
 
   private static LocalizedString localizedString(String value, Kieli kieli) {

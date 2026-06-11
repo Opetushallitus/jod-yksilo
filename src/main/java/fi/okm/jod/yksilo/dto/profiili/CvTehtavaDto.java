@@ -17,5 +17,5 @@ public record CvTehtavaDto(UUID id, CvTehtavaTila tila, Tulos tulos) {
   public record Tulos(
       List<KoulutusKokonaisuusDto> koulutuskokonaisuudet,
       List<TyopaikkaDto> tyopaikat,
-      List<ToimintoDto> toiminnot) {}
+      List<TeemaDto> teemat) {}
 }

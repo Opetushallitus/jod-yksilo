@@ -19,7 +19,7 @@ import java.util.UUID;
 public record CvTehtavaSaveDto(
     List<@Valid @NotNull Valinta> koulutuskokonaisuudet,
     List<@Valid @NotNull Valinta> tyopaikat,
-    List<@Valid @NotNull Valinta> toiminnot) {
+    List<@Valid @NotNull Valinta> teemat) {
 
   public record Valinta(@NotNull UUID id, @NotEmpty Set<@NotNull UUID> lapset) {}
 }

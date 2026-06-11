@@ -155,15 +155,15 @@ $$
         FOR i IN 1..3
           LOOP
             SELECT gen_random_uuid() INTO kid;
-            INSERT INTO toiminto(id, yksilo_id) VALUES (kid, yid);
-            INSERT INTO yksilo.toiminto_kaannos(toiminto_id, kaannos_key, nimi)
-            VALUES (kid, 'FI', 'Testitoiminto ' || i);
+            INSERT INTO teema(id, yksilo_id) VALUES (kid, yid);
+            INSERT INTO yksilo.teema_kaannos(teema_id, kaannos_key, nimi)
+            VALUES (kid, 'FI', 'Testiteema ' || i);
 
             FOR j IN 1..2
               LOOP
                 SELECT gen_random_uuid() INTO aid;
 
-                INSERT INTO patevyys(id, toiminto_id, alku_pvm) VALUES (aid, kid, NOW());
+                INSERT INTO patevyys(id, teema_id, alku_pvm) VALUES (aid, kid, NOW());
                 INSERT INTO patevyys_kaannos(patevyys_id, kaannos_key, nimi)
                 VALUES (aid, 'FI', 'Testipatevyys ' || i || j);
 

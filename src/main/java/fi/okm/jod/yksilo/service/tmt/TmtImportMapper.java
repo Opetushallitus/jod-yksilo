@@ -19,8 +19,8 @@ import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.PatevyysDto;
+import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
-import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.entity.koodisto.Koulutuskoodi;
@@ -64,7 +64,7 @@ class TmtImportMapper {
   record ImportDto(
       Set<TyopaikkaDto> tyopaikat,
       Set<KoulutusKokonaisuusDto> koulutuskokonaisuudet,
-      Set<ToimintoDto> toiminnot) {}
+      Set<TeemaDto> teemat) {}
 
   ImportDto map(FullProfileDtoExternalGet profile) {
     if (profile == null) {
@@ -101,11 +101,11 @@ class TmtImportMapper {
                 .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
 
-    var toiminnot =
+    var teemat =
         profile.getProjects() == null
-            ? Set.<ToimintoDto>of()
+            ? Set.<TeemaDto>of()
             : profile.getProjects().stream()
-                .map(this::mapToToiminto)
+                .map(this::mapToTeema)
                 .filter(it -> !violations.addAll(validator.validate(it, Add.class)))
                 .collect(Collectors.toSet());
 
@@ -119,7 +119,7 @@ class TmtImportMapper {
           .log("TMT import had validation errors, invalid items ignored");
     }
 
-    return new ImportDto(tyopaikat, koulutuskokonaisuudet, toiminnot);
+    return new ImportDto(tyopaikat, koulutuskokonaisuudet, teemat);
   }
 
   @SuppressWarnings("java:S2637")
@@ -162,7 +162,7 @@ class TmtImportMapper {
 
   @SuppressWarnings("java:S2637")
   // return value may be invalid, caller will validate
-  private ToimintoDto mapToToiminto(ProjectDtoExternalGet project) {
+  private TeemaDto mapToTeema(ProjectDtoExternalGet project) {
     var nimi = asLocalizedString(project.getTitle());
     var kuvaus = extractDescription(project.getDescription());
     var osaamiset = extractSkills(project.getDescription());
@@ -170,7 +170,7 @@ class TmtImportMapper {
     var loppuPvm = extractEndDate(project.getInterval());
 
     var patevyys = new PatevyysDto(null, nimi, kuvaus, alkuPvm, loppuPvm, osaamiset);
-    return new ToimintoDto(null, nimi, TuontiLahde.TMT_TUONTI, Set.of(patevyys));
+    return new TeemaDto(null, nimi, TuontiLahde.TMT_TUONTI, Set.of(patevyys));
   }
 
   private LocalizedString extractDescription(DescriptionItemExternalGet description) {
