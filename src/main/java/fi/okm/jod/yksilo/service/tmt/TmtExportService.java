@@ -35,6 +35,7 @@ import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -148,9 +149,9 @@ public class TmtExportService {
         .forEach(
             it -> {
               var item = new EmploymentDtoExternalPut();
-              item.setEmployer(asStringMap(it.getTyopaikka().getNimi()));
+              item.setEmployer(truncateValues(asStringMap(it.getTyopaikka().getNimi()), 254));
               item.setEmployerNameHidden(false);
-              item.setTitle(asStringMap(it.getNimi()));
+              item.setTitle(truncateValues(asStringMap(it.getNimi()), 128));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new IntervalItemExternalPut()
@@ -168,8 +169,9 @@ public class TmtExportService {
         .forEach(
             it -> {
               var item = new EducationDtoExternalPut();
-              item.setDegreeInstitution(asStringMap(it.getKokonaisuus().getNimi()));
-              item.setCustomDegreeName(asStringMap(it.getNimi()));
+              item.setDegreeInstitution(
+                  truncateValues(asStringMap(it.getKokonaisuus().getNimi()), 128));
+              item.setCustomDegreeName(truncateValues(asStringMap(it.getNimi()), 128));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new EducationIntervalItemExternalPut()
@@ -190,7 +192,7 @@ public class TmtExportService {
         .forEach(
             it -> {
               var item = new ProjectDtoExternalPut();
-              item.setTitle(asStringMap(it.getToiminto().getNimi()));
+              item.setTitle(truncateValues(asStringMap(it.getNimi()), 254));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new IntervalItemExternalPut()
@@ -198,7 +200,7 @@ public class TmtExportService {
                         .endDate(it.getLoppuPvm())
                         .ongoing(it.getLoppuPvm() == null));
               }
-              item.setDescription(mapDescriptionItem(it.getNimi(), it.getOsaamiset()));
+              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset()));
               profile.addProjectsItem(item);
             });
 
@@ -209,7 +211,7 @@ public class TmtExportService {
       LocalizedString kuvaus, Collection<YksilonOsaaminen> osaamiset) {
     if (kuvaus != null || !osaamiset.isEmpty()) {
       var item = new DescriptionItemExternalPut();
-      item.setDescription(asStringMap(kuvaus));
+      item.setDescription(truncateValues(asStringMap(kuvaus), 5000));
       osaamiset.stream()
           .limit(SKILL_LIMIT)
           .forEach(
@@ -219,6 +221,21 @@ public class TmtExportService {
       return item;
     }
     return null;
+  }
+
+  static Map<String, String> truncateValues(Map<String, String> map, int maxLength) {
+    if (map == null) {
+      return null;
+    }
+    return map.entrySet().stream()
+        .collect(
+            HashMap::new,
+            (m, e) -> m.put(e.getKey(), truncate(e.getValue(), maxLength)),
+            HashMap::putAll);
+  }
+
+  static String truncate(String s, int maxLength) {
+    return s != null && s.length() > maxLength ? s.substring(0, maxLength) : s;
   }
 
   static Map<String, String> asStringMap(LocalizedString ls) {
