@@ -24,10 +24,12 @@ import fi.okm.jod.yksilo.entity.Toiminto;
 import fi.okm.jod.yksilo.entity.Tyopaikka;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
+import fi.okm.jod.yksilo.external.tmt.model.DescriptionItemExternalPut;
 import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalPut;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.ToIntFunction;
@@ -37,7 +39,6 @@ class TmtExportMappingTest {
 
   @Test
   void testMapping() {
-    // Create Yksilo with random data
     Yksilo yksilo = createYksilo();
 
     FullProfileDtoExternalPut profile = TmtExportService.toTmtProfile(yksilo);
@@ -55,6 +56,32 @@ class TmtExportMappingTest {
     assertNotNull(profile.getProjects());
     assertEquals(
         count(yksilo.getToiminnot(), t -> t.getPatevyydet().size()), profile.getProjects().size());
+
+    profile
+        .getEmployments()
+        .forEach(
+            e -> {
+              assertTruncated(e.getEmployer(), 254, "employment.employer");
+              assertTruncated(e.getTitle(), 128, "employment.title");
+              assertDescriptionTruncated(e.getDescription(), "employment");
+            });
+
+    profile
+        .getEducations()
+        .forEach(
+            e -> {
+              assertTruncated(e.getDegreeInstitution(), 128, "education.degreeInstitution");
+              assertTruncated(e.getCustomDegreeName(), 128, "education.customDegreeName");
+              assertDescriptionTruncated(e.getDescription(), "education");
+            });
+
+    profile
+        .getProjects()
+        .forEach(
+            p -> {
+              assertTruncated(p.getTitle(), 254, "project.title");
+              assertDescriptionTruncated(p.getDescription(), "project");
+            });
   }
 
   @Test
@@ -62,6 +89,32 @@ class TmtExportMappingTest {
     Yksilo yksilo = new Yksilo(UUID.randomUUID());
     var result = assertDoesNotThrow(() -> TmtExportService.toTmtProfile(yksilo));
     assertNotNull(result);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void assertTruncated(Object mapField, int maxLength, String fieldName) {
+    assertNotNull(mapField, fieldName + " should not be null");
+    var map = (Map<String, String>) mapField;
+    map.forEach(
+        (lang, value) ->
+            assertEquals(
+                maxLength,
+                value.length(),
+                fieldName + "[" + lang + "] should be truncated to " + maxLength));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void assertDescriptionTruncated(
+      DescriptionItemExternalPut desc, String fieldName) {
+    assertNotNull(desc, fieldName + ".description should not be null");
+    assertNotNull(desc.getDescription(), fieldName + ".description text should not be null");
+    var map = (Map<String, String>) desc.getDescription();
+    map.forEach(
+        (lang, value) ->
+            assertEquals(
+                5000,
+                value.length(),
+                fieldName + ".description[" + lang + "] should be truncated to 5000"));
   }
 
   private static <T> int count(Collection<T> collection, ToIntFunction<T> weight) {
@@ -81,8 +134,8 @@ class TmtExportMappingTest {
     var patevyys = new Patevyys(toiminto);
     patevyys.setAlkuPvm(LocalDate.now());
     patevyys.setLoppuPvm(LocalDate.now().plusYears(1));
-    patevyys.setNimi(ls("Patevyys 1"));
-    patevyys.setKuvaus(ls("Patevyys Kuvaus 1"));
+    patevyys.setNimi(ls("A".repeat(300)));
+    patevyys.setKuvaus(ls("B".repeat(6000)));
     patevyys
         .getOsaamiset()
         .add(new YksilonOsaaminen(patevyys, new Osaaminen(URI.create("urn:osaaminen:2"))));
@@ -90,12 +143,12 @@ class TmtExportMappingTest {
     toiminto.getPatevyydet().add(patevyys);
     yksilo.getToiminnot().add(toiminto);
 
-    var tyopaikka = new Tyopaikka(yksilo, ls("Tyopaikka 1"));
+    var tyopaikka = new Tyopaikka(yksilo, ls("C".repeat(300)));
     var toimenkuva = new Toimenkuva(tyopaikka);
     toimenkuva.setAlkuPvm(LocalDate.now());
     toimenkuva.setLoppuPvm(LocalDate.now().plusYears(1));
-    toimenkuva.setNimi(ls("Toimenkuva 1"));
-    toimenkuva.setKuvaus(ls("Toimenkuva Kuvaus 1"));
+    toimenkuva.setNimi(ls("D".repeat(200)));
+    toimenkuva.setKuvaus(ls("E".repeat(6000)));
     toimenkuva
         .getOsaamiset()
         .add(new YksilonOsaaminen(toimenkuva, new Osaaminen(URI.create("urn:osaaminen:3"))));
@@ -103,12 +156,12 @@ class TmtExportMappingTest {
     tyopaikka.getToimenkuvat().add(toimenkuva);
     yksilo.getTyopaikat().add(tyopaikka);
 
-    var koulutusKokonaisuus = new KoulutusKokonaisuus(yksilo, ls("KoulutusKokonaisuus 1"));
+    var koulutusKokonaisuus = new KoulutusKokonaisuus(yksilo, ls("F".repeat(200)));
     var koulutus = new Koulutus(koulutusKokonaisuus);
     koulutus.setAlkuPvm(LocalDate.now());
     koulutus.setLoppuPvm(LocalDate.now().plusYears(1));
-    koulutus.setNimi(ls("Koulutus 1"));
-    koulutus.setKuvaus(ls("Koulutus Kuvaus 1"));
+    koulutus.setNimi(ls("G".repeat(200)));
+    koulutus.setKuvaus(ls("H".repeat(6000)));
     koulutus
         .getOsaamiset()
         .add(new YksilonOsaaminen(koulutus, new Osaaminen(URI.create("urn:osaaminen:4"))));
