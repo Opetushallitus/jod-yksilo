@@ -2,7 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
   id 'java-library'
-  id "org.openapi.generator" version "7.21.0"
+  id "org.openapi.generator" version "7.23.0"
 }
 
 repositories {
@@ -18,7 +18,7 @@ java {
 dependencies {
   implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
   // Jackson 3 for Spring Boot 4
-  implementation 'tools.jackson.core:jackson-databind:3.1.2'
+  implementation 'tools.jackson.core:jackson-databind:3.1.4'
 }
 
 tasks.register("openApiGenerateP51", GenerateTask) {
@@ -29,8 +29,8 @@ tasks.register("openApiGenerateP51", GenerateTask) {
       modelTests: "false",
   ]
   generatorName = "java"
-  inputSpec = "${projectDir.toString().replace("\\", "/")}/src/openapi/P51-tmt-profile-tuonti-V1.yaml"
-  outputDir = "${projectDir}/build/generated/sources/openapi"
+  inputSpec = file("${projectDir}/src/openapi/P51-tmt-profile-tuonti-V1.yaml")
+  outputDir = file("${projectDir}/build/generated/sources/openapi")
   configOptions = [
       "dateLibrary"            : "java8",
       "library"                : "restclient",
@@ -49,8 +49,8 @@ tasks.register("openApiGenerateP60", GenerateTask) {
       modelTests: "false",
   ]
   generatorName = "java"
-  inputSpec = "${projectDir.toString().replace("\\", "/")}/src/openapi/P60-tmt-profile-haku-V1.yaml"
-  outputDir = "${projectDir}/build/generated/sources/openapi"
+  inputSpec = file("${projectDir}/src/openapi/P60-tmt-profile-haku-V1.yaml")
+  outputDir = file("${projectDir}/build/generated/sources/openapi")
   configOptions = [
       "dateLibrary"            : "java8",
       "library"                : "restclient",

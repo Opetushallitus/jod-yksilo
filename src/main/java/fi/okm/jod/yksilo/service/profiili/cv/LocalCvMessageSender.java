@@ -31,13 +31,14 @@ class LocalCvMessageSender implements CvMessageSender {
       CvProperties properties,
       RestClient.Builder restClientBuilder) {
     this.responseHandler = responseHandler;
-    if (properties.requestQueue() == null || !properties.requestQueue().startsWith("http:")) {
+    final var queue = properties.requestQueue();
+    if (queue == null || !queue.startsWith("http:")) {
       log.info(
           "No local request queue defined, LocalCvMessageSender will simulate failed requests");
       this.restClient = null;
     } else {
-      log.info("Initializing LocalCvMessageSender with endpoint: {}", properties.requestQueue());
-      this.restClient = restClientBuilder.baseUrl(properties.requestQueue()).build();
+      log.info("Initializing LocalCvMessageSender with endpoint: {}", queue);
+      this.restClient = restClientBuilder.baseUrl(queue).build();
     }
   }
 

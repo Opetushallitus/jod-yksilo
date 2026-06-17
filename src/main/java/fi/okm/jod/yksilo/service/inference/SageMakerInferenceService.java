@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.inference;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceOverloadedException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -50,7 +51,8 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
-              .customAttributes(tracer.currentSpan().context().traceId())
+              .customAttributes(
+                  tracer.currentSpan() instanceof Span s ? s.context().traceId() : null)
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();

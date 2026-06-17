@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.tmt;
 import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.KOULUTUS_TILA_ALKAMASSA_TAI_JATKUU;
 import static fi.okm.jod.yksilo.service.tmt.TmtApiConstants.KOULUTUS_TILA_KESKEYTYNYT;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
@@ -51,6 +52,9 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
 @RequiredArgsConstructor
 @Slf4j
+@SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "false positive")
 class TmtImportMapper {
 
   private final Validator validator;
