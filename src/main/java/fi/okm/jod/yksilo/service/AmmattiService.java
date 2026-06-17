@@ -27,6 +27,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
@@ -101,13 +102,13 @@ public class AmmattiService {
     private final AmmattiRepository ammatit;
 
     @Override
-    public Versioned<Map<URI, AmmattiDto>> load(Object key) throws Exception {
+    public Versioned<Map<URI, AmmattiDto>> load(@NonNull Object key) {
       return reload(key, null);
     }
 
     @Override
     public @Nullable Versioned<Map<URI, AmmattiDto>> reload(
-        Object key, Versioned<Map<URI, AmmattiDto>> oldValue) throws Exception {
+        @NonNull Object key, @Nullable Versioned<Map<URI, AmmattiDto>> oldValue) {
       return ammatit.refreshAll(oldValue);
     }
   }

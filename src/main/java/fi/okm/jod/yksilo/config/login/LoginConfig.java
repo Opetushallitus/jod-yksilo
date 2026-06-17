@@ -123,8 +123,8 @@ public class LoginConfig {
                 requireNonNullElse(slo.getResponseLocation(), slo.getLocation()))
             .build();
 
-    var cert = PemContent.of(properties.getCertificate());
-    var key = PemContent.of(properties.getPrivateKey());
+    var cert = requireNonNull(PemContent.of(properties.getCertificate()));
+    var key = requireNonNull(PemContent.of(properties.getPrivateKey()));
 
     var samlCredential =
         new Saml2X509Credential(
@@ -147,7 +147,7 @@ public class LoginConfig {
 
   private static <T extends Endpoint> T getRedirectionEndpoint(Collection<T> endpoints) {
     return endpoints.stream()
-        .filter(s -> s.getBinding().equals(SAMLConstants.SAML2_REDIRECT_BINDING_URI))
+        .filter(s -> Objects.equals(s.getBinding(), SAMLConstants.SAML2_REDIRECT_BINDING_URI))
         .findAny()
         .orElseThrow();
   }

@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-  implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+  implementation 'com.nimbusds:nimbus-jose-jwt:10.9.1'
   annotationProcessor 'org.projectlombok:lombok'
   compileOnly 'org.projectlombok:lombok'
 
