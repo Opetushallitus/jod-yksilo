@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.koski;
 
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
+import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -108,5 +109,25 @@ public class KoskiOauth2Service {
       Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
     authorizedClientRepository.removeAuthorizedClient(
         getRegistrationId(), authentication, request, response);
+  }
+
+  public JsonNode fetchKoskiData(
+      JodUser jodUser,
+      Authentication authentication,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+    var authorizedClient = getAuthorizedClient(authentication, request);
+    if (authorizedClient == null) {
+      throw new PermissionRequiredException(jodUser.getId());
+    }
+    unauthorize(authentication, request, response);
+    try {
+      return fetchDataFromResourceServer(jodUser, authorizedClient);
+    } catch (WrongPersonException e) {
+      log.atWarn()
+          .addMarker(LogMarker.AUDIT)
+          .log("User {} tried to access another person's Koski data.", jodUser.getId());
+      throw e;
+    }
   }
 }

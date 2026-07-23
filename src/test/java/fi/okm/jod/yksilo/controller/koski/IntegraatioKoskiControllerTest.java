@@ -17,7 +17,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,7 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.KoskiTehtavaTila;
+import fi.okm.jod.yksilo.domain.TuontiLahde;
+import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
+import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
@@ -45,6 +52,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -78,8 +86,6 @@ class IntegraatioKoskiControllerTest {
   private static final String EDUCATIONS_HISTORY_KOSKI_RESPONSE = "koski-response.json";
   private static final String API_KOSKI_KOULUTUKSET_ENDPOINT =
       "/api/integraatiot/koski/koulutukset";
-  private static final String GET_EDUCATIONS_DATA_API_RESPONSE =
-      "getEducationsDataFromKoski-response.json";
   private static final String API_OSAAMISEN_TUNNISTUS_STATUS_QUERY =
       "/api/integraatiot/koski/osaamiset/tunnistus";
 
@@ -95,6 +101,16 @@ class IntegraatioKoskiControllerTest {
 
   @Autowired UserDetailsService userDetailsService;
 
+  @BeforeEach
+  void setUp() {
+    when(koskiOauth2Service.fetchKoskiData(
+            any(JodUser.class),
+            any(Authentication.class),
+            any(HttpServletRequest.class),
+            any(HttpServletResponse.class)))
+        .thenCallRealMethod();
+  }
+
   @WithUserDetails("test")
   @Test
   void shouldReturnEducationDataWhenAuthorized() throws Exception {
@@ -105,11 +121,19 @@ class IntegraatioKoskiControllerTest {
     when(koskiOauth2Service.fetchDataFromResourceServer(
             any(JodUser.class), eq(mockAuthorizedClient)))
         .thenReturn(mockDataInJson);
-    when(koskiService.mapKoulutusData(mockDataInJson)).thenCallRealMethod();
+    when(koskiService.mapKoulutusKokonaisuudet(mockDataInJson)).thenCallRealMethod();
+    when(koskiService.submit(any(JodUser.class), any()))
+        .thenAnswer(
+            inv ->
+                new KoskiTehtavaDto(
+                    UUID.randomUUID(),
+                    KoskiTehtavaTila.VALMIS,
+                    new KoskiTehtavaDto.Tulos(inv.getArgument(1))));
 
-    var expectedResponseJson =
-        TestUtil.getContentFromFile(GET_EDUCATIONS_DATA_API_RESPONSE, KoskiService.class);
-    performGetEducationsDataFromKoski(status().isOk(), expectedResponseJson);
+    mockMvc
+        .perform(post(API_KOSKI_KOULUTUKSET_ENDPOINT).with(csrf()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.tulos.koulutuskokonaisuudet.length()").value(2));
   }
 
   @Test
@@ -119,8 +143,14 @@ class IntegraatioKoskiControllerTest {
         """
         {"errorCode":"PERMISSION_REQUIRED","errorDetails":["Permission was not given or it is missing."]}
         """;
-    performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
+    performCreateKoskiTehtava(status().isForbidden(), expectedResponseJson);
 
+    verify(koskiOauth2Service)
+        .fetchKoskiData(
+            any(JodUser.class),
+            any(Authentication.class),
+            any(HttpServletRequest.class),
+            any(HttpServletResponse.class));
     verify(koskiOauth2Service)
         .getAuthorizedClient(any(Authentication.class), any(HttpServletRequest.class));
     verifyNoMoreInteractions(koskiOauth2Service);
@@ -147,13 +177,13 @@ class IntegraatioKoskiControllerTest {
         """
         {"errorCode":"PERMISSION_REQUIRED","errorDetails":["Token expired."]}
         """;
-    performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
+    performCreateKoskiTehtava(status().isForbidden(), expectedResponseJson);
   }
 
-  private void performGetEducationsDataFromKoski(
-      ResultMatcher expectedResult, String expectedResponseJson) throws Exception {
+  private void performCreateKoskiTehtava(ResultMatcher expectedResult, String expectedResponseJson)
+      throws Exception {
     mockMvc
-        .perform(get(API_KOSKI_KOULUTUKSET_ENDPOINT))
+        .perform(post(API_KOSKI_KOULUTUKSET_ENDPOINT).with(csrf()))
         .andDo(MockMvcResultHandlers.print())
         .andExpect(expectedResult)
         .andExpect(content().json(expectedResponseJson));
@@ -171,7 +201,7 @@ class IntegraatioKoskiControllerTest {
         """
         {"errorCode":"SERVICE_ERROR","errorDetails":["Fail to get data from Koski resource server."]}
         """;
-    performGetEducationsDataFromKoski(status().isInternalServerError(), expectedResponseJson);
+    performCreateKoskiTehtava(status().isInternalServerError(), expectedResponseJson);
   }
 
   @WithUserDetails("test")
@@ -185,7 +215,7 @@ class IntegraatioKoskiControllerTest {
         """
         {"errorCode":"WRONG_PERSON","errorDetails":["Wrong person."]}
         """;
-    performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
+    performCreateKoskiTehtava(status().isForbidden(), expectedResponseJson);
 
     verify(koskiOauth2Service)
         .unauthorize(
@@ -208,7 +238,7 @@ class IntegraatioKoskiControllerTest {
         """
         {"errorCode":"DATA_NOT_FOUND","errorDetails":["The user either has no data or lacks access to retrieve it."]}
         """;
-    performGetEducationsDataFromKoski(status().isForbidden(), expectedResponseJson);
+    performCreateKoskiTehtava(status().isForbidden(), expectedResponseJson);
   }
 
   @WithUserDetails("test")
@@ -290,5 +320,100 @@ class IntegraatioKoskiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("ids", commaSeparatedUuids))
         .andExpect(status().isBadRequest());
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldCreateKoskiTehtava_whenAuthorized() throws Exception {
+    var authorizedClient = prepareOauth2Client();
+    var mockDataInJson =
+        objectMapper.readTree(
+            TestUtil.getContentFromFile(EDUCATIONS_HISTORY_KOSKI_RESPONSE, KoskiService.class));
+    when(koskiOauth2Service.fetchDataFromResourceServer(any(JodUser.class), eq(authorizedClient)))
+        .thenReturn(mockDataInJson);
+
+    var kokonaisuudet =
+        List.of(
+            new KoulutusKokonaisuusDto(
+                UUID.randomUUID(),
+                ls("Itä-Suomen yliopisto"),
+                TuontiLahde.KOSKI_TUONTI,
+                Set.of(
+                    KoulutusDto.builder()
+                        .id(UUID.randomUUID())
+                        .nimi(ls("Lääketieteen lisensiaatti"))
+                        .osaamisetOdottaaTunnistusta(true)
+                        .build())));
+    when(koskiService.mapKoulutusKokonaisuudet(mockDataInJson)).thenReturn(kokonaisuudet);
+    var tehtavaId = UUID.randomUUID();
+    var dto =
+        new KoskiTehtavaDto(
+            tehtavaId, KoskiTehtavaTila.VALMIS, new KoskiTehtavaDto.Tulos(kokonaisuudet));
+    when(koskiService.submit(any(JodUser.class), eq(kokonaisuudet))).thenReturn(dto);
+
+    mockMvc
+        .perform(post(API_KOSKI_KOULUTUKSET_ENDPOINT).with(csrf()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").value(tehtavaId.toString()))
+        .andExpect(jsonPath("$.tila").value("VALMIS"))
+        .andExpect(jsonPath("$.tulos.koulutuskokonaisuudet[0].tuontiLahde").value("KOSKI_TUONTI"));
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldReturnForbidden_whenCreatingWithoutOauth() throws Exception {
+    mockMvc
+        .perform(post(API_KOSKI_KOULUTUKSET_ENDPOINT).with(csrf()))
+        .andExpect(status().isForbidden());
+    verifyNoInteractions(koskiService);
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldReturnKoskiTehtavaStatus() throws Exception {
+    var tehtavaId = UUID.randomUUID();
+    var dto = new KoskiTehtavaDto(tehtavaId, KoskiTehtavaTila.VALMIS, null);
+    when(koskiService.getStatus(any(JodUser.class), eq(tehtavaId))).thenReturn(dto);
+
+    mockMvc
+        .perform(get(API_KOSKI_KOULUTUKSET_ENDPOINT + "/" + tehtavaId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(tehtavaId.toString()));
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldSaveSelectedKoskiEducations() throws Exception {
+    var tehtavaId = UUID.randomUUID();
+    var body =
+        """
+        {
+          "koulutuskokonaisuudet": [
+            { "id": "%s", "lapset": ["%s"] }
+          ],
+          "skipOsaamistenTunnistus": false
+        }
+        """
+            .formatted(UUID.randomUUID(), UUID.randomUUID());
+    when(koskiService.save(any(JodUser.class), eq(tehtavaId), any()))
+        .thenReturn(List.of(UUID.randomUUID()));
+
+    mockMvc
+        .perform(
+            post(API_KOSKI_KOULUTUKSET_ENDPOINT + "/" + tehtavaId)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isNoContent());
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldDeleteKoskiTehtava() throws Exception {
+    var tehtavaId = UUID.randomUUID();
+    mockMvc
+        .perform(delete(API_KOSKI_KOULUTUKSET_ENDPOINT + "/" + tehtavaId).with(csrf()))
+        .andExpect(status().isNoContent());
+    verify(koskiService).delete(any(JodUser.class), eq(tehtavaId));
   }
 }

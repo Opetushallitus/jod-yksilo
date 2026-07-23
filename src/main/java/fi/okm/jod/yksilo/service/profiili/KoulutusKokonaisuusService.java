@@ -52,8 +52,17 @@ public class KoulutusKokonaisuusService {
   }
 
   public List<UUID> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    var koulutukset = add(user, dtos, true).flatMap(dto -> dto.getKoulutukset().stream()).toList();
-    applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, koulutukset));
+    return addManyForImport(user, dtos, false);
+  }
+
+  public List<UUID> addManyForImport(
+      JodUser user, Set<KoulutusKokonaisuusDto> dtos, boolean skipOsaamistenTunnistus) {
+    var tunnistaOsaamiset = !skipOsaamistenTunnistus;
+    var koulutukset =
+        add(user, dtos, tunnistaOsaamiset).flatMap(dto -> dto.getKoulutukset().stream()).toList();
+    if (tunnistaOsaamiset) {
+      applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, koulutukset));
+    }
     return koulutukset.stream().map(Koulutus::getId).toList();
   }
 
