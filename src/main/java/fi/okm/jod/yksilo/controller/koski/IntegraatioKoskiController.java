@@ -14,29 +14,36 @@ import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaDto;
+import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaSaveDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
-import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
-import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.validation.Limits;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnBean(KoskiOauth2Config.class)
@@ -57,32 +64,52 @@ public class IntegraatioKoskiController {
     this.koskiService = koskiService;
   }
 
-  @GetMapping("/koulutukset")
-  @Operation(summary = "Get user's education's histories from Koski's opintopolku.")
-  ResponseEntity<List<KoulutusDto>> getEducationsDataFromKoski(
+  @PostMapping("/koulutukset")
+  @Operation(summary = "Fetch educations from Koski and persist as a verified import task.")
+  ResponseEntity<KoskiTehtavaDto> createKoskiTehtava(
       @AuthenticationPrincipal JodUser jodUser,
       Authentication authentication,
       HttpServletRequest request,
       HttpServletResponse response) {
-    var authorizedClient = koskiOauth2Service.getAuthorizedClient(authentication, request);
-    if (authorizedClient == null) {
-      throw new PermissionRequiredException(jodUser.getId());
-    }
-    koskiOauth2Service.unauthorize(authentication, request, response);
+    var dataInJson = koskiOauth2Service.fetchKoskiData(jodUser, authentication, request, response);
+    var koulutukset = koskiService.mapKoulutusKokonaisuudet(dataInJson);
+    var dto = koskiService.submit(jodUser, koulutukset);
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .log("User {} Koski import task {} created", jodUser.getId(), dto.id());
+    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+  }
 
-    try {
-      var dataInJson = koskiOauth2Service.fetchDataFromResourceServer(jodUser, authorizedClient);
-      var educationHistories = koskiService.mapKoulutusData(dataInJson);
-      log.atInfo()
-          .addMarker(LogMarker.AUDIT)
-          .log("User {} education history imported", jodUser.getId());
-      return ResponseEntity.ok(educationHistories);
-    } catch (WrongPersonException e) {
-      log.atWarn()
-          .addMarker(LogMarker.AUDIT)
-          .log("User {} tried to access another person's Koski data.", jodUser.getId());
-      throw e;
-    }
+  @GetMapping("/koulutukset/{tehtavaId}")
+  @Operation(summary = "Get status and content of a Koski import task.")
+  public KoskiTehtavaDto getKoskiTehtava(
+      @PathVariable UUID tehtavaId, @AuthenticationPrincipal JodUser user) {
+    return koskiService.getStatus(user, tehtavaId);
+  }
+
+  @PostMapping("/koulutukset/{tehtavaId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(summary = "Persist selected Koski educations to the profile.")
+  public void saveKoskiTehtava(
+      @PathVariable UUID tehtavaId,
+      @RequestBody @Valid KoskiTehtavaSaveDto dto,
+      @AuthenticationPrincipal JodUser user) {
+    var ids = koskiService.save(user, tehtavaId, dto);
+    log.atInfo()
+        .addMarker(LogMarker.AUDIT)
+        .log(
+            "User {} saved {} verified Koski koulutuskokonaisuudet from task {}",
+            user.getId(),
+            ids.size(),
+            tehtavaId);
+  }
+
+  @DeleteMapping("/koulutukset/{tehtavaId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(summary = "Delete a Koski import task.")
+  public void deleteKoskiTehtava(
+      @PathVariable UUID tehtavaId, @AuthenticationPrincipal JodUser user) {
+    koskiService.delete(user, tehtavaId);
   }
 
   @GetMapping("/osaamiset/tunnistus")

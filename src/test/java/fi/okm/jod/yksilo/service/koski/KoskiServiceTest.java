@@ -31,6 +31,10 @@ import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
+import fi.okm.jod.yksilo.service.OsaaminenService;
+import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
+import fi.okm.jod.yksilo.service.profiili.KoulutusService;
+import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
 import fi.okm.jod.yksilo.testutil.TestUtil;
 import java.time.LocalDate;
 import java.util.List;
@@ -51,49 +55,15 @@ import tools.jackson.databind.ObjectMapper;
   KoskiService.class,
   MappingConfig.class,
   ObjectMapper.class,
+  KoulutusKokonaisuusService.class,
+  KoulutusService.class,
+  OsaaminenService.class,
+  YksilonOsaaminenService.class,
 })
 class KoskiServiceTest extends AbstractServiceTest {
 
   @Autowired private KoskiService koskiService;
   @Autowired private ObjectMapper objectMapper;
-
-  @Test
-  void getKoulutusData() throws JacksonException {
-    var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
-    var koskiData = koskiService.mapKoulutusData(objectMapper.readTree(content));
-
-    assertEquals(2, koskiData.size());
-    var koulutusDto = koskiData.getFirst();
-    assertNull(koulutusDto.id());
-    assertLocalizedString(
-        koulutusDto.nimi(),
-        "Itä-Suomen yliopisto",
-        "Östra Finlands Universitet",
-        "University of Eastern Finland");
-    assertLocalizedString(
-        koulutusDto.kuvaus(),
-        "Lääketieteen lisensiaatti",
-        "Medicine licentiat",
-        "Licentiate of Medicine");
-    assertEquals(LocalDate.of(2018, 8, 1), koulutusDto.alkuPvm());
-    assertEquals(LocalDate.of(2026, 7, 31), koulutusDto.loppuPvm());
-    assertNull(koulutusDto.osaamiset());
-    assertEquals(71, koulutusDto.osasuoritukset().size());
-
-    var koulutusDto2 = koskiData.get(1);
-    assertNull(koulutusDto2.id());
-    assertLocalizedString(
-        koulutusDto2.nimi(),
-        "Ylioppilastutkintolautakunta",
-        "Studentexamensnämnden",
-        "The Matriculation Examination Board");
-    assertLocalizedString(
-        koulutusDto2.kuvaus(), "Ylioppilastutkinto", "Studentexamen", "Matriculation Examination");
-    assertNull(koulutusDto2.alkuPvm());
-    assertNull(koulutusDto2.loppuPvm());
-    assertNull(koulutusDto2.osaamiset());
-    assertTrue(koulutusDto2.osasuoritukset().isEmpty());
-  }
 
   private static void assertLocalizedString(
       LocalizedString localizedString,
@@ -128,6 +98,35 @@ class KoskiServiceTest extends AbstractServiceTest {
     assertNotNull(result);
     assertEquals(2, result.asMap().size());
     assertLocalizedString(result, "Avoimen opinnot: Lisätietoja", "Öppna studier", null);
+  }
+
+  @Test
+  void mapKoulutusKokonaisuudet_wrapsIntoKokonaisuusWithKoskiTuontiLahde() throws JacksonException {
+    var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
+    var result = koskiService.mapKoulutusKokonaisuudet(objectMapper.readTree(content));
+
+    assertEquals(2, result.size());
+    var first = result.getFirst();
+    assertNotNull(first.id());
+    assertEquals(fi.okm.jod.yksilo.domain.TuontiLahde.KOSKI_TUONTI, first.tuontiLahde());
+    assertLocalizedString(
+        first.nimi(),
+        "Itä-Suomen yliopisto",
+        "Östra Finlands Universitet",
+        "University of Eastern Finland");
+    assertEquals(1, first.koulutukset().size());
+    var koulutus = first.koulutukset().iterator().next();
+    assertNotNull(koulutus.id());
+    assertLocalizedString(
+        koulutus.nimi(),
+        "Lääketieteen lisensiaatti",
+        "Medicine licentiat",
+        "Licentiate of Medicine");
+    assertNull(koulutus.kuvaus());
+    assertEquals(LocalDate.of(2018, 8, 1), koulutus.alkuPvm());
+    assertEquals(LocalDate.of(2026, 7, 31), koulutus.loppuPvm());
+    assertEquals(Boolean.TRUE, koulutus.osaamisetOdottaaTunnistusta());
+    assertEquals(71, koulutus.osasuoritukset().size());
   }
 
   @Test
