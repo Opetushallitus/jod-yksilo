@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.service.profiili.cv;
 
+import static java.util.stream.Collectors.toCollection;
+
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
@@ -22,15 +24,17 @@ import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-/** Maps a flattened {@link CvResponse} to {@link CvTehtavaDto.Tulos}. */
+/** Maps a {@link CvResponse} to {@link CvTehtavaDto.Tulos}. */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -66,29 +70,49 @@ class CvResponseMapper {
     return result.isEmpty();
   }
 
+  /**
+   * Maps the items of a group (positions of an employer, degrees of an institution), dropping the
+   * invalid ones. A group left without any valid items fails validation and is dropped as a whole.
+   */
+  private <T, R> Set<R> mapValid(
+      List<T> items, Function<T, R> mapper, Set<ConstraintViolation<?>> violations) {
+    if (items == null) {
+      return Set.of();
+    }
+    return items.stream()
+        .map(mapper)
+        .filter(it -> isValid(it, violations))
+        .collect(toCollection(LinkedHashSet::new));
+  }
+
   private List<KoulutusKokonaisuusDto> mapEducations(
       List<CvResponse.Education> educations, Kieli kieli, Set<ConstraintViolation<?>> violations) {
     if (educations == null) {
       return List.of();
     }
     return educations.stream()
-        .map(e -> mapEducation(e, kieli))
+        .map(e -> mapEducation(e, kieli, violations))
         .filter(it -> isValid(it, violations))
         .toList();
   }
 
-  private KoulutusKokonaisuusDto mapEducation(CvResponse.Education education, Kieli kieli) {
-    var nimi = localizedString(education.institution(), kieli);
-    var koulutus =
-        KoulutusDto.builder()
-            .id(UUID.randomUUID())
-            .nimi(localizedString(education.degree(), kieli))
-            .kuvaus(localizedString(education.details(), kieli))
-            .alkuPvm(education.startDate())
-            .loppuPvm(education.endDate())
-            .build();
+  private KoulutusKokonaisuusDto mapEducation(
+      CvResponse.Education education, Kieli kieli, Set<ConstraintViolation<?>> violations) {
     return new KoulutusKokonaisuusDto(
-        UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(koulutus));
+        UUID.randomUUID(),
+        localizedString(education.institution(), kieli),
+        TuontiLahde.CV_TUONTI,
+        mapValid(education.allDegrees(), degree -> mapKoulutus(degree, kieli), violations));
+  }
+
+  private KoulutusDto mapKoulutus(CvResponse.Degree degree, Kieli kieli) {
+    return KoulutusDto.builder()
+        .id(UUID.randomUUID())
+        .nimi(localizedString(degree.degree(), kieli))
+        .kuvaus(localizedString(degree.details(), kieli))
+        .alkuPvm(degree.startDate())
+        .loppuPvm(degree.endDate())
+        .build();
   }
 
   private List<TyopaikkaDto> mapWorkExperiences(
@@ -99,22 +123,31 @@ class CvResponseMapper {
       return List.of();
     }
     return workExperiences.stream()
-        .map(e -> mapWorkExperience(e, kieli))
+        .map(e -> mapWorkExperience(e, kieli, violations))
         .filter(it -> isValid(it, violations))
         .toList();
   }
 
-  private TyopaikkaDto mapWorkExperience(CvResponse.WorkExperience workExperience, Kieli kieli) {
-    var nimi = localizedString(workExperience.company(), kieli);
-    var toimenkuva =
-        new ToimenkuvaDto(
-            UUID.randomUUID(),
-            localizedString(workExperience.title(), kieli),
-            localizedString(workExperience.description(), kieli),
-            workExperience.startDate(),
-            workExperience.endDate(),
-            null);
-    return new TyopaikkaDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(toimenkuva));
+  private TyopaikkaDto mapWorkExperience(
+      CvResponse.WorkExperience workExperience,
+      Kieli kieli,
+      Set<ConstraintViolation<?>> violations) {
+    return new TyopaikkaDto(
+        UUID.randomUUID(),
+        localizedString(workExperience.company(), kieli),
+        TuontiLahde.CV_TUONTI,
+        mapValid(
+            workExperience.allPositions(), position -> mapToimenkuva(position, kieli), violations));
+  }
+
+  private ToimenkuvaDto mapToimenkuva(CvResponse.Position position, Kieli kieli) {
+    return new ToimenkuvaDto(
+        UUID.randomUUID(),
+        localizedString(position.title(), kieli),
+        localizedString(position.description(), kieli),
+        position.startDate(),
+        position.endDate(),
+        null);
   }
 
   private List<TeemaDto> mapActivities(

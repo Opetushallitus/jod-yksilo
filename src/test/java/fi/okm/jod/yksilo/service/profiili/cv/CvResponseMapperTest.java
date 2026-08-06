@@ -48,13 +48,26 @@ class CvResponseMapperTest {
     return new CvResponse(null, null, List.of(items));
   }
 
+  private static CvResponse.Position position(
+      String title, LocalDate start, LocalDate end, String description) {
+    return new CvResponse.Position(title, start, end, null, description, null);
+  }
+
+  private static CvResponse.Degree degree(
+      String name, LocalDate start, LocalDate end, String details) {
+    return new CvResponse.Degree(name, start, end, details);
+  }
+
   @Test
   void shouldMapValidResponse() {
     var response =
         new CvResponse(
             List.of(
-                new CvResponse.WorkExperience("Company", "Title", DATE, null, null, "Desc", null)),
-            List.of(new CvResponse.Education("University", "Degree", DATE, null, "Details")),
+                new CvResponse.WorkExperience(
+                    "Company", List.of(position("Title", DATE, null, "Desc")))),
+            List.of(
+                new CvResponse.Education(
+                    "University", List.of(degree("Degree", DATE, null, "Details")))),
             List.of(new CvResponse.Activity("Hobby", "Name", "Description", DATE, null)));
 
     var tulos = map(response);
@@ -62,6 +75,104 @@ class CvResponseMapperTest {
     assertThat(tulos.koulutuskokonaisuudet()).hasSize(1);
     assertThat(tulos.tyopaikat()).hasSize(1);
     assertThat(tulos.teemat()).hasSize(1);
+  }
+
+  @Test
+  void shouldMapLegacyFlatResponse() {
+    var response =
+        new CvResponse(
+            List.of(
+                new CvResponse.WorkExperience(
+                    "Company", null, "Title", DATE, null, null, "Desc", null)),
+            List.of(new CvResponse.Education("University", null, "Degree", DATE, null, "Details")),
+            null);
+
+    var tulos = map(response);
+
+    assertThat(tulos.tyopaikat())
+        .singleElement()
+        .satisfies(it -> assertThat(it.toimenkuvat()).hasSize(1));
+    assertThat(tulos.koulutuskokonaisuudet())
+        .singleElement()
+        .satisfies(it -> assertThat(it.koulutukset()).hasSize(1));
+  }
+
+  @Test
+  void shouldMapAllPositionsOfEmployer() {
+    var tulos =
+        map(
+            withWork(
+                new CvResponse.WorkExperience(
+                    "Company",
+                    List.of(
+                        position("Current", LocalDate.of(2022, 3, 1), null, "Desc"),
+                        position(
+                            "Previous",
+                            LocalDate.of(2019, 6, 1),
+                            LocalDate.of(2022, 2, 28),
+                            "Desc")))));
+
+    assertThat(tulos.tyopaikat())
+        .singleElement()
+        .satisfies(it -> assertThat(it.toimenkuvat()).hasSize(2));
+  }
+
+  @Test
+  void shouldMapAllDegreesOfInstitution() {
+    var tulos =
+        map(
+            withEducation(
+                new CvResponse.Education(
+                    "University",
+                    List.of(
+                        degree("M.S.", LocalDate.of(2013, 1, 1), LocalDate.of(2015, 12, 31), null),
+                        degree(
+                            "B.S.", LocalDate.of(2009, 1, 1), LocalDate.of(2013, 12, 31), null)))));
+
+    assertThat(tulos.koulutuskokonaisuudet())
+        .singleElement()
+        .satisfies(it -> assertThat(it.koulutukset()).hasSize(2));
+  }
+
+  @Test
+  void shouldKeepValidPositionsAndExcludeInvalid() {
+    var tulos =
+        map(
+            withWork(
+                new CvResponse.WorkExperience(
+                    "Company",
+                    List.of(
+                        position(null, DATE, null, "Desc"),
+                        position("Valid", DATE, null, "Desc")))));
+
+    assertThat(tulos.tyopaikat())
+        .singleElement()
+        .satisfies(it -> assertThat(it.toimenkuvat()).hasSize(1));
+  }
+
+  @Test
+  void shouldExcludeWorkExperienceWithoutValidPositions() {
+    var tulos =
+        map(
+            withWork(
+                new CvResponse.WorkExperience("Company", null),
+                new CvResponse.WorkExperience("Company", List.of()),
+                new CvResponse.WorkExperience(
+                    "Company", List.of(position("Title", null, null, null)))));
+
+    assertThat(tulos.tyopaikat()).isEmpty();
+  }
+
+  @Test
+  void shouldExcludeEducationWithoutValidDegrees() {
+    var tulos =
+        map(
+            withEducation(
+                new CvResponse.Education("University", null),
+                new CvResponse.Education("University", List.of()),
+                new CvResponse.Education("University", List.of(degree(null, DATE, null, null)))));
+
+    assertThat(tulos.koulutuskokonaisuudet()).isEmpty();
   }
 
   @Test
@@ -81,57 +192,73 @@ class CvResponseMapperTest {
     var tulos =
         map(
             withEducation(
-                new CvResponse.Education(null, "Degree", DATE, null, null),
-                new CvResponse.Education("Valid University", "Degree", DATE, null, null)));
+                new CvResponse.Education(null, List.of(degree("Degree", DATE, null, null))),
+                new CvResponse.Education(
+                    "Valid University", List.of(degree("Degree", DATE, null, null)))));
 
     assertThat(tulos.koulutuskokonaisuudet()).hasSize(1);
   }
 
   @Test
   void shouldExcludeEducationWithBlankInstitution() {
-    var tulos = map(withEducation(new CvResponse.Education("  ", "Degree", DATE, null, null)));
+    var tulos =
+        map(
+            withEducation(
+                new CvResponse.Education("  ", List.of(degree("Degree", DATE, null, null)))));
 
     assertThat(tulos.koulutuskokonaisuudet()).isEmpty();
   }
 
   @Test
-  void shouldExcludeEducationWithNullDegree() {
-    var tulos = map(withEducation(new CvResponse.Education("University", null, DATE, null, null)));
+  void shouldExcludeDegreeWithNullName() {
+    var tulos =
+        map(
+            withEducation(
+                new CvResponse.Education(
+                    "University",
+                    List.of(degree(null, DATE, null, null), degree("Degree", DATE, null, null)))));
 
-    assertThat(tulos.koulutuskokonaisuudet()).isEmpty();
+    assertThat(tulos.koulutuskokonaisuudet())
+        .singleElement()
+        .satisfies(it -> assertThat(it.koulutukset()).hasSize(1));
   }
 
   @Test
   void shouldExcludeWorkExperienceWithNullCompany() {
     var tulos =
-        map(withWork(new CvResponse.WorkExperience(null, "Title", DATE, null, null, null, null)));
-
-    assertThat(tulos.tyopaikat()).isEmpty();
-  }
-
-  @Test
-  void shouldExcludeWorkExperienceWithNullStartDate() {
-    var tulos =
         map(
             withWork(
-                new CvResponse.WorkExperience("Company", "Title", null, null, null, null, null)));
+                new CvResponse.WorkExperience(null, List.of(position("Title", DATE, null, null)))));
 
     assertThat(tulos.tyopaikat()).isEmpty();
   }
 
   @Test
-  void shouldExcludeWorkExperienceWithInvalidInterval() {
+  void shouldExcludePositionWithNullStartDate() {
     var tulos =
         map(
             withWork(
                 new CvResponse.WorkExperience(
                     "Company",
-                    "Title",
-                    LocalDate.of(2020, 6, 1),
-                    LocalDate.of(2020, 1, 1),
-                    null,
-                    null,
-                    null)));
+                    List.of(
+                        position("Title", null, null, null),
+                        position("Other", DATE, null, null)))));
+
+    assertThat(tulos.tyopaikat())
+        .singleElement()
+        .satisfies(it -> assertThat(it.toimenkuvat()).hasSize(1));
+  }
+
+  @Test
+  void shouldExcludePositionWithInvalidInterval() {
+    var tulos =
+        map(
+            withWork(
+                new CvResponse.WorkExperience(
+                    "Company",
+                    List.of(
+                        position(
+                            "Title", LocalDate.of(2020, 6, 1), LocalDate.of(2020, 1, 1), null)))));
 
     assertThat(tulos.tyopaikat()).isEmpty();
   }
