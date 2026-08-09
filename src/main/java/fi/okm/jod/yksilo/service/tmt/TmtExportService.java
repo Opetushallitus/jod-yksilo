@@ -19,6 +19,9 @@ import fi.okm.jod.yksilo.config.tmt.TmtConfiguration;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.dto.profiili.TmtExportDto;
+import fi.okm.jod.yksilo.dto.profiili.TmtExportDto.Syy;
+import fi.okm.jod.yksilo.dto.profiili.TmtExportDto.Tulos;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.external.tmt.model.DescriptionItemExternalPut;
@@ -35,10 +38,12 @@ import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -83,14 +88,14 @@ public class TmtExportService {
     return tmtConfiguration.isEnabled() && yksilo.getTervetuloapolku();
   }
 
-  public void export(JodUser jodUser, OAuth2AccessToken token) {
+  public TmtExportDto export(JodUser jodUser, OAuth2AccessToken token) {
 
     if (token == null
         || (token.getExpiresAt() instanceof Instant instant && instant.isBefore(Instant.now()))) {
       throw new ServiceValidationException("TMT export failed: Access token is missing or expired");
     }
 
-    FullProfileDtoExternalPut result;
+    TmtProfileResult result;
     try {
       result =
           transactionTemplate.execute(
@@ -122,7 +127,7 @@ public class TmtExportService {
                 headers.setBearerAuth(token.getTokenValue());
               })
           .contentType(MediaType.APPLICATION_JSON)
-          .body(result)
+          .body(result.profile())
           .retrieve()
           .toBodilessEntity();
       log.atInfo().addMarker(LogMarker.AUDIT).log("Successfully exported TMT profile");
@@ -138,9 +143,14 @@ public class TmtExportService {
       log.atWarn().log("TMT export failed: {}", e.getMessage());
       throw new ServiceException("TMT export failed", e);
     }
+
+    var warnings = result.warnings();
+    return new TmtExportDto(warnings.isEmpty() ? Tulos.OK : Tulos.VIETY_OSITTAIN, warnings);
   }
 
-  static FullProfileDtoExternalPut toTmtProfile(Yksilo yksilo) {
+  record TmtProfileResult(FullProfileDtoExternalPut profile, Set<Syy> warnings) {}
+
+  static TmtProfileResult toTmtProfile(Yksilo yksilo) {
     var profile = new FullProfileDtoExternalPut();
 
     yksilo.getTyopaikat().stream()
@@ -204,7 +214,25 @@ public class TmtExportService {
               profile.addProjectsItem(item);
             });
 
-    return profile;
+    var warnings = EnumSet.noneOf(Syy.class);
+    boolean skillLimitExceeded =
+        yksilo.getTyopaikat().stream()
+                .flatMap(it -> it.getToimenkuvat().stream())
+                .limit(PROFILE_ITEM_LIMIT)
+                .anyMatch(it -> it.getOsaamiset().size() > SKILL_LIMIT)
+            || yksilo.getKoulutusKokonaisuudet().stream()
+                .flatMap(it -> it.getKoulutukset().stream())
+                .limit(PROFILE_ITEM_LIMIT)
+                .anyMatch(it -> it.getOsaamiset().size() > SKILL_LIMIT)
+            || yksilo.getTeemat().stream()
+                .flatMap(it -> it.getToiminnot().stream())
+                .limit(PROFILE_ITEM_LIMIT)
+                .anyMatch(it -> it.getOsaamiset().size() > SKILL_LIMIT);
+    if (skillLimitExceeded) {
+      warnings.add(Syy.LIIKAA_OSAAMISIA);
+    }
+
+    return new TmtProfileResult(profile, warnings);
   }
 
   static DescriptionItemExternalPut mapDescriptionItem(

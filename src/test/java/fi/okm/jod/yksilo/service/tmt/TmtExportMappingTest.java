@@ -13,8 +13,10 @@ import static fi.okm.jod.yksilo.testutil.LocalizedStrings.ls;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fi.okm.jod.yksilo.domain.MuuOsaaminen;
+import fi.okm.jod.yksilo.dto.profiili.TmtExportDto.Syy;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
@@ -26,6 +28,7 @@ import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.entity.YksilonOsaaminen;
 import fi.okm.jod.yksilo.external.tmt.model.DescriptionItemExternalPut;
 import fi.okm.jod.yksilo.external.tmt.model.FullProfileDtoExternalPut;
+import fi.okm.jod.yksilo.service.tmt.TmtExportService.TmtProfileResult;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -33,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.ToIntFunction;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class TmtExportMappingTest {
@@ -41,7 +45,8 @@ class TmtExportMappingTest {
   void testMapping() {
     Yksilo yksilo = createYksilo();
 
-    FullProfileDtoExternalPut profile = TmtExportService.toTmtProfile(yksilo);
+    TmtProfileResult result = TmtExportService.toTmtProfile(yksilo);
+    FullProfileDtoExternalPut profile = result.profile();
 
     assertNotNull(profile.getEducations());
     assertEquals(
@@ -88,7 +93,63 @@ class TmtExportMappingTest {
   void testMappingWithEmptyData() {
     Yksilo yksilo = new Yksilo(UUID.randomUUID());
     var result = assertDoesNotThrow(() -> TmtExportService.toTmtProfile(yksilo));
-    assertNotNull(result);
+    assertNotNull(result.profile());
+  }
+
+  @Test
+  void skillLimitNotExceededWhenWithinLimit() {
+    var yksilo = new Yksilo(UUID.randomUUID());
+    var tyopaikka = new Tyopaikka(yksilo, ls("Tyopaikka"));
+    var toimenkuva = new Toimenkuva(tyopaikka);
+    toimenkuva.setKuvaus(ls("Kuvaus"));
+    addOsaamiset(toimenkuva, toimenkuva.getOsaamiset(), TmtApiConstants.SKILL_LIMIT);
+    tyopaikka.getToimenkuvat().add(toimenkuva);
+    yksilo.getTyopaikat().add(tyopaikka);
+
+    var result = TmtExportService.toTmtProfile(yksilo);
+    assertTrue(result.warnings().isEmpty());
+  }
+
+  @Test
+  void skillLimitExceededForToimenkuva() {
+    var yksilo = new Yksilo(UUID.randomUUID());
+    var tyopaikka = new Tyopaikka(yksilo, ls("Tyopaikka"));
+    var toimenkuva = new Toimenkuva(tyopaikka);
+    toimenkuva.setKuvaus(ls("Kuvaus"));
+    addOsaamiset(toimenkuva, toimenkuva.getOsaamiset(), TmtApiConstants.SKILL_LIMIT + 1);
+    tyopaikka.getToimenkuvat().add(toimenkuva);
+    yksilo.getTyopaikat().add(tyopaikka);
+
+    var result = TmtExportService.toTmtProfile(yksilo);
+    assertTrue(result.warnings().contains(Syy.LIIKAA_OSAAMISIA));
+  }
+
+  @Test
+  void skillLimitExceededForKoulutus() {
+    var yksilo = new Yksilo(UUID.randomUUID());
+    var kokonaisuus = new KoulutusKokonaisuus(yksilo, ls("Kokonaisuus"));
+    var koulutus = new Koulutus(kokonaisuus);
+    koulutus.setKuvaus(ls("Kuvaus"));
+    addOsaamiset(koulutus, koulutus.getOsaamiset(), TmtApiConstants.SKILL_LIMIT + 1);
+    kokonaisuus.getKoulutukset().add(koulutus);
+    yksilo.getKoulutusKokonaisuudet().add(kokonaisuus);
+
+    var result = TmtExportService.toTmtProfile(yksilo);
+    assertTrue(result.warnings().contains(Syy.LIIKAA_OSAAMISIA));
+  }
+
+  @Test
+  void skillLimitExceededForToiminto() {
+    var yksilo = new Yksilo(UUID.randomUUID());
+    var teema = new Teema(yksilo, ls("Teema"));
+    var toiminto = new Toiminto(teema);
+    toiminto.setKuvaus(ls("Kuvaus"));
+    addOsaamiset(toiminto, toiminto.getOsaamiset(), TmtApiConstants.SKILL_LIMIT + 1);
+    teema.getToiminnot().add(toiminto);
+    yksilo.getTeemat().add(teema);
+
+    var result = TmtExportService.toTmtProfile(yksilo);
+    assertTrue(result.warnings().contains(Syy.LIIKAA_OSAAMISIA));
   }
 
   @SuppressWarnings("unchecked")
@@ -119,6 +180,16 @@ class TmtExportMappingTest {
 
   private static <T> int count(Collection<T> collection, ToIntFunction<T> weight) {
     return collection.stream().mapToInt(weight).sum();
+  }
+
+  private static <T extends fi.okm.jod.yksilo.domain.OsaamisenLahde> void addOsaamiset(
+      T omistaja, java.util.Collection<YksilonOsaaminen> target, int count) {
+    IntStream.range(0, count)
+        .forEach(
+            i ->
+                target.add(
+                    new YksilonOsaaminen(
+                        omistaja, new Osaaminen(URI.create("urn:osaaminen:" + i)))));
   }
 
   private static Yksilo createYksilo() {
