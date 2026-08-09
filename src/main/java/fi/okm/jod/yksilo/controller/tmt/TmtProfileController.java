@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.dto.profiili.TmtExportDto;
 import fi.okm.jod.yksilo.dto.profiili.TmtImportDto;
 import fi.okm.jod.yksilo.service.tmt.TmtExportService;
 import fi.okm.jod.yksilo.service.tmt.TmtImportService;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -116,15 +116,14 @@ public class TmtProfileController {
   }
 
   @PostMapping("/api/integraatiot/tmt/vienti")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
   @FeatureRequired(Feature.TMT_INTEGRATION)
-  void export(
+  TmtExportDto export(
       Authentication authentication,
       HttpServletRequest request,
       @RegisteredOAuth2AuthorizedClient("tmt-vienti") OAuth2AuthorizedClient authorizedClient) {
     if (authorizedClient != null && authentication.getPrincipal() instanceof JodUser user) {
       removeAuthorizedClient(authorizedClient, authentication, request);
-      exportService.export(user, authorizedClient.getAccessToken());
+      return exportService.export(user, authorizedClient.getAccessToken());
     } else {
       log.atWarn().addMarker(LogMarker.AUDIT).log("TMT export not authorized");
       throw new IllegalArgumentException("TMT export not authorized");

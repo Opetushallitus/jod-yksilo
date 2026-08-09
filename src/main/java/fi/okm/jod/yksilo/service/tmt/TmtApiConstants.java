@@ -19,5 +19,5 @@ record TmtApiConstants() {
 
   // Profile item limits, see OpenAPI definition
   static final int PROFILE_ITEM_LIMIT = 20;
-  static final int SKILL_LIMIT = 120;
+  static final int SKILL_LIMIT = 40;
 }
