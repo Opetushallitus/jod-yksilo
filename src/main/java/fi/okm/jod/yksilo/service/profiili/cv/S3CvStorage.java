@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili.cv;
 
 import fi.okm.jod.yksilo.config.CvProperties;
+import io.micrometer.tracing.annotation.NewSpan;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class S3CvStorage implements CvStorage {
   private final CvProperties properties;
 
   @Override
+  @NewSpan("cv.s3-upload")
   public String upload(UUID taskId, UUID userId, byte[] pdf) {
     var key = properties.s3Prefix() + "/" + userId + "/" + taskId + ".pdf";
     s3.putObject(

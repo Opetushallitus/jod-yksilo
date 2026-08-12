@@ -42,5 +42,11 @@ services:
     ports:
       - "127.0.0.1:8680:8080"
 
+  jaeger:
+    image: jaegertracing/jaeger:2.20.0
+    ports:
+      - "127.0.0.1:16686:16686" # UI
+      - "127.0.0.1:4318:4318" # OTLP
+
 volumes:
   data:

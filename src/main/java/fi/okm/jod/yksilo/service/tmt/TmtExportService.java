@@ -36,6 +36,7 @@ import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import io.micrometer.tracing.annotation.NewSpan;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -88,6 +89,7 @@ public class TmtExportService {
     return tmtConfiguration.isEnabled() && yksilo.getTervetuloapolku();
   }
 
+  @NewSpan("tmt.export-profile")
   public TmtExportDto export(JodUser jodUser, OAuth2AccessToken token) {
 
     if (token == null
@@ -133,7 +135,7 @@ public class TmtExportService {
       log.atInfo().addMarker(LogMarker.AUDIT).log("Successfully exported TMT profile");
     } catch (HttpClientErrorException.BadRequest e) {
       log.atWarn().log("TMT export failed, invalid profile data: {}", e.getMessage());
-      throw new ServiceValidationException("TMT export failed: Invalid profile data", e);
+      throw new ServiceException("TMT export failed: Invalid profile data", e);
     } catch (HttpClientErrorException.Forbidden | HttpClientErrorException.Unauthorized e) {
       log.atWarn()
           .addMarker(LogMarker.AUDIT)

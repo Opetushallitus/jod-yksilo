@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: jod-yksilo
   main:
     banner-mode: off
   threads:

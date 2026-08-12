@@ -11,8 +11,6 @@ package fi.okm.jod.yksilo.service.inference;
 
 import fi.okm.jod.yksilo.service.ServiceException;
 import fi.okm.jod.yksilo.service.ServiceOverloadedException;
-import fi.okm.jod.yksilo.service.ServiceValidationException;
-import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -47,12 +45,12 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
 
   @Override
   public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
-    try {
+    var span = tracer.nextSpan().name("sagemaker.infer").start();
+    try (var ignored = tracer.withSpan(span)) {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
-              .customAttributes(
-                  tracer.currentSpan() instanceof Span s ? s.context().traceId() : null)
+              .customAttributes(span.context().traceId())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();
@@ -62,21 +60,24 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       return objectMapper.readValue(response.body().asInputStream(), javaType);
 
     } catch (tools.jackson.core.JacksonException e) {
+      span.error(e);
       throw new ServiceException("Invoking SageMaker failed", e);
     } catch (ModelNotReadyException | ServiceUnavailableException e) {
       log.warn("SageMaker service unavailable: {}", e.getMessage());
+      span.error(e);
       throw new fi.okm.jod.yksilo.service.ServiceUnavailableException(
           "SageMaker model not ready or service unavailable", e);
     } catch (ModelErrorException e) {
-      throw new ServiceValidationException(e.originalMessage());
+      span.error(e);
+      throw new ServiceException("SageMaker model error: " + e.originalMessage(), e);
     } catch (SageMakerRuntimeException e) {
+      span.error(e);
       if ("ThrottlingException".equals(e.awsErrorDetails().errorCode())) {
         throw new ServiceOverloadedException("SageMaker is throttling requests", e);
       }
-      if ("ValidationError".equals(e.awsErrorDetails().errorCode())) {
-        throw new ServiceValidationException("Invalid request", e);
-      }
       throw new ServiceException("Inference failed", e);
+    } finally {
+      span.end();
     }
   }
 }

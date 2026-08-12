@@ -11,6 +11,7 @@ package fi.okm.jod.yksilo.service.profiili.cv;
 
 import fi.okm.jod.yksilo.config.CvProperties;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
+import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,6 +33,7 @@ class SqsCvMessageSender implements CvMessageSender {
   private final CvProperties properties;
 
   @Override
+  @NewSpan("cv.sqs-send")
   public void send(CvRequestMessage message) {
     sqsTemplate.send(
         to ->

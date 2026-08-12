@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
 import fi.okm.jod.yksilo.service.tmt.TmtImportMapper.ImportDto;
+import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,7 @@ public class TmtImportService {
     this.persister = persister;
   }
 
+  @NewSpan("tmt.import-profile")
   public TmtImportDto importProfile(JodUser jodUser, OAuth2AccessToken token) {
 
     if (token == null

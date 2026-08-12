@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.service.onr;
 import fi.okm.jod.yksilo.domain.OppijanumeroUtils;
 import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.service.onr.OppijanumeroService.TuontiResult.Tiedot;
+import io.micrometer.tracing.annotation.NewSpan;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +69,7 @@ public class OppijanumeroService {
    *     href="https://virkailija.testiopintopolku.fi/oppijanumerorekisteri-service/swagger-ui/">ONR
    *     API</a>
    */
+  @NewSpan("onr.fetch-oppijanumero")
   public String fetchOppijanumero(
       String hetu, String etunimet, String kutsumanimi, String sukunimi) {
     try {
