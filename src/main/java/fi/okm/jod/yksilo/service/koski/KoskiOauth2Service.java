@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.config.koski.KoskiRestClientConfig;
 import fi.okm.jod.yksilo.config.logging.LogMarker;
 import fi.okm.jod.yksilo.domain.JodUser;
+import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -111,6 +112,7 @@ public class KoskiOauth2Service {
         getRegistrationId(), authentication, request, response);
   }
 
+  @NewSpan("koski.fetch-data")
   public JsonNode fetchKoskiData(
       JodUser jodUser,
       Authentication authentication,
