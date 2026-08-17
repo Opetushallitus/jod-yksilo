@@ -37,8 +37,11 @@ services:
       - "127.0.0.1:8380:8080"
 
   tmt-osaamissuosittelija-api:
-    build:
-      dockerfile: Dockerfile.osaamissuosittelija
+    platform: linux/amd64
+    image: 463214073446.dkr.ecr.eu-west-1.amazonaws.com/tyomarkkinatori/tekoaly/skill-recommendation:20260327.2-jod
+    environment:
+      SERVICE_ROOT: /service
+    command: [ "gunicorn", "--config", "gunicorn_config.py", "skill_recommendation_main:app" ]
     ports:
       - "127.0.0.1:8680:8080"
 
