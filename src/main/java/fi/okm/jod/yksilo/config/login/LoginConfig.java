@@ -26,6 +26,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Objects;
@@ -37,6 +39,12 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.opensaml.saml.saml2.core.NameIDType;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.xmlsec.keyinfo.KeyInfoSupport;
+import org.opensaml.xmlsec.signature.Signature;
+import org.opensaml.xmlsec.signature.support.SignatureException;
+import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -96,7 +104,6 @@ public class LoginConfig {
       RelyingPartyProperties properties) {
 
     // missing:
-    // - metadata signature validation (or loading from a trusted source)
     // - making the repository refreshable (to support metadata and credential rotation)
 
     var metadata =
@@ -106,6 +113,12 @@ public class LoginConfig {
                 .getAssertingPartyMetadata();
 
     var descriptor = metadata.getEntityDescriptor().getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
+
+    var expectedCert =
+        requireNonNull(PemContent.of(properties.getIdpMetadataSigningCaCertificate()))
+            .getCertificates()
+            .getFirst();
+    validateMetadataSignature(metadata, expectedCert);
 
     var slo = getRedirectionEndpoint(descriptor.getSingleLogoutServices());
     var sso = getRedirectionEndpoint(descriptor.getSingleSignOnServices());
@@ -143,6 +156,77 @@ public class LoginConfig {
             .signingX509Credentials(credentials -> credentials.add(samlCredential))
             .decryptionX509Credentials(credentials -> credentials.add(samlCredential))
             .build());
+  }
+
+  private static void validateMetadataSignature(
+      OpenSamlAssertingPartyDetails metadata, X509Certificate trustedCa) {
+    var signature = metadata.getEntityDescriptor().getSignature();
+    if (signature == null) {
+      throw new IllegalStateException("IDP metadata is not signed (ds:Signature missing)");
+    }
+
+    var signingCert = extractSigningCertificate(signature);
+    validateTrustedCaCertificate(trustedCa);
+    validateCertificateIssuedByCa(signingCert, trustedCa);
+
+    try {
+      new SAMLSignatureProfileValidator().validate(signature);
+      SignatureValidator.validate(signature, new BasicX509Credential(signingCert));
+    } catch (SignatureException e) {
+      throw new IllegalStateException("IDP metadata signature validation failed", e);
+    }
+    log.info(
+        "IDP metadata signature validated: subject={}, issuer={}",
+        signingCert.getSubjectX500Principal().getName(),
+        signingCert.getIssuerX500Principal().getName());
+  }
+
+  private static X509Certificate extractSigningCertificate(Signature signature) {
+    var keyInfo = signature.getKeyInfo();
+    if (keyInfo == null) {
+      throw new IllegalStateException("ds:Signature is missing ds:KeyInfo");
+    }
+    try {
+      var certs = KeyInfoSupport.getCertificates(keyInfo);
+      if (certs.isEmpty()) {
+        throw new IllegalStateException("No certificate found in ds:KeyInfo");
+      }
+      return certs.getFirst();
+    } catch (java.security.cert.CertificateException e) {
+      throw new IllegalStateException("Failed to parse certificate from ds:KeyInfo", e);
+    }
+  }
+
+  private static void validateCertificateIssuedByCa(
+      X509Certificate cert, X509Certificate trustedCa) {
+    var keyUsage = cert.getKeyUsage();
+    if (keyUsage != null && (keyUsage.length == 0 || !keyUsage[0])) {
+      throw new IllegalStateException(
+          "IDP signing certificate is not permitted for digital signatures: subject=%s"
+              .formatted(cert.getSubjectX500Principal().getName()));
+    }
+    try {
+      cert.checkValidity();
+      cert.verify(trustedCa.getPublicKey());
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException(
+          "IDP signing certificate not issued by trusted CA: subject=%s, ca=%s"
+              .formatted(
+                  cert.getSubjectX500Principal().getName(),
+                  trustedCa.getSubjectX500Principal().getName()),
+          e);
+    }
+  }
+
+  private static void validateTrustedCaCertificate(X509Certificate trustedCa) {
+    try {
+      trustedCa.checkValidity();
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException(
+          "Trusted IDP metadata signing CA certificate is not valid: subject=%s"
+              .formatted(trustedCa.getSubjectX500Principal().getName()),
+          e);
+    }
   }
 
   private static <T extends Endpoint> T getRedirectionEndpoint(Collection<T> endpoints) {

@@ -14,6 +14,57 @@ jod:
     relying-party:
       registration-id: "ophjod-yksilo-suomifi"
       idp-metadata-uri: "https://static.apro.tunnistus.fi/static/metadata/idp-metadata.xml"
+      # Trust anchor for the certificate embedded in the signed IdP metadata.
+      # This is the DVV TEST Service Certificates - G2R CA for the Apro test metadata URL above and
+      # production metadata uses DVV Service Certificates - G5R.
+      # Keep this aligned with Suomi.fi's published metadata-signing certificate hierarchy:
+      # https://kehittajille.suomi.fi/palvelut/tunnistus/tekninen-kayttoonotto/metatiedot/tunnistus-idp-metadatojen-allekirjoitusvarmenteet
+      # https://dvv.fineid.fi/fi/certificate-authority
+      idp-metadata-signing-ca-certificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIHwjCCBaqgAwIBAgIPAXmir2qFHexl4DxMCrSvMA0GCSqGSIb3DQEBDQUAMIGi
+        MQswCQYDVQQGEwJGSTEpMCcGA1UECgwgRGlnaS0gamEgdmFlc3RvdGlldG92aXJh
+        c3RvIFRFU1QxKTAnBgNVBAsMIENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFNlcnZp
+        Y2VzMRkwFwYDVQQLDBBWYXJtZW5uZXBhbHZlbHV0MSIwIAYDVQQDDBlEVlYgVEVT
+        VCBSb290IENBIC0gRzMgUlNBMB4XDTIxMDUyNTA4MDY0MloXDTQxMDUyMDA4MzY0
+        MlowgYcxCzAJBgNVBAYTAkZJMSkwJwYDVQQKDCBEaWdpLSBqYSB2YWVzdG90aWV0
+        b3ZpcmFzdG8gVEVTVDEfMB0GA1UECwwWVGVzdGlwYWx2ZWx1dmFybWVudGVldDEs
+        MCoGA1UEAwwjRFZWIFRFU1QgU2VydmljZSBDZXJ0aWZpY2F0ZXMgLSBHMlIwggIi
+        MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC3gq+7LKhS7PvvDNun0dvFY+eA
+        t9k2k8haldQdXWx1NjIxxpYorspGNyxrHZ9ZGGTZdzUqlPPyd11FYWJQC2J5Sz9x
+        q17dB5ERKHrVVMHYZkv46gz+Vyt+kQ7Cif/Y1ZHfA7b9DIaD+4dxU04/HwBUh7iu
+        EpmB6j6SgHQjBwFhciXTS9wj+wgFVksc6/3sUBXht+KnUc+4wSbE6jUg0J6qdtkK
+        2tgzEmE0sRbLFrFvW5I8yPjGYukEp/38OirgBGCCcj2F/IX3hr0T78gPmZMTAAim
+        NlKyn7uBlY7N7XeW5o37zIrRcx3KgRfT09NyZJLQAnwNxLVb57X4AH7ZIuXABjk6
+        IJdnnk+SYWXeDHah3mjtP3QW9WrGNxaCRoXfnBrEbQ6Voy249Zqj/dpSiml729As
+        epZeHlzuLtImmmX3IXcigLKE6oXsGpSGIhgTUna25u+469sQcIga1vPL0Sa4cabW
+        V9Cds5s5vjCIGXlXIXO1PtMvNiIvzU26gsMets5DnLOsI9kqs3iGrbGMjcKMejwl
+        7klNIhTRTPVRFY2wUzCzKwmSQc5by4HKfBDKfYwaUE/HsSdlAbpH9a30uKaJyV4V
+        0ReoWcSEaccfTwBSkGs6Z0e8L1NNNBasAToL1Jo9hrM/D2ptdBxbsnuuihmwivG/
+        Ujs7PYdKPH8/9wDTIwIDAQABo4ICDDCCAggwHwYDVR0jBBgwFoAU6I+XHNxXRZEt
+        yC3IpzS/glS7SbQwHQYDVR0OBBYEFDQF8tsG3TMgbOEIB8dsT/BspB50MA4GA1Ud
+        DwEB/wQEAwIBBjCBzgYDVR0gBIHGMIHDMIHABgoqgXaEBWMKgi0EMIGxMIGFBggr
+        BgEFBQcCAjB5GndWYXJtZW5uZXBvbGl0aWlra2Egb24gc2FhdGF2aWxsYSAtIENl
+        cnRpZmlrYXRwb2xpY3kgZmlubnMgLSBDZXJ0aWZpY2F0ZSBQb2xpY3kgaXMgYXZh
+        aWxhYmxlIGh0dHA6Ly93d3cuZmluZWlkLmZpL2Nwczk5LzAnBggrBgEFBQcCARYb
+        aHR0cDovL3d3dy5maW5laWQuZmkvY3BzOTkvMBIGA1UdEwEB/wQIMAYBAf8CAQAw
+        OgYDVR0fBDMwMTAvoC2gK4YpaHR0cDovL3Byb3h5LmZpbmVpZC5maS9jcmwvZHZ2
+        dGVzdDNyYy5jcmwwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMHYGCCsG
+        AQUFBwEBBGowaDAwBggrBgEFBQcwAYYkaHR0cDovL29jc3B0ZXN0LmZpbmVpZC5m
+        aS9kdnZ0ZXN0M3JjMDQGCCsGAQUFBzAChihodHRwOi8vcHJveHkuZmluZWlkLmZp
+        L2NhL2R2dnRlc3QzcmMuY3J0MA0GCSqGSIb3DQEBDQUAA4ICAQA3SDq2Pz5EnmKU
+        vTmAiUHk/BXUZHkx6hTT/mRwJuz8fVhM+COnN4ykiQq7+LtI24Rt2qKbO3fU3W7c
+        jMvGxfrFdQx1lAvFqhgt4XKJ7zNyhoSLLf4Ykqub+Q7BcKtpcPdTQJ8uMjP39OZp
+        Hm7rzvcRfipCgG8VOjpD2djgwA4m5Fp5NUrxRWwPliM0jOopQ/TxEtaE24/cAnz9
+        D2+pgDtNxkPDk8AmlirUqvzMFG3i1Dm4AcGVSi5SKQ34Qgx0BdxC4R7saESXkf/k
+        e5D0RH/ZTg6oNKBnGMy1lLh/0vDmMl5ygGXpQTjLuaQntmqLiJ22h1UTDG4DEFlE
+        PLg1k5PSsH+Jgf0SWfRDNcl13hALg8pHHelkYSYXwiUdOy06W9pL2rowYki1yUiu
+        4aBMaTYl9DKiFDwv+xeUp5RJnGZnPZOTmWWSV3NaqXBOULkZ0XhfctSeByDHtzYG
+        kib6OUcXBDPEf4ODtasaD1SgL2wFURIqiT6q0880cyHEnWe3o1jO+h7iwCzV7rqz
+        hXpzdJGMH3YiTHf43BvmTeuSnz63qYjIsqadKGUoCakcY8kmpOKpuLi30amf+O9S
+        3YSxay/XkLPDR/8dbkymLn4004RVCCXiDOnFQ4ko3orC1u3NrpXUKnWPW0LWun2a
+        tYC4KuXzhi/Y9uJ8Sp6YyWqQVlCXAQ==
+        -----END CERTIFICATE-----
 
 # same-site=None is needed for saml2 POST response and global logout
 server:
