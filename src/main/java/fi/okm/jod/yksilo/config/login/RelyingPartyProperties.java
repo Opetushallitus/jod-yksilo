@@ -40,4 +40,14 @@ public class RelyingPartyProperties {
       regexp = "^-----BEGIN PRIVATE KEY-.*",
       flags = {Flag.DOTALL})
   private String privateKey;
+
+  /**
+   * CA X.509 certificate in PEM format. Used to verify that the signing certificate embedded in the
+   * IDP metadata XML signature (ds:Signature/ds:KeyInfo) is issued by this trusted CA.
+   */
+  @NotBlank
+  @Pattern(
+      regexp = "^-----BEGIN CERTIFICATE-.*",
+      flags = {Flag.DOTALL})
+  private String idpMetadataSigningCaCertificate;
 }
