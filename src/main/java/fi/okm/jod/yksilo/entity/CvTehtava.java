@@ -55,12 +55,20 @@ public class CvTehtava extends JodEntity {
   @Column(nullable = false)
   private Kieli kieli;
 
+  @Column(length = 64)
+  private String sisaltoHash;
+
   protected CvTehtava() {}
 
   public CvTehtava(Yksilo yksilo, Kieli kieli) {
+    this(yksilo, kieli, null);
+  }
+
+  public CvTehtava(Yksilo yksilo, Kieli kieli, String sisaltoHash) {
     this.id = UUID.randomUUID();
     this.yksilo = yksilo;
     this.tila = CvTehtavaTila.ODOTTAA;
     this.kieli = kieli;
+    this.sisaltoHash = sisaltoHash;
   }
 }

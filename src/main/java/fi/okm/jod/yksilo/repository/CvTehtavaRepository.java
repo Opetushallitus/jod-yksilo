@@ -30,6 +30,15 @@ public interface CvTehtavaRepository extends JpaRepository<CvTehtava, UUID> {
   Optional<CvTehtava> findByIdAndYksilo(UUID id, Yksilo yksilo);
 
   @Query(
+      "SELECT t FROM CvTehtava t WHERE t.yksilo = :yksilo AND t.kieli = :kieli "
+          + "AND t.sisaltoHash = :sisaltoHash AND t.tila = fi.okm.jod.yksilo.domain.CvTehtavaTila.VALMIS "
+          + "AND t.tulos IS NOT NULL ORDER BY t.luotu DESC")
+  List<CvTehtava> findCompletedByContent(
+      @Param("yksilo") Yksilo yksilo,
+      @Param("kieli") fi.okm.jod.yksilo.domain.Kieli kieli,
+      @Param("sisaltoHash") String sisaltoHash);
+
+  @Query(
       "SELECT t.tila, count(*) AS lukumaara FROM CvTehtava t WHERE t.yksilo = :yksilo AND t.luotu >= :luotu GROUP BY t.tila")
   List<CountByTila> countByYksiloAndTila(Yksilo yksilo, Instant luotu);
 
