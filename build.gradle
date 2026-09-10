@@ -79,14 +79,14 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-flyway'
   implementation "org.flywaydb:flyway-database-postgresql"
 
-  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2')
+  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.1.1')
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
   implementation 'org.springframework.cloud:spring-cloud-context'
   implementation 'org.springframework.cloud:spring-cloud-commons'
 
-  implementation platform('software.amazon.awssdk:bom:2.54.1')
+  implementation platform('software.amazon.awssdk:bom:2.54.9')
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
@@ -100,9 +100,9 @@ dependencies {
   // Caffeine cache implementation
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.4'
 
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
-  swaggerUiDocs 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.1.1'
+  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
+  swaggerUiDocs 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
