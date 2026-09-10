@@ -46,7 +46,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
   @Override
   public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
     var span = tracer.nextSpan().name("sagemaker.infer").start();
-    try (var ignored = tracer.withSpan(span)) {
+    try (var _ = tracer.withSpan(span)) {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
