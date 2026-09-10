@@ -139,7 +139,11 @@ public class TmtExportService {
     } catch (HttpClientErrorException.Forbidden | HttpClientErrorException.Unauthorized e) {
       log.atWarn()
           .addMarker(LogMarker.AUDIT)
-          .log("TMT export failed, {}: {}", e.getStatusCode(), e.getMessage());
+          .log(
+              "TMT export failed, {}: {}, responseHeaders={}",
+              e.getStatusCode(),
+              e.getMessage(),
+              e.getResponseHeaders());
       throw new ServiceException("TMT export failed", e);
     } catch (Exception e) {
       log.atWarn().log("TMT export failed: {}", e.getMessage());

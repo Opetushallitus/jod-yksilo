@@ -19,11 +19,12 @@ import fi.okm.jod.yksilo.service.koski.PermissionRequiredException;
 import fi.okm.jod.yksilo.service.koski.ResourceServerException;
 import fi.okm.jod.yksilo.service.koski.WrongPersonException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException;
+import io.micrometer.tracing.Tracer;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,11 +48,16 @@ import tools.jackson.databind.DatabindException;
 @SuppressWarnings("NullableProblems")
 @ControllerAdvice
 @Component
-@RequiredArgsConstructor
 @Slf4j
 class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
 
   private final ErrorInfoFactory errorInfo;
+  private final Tracer tracer;
+
+  ExceptionHandlerAdvice(ErrorInfoFactory errorInfo, ObjectProvider<Tracer> tracer) {
+    this.errorInfo = errorInfo;
+    this.tracer = tracer.getIfAvailable();
+  }
 
   @Override
   protected ResponseEntity<Object> handleHttpMessageNotReadable(
@@ -215,10 +221,18 @@ class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
 
     if (status.is5xxServerError()) {
       log.atError().addKeyValue("requestUri", getRequestUri(request)).log("Request failed", ex);
+      var span = tracer != null ? tracer.currentSpan() : null;
+      if (span != null) {
+        span.error(ex);
+      }
     } else if (!status.isSameCodeAs(HttpStatus.NOT_FOUND)) {
       log.atWarn()
           .addKeyValue("requestUri", getRequestUri(request))
           .log("Request failed: {}", ex.getMessage());
+      var span = tracer != null ? tracer.currentSpan() : null;
+      if (span != null) {
+        span.error(ex);
+      }
     }
 
     ErrorInfo info;
