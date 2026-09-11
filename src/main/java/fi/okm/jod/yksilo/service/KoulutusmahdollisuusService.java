@@ -82,6 +82,7 @@ public class KoulutusmahdollisuusService {
             entity.getKoulutukset().stream()
                 .map(k -> new KoulutusViiteDto(k.getOid(), k.getNimi()))
                 .collect(Collectors.toSet()),
+            entity.isAktiivinen(),
             entity.getJakaumat().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> mapJakauma(e.getValue()))));
   }

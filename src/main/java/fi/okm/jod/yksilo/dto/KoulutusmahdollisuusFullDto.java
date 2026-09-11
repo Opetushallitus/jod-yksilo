@@ -26,6 +26,7 @@ public record KoulutusmahdollisuusFullDto(
     LocalizedString kuvaus,
     KestoJakaumaDto kesto,
     Set<KoulutusViiteDto> koulutukset,
+    boolean aktiivinen,
     @Schema(
             propertyNames = KoulutusmahdollisuusJakaumaTyyppi.class,
             additionalPropertiesSchema = JakaumaDto.class)
