@@ -19,6 +19,7 @@ public record TmtExportDto(Tulos tulos, @JsonInclude(JsonInclude.Include.NON_EMP
   }
 
   public enum Syy {
-    LIIKAA_OSAAMISIA
+    LIIKAA_OSAAMISIA,
+    KIELLETTYJA_MERKKEJA
   }
 }

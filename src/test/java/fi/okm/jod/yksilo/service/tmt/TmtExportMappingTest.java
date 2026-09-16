@@ -32,6 +32,7 @@ import fi.okm.jod.yksilo.service.tmt.TmtExportService.TmtProfileResult;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -152,6 +153,66 @@ class TmtExportMappingTest {
     assertTrue(result.warnings().contains(Syy.LIIKAA_OSAAMISIA));
   }
 
+  @Test
+  void illegalTextCharactersAreReplacedAndReported() {
+    var yksilo = new Yksilo(UUID.randomUUID());
+    var tyopaikka = new Tyopaikka(yksilo, ls("Employer" + Character.toString(0x00a0) + "name"));
+    var toimenkuva = new Toimenkuva(tyopaikka);
+    toimenkuva.setNimi(ls("Title\twith emoji " + Character.toString(0x1f642)));
+    toimenkuva.setKuvaus(ls("Description" + Character.toString(0x00ad) + "text"));
+    tyopaikka.getToimenkuvat().add(toimenkuva);
+    yksilo.getTyopaikat().add(tyopaikka);
+
+    var result = TmtExportService.toTmtProfile(yksilo);
+    var employment = result.profile().getEmployments().getFirst();
+
+    assertEquals("Employer name", localizedValue(employment.getEmployer()));
+    assertEquals("Title with emoji  ", localizedValue(employment.getTitle()));
+    assertEquals("Description text", localizedValue(employment.getDescription().getDescription()));
+    assertTrue(result.warnings().contains(Syy.KIELLETTYJA_MERKKEJA));
+  }
+
+  @Test
+  void allowedTextCharactersArePreservedWithoutWarning() {
+    var allowedRanges =
+        new int[][] {
+          {'\n', '\n'}, // Line feed
+          {'\r', '\r'}, // Carriage return
+          {' ', '~'}, // Printable ASCII
+          {0x00a1, 0x00ac}, // ¡ ¢ £ ¤ ¥ ¦ § ¨ © ª « ¬
+          {0x00ae, 0x00bf}, // ® ¯ ° ± ² ³ ´ µ ¶ · ¸ ¹ º » ¼ ½ ¾ ¿
+          {0x00c0, 0x00d6}, // À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö
+          {0x00d7, 0x00d7}, // ×
+          {0x00d8, 0x00f6}, // Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö
+          {0x00f7, 0x00f7}, // ÷
+          {0x00f8, 0x00ff}, // ø ù ú û ü ý þ ÿ
+          {0x0100, 0x017f}, // Latin Extended-A
+          {0x0180, 0x024f}, // Latin Extended-B
+          {0x0250, 0x02af}, // IPA Extensions
+          {0x20ac, 0x20ac}, // €
+          {0x2013, 0x2014} // – —
+        };
+    var allowed = new StringBuilder();
+    for (var range : allowedRanges) {
+      IntStream.rangeClosed(range[0], range[1]).forEach(allowed::appendCodePoint);
+    }
+    var warnings = EnumSet.noneOf(Syy.class);
+
+    assertEquals(allowed.toString(), TmtExportService.sanitize(allowed.toString(), warnings));
+    assertTrue(warnings.isEmpty());
+  }
+
+  @Test
+  void textIsSanitizedBeforeTruncatingSurrogatePairs() {
+    var warnings = EnumSet.noneOf(Syy.class);
+    var text = "a".repeat(127) + Character.toString(0x1f642);
+
+    var result = TmtExportService.sanitizeAndTruncateValues(Map.of("fi", text), 128, warnings);
+
+    assertEquals("a".repeat(127) + " ", result.get("fi"));
+    assertTrue(warnings.contains(Syy.KIELLETTYJA_MERKKEJA));
+  }
+
   @SuppressWarnings("unchecked")
   private static void assertTruncated(Object mapField, int maxLength, String fieldName) {
     assertNotNull(mapField, fieldName + " should not be null");
@@ -180,6 +241,11 @@ class TmtExportMappingTest {
 
   private static <T> int count(Collection<T> collection, ToIntFunction<T> weight) {
     return collection.stream().mapToInt(weight).sum();
+  }
+
+  @SuppressWarnings("unchecked")
+  private static String localizedValue(Object value) {
+    return ((Map<String, String>) value).get("fi");
   }
 
   private static <T extends fi.okm.jod.yksilo.domain.OsaamisenLahde> void addOsaamiset(
