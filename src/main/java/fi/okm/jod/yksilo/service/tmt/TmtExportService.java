@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -61,6 +62,13 @@ import org.springframework.web.client.RestClient;
 @ConditionalOnProperty(name = "jod.tmt.enabled", havingValue = "true")
 @Slf4j
 public class TmtExportService {
+
+  private static final Pattern ILLEGAL_TEXT_CHARACTERS =
+      Pattern.compile(
+          "[^\\x{000A}\\x{000D}\\x{0020}-\\x{007E}\\x{00A1}-\\x{00AC}"
+              + "\\x{00AE}-\\x{00BF}\\x{00C0}-\\x{00D6}\\x{00D7}\\x{00D8}-\\x{00F6}"
+              + "\\x{00F7}\\x{00F8}-\\x{00FF}\\x{0100}-\\x{017F}\\x{0180}-\\x{024F}"
+              + "\\x{0250}-\\x{02AF}\\x{20AC}\\x{2013}-\\x{2014}]");
 
   private final RestClient restClient;
   private final YksiloRepository yksiloRepository;
@@ -158,6 +166,7 @@ public class TmtExportService {
 
   static TmtProfileResult toTmtProfile(Yksilo yksilo) {
     var profile = new FullProfileDtoExternalPut();
+    var warnings = EnumSet.noneOf(Syy.class);
 
     yksilo.getTyopaikat().stream()
         .flatMap(it -> it.getToimenkuvat().stream())
@@ -165,9 +174,11 @@ public class TmtExportService {
         .forEach(
             it -> {
               var item = new EmploymentDtoExternalPut();
-              item.setEmployer(truncateValues(asStringMap(it.getTyopaikka().getNimi()), 254));
+              item.setEmployer(
+                  sanitizeAndTruncateValues(
+                      asStringMap(it.getTyopaikka().getNimi()), 254, warnings));
               item.setEmployerNameHidden(false);
-              item.setTitle(truncateValues(asStringMap(it.getNimi()), 128));
+              item.setTitle(sanitizeAndTruncateValues(asStringMap(it.getNimi()), 128, warnings));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new IntervalItemExternalPut()
@@ -175,7 +186,7 @@ public class TmtExportService {
                         .endDate(it.getLoppuPvm())
                         .ongoing(it.getLoppuPvm() == null));
               }
-              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset()));
+              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset(), warnings));
               profile.addEmploymentsItem(item);
             });
 
@@ -186,8 +197,10 @@ public class TmtExportService {
             it -> {
               var item = new EducationDtoExternalPut();
               item.setDegreeInstitution(
-                  truncateValues(asStringMap(it.getKokonaisuus().getNimi()), 128));
-              item.setCustomDegreeName(truncateValues(asStringMap(it.getNimi()), 128));
+                  sanitizeAndTruncateValues(
+                      asStringMap(it.getKokonaisuus().getNimi()), 128, warnings));
+              item.setCustomDegreeName(
+                  sanitizeAndTruncateValues(asStringMap(it.getNimi()), 128, warnings));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new EducationIntervalItemExternalPut()
@@ -198,7 +211,7 @@ public class TmtExportService {
                                 ? KOULUTUS_TILA_ALKAMASSA_TAI_JATKUU
                                 : KOUTULUS_TILA_PAATTYNYT));
               }
-              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset()));
+              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset(), warnings));
               profile.addEducationsItem(item);
             });
 
@@ -208,7 +221,7 @@ public class TmtExportService {
         .forEach(
             it -> {
               var item = new ProjectDtoExternalPut();
-              item.setTitle(truncateValues(asStringMap(it.getNimi()), 254));
+              item.setTitle(sanitizeAndTruncateValues(asStringMap(it.getNimi()), 254, warnings));
               if (it.getAlkuPvm() != null) {
                 item.setInterval(
                     new IntervalItemExternalPut()
@@ -216,11 +229,10 @@ public class TmtExportService {
                         .endDate(it.getLoppuPvm())
                         .ongoing(it.getLoppuPvm() == null));
               }
-              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset()));
+              item.setDescription(mapDescriptionItem(it.getKuvaus(), it.getOsaamiset(), warnings));
               profile.addProjectsItem(item);
             });
 
-    var warnings = EnumSet.noneOf(Syy.class);
     boolean skillLimitExceeded =
         yksilo.getTyopaikat().stream()
                 .flatMap(it -> it.getToimenkuvat().stream())
@@ -242,10 +254,10 @@ public class TmtExportService {
   }
 
   static DescriptionItemExternalPut mapDescriptionItem(
-      LocalizedString kuvaus, Collection<YksilonOsaaminen> osaamiset) {
+      LocalizedString kuvaus, Collection<YksilonOsaaminen> osaamiset, Set<Syy> warnings) {
     if (kuvaus != null || !osaamiset.isEmpty()) {
       var item = new DescriptionItemExternalPut();
-      item.setDescription(truncateValues(asStringMap(kuvaus), 5000));
+      item.setDescription(sanitizeAndTruncateValues(asStringMap(kuvaus), 5000, warnings));
       osaamiset.stream()
           .limit(SKILL_LIMIT)
           .forEach(
@@ -257,15 +269,27 @@ public class TmtExportService {
     return null;
   }
 
-  static Map<String, String> truncateValues(Map<String, String> map, int maxLength) {
+  static Map<String, String> sanitizeAndTruncateValues(
+      Map<String, String> map, int maxLength, Set<Syy> warnings) {
     if (map == null) {
       return null;
     }
     return map.entrySet().stream()
         .collect(
             HashMap::new,
-            (m, e) -> m.put(e.getKey(), truncate(e.getValue(), maxLength)),
+            (m, e) -> m.put(e.getKey(), truncate(sanitize(e.getValue(), warnings), maxLength)),
             HashMap::putAll);
+  }
+
+  static String sanitize(String text, Set<Syy> warnings) {
+    if (text == null) {
+      return null;
+    }
+    var sanitized = ILLEGAL_TEXT_CHARACTERS.matcher(text).replaceAll(" ");
+    if (!sanitized.equals(text)) {
+      warnings.add(Syy.KIELLETTYJA_MERKKEJA);
+    }
+    return sanitized;
   }
 
   static String truncate(String s, int maxLength) {
