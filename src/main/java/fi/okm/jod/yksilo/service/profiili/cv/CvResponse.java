@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.service.profiili.cv;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,11 +32,10 @@ record CvResponse(
       @JsonProperty("start_date") LocalDate startDate,
       @JsonProperty("end_date") LocalDate endDate,
       String location,
-      String description,
-      List<String> skills) {
+      String description) {
 
     WorkExperience(String company, List<Position> positions) {
-      this(company, positions, null, null, null, null, null, null);
+      this(company, positions, null, null, null, null, null);
     }
 
     /** The positions, whether given in the grouped or the legacy flat format. */
@@ -46,7 +46,8 @@ record CvResponse(
       if (title == null && startDate == null) {
         return List.of();
       }
-      return List.of(new Position(title, startDate, endDate, location, description, skills));
+      return List.of(
+          new Position(title, startDate, endDate, location, description, List.of(), List.of()));
     }
   }
 
@@ -56,7 +57,8 @@ record CvResponse(
       @JsonProperty("end_date") LocalDate endDate,
       String location,
       String description,
-      List<String> skills) {}
+      @JsonProperty("skill_summary") List<String> skillSummary,
+      @JsonProperty("esco_skills") List<EscoSkill> escoSkills) {}
 
   /**
    * Education at a single institution. In addition to the grouped format, the fields of the legacy
@@ -65,33 +67,37 @@ record CvResponse(
    */
   record Education(
       String institution,
-      List<Degree> degrees,
+      List<Entry> entries,
       String degree,
       @JsonProperty("start_date") LocalDate startDate,
       @JsonProperty("end_date") LocalDate endDate,
       String details) {
 
-    Education(String institution, List<Degree> degrees) {
-      this(institution, degrees, null, null, null, null);
+    Education(String institution, List<Entry> entries) {
+      this(institution, entries, null, null, null, null);
     }
 
-    /** The degrees, whether given in the grouped or the legacy flat format. */
-    List<Degree> allDegrees() {
-      if (degrees != null) {
-        return degrees;
+    /** The entries, whether given in the grouped or the legacy flat format. */
+    List<Entry> allEntries() {
+      if (entries != null) {
+        return entries;
       }
       if (degree == null && startDate == null) {
         return List.of();
       }
-      return List.of(new Degree(degree, startDate, endDate, details));
+      return List.of(new Entry(degree, startDate, endDate, details, List.of(), List.of()));
     }
   }
 
-  record Degree(
-      String degree,
+  record Entry(
+      String title,
       @JsonProperty("start_date") LocalDate startDate,
       @JsonProperty("end_date") LocalDate endDate,
-      String details) {}
+      String description,
+      @JsonProperty("skill_summary") List<String> skillSummary,
+      @JsonProperty("esco_skills") List<EscoSkill> escoSkills) {}
+
+  record EscoSkill(URI uri, String label, Double score) {}
 
   record Activity(
       String category,

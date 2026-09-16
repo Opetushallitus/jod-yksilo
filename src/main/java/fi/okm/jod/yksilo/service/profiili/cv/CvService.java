@@ -35,6 +35,7 @@ import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.ProfileDeletedEvent;
 import fi.okm.jod.yksilo.service.profiili.TeemaService;
 import fi.okm.jod.yksilo.service.profiili.TyopaikkaService;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -96,8 +97,17 @@ public class CvService {
     CvTehtava tehtava;
     String s3Key;
 
+    var hash = sha256(pdf);
+    var yksilo = yksilot.getReferenceById(user.getId());
+
+    var existing = tehtavat.findCompletedByContent(yksilo, lang, hash).stream().findFirst();
+    if (existing.isPresent()) {
+      log.info("Reusing completed CV task for identical content");
+      return toDto(existing.get());
+    }
+
     try {
-      tehtava = tehtavat.save(new CvTehtava(yksilot.getReferenceById(user.getId()), lang));
+      tehtava = tehtavat.save(new CvTehtava(yksilo, lang, hash));
     } catch (DataIntegrityViolationException _) {
       throw new ServiceConflictException("In-flight CV task already exists");
     }
@@ -110,7 +120,7 @@ public class CvService {
     }
 
     try {
-      sender.send(new CvRequestMessage(tehtava.getId(), user.getId(), s3Key, sha256(pdf)));
+      sender.send(new CvRequestMessage(tehtava.getId(), user.getId(), s3Key, hash));
     } catch (Exception e) {
       tehtavat.updateTila(tehtava.getId(), CvTehtavaTila.EPAONNISTUNUT);
       // storage handles cleanup (e.g. S3 lifecycle rules)
@@ -148,6 +158,18 @@ public class CvService {
             KoulutusKokonaisuusDto::id,
             KoulutusKokonaisuusDto::koulutukset,
             KoulutusDto::id,
+            KoulutusDto::osaamiset,
+            (k, osaamiset) ->
+                new KoulutusDto(
+                    k.id(),
+                    k.nimi(),
+                    k.kuvaus(),
+                    k.alkuPvm(),
+                    k.loppuPvm(),
+                    osaamiset,
+                    k.osaamisetOdottaaTunnistusta(),
+                    k.osaamisetTunnistusEpaonnistui(),
+                    k.osasuoritukset()),
             (k, filtered) ->
                 new KoulutusKokonaisuusDto(k.id(), k.nimi(), k.tuontiLahde(), filtered)));
 
@@ -159,6 +181,10 @@ public class CvService {
             TyopaikkaDto::id,
             TyopaikkaDto::toimenkuvat,
             ToimenkuvaDto::id,
+            ToimenkuvaDto::osaamiset,
+            (t, osaamiset) ->
+                new ToimenkuvaDto(
+                    t.id(), t.nimi(), t.kuvaus(), t.alkuPvm(), t.loppuPvm(), osaamiset),
             (t, filtered) -> new TyopaikkaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
     teemaService.addFromImport(
@@ -169,6 +195,9 @@ public class CvService {
             TeemaDto::id,
             TeemaDto::toiminnot,
             ToimintoDto::id,
+            ToimintoDto::osaamiset,
+            (t, osaamiset) ->
+                new ToimintoDto(t.id(), t.nimi(), t.kuvaus(), t.alkuPvm(), t.loppuPvm(), osaamiset),
             (t, filtered) -> new TeemaDto(t.id(), t.nimi(), t.tuontiLahde(), filtered)));
 
     tehtava.setTila(CvTehtavaTila.POISTETTU);
@@ -235,6 +264,8 @@ public class CvService {
       Function<T, UUID> getId,
       Function<T, Set<C>> getChildren,
       Function<C, UUID> getChildId,
+      Function<C, Set<URI>> getOsaamiset,
+      BiFunction<C, Set<URI>, C> withFilteredOsaamiset,
       BiFunction<T, Set<C>, T> withFilteredChildren) {
 
     if (selections == null || items == null) {
@@ -252,9 +283,29 @@ public class CvService {
               var selection = index.get(getId.apply(item));
               var children = getChildren.apply(item);
               if (selection.lapset() != null && children != null) {
+                var selectedChildren =
+                    selection.lapset().stream()
+                        .collect(
+                            Collectors.toMap(CvTehtavaSaveDto.Lapsi::id, identity(), (a, _) -> a));
                 var filtered =
                     children.stream()
-                        .filter(child -> selection.lapset().contains(getChildId.apply(child)))
+                        .filter(child -> selectedChildren.containsKey(getChildId.apply(child)))
+                        .map(
+                            child -> {
+                              var selectedOsaamiset =
+                                  selectedChildren.get(getChildId.apply(child)).osaamiset();
+                              var osaamiset = getOsaamiset.apply(child);
+                              var filteredOsaamiset =
+                                  osaamiset == null
+                                      ? Set.<URI>of()
+                                      : osaamiset.stream()
+                                          .filter(
+                                              osaaminen ->
+                                                  selectedOsaamiset != null
+                                                      && selectedOsaamiset.contains(osaaminen))
+                                          .collect(Collectors.toSet());
+                              return withFilteredOsaamiset.apply(child, filteredOsaamiset);
+                            })
                         .collect(Collectors.toSet());
                 return filtered.isEmpty()
                     ? Stream.empty()

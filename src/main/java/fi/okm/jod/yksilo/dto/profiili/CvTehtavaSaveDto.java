@@ -9,9 +9,11 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -21,5 +23,9 @@ public record CvTehtavaSaveDto(
     List<@Valid @NotNull Valinta> tyopaikat,
     List<@Valid @NotNull Valinta> teemat) {
 
-  public record Valinta(@NotNull UUID id, @NotEmpty Set<@NotNull UUID> lapset) {}
+  @Schema(name = "CvValinta")
+  public record Valinta(@NotNull UUID id, @NotEmpty Set<@NotNull Lapsi> lapset) {}
+
+  @Schema(name = "CvLapsi")
+  public record Lapsi(@NotNull UUID id, Set<@NotNull URI> osaamiset) {}
 }

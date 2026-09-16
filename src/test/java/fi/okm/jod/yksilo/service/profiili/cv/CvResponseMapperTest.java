@@ -10,12 +10,18 @@
 package fi.okm.jod.yksilo.service.profiili.cv;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.profiili.CvTehtavaDto;
+import fi.okm.jod.yksilo.service.OsaaminenService;
 import jakarta.validation.Validation;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -23,13 +29,22 @@ class CvResponseMapperTest {
 
   private static final Kieli KIELI = Kieli.FI;
   private static final LocalDate DATE = LocalDate.of(2020, 1, 1);
+  private static final URI KNOWN_SKILL_1 =
+      URI.create("http://data.europa.eu/esco/skill/00000000-0000-0000-0000-000000000001");
+  private static final URI KNOWN_SKILL_2 =
+      URI.create("http://data.europa.eu/esco/skill/00000000-0000-0000-0000-000000000002");
+  private static final URI UNKNOWN_SKILL =
+      URI.create("http://data.europa.eu/esco/skill/00000000-0000-0000-0000-0000000000ff");
 
   private static CvResponseMapper mapper;
 
   @BeforeAll
   static void setUp() {
     var factory = Validation.buildDefaultValidatorFactory();
-    mapper = new CvResponseMapper(factory.getValidator());
+    var osaaminenService = mock(OsaaminenService.class);
+    var dummy = mock(OsaaminenDto.class);
+    when(osaaminenService.getAll()).thenReturn(Map.of(KNOWN_SKILL_1, dummy, KNOWN_SKILL_2, dummy));
+    mapper = new CvResponseMapper(factory.getValidator(), osaaminenService);
   }
 
   private static CvTehtavaDto.Tulos map(CvResponse response) {
@@ -50,12 +65,16 @@ class CvResponseMapperTest {
 
   private static CvResponse.Position position(
       String title, LocalDate start, LocalDate end, String description) {
-    return new CvResponse.Position(title, start, end, null, description, null);
+    return new CvResponse.Position(title, start, end, null, description, null, null);
   }
 
-  private static CvResponse.Degree degree(
+  private static CvResponse.EscoSkill escoSkill(URI uri) {
+    return new CvResponse.EscoSkill(uri, "label", 50.0);
+  }
+
+  private static CvResponse.Entry degree(
       String name, LocalDate start, LocalDate end, String details) {
-    return new CvResponse.Degree(name, start, end, details);
+    return new CvResponse.Entry(name, start, end, details, null, null);
   }
 
   @Test
@@ -82,8 +101,7 @@ class CvResponseMapperTest {
     var response =
         new CvResponse(
             List.of(
-                new CvResponse.WorkExperience(
-                    "Company", null, "Title", DATE, null, null, "Desc", null)),
+                new CvResponse.WorkExperience("Company", null, "Title", DATE, null, null, "Desc")),
             List.of(new CvResponse.Education("University", null, "Degree", DATE, null, "Details")),
             null);
 
@@ -275,5 +293,51 @@ class CvResponseMapperTest {
     var tulos = map(withActivity(new CvResponse.Activity("Cat", "Name", "Desc", null, null)));
 
     assertThat(tulos.teemat()).isEmpty();
+  }
+
+  @Test
+  void shouldMapKnownEscoSkillsAndDropUnknown() {
+    var position =
+        new CvResponse.Position(
+            "Title",
+            DATE,
+            null,
+            null,
+            "Desc",
+            List.of("Skill 1", "Skill 2"),
+            List.of(escoSkill(KNOWN_SKILL_1), escoSkill(UNKNOWN_SKILL), escoSkill(KNOWN_SKILL_2)));
+    var entry =
+        new CvResponse.Entry(
+            "Degree",
+            DATE,
+            null,
+            "Details",
+            List.of("Skill 1", "Skill 2"),
+            List.of(escoSkill(KNOWN_SKILL_1), escoSkill(UNKNOWN_SKILL)));
+
+    var tulos =
+        map(
+            new CvResponse(
+                List.of(new CvResponse.WorkExperience("Company", List.of(position))),
+                List.of(new CvResponse.Education("University", List.of(entry))),
+                null));
+
+    assertThat(tulos.tyopaikat())
+        .singleElement()
+        .satisfies(
+            it ->
+                assertThat(it.toimenkuvat())
+                    .singleElement()
+                    .satisfies(
+                        tk ->
+                            assertThat(tk.osaamiset())
+                                .containsExactlyInAnyOrder(KNOWN_SKILL_1, KNOWN_SKILL_2)));
+    assertThat(tulos.koulutuskokonaisuudet())
+        .singleElement()
+        .satisfies(
+            it ->
+                assertThat(it.koulutukset())
+                    .singleElement()
+                    .satisfies(k -> assertThat(k.osaamiset()).containsExactly(KNOWN_SKILL_1)));
   }
 }
