@@ -22,6 +22,7 @@ import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
 import fi.okm.jod.yksilo.domain.JodUser;
 import io.lettuce.core.RedisCredentialsProvider;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -69,7 +70,8 @@ public class SessionConfig implements BeanClassLoaderAware {
     var validatorBuilder =
         BasicPolymorphicTypeValidator.builder()
             .allowIfSubType(JodUser.class)
-            .allowIfSubType(URL.class);
+            .allowIfSubType(URL.class)
+            .allowIfSubType(Collections.emptySet().getClass());
 
     var mapper =
         JsonMapper.builder()
