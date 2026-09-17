@@ -12,7 +12,14 @@ package fi.okm.jod.yksilo.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +30,11 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.session.web.http.SessionEventHttpSessionListenerAdapter;
@@ -84,6 +96,57 @@ class SessionConfigTest {
     assertThat(context.getBean(LettuceClientConfigurationBuilderCustomizer.class)).isNotNull();
 
     context.close();
+  }
+
+  @ParameterizedTest
+  @MethodSource("scopes")
+  void shouldRoundTripOauth2AuthorizedClientWithScopes(List<String> scopes) {
+    var config = new SessionConfig();
+    config.setBeanClassLoader(getClass().getClassLoader());
+    var serializer = config.springSessionDefaultRedisSerializer();
+    var registrationBuilder =
+        ClientRegistration.withRegistrationId("tmt-vienti")
+            .clientId("client-id")
+            .clientSecret("client-secret")
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .redirectUri("{baseUrl}/oauth2/response/{registrationId}")
+            .authorizationUri("https://example.com/authorize")
+            .tokenUri("https://example.com/token")
+            .clientName("tmt-vienti")
+            .scope(scopes);
+    var registration = registrationBuilder.build();
+    var accessToken =
+        new OAuth2AccessToken(
+            OAuth2AccessToken.TokenType.BEARER,
+            "access-token",
+            Instant.now(),
+            Instant.now().plusSeconds(300));
+    Map<String, Object> sessionAttribute = new HashMap<>();
+    sessionAttribute.put(
+        "tmt-vienti", new OAuth2AuthorizedClient(registration, "principal", accessToken));
+
+    var deserialized = serializer.deserialize(serializer.serialize(sessionAttribute));
+
+    assertThat(deserialized).isInstanceOf(Map.class);
+    assertThat(((Map<?, ?>) deserialized).get("tmt-vienti"))
+        .isInstanceOfSatisfying(
+            OAuth2AuthorizedClient.class,
+            client -> {
+              assertThat(client.getClientRegistration().getScopes())
+                  .containsExactlyElementsOf(scopes);
+              assertThat(
+                      client
+                          .getClientRegistration()
+                          .getProviderDetails()
+                          .getConfigurationMetadata())
+                  .isEmpty();
+              assertThat(client.getAccessToken().getTokenValue()).isEqualTo("access-token");
+            });
+  }
+
+  private static Stream<List<String>> scopes() {
+    return Stream.of(List.of(), List.of("openid", "profile"));
   }
 
   @Configuration(proxyBeanMethods = false)
