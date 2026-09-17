@@ -9,7 +9,10 @@ spring:
       # the dot at the end of the prefix is intentional
       - aws-secretsmanager:${jod.koski.certificate-secret-arn}?prefix=jod.koski.certificate.
       - aws-secretsmanager:${jod.external-api.api-key-secret-arn}?prefix=jod.external-api.
-      - aws-secretsmanager:${jod.saml2.credentials-secret-arn}?prefix=jod.saml2.relying-party.
+      - aws-secretsmanager:${jod.saml2.credentials-secret-arn}?prefix=jod.saml2.relying-party.credential.
+      # Key rollover: AWSPENDING holds the upcoming SAML credential while the Suomi.fi metadata is
+      # being updated out of band. It is used for decryption only.
+      - optional:aws-secretsmanager:${jod.saml2.credentials-secret-arn}@AWSPENDING?prefix=jod.saml2.relying-party.next-credential.
   cloud:
     aws:
       sqs:
