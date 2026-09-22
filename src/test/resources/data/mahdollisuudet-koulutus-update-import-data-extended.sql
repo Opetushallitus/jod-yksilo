@@ -84,6 +84,20 @@ SET data='{
       }
     ]
   },
+  "koulutusalaTaso1Jakauma": {
+    "kokonaismaara": 100,
+    "tyhjienMaara": 5,
+    "arvot": [
+      {
+        "arvo": "kansallinenkoulutusluokitus2016koulutusalataso1_03",
+        "prosenttiosuus": 70
+      },
+      {
+        "arvo": "kansallinenkoulutusluokitus2016koulutusalataso1_01",
+        "prosenttiosuus": 30
+      }
+    ]
+  },
   "kestoMediaani": 51,
   "kestoMinimi": 6,
   "kestoMaksimi": 121,
