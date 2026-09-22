@@ -226,6 +226,7 @@ BEGIN
   WITH paths AS (SELECT n, p::jsonpath
                  FROM (VALUES ('OSAAMINEN', '$.osaamiset'),
                               ('KOULUTUSALA', '$.koulutusalaJakauma'),
+                              ('KOULUTUSALA_TASO_1', '$.koulutusalaTaso1Jakauma'),
                               ('MAKSULLISUUS', '$.maksullisuusJakauma'),
                               ('OPETUSTAPA', '$.opetustapaJakauma'),
                               ('AIKA', '$.aikaJakauma'),
