@@ -21,12 +21,15 @@ import fi.okm.jod.yksilo.dto.profiili.TeemaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.profiili.TyopaikkaDto;
+import fi.okm.jod.yksilo.service.OsaaminenService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -41,6 +44,7 @@ import org.springframework.stereotype.Component;
 class CvResponseMapper {
 
   private final Validator validator;
+  private final OsaaminenService osaaminenService;
 
   CvTehtavaDto.Tulos toTulos(CvResponse response, Kieli kieli) {
     var violations = new HashSet<ConstraintViolation<?>>();
@@ -102,16 +106,17 @@ class CvResponseMapper {
         UUID.randomUUID(),
         localizedString(education.institution(), kieli),
         TuontiLahde.CV_TUONTI,
-        mapValid(education.allDegrees(), degree -> mapKoulutus(degree, kieli), violations));
+        mapValid(education.entries(), entry -> mapKoulutus(entry, kieli), violations));
   }
 
-  private KoulutusDto mapKoulutus(CvResponse.Degree degree, Kieli kieli) {
+  private KoulutusDto mapKoulutus(CvResponse.Entry entry, Kieli kieli) {
     return KoulutusDto.builder()
         .id(UUID.randomUUID())
-        .nimi(localizedString(degree.degree(), kieli))
-        .kuvaus(localizedString(degree.details(), kieli))
-        .alkuPvm(degree.startDate())
-        .loppuPvm(degree.endDate())
+        .nimi(localizedString(entry.title(), kieli))
+        .kuvaus(localizedString(entry.description(), kieli))
+        .alkuPvm(entry.startDate())
+        .loppuPvm(entry.endDate())
+        .osaamiset(mapEscoSkills(entry.escoSkills()))
         .build();
   }
 
@@ -137,7 +142,7 @@ class CvResponseMapper {
         localizedString(workExperience.company(), kieli),
         TuontiLahde.CV_TUONTI,
         mapValid(
-            workExperience.allPositions(), position -> mapToimenkuva(position, kieli), violations));
+            workExperience.positions(), position -> mapToimenkuva(position, kieli), violations));
   }
 
   private ToimenkuvaDto mapToimenkuva(CvResponse.Position position, Kieli kieli) {
@@ -147,7 +152,26 @@ class CvResponseMapper {
         localizedString(position.description(), kieli),
         position.startDate(),
         position.endDate(),
-        null);
+        mapEscoSkills(position.escoSkills()));
+  }
+
+  private Set<URI> mapEscoSkills(List<CvResponse.EscoSkill> escoSkills) {
+    if (escoSkills == null || escoSkills.isEmpty()) {
+      return Set.of();
+    }
+    var known = osaaminenService.getAll().keySet();
+    return escoSkills.stream()
+        .map(CvResponse.EscoSkill::uri)
+        .filter(Objects::nonNull)
+        .filter(
+            uri -> {
+              if (!known.contains(uri)) {
+                log.debug("Ignoring unknown ESCO URI from CV extraction: {}", uri);
+                return false;
+              }
+              return true;
+            })
+        .collect(toCollection(LinkedHashSet::new));
   }
 
   private List<TeemaDto> mapActivities(
