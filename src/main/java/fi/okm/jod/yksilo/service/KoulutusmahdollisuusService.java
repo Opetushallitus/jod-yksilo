@@ -44,7 +44,7 @@ public class KoulutusmahdollisuusService {
 
   private static String mostCommonKoulutusala(Koulutusmahdollisuus entity) {
     final KoulutusmahdollisuusJakauma koulutusAlat =
-        entity.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.KOULUTUSALA);
+        entity.getJakaumat().get(KoulutusmahdollisuusJakaumaTyyppi.KOULUTUSALA_TASO_1);
     if (koulutusAlat == null) {
       return null;
     }
