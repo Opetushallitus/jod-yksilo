@@ -9,7 +9,9 @@
 
 package fi.okm.jod.yksilo.config.login;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Pattern.Flag;
 import lombok.Getter;
@@ -27,19 +29,42 @@ public class RelyingPartyProperties {
   @NotBlank private String registrationId;
   @NotBlank private String idpMetadataUri;
 
-  /** X.509 certificate in PKCS #8 PEM base64-encoded format. Used for signing and decryption. */
-  @NotBlank
-  @Pattern(
-      regexp = "^-----BEGIN CERTIFICATE-.*",
-      flags = {Flag.DOTALL})
-  private String certificate;
+  /**
+   * Credential used for signing outgoing messages and decrypting incoming ones.
+   *
+   * <p>The application only deals with PEM encoded material, so this can come from any property
+   * source (local YAML, environment variables, AWS Secrets Manager, ...).
+   */
+  @NotNull @Valid private Credential credential;
 
-  /** Private key in PKCS #8 PEM base64-encoded format. Used for signing and decryption. */
-  @NotBlank
-  @Pattern(
-      regexp = "^-----BEGIN PRIVATE KEY-.*",
-      flags = {Flag.DOTALL})
-  private String privateKey;
+  /**
+   * Optional additional credential used for decryption only, to support key rollover.
+   *
+   * <p>During a rollover the identity provider may still be encrypting to the previous key, or may
+   * already have been switched to the upcoming one, depending on how far the (out of band) metadata
+   * update has progressed. Configuring it here keeps logins working across that window. It is
+   * deliberately never used for signing: only {@link #credential} signs, so promoting a key is a
+   * matter of moving it into that property.
+   */
+  @Valid private Credential nextCredential;
+
+  @Getter
+  @Setter
+  public static class Credential {
+    /** X.509 certificate in PKCS #8 PEM base64-encoded format. */
+    @NotBlank
+    @Pattern(
+        regexp = "^-----BEGIN CERTIFICATE-.*",
+        flags = {Flag.DOTALL})
+    private String certificate;
+
+    /** Private key in PKCS #8 PEM base64-encoded format. */
+    @NotBlank
+    @Pattern(
+        regexp = "^-----BEGIN PRIVATE KEY-.*",
+        flags = {Flag.DOTALL})
+    private String privateKey;
+  }
 
   /**
    * CA X.509 certificate in PEM format. Used to verify that the signing certificate embedded in the
