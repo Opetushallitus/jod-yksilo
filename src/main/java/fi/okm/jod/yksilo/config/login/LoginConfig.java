@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -136,15 +137,14 @@ public class LoginConfig {
                 requireNonNullElse(slo.getResponseLocation(), slo.getLocation()))
             .build();
 
-    var cert = requireNonNull(PemContent.of(properties.getCertificate()));
-    var key = requireNonNull(PemContent.of(properties.getPrivateKey()));
-
-    var samlCredential =
-        new Saml2X509Credential(
-            key.getPrivateKey(),
-            cert.getCertificates().getFirst(),
-            Saml2X509CredentialType.DECRYPTION,
-            Saml2X509CredentialType.SIGNING);
+    // only the active credential signs; both can decrypt, so that logins keep working while an
+    // (out of band) IDP metadata update rolls the key over
+    var signing = toSaml2Credential(properties.getCredential(), Saml2X509CredentialType.SIGNING);
+    var decryption =
+        Stream.of(properties.getCredential(), properties.getNextCredential())
+            .filter(Objects::nonNull)
+            .map(c -> toSaml2Credential(c, Saml2X509CredentialType.DECRYPTION))
+            .toList();
 
     return new InMemoryRelyingPartyRegistrationRepository(
         RelyingPartyRegistration.withAssertingPartyMetadata(metadata)
@@ -153,9 +153,16 @@ public class LoginConfig {
             .assertionConsumerServiceBinding(Saml2MessageBinding.POST)
             .singleLogoutServiceLocation("{baseUrl}/logout/saml2/slo/{registrationId}")
             .singleLogoutServiceBinding(Saml2MessageBinding.POST)
-            .signingX509Credentials(credentials -> credentials.add(samlCredential))
-            .decryptionX509Credentials(credentials -> credentials.add(samlCredential))
+            .signingX509Credentials(credentials -> credentials.add(signing))
+            .decryptionX509Credentials(credentials -> credentials.addAll(decryption))
             .build());
+  }
+
+  private static Saml2X509Credential toSaml2Credential(
+      RelyingPartyProperties.Credential credential, Saml2X509CredentialType type) {
+    var cert = requireNonNull(PemContent.of(credential.getCertificate()));
+    var key = requireNonNull(PemContent.of(credential.getPrivateKey()));
+    return new Saml2X509Credential(key.getPrivateKey(), cert.getCertificates().getFirst(), type);
   }
 
   private static void validateMetadataSignature(
