@@ -9,8 +9,9 @@
 
 package fi.okm.jod.yksilo;
 
-import org.springframework.boot.SpringApplication;
+import fi.okm.jod.yksilo.config.aws.SecretsManagerVersionStageBootstrapInitializer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -23,6 +24,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class Application {
 
   public static void main(String[] args) {
-    new SpringApplication(Application.class).run(args);
+    new SpringApplicationBuilder(Application.class)
+        .addBootstrapRegistryInitializer(new SecretsManagerVersionStageBootstrapInitializer())
+        .run(args);
   }
 }
