@@ -10,15 +10,12 @@
 package fi.okm.jod.yksilo.testutil;
 
 import java.nio.charset.StandardCharsets;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public class TestUtil {
 
   private static final String POSTGRES_VERSION = "postgres:16-alpine";
-  private static final String REDIS_VERSION = "redis:7-alpine";
 
   private TestUtil() {
     // Utility class.
@@ -63,10 +60,5 @@ public class TestUtil {
         .withEnv("LANG", "en_US.UTF-8")
         .withEnv("LC_ALL", "en_US.UTF-8")
         .withCopyToContainer(MountableFile.forHostPath(INITDB_SRC), INITDB_DIR);
-  }
-
-  @SuppressWarnings({"resource"})
-  public static GenericContainer<?> createRedisContainer() {
-    return new GenericContainer<>(DockerImageName.parse(REDIS_VERSION)).withExposedPorts(6379);
   }
 }

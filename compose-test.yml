@@ -1,14 +1,5 @@
 # same as compose.yml, but with ephemeral data for postgres
 services:
-  redis:
-    image: redis:7-alpine
-    ports:
-      - target: 6379
-        host_ip: 127.0.0.1
-    volumes:
-      - ./scripts/redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
-
   postgres:
     image: postgres:16-alpine
     environment:

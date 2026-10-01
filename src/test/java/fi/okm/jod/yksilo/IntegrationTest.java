@@ -18,7 +18,6 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -32,13 +31,9 @@ public abstract class IntegrationTest {
   private static final PostgreSQLContainer POSTGRES_CONTAINER =
       TestUtil.createPostgreSqlContainer();
 
-  @ServiceConnection
-  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
-
   static {
     // Singleton containers are started before the tests and stopped after all tests have been run.
     // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
     POSTGRES_CONTAINER.start();
-    REDIS_CONTAINER.start();
   }
 }

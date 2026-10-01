@@ -14,13 +14,10 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import fi.okm.jod.yksilo.config.elasticache.IamAuthTokenRequest;
-import fi.okm.jod.yksilo.config.elasticache.RedisIamAuthCredentialsProvider;
 import fi.okm.jod.yksilo.config.login.JodOidcPrincipal;
 import fi.okm.jod.yksilo.config.login.JodSaml2Principal;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
 import fi.okm.jod.yksilo.domain.JodUser;
-import io.lettuce.core.RedisCredentialsProvider;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -28,30 +25,17 @@ import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.connection.RedisConfiguration;
-import org.springframework.data.redis.connection.RedisConfiguration.WithAuthentication;
-import org.springframework.data.redis.connection.lettuce.RedisCredentialsProviderFactory;
-import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.security.jackson.SecurityJacksonModules;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.util.StringUtils;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 @Configuration(proxyBeanMethods = false)
 @SuppressWarnings("java:S4544")
 public class SessionConfig implements BeanClassLoaderAware {
-
-  @Value("${spring.data.redis.cache-name:}")
-  private String cacheName;
 
   private ClassLoader loader;
 
@@ -64,7 +48,7 @@ public class SessionConfig implements BeanClassLoaderAware {
   }
 
   @Bean
-  public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
+  public GenericConversionService springSessionConversionService() {
     // Create a custom ObjectMapper that uses Spring Security’s Jackson modules.
 
     var validatorBuilder =
@@ -80,41 +64,11 @@ public class SessionConfig implements BeanClassLoaderAware {
             .addMixIn(JodOidcPrincipal.class, JodOidcPrincipalMixin.class)
             .addMixIn(JodSaml2Principal.class, JodSaml2PrincipalMixin.class)
             .build();
-    return new GenericJacksonJsonRedisSerializer(mapper);
-  }
-
-  @Bean
-  @Profile("cloud")
-  LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer(
-      AwsCredentialsProvider awsCredentialsProvider, AwsRegionProvider regionProvider) {
-    return builder ->
-        builder.redisCredentialsProviderFactory(
-            new RedisCredentialsProviderFactory() {
-              @Override
-              public RedisCredentialsProvider createCredentialsProvider(
-                  @NonNull RedisConfiguration redisConfiguration) {
-                if (StringUtils.hasLength(cacheName)
-                    && redisConfiguration instanceof WithAuthentication authentication) {
-                  // Custom implementation of RedisCredentialsProvider for IAM Authentication.
-
-                  // References:
-                  // https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/auth-iam.html#auth-iam-Connecting
-                  // https://github.com/aws-samples/elasticache-iam-auth-demo-app/tree/main
-
-                  // The username is the same as the user id.
-                  String username = authentication.getUsername();
-
-                  IamAuthTokenRequest iamAuthTokenRequest =
-                      new IamAuthTokenRequest(username, cacheName, regionProvider.getRegion());
-
-                  return new RedisIamAuthCredentialsProvider(
-                      username, iamAuthTokenRequest, awsCredentialsProvider);
-                } else {
-                  return RedisCredentialsProviderFactory.super.createCredentialsProvider(
-                      redisConfiguration);
-                }
-              }
-            });
+    var conversionService = new GenericConversionService();
+    conversionService.addConverter(Object.class, byte[].class, mapper::writeValueAsBytes);
+    conversionService.addConverter(
+        byte[].class, Object.class, bytes -> mapper.readValue(bytes, Object.class));
+    return conversionService;
   }
 
   @JsonTypeInfo(use = Id.CLASS)
