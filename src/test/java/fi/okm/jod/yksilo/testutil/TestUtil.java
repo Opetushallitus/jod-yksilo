@@ -18,7 +18,7 @@ import org.testcontainers.utility.MountableFile;
 public class TestUtil {
 
   private static final String POSTGRES_VERSION = "postgres:16-alpine";
-  private static final String REDIS_VERSION = "redis:7-alpine";
+  private static final String VALKEY_VERSION = "valkey/valkey:9-alpine";
 
   private TestUtil() {
     // Utility class.
@@ -66,7 +66,7 @@ public class TestUtil {
   }
 
   @SuppressWarnings({"resource"})
-  public static GenericContainer<?> createRedisContainer() {
-    return new GenericContainer<>(DockerImageName.parse(REDIS_VERSION)).withExposedPorts(6379);
+  public static GenericContainer<?> createValkeyContainer() {
+    return new GenericContainer<>(DockerImageName.parse(VALKEY_VERSION)).withExposedPorts(6379);
   }
 }

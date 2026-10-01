@@ -32,13 +32,13 @@ public abstract class IntegrationTest {
   private static final PostgreSQLContainer POSTGRES_CONTAINER =
       TestUtil.createPostgreSqlContainer();
 
-  @ServiceConnection
-  private static final GenericContainer<?> REDIS_CONTAINER = TestUtil.createRedisContainer();
+  @ServiceConnection(name = "redis")
+  private static final GenericContainer<?> VALKEY_CONTAINER = TestUtil.createValkeyContainer();
 
   static {
     // Singleton containers are started before the tests and stopped after all tests have been run.
     // https://java.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers
     POSTGRES_CONTAINER.start();
-    REDIS_CONTAINER.start();
+    VALKEY_CONTAINER.start();
   }
 }

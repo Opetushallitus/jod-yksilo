@@ -58,4 +58,3 @@ The database migrations are managed with Flyway, located in the
 The migrations should be named in the format `V<yyymmdd>.<id>__<description>.sql`, where `<id>` is
 the Jira issue number of the migration, and `<description>` is a short description of the migration.
 For example, `V20250708.1234__add_new_table.sql`.
-
