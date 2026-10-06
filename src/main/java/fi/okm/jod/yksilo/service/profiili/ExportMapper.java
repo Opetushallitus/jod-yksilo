@@ -137,7 +137,8 @@ public final class ExportMapper {
                 .map(yksilonOsaaminen -> yksilonOsaaminen.getOsaaminen().getUri())
                 .collect(Collectors.toSet()),
             entity.getOsaamisenTunnistusStatus(),
-            entity.getOsasuoritukset());
+            entity.getOsasuoritukset(),
+            entity.getKoulutuskoodi());
   }
 
   public static TeemaExportDto mapTeema(Teema entity) {

@@ -24,4 +24,5 @@ public record KoulutusExportDto(
     LocalizedString kuvaus,
     Set<URI> osaamiset,
     OsaamisenTunnistusStatus osaamisenTunnistusStatus,
-    Set<String> osasuoritukset) {}
+    Set<String> osasuoritukset,
+    String koulutuskoodi) {}

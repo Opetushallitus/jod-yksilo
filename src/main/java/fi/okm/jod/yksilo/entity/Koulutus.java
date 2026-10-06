@@ -63,6 +63,10 @@ public class Koulutus implements OsaamisenLahde {
   @Setter private LocalDate loppuPvm;
 
   @Setter
+  @Column(length = 6)
+  private String koulutuskoodi;
+
+  @Setter
   @ManyToOne(fetch = FetchType.LAZY)
   private KoulutusKokonaisuus kokonaisuus;
 

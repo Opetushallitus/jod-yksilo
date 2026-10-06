@@ -16,6 +16,7 @@ import fi.okm.jod.yksilo.validation.PrintableString;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.LocalDate;
@@ -33,5 +34,5 @@ public record KoulutusDto(
     @Size(max = 1000) Set<@NotNull URI> osaamiset,
     Boolean osaamisetOdottaaTunnistusta,
     Boolean osaamisetTunnistusEpaonnistui,
-    @Size(max = 1000) Set<@NotEmpty @Size(max = 1000) String> osasuoritukset)
-    implements ValidInterval {}
+    @Size(max = 1000) Set<@NotEmpty @Size(max = 1000) String> osasuoritukset,
+    @Pattern(regexp = "[0-9]{6}") String koulutuskoodi) {}

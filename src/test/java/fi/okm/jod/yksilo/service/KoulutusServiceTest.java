@@ -68,12 +68,14 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   Set.of(URI.create("urn:osaaminen:1")),
                   null,
                   null,
-                  null));
+                  null,
+                  "351301"));
           entityManager.flush();
           entityManager.clear();
 
           var result = service.findAll(user, kokonaisuusId);
           assertEquals(1, result.size());
+          assertEquals("351301", result.getFirst().koulutuskoodi());
         });
   }
 
@@ -92,6 +94,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                       LocalDate.of(2021, 1, 1),
                       null,
                       Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
+                      null,
                       null,
                       null,
                       null));
@@ -114,6 +117,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
                   updated,
+                  null,
                   null,
                   null,
                   null));
@@ -140,6 +144,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
                 null,
                 null,
+                null,
                 null));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
@@ -161,6 +166,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
             Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
             null,
             null,
+            null,
             null));
 
     var id =
@@ -174,6 +180,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 LocalDate.of(2021, 1, 1),
                 null,
                 Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
+                null,
                 null,
                 null,
                 null));

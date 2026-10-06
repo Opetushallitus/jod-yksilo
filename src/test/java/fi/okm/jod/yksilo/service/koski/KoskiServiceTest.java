@@ -127,6 +127,27 @@ class KoskiServiceTest extends AbstractServiceTest {
     assertEquals(LocalDate.of(2026, 7, 31), koulutus.loppuPvm());
     assertEquals(Boolean.TRUE, koulutus.osaamisetOdottaaTunnistusta());
     assertEquals(71, koulutus.osasuoritukset().size());
+    assertEquals("772101", koulutus.koulutuskoodi());
+  }
+
+  @Test
+  void mapKoulutusKokonaisuudet_resolvesNameFromKoulutusKoodisto() throws JacksonException {
+    var em = entityManager.getEntityManager();
+    em.createNativeQuery("INSERT INTO koulutuskoodi (koodi) VALUES ('772101')").executeUpdate();
+    em.createNativeQuery(
+            """
+            INSERT INTO koulutuskoodi_kaannos (koulutuskoodi_id, kaannos_key, nimi)
+            SELECT id, 'FI', 'Lääketieteen lisensiaatin koulutus' FROM koulutuskoodi
+            WHERE koodi = '772101'
+            """)
+        .executeUpdate();
+
+    var content = TestUtil.getContentFromFile("koski-response.json", this.getClass());
+    var result = koskiService.mapKoulutusKokonaisuudet(objectMapper.readTree(content));
+
+    var koulutus = result.getFirst().koulutukset().iterator().next();
+    assertEquals("772101", koulutus.koulutuskoodi());
+    assertLocalizedString(koulutus.nimi(), "Lääketieteen lisensiaatin koulutus", null, null);
   }
 
   @Test
