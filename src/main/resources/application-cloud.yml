@@ -69,6 +69,10 @@ logging:
     sql: INFO
 
 management:
+  opentelemetry:
+  # The OTEL_* environment variables are meant for the ADOT javaagent. Do not let Spring Boot
+  # map them to its own properties (e.g. OTEL_METRICS_EXPORTER=none would disable OTLP metrics).
+    map-environment-variables: false
   endpoints:
     web:
       exposure:
