@@ -1,0 +1,1 @@
+${spring.application.name}@${git.commit.id.abbrev} running with Spring Boot v${spring-boot.version}

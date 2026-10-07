@@ -21,6 +21,8 @@ plugins {
 
   id "io.github.ben-manes.versions" version "0.61.0"
   id "org.flywaydb.flyway" version "${flywayVersion}"
+  id "com.gorylenko.gradle-git-properties" version "4.0.1"
+
 }
 
 group = 'fi.okm.jod'
@@ -43,6 +45,10 @@ repositories {
 
 ext {
   spotbugsVersion = "4.10.4"
+}
+
+gitProperties {
+  keys = ['git.branch', 'git.commit.id', 'git.commit.id.abbrev']
 }
 
 configurations {
