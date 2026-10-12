@@ -21,11 +21,12 @@ class ValidIntervalTest {
     record Test(LocalDate alkuPvm, LocalDate loppuPvm) implements ValidInterval {}
 
     assertFalse(new Test(LocalDate.of(2021, 1, 1), LocalDate.of(2020, 1, 1)).isValidInterval());
-    assertFalse(new Test(null, LocalDate.of(2020, 1, 1)).isValidInterval());
+
+    assertTrue(new Test(null, null).isValidInterval());
+    assertTrue(new Test(LocalDate.of(2021, 1, 1), null).isValidInterval());
+    assertTrue(new Test(null, LocalDate.of(2021, 1, 1)).isValidInterval());
 
     assertTrue(new Test(LocalDate.of(2021, 1, 1), LocalDate.of(2022, 1, 1)).isValidInterval());
     assertTrue(new Test(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 1)).isValidInterval());
-    assertTrue(new Test(LocalDate.of(2021, 1, 1), null).isValidInterval());
-    assertTrue(new Test(null, null).isValidInterval());
   }
 }

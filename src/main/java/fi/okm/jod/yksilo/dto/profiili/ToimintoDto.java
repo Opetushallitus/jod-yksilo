@@ -26,7 +26,7 @@ public record ToimintoDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @PrintableString @Size(max = 200) LocalizedString nimi,
     @Size(max = 10000) @FreeText LocalizedString kuvaus,
-    @NotNull LocalDate alkuPvm,
+    LocalDate alkuPvm,
     LocalDate loppuPvm,
     @Size(max = 1000) Set<@NotNull URI> osaamiset)
     implements ValidInterval {}

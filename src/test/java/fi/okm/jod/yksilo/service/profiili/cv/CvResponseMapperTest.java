@@ -270,10 +270,10 @@ class CvResponseMapperTest {
   }
 
   @Test
-  void shouldExcludeActivityWithNullStartDate() {
+  void shouldNotExcludeActivityWithNullStartDate() {
     var tulos = map(withActivity(new CvResponse.Activity("Cat", "Name", "Desc", null, null)));
 
-    assertThat(tulos.teemat()).isEmpty();
+    assertThat(tulos.teemat()).isNotEmpty();
   }
 
   @Test

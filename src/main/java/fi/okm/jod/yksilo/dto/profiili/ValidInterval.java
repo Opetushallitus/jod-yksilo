@@ -21,6 +21,6 @@ interface ValidInterval {
   @JsonIgnore
   @AssertTrue(message = "Invalid interval")
   default boolean isValidInterval() {
-    return loppuPvm() == null || (alkuPvm() != null && !loppuPvm().isBefore(alkuPvm()));
+    return loppuPvm() == null || alkuPvm() == null || !loppuPvm().isBefore(alkuPvm());
   }
 }
