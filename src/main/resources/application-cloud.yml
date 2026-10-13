@@ -4,7 +4,7 @@ spring:
       - classpath:/saml2-suomifi.yml
       - classpath:/oauth2-koski.yml
       - classpath:/oauth2-tmt.yml
-      - aws-parameterstore:/jod/config/
+      - aws-parameterstore:/jod/yksilo/
       # the secret arns need to be provided statically (e.g. as env variable),
       # the dot at the end of the prefix is intentional
       - aws-secretsmanager:${jod.koski.certificate-secret-arn}?prefix=jod.koski.certificate.
