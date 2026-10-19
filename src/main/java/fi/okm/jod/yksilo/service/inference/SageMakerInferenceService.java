@@ -50,6 +50,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       var request =
           InvokeEndpointRequest.builder()
               .endpointName(endpoint)
+              .inferenceComponentName(endpoint)
               .customAttributes(span.context().traceId())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
