@@ -9,6 +9,8 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
+import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.oneOf;
@@ -21,8 +23,11 @@ import fi.okm.jod.yksilo.config.mapping.MappingConfig;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
+import fi.okm.jod.yksilo.dto.SamankaltainenMahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
+import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.SamankaltaisetMahdollisuudetService;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +55,7 @@ class TyomahdollisuusControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private TyomahdollisuusService service;
+  @MockitoBean private SamankaltaisetMahdollisuudetService samankaltaisetService;
 
   @Test
   @WithMockUser
@@ -107,5 +113,67 @@ class TyomahdollisuusControllerTest {
         .andExpect(jsonPath("$.sisalto[0].otsikko.en", is("title")))
         .andExpect(jsonPath("$.sisalto[0].tiivistelma.en", is("Summary")))
         .andExpect(jsonPath("$.sisalto[0].kuvaus.en", is("Description")));
+  }
+
+  @Test
+  @WithMockUser
+  void shouldFindSamankaltaiset() throws Exception {
+    var id = UUID.randomUUID();
+    var otherId = UUID.randomUUID();
+    when(samankaltaisetService.find(TYOMAHDOLLISUUS, id, TYOMAHDOLLISUUS))
+        .thenReturn(
+            List.of(
+                new SamankaltainenMahdollisuusDto(
+                    otherId, new LocalizedString(Map.of(Kieli.FI, "Toinen")))));
+
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/api/tyomahdollisuudet/{id}/samankaltaiset", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[0].id", is(otherId.toString())))
+        .andExpect(jsonPath("$[0].otsikko.fi", is("Toinen")));
+  }
+
+  @Test
+  @WithMockUser
+  void shouldReturnNotFoundForUnknownSamankaltaiset() throws Exception {
+    var id = UUID.randomUUID();
+    when(samankaltaisetService.find(TYOMAHDOLLISUUS, id, TYOMAHDOLLISUUS))
+        .thenThrow(new NotFoundException("Unknown tyomahdollisuus"));
+
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/api/tyomahdollisuudet/{id}/samankaltaiset", id))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser
+  void shouldFindSamankaltaisetOfRequestedType() throws Exception {
+    var id = UUID.randomUUID();
+    var otherId = UUID.randomUUID();
+    when(samankaltaisetService.find(TYOMAHDOLLISUUS, id, KOULUTUSMAHDOLLISUUS))
+        .thenReturn(
+            List.of(
+                new SamankaltainenMahdollisuusDto(
+                    otherId, new LocalizedString(Map.of(Kieli.FI, "Koulutus")))));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.get("/api/tyomahdollisuudet/{id}/samankaltaiset", id)
+                .param("tyyppi", "KOULUTUSMAHDOLLISUUS"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[0].id", is(otherId.toString())));
+  }
+
+  @Test
+  @WithMockUser
+  void shouldRejectUnknownSamankaltaisetType() throws Exception {
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.get(
+                    "/api/tyomahdollisuudet/{id}/samankaltaiset", UUID.randomUUID())
+                .param("tyyppi", "MUU"))
+        .andExpect(status().isBadRequest());
   }
 }
