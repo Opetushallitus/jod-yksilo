@@ -95,7 +95,10 @@ class ExportMapperTest {
   @Test
   void testKoulutusKokonaisuusMappingCompleteness() {
     assertMappingCompleteness(
-        KoulutusKokonaisuus.class, KoulutusKokonaisuusExportDto.class, Set.of("yksilo"));
+        KoulutusKokonaisuus.class,
+        KoulutusKokonaisuusExportDto.class,
+        // koskiTunniste is an internal identifier, which is not exported
+        Set.of("yksilo", "koskiTunniste"));
   }
 
   @Test

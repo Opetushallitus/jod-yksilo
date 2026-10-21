@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.groups.ConvertGroup;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -56,8 +57,8 @@ class KoulutusKokonaisuusController {
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Adds many new koulutuskokonaisuudet, and optionally associated koulutukset")
   List<UUID> addMany(
-      @RequestBody @Validated(Add.class) @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS)
-          Set<@Valid KoulutusKokonaisuusDto> dtos,
+      @RequestBody @Size(min = 1, max = Limits.KOULUTUSKOKONAISUUS)
+          Set<@Valid @ConvertGroup(to = Add.class) KoulutusKokonaisuusDto> dtos,
       @AuthenticationPrincipal JodUser user) {
     return service.addManyForImport(user, dtos);
   }

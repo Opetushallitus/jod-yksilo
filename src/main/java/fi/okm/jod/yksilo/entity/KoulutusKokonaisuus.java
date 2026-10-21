@@ -13,12 +13,16 @@ import static fi.okm.jod.yksilo.entity.Translation.merge;
 import static java.util.Objects.requireNonNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoskiTunniste;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +34,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.SecondaryTable;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -41,16 +47,32 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SecondaryRow;
 
 @Entity
 @Table(indexes = {@Index(columnList = "yksilo_id")})
+@SecondaryTable(
+    name = KoulutusKokonaisuus.KOSKI_TUNNISTE,
+    pkJoinColumns = @PrimaryKeyJoinColumn(name = "koulutus_kokonaisuus_id"))
+@SecondaryRow(table = KoulutusKokonaisuus.KOSKI_TUNNISTE, optional = true)
 public class KoulutusKokonaisuus {
+  static final String KOSKI_TUNNISTE = "koulutus_kokonaisuus_koski_tunniste";
+
   @Id @GeneratedValue @Getter UUID id;
 
   @Setter
   @Getter
   @Enumerated(EnumType.STRING)
   private TuontiLahde tuontiLahde;
+
+  @Setter
+  @Getter
+  @Embedded
+  @AttributeOverride(name = "oid", column = @Column(table = KOSKI_TUNNISTE))
+  @AttributeOverride(name = "lahdejarjestelma", column = @Column(table = KOSKI_TUNNISTE))
+  @AttributeOverride(name = "lahdejarjestelmaId", column = @Column(table = KOSKI_TUNNISTE))
+  @AttributeOverride(name = "toimijaOid", column = @Column(table = KOSKI_TUNNISTE))
+  private KoskiTunniste koskiTunniste;
 
   @Getter
   @NotNull

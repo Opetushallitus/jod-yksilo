@@ -15,6 +15,7 @@ import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoskiTehtavaTila;
+import fi.okm.jod.yksilo.domain.KoskiTunniste;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaDto;
@@ -92,7 +93,11 @@ public class KoskiService {
                       null,
                       m.osasuoritukset());
               return new KoulutusKokonaisuusDto(
-                  UUID.randomUUID(), m.toimija(), TuontiLahde.KOSKI_TUONTI, Set.of(koulutus));
+                  UUID.randomUUID(),
+                  m.toimija(),
+                  TuontiLahde.KOSKI_TUONTI,
+                  Set.of(koulutus),
+                  m.koskiTunniste());
             })
         .toList();
   }
@@ -102,7 +107,8 @@ public class KoskiService {
       LocalizedString kuvaus,
       LocalDate alkoi,
       LocalDate loppui,
-      Set<String> osasuoritukset) {}
+      Set<String> osasuoritukset,
+      KoskiTunniste koskiTunniste) {}
 
   private Stream<OpiskeluoikeusMapping> streamOpiskeluoikeudet(JsonNode koskiResponse) {
     if (koskiResponse == null) {
@@ -142,8 +148,46 @@ public class KoskiService {
               }
 
               return Stream.of(
-                  new OpiskeluoikeusMapping(toimija, kuvaus, alkoi, loppui, osasuoritukset));
+                  new OpiskeluoikeusMapping(
+                      toimija, kuvaus, alkoi, loppui, osasuoritukset, getKoskiTunniste(node)));
             });
+  }
+
+  /**
+   * Returns the identity of the opiskeluoikeus, or null if Koski has not provided one.
+   *
+   * <p>Opiskeluoikeudet stored in Koski have an oid, which alone identifies them. Those fetched
+   * from external registers (Virta, YTR) do not, and only some of them have an id in the source
+   * system. Records with neither are not identifiable.
+   */
+  private static KoskiTunniste getKoskiTunniste(JsonNode opiskeluoikeus) {
+    var oid = getText(opiskeluoikeus.path("oid"));
+    var lahde = opiskeluoikeus.path("lähdejärjestelmänId");
+    var lahdejarjestelmaId = getText(lahde.path("id"));
+
+    if (oid != null) {
+      return KoskiTunniste.ofOid(oid);
+    }
+
+    if (lahdejarjestelmaId == null) {
+      return null;
+    }
+
+    var toimija =
+        opiskeluoikeus.has("oppilaitos")
+            ? opiskeluoikeus.path("oppilaitos")
+            : opiskeluoikeus.path("koulutustoimija");
+
+    return KoskiTunniste.ofLahdejarjestelma(
+        getText(lahde.path("lähdejärjestelmä").path("koodiarvo")),
+        lahdejarjestelmaId,
+        getText(toimija.path("oid")));
+  }
+
+  /** Returns the text of the node, or null if it is missing or empty. */
+  private static String getText(JsonNode node) {
+    var text = node.stringValue(null);
+    return text == null || text.isEmpty() ? null : text;
   }
 
   private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
@@ -294,7 +338,17 @@ public class KoskiService {
   }
 
   private KoskiTehtavaDto toDto(KoskiTehtava t) {
-    return new KoskiTehtavaDto(t.getId(), t.getTila(), t.getTulos());
+    return new KoskiTehtavaDto(t.getId(), t.getTila(), withoutKoskiTunniste(t.getTulos()));
+  }
+
+  /** The Koski identifiers are only for the server, they are not sent to the client. */
+  private static KoskiTehtavaDto.Tulos withoutKoskiTunniste(KoskiTehtavaDto.Tulos tulos) {
+    return tulos == null || tulos.koulutuskokonaisuudet() == null
+        ? tulos
+        : new KoskiTehtavaDto.Tulos(
+            tulos.koulutuskokonaisuudet().stream()
+                .map(KoulutusKokonaisuusDto::withoutKoskiTunniste)
+                .toList());
   }
 
   static Set<KoulutusKokonaisuusDto> filterSelected(
@@ -333,7 +387,7 @@ public class KoskiService {
                         .collect(Collectors.toSet());
                 if (!filtered.isEmpty()) {
                   return new KoulutusKokonaisuusDto(
-                      null, item.nimi(), item.tuontiLahde(), filtered);
+                      null, item.nimi(), item.tuontiLahde(), filtered, item.koskiTunniste());
                 }
               }
               return null;
