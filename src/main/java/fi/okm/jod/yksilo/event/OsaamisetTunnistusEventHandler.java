@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.event;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import java.net.URI;
@@ -33,13 +34,13 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OsaamisetTunnistusEventHandler {
 
   private final KoulutusService koulutusService;
-  private final String aiTunnistusOsaamisetEndpoint;
+  private final InferenceEndpoint inferenceEndpoint;
   private final InferenceService<SageMakerRequest, SageMakerResponse> inferenceService;
   private final Semaphore semaphore;
 
   public OsaamisetTunnistusEventHandler(
       KoulutusService koulutusService,
-      @Value("${jod.ai-tunnistus.osaamiset.endpoint}") String aiTunnistusOsaamisetEndpoint,
+      @Value("${jod.ai-tunnistus.osaamiset.endpoint}") String endpoint,
       @Value("${jod.ai-tunnistus.osaamiset.max-concurrent-requests:4}") int maxConcurrentRequests,
       InferenceService<SageMakerRequest, SageMakerResponse> inferenceService) {
     if (maxConcurrentRequests <= 0) {
@@ -47,7 +48,7 @@ public class OsaamisetTunnistusEventHandler {
     }
 
     this.koulutusService = koulutusService;
-    this.aiTunnistusOsaamisetEndpoint = aiTunnistusOsaamisetEndpoint;
+    this.inferenceEndpoint = new InferenceEndpoint(endpoint, null);
     this.inferenceService = inferenceService;
     this.semaphore = new Semaphore(maxConcurrentRequests);
   }
@@ -112,7 +113,7 @@ public class OsaamisetTunnistusEventHandler {
             koulutus.getId(), koulutus.getNimi().get(Kieli.FI), koulutus.getOsasuoritukset());
 
     return inferenceService
-        .infer(aiTunnistusOsaamisetEndpoint, request, new ParameterizedTypeReference<>() {})
+        .infer(inferenceEndpoint, request, new ParameterizedTypeReference<>() {})
         .osaamiset();
   }
 

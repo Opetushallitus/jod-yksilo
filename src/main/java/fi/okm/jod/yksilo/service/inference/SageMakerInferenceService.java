@@ -44,13 +44,14 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
   }
 
   @Override
-  public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
+  public R infer(
+      InferenceEndpoint endpoint, T payload, ParameterizedTypeReference<R> responseType) {
     var span = tracer.nextSpan().name("sagemaker.infer").start();
     try (var _ = tracer.withSpan(span)) {
       var request =
           InvokeEndpointRequest.builder()
-              .endpointName(endpoint)
-              .inferenceComponentName(endpoint)
+              .endpointName(endpoint.name())
+              .inferenceComponentName(endpoint.component())
               .customAttributes(span.context().traceId())
               .contentType(MediaType.APPLICATION_JSON_VALUE)
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))

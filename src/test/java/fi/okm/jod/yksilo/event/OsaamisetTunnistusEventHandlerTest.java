@@ -26,6 +26,7 @@ import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
+import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
@@ -67,6 +68,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
 
   static final String ENDPOINT_URL = "http://localhost/invocations";
+  private static final InferenceEndpoint ENDPOINT = InferenceEndpoint.of(ENDPOINT_URL);
 
   @Autowired private OsaamisetTunnistusEventHandler eventHandler;
   @Autowired private PlatformTransactionManager transactionManager;
@@ -154,8 +156,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
         new OsaamisetTunnistusEventHandler.SageMakerResponse(
             koulutus1.getId(), Set.of(URI.create(osaaminen1), URI.create(osaaminen2)));
 
-    when(inferenceService.infer(
-            ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {}))
+    when(inferenceService.infer(ENDPOINT, sageMakerRequest, new ParameterizedTypeReference<>() {}))
         .thenReturn(sageMakerResponse);
 
     eventHandler.doHandleOsaamisetTunnistusEvent(
@@ -163,7 +164,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
 
     verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.DONE, sageMakerResponse.osaamiset());
     verify(inferenceService)
-        .infer(ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {});
+        .infer(ENDPOINT, sageMakerRequest, new ParameterizedTypeReference<>() {});
   }
 
   @Test
@@ -183,8 +184,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
     var sageMakerResponse =
         new OsaamisetTunnistusEventHandler.SageMakerResponse(koulutus1.getId(), Set.of());
 
-    when(inferenceService.infer(
-            ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {}))
+    when(inferenceService.infer(ENDPOINT, sageMakerRequest, new ParameterizedTypeReference<>() {}))
         .thenReturn(sageMakerResponse);
 
     eventHandler.doHandleOsaamisetTunnistusEvent(
@@ -192,7 +192,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
 
     verifyOsaamisetUpdated(koulutus1, OsaamisenTunnistusStatus.DONE, sageMakerResponse.osaamiset());
     verify(inferenceService)
-        .infer(ENDPOINT_URL, sageMakerRequest, new ParameterizedTypeReference<>() {});
+        .infer(ENDPOINT, sageMakerRequest, new ParameterizedTypeReference<>() {});
   }
 
   private void verifyOsaamisetUpdated(
@@ -223,7 +223,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
   @Execution(ExecutionMode.SAME_THREAD)
   void shouldHandleApiErrorsGracefully() {
     when(inferenceService.infer(
-            eq(ENDPOINT_URL),
+            eq(ENDPOINT),
             any(OsaamisetTunnistusEventHandler.SageMakerRequest.class),
             eq(
                 new ParameterizedTypeReference<
@@ -234,7 +234,7 @@ class OsaamisetTunnistusEventHandlerTest extends AbstractServiceTest {
 
     verify(inferenceService, times(koulutukset.size()))
         .infer(
-            eq(ENDPOINT_URL),
+            eq(ENDPOINT),
             any(OsaamisetTunnistusEventHandler.SageMakerRequest.class),
             eq(
                 new ParameterizedTypeReference<

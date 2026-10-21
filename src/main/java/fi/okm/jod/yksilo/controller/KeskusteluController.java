@@ -14,6 +14,7 @@ import fi.okm.jod.yksilo.config.feature.Feature;
 import fi.okm.jod.yksilo.config.feature.FeatureRequired;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
+import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
@@ -50,13 +51,14 @@ public class KeskusteluController {
   public static final int MAX_CONVERSATION_SECONDS = 1800;
 
   private final InferenceService<InferenceRequest, InferenceResponse> inferenceService;
-  private final String endpoint;
+  private final InferenceEndpoint endpoint;
 
   public KeskusteluController(
       InferenceService<InferenceRequest, InferenceResponse> inferenceService,
-      @Value("${jod.keskustelu.endpoint}") String endpoint) {
+      @Value("${jod.keskustelu.endpoint.name}") String endpointName,
+      @Value("${jod.keskustelu.endpoint.component:}") String endpointComponent) {
     this.inferenceService = inferenceService;
-    this.endpoint = endpoint;
+    this.endpoint = new InferenceEndpoint(endpointName, endpointComponent);
   }
 
   @PostMapping

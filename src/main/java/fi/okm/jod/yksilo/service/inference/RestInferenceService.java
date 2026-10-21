@@ -42,9 +42,10 @@ public class RestInferenceService<T, R> implements InferenceService<T, R> {
   }
 
   @Override
-  public R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType) {
+  public R infer(
+      InferenceEndpoint endpoint, T payload, ParameterizedTypeReference<R> responseType) {
     try {
-      return restClient.post().uri(endpoint).body(payload).retrieve().body(responseType);
+      return restClient.post().uri(endpoint.name()).body(payload).retrieve().body(responseType);
     } catch (RestClientException e) {
       throw new ServiceException("Invoking Inference Endpoint failed", e);
     }
