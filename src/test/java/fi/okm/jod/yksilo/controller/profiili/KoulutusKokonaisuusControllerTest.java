@@ -24,6 +24,7 @@ import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.event.OsaamisetTunnistusEventHandler;
+import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,8 @@ class KoulutusKokonaisuusControllerTest extends IntegrationTest {
   @MockitoBean private OsaamisetTunnistusEventHandler eventHandler;
 
   @Autowired private KoulutusRepository koulutusRepository;
+
+  @Autowired private KoulutusKokonaisuusRepository koulutusKokonaisuusRepository;
 
   @Autowired private MockMvc mockMvc;
 
@@ -95,5 +98,79 @@ class KoulutusKokonaisuusControllerTest extends IntegrationTest {
       assertNull(koulutus.getOsasuoritukset(), "These should not been saved to DB.");
       assertEquals(OsaamisenTunnistusStatus.WAIT, koulutus.getOsaamisenTunnistusStatus());
     }
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldRejectKoskiTunnisteFromClientOnImport() throws Exception {
+    var before = koulutusKokonaisuusRepository.count();
+
+    mockMvc
+        .perform(
+            post("/api/profiili/koulutuskokonaisuudet/tuonti")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "["
+                        + koulutuskokonaisuus("\"koskiTunniste\": {\"oid\": \"1.2.246.562.15.1\"}")
+                        + "]"))
+        .andExpect(status().isBadRequest());
+
+    assertEquals(before, koulutusKokonaisuusRepository.count());
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldRejectKoskiTunnisteFromClientOnAdd() throws Exception {
+    var before = koulutusKokonaisuusRepository.count();
+
+    mockMvc
+        .perform(
+            post("/api/profiili/koulutuskokonaisuudet")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(koulutuskokonaisuus("\"koskiTunniste\": {\"oid\": \"1.2.246.562.15.1\"}")))
+        .andExpect(status().isBadRequest());
+
+    assertEquals(before, koulutusKokonaisuusRepository.count());
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldRejectIdFromClientOnImport() throws Exception {
+    var before = koulutusKokonaisuusRepository.count();
+
+    mockMvc
+        .perform(
+            post("/api/profiili/koulutuskokonaisuudet/tuonti")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "["
+                        + koulutuskokonaisuus("\"id\": \"7e8fd1e0-3b0c-4f0e-9d51-1e3c2f1b9a11\"")
+                        + "]"))
+        .andExpect(status().isBadRequest());
+
+    assertEquals(before, koulutusKokonaisuusRepository.count());
+  }
+
+  @WithUserDetails("test")
+  @Test
+  void shouldRejectEmptyImport() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/profiili/koulutuskokonaisuudet/tuonti")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("[]"))
+        .andExpect(status().isBadRequest());
+  }
+
+  /** A valid koulutuskokonaisuus to be added, with the given extra property (JSON). */
+  private static String koulutuskokonaisuus(String extraProperty) {
+    return """
+        {
+          "nimi": {"fi": "Testi nimi"},
+          %s,
+          "koulutukset": [{"id": null, "nimi": {"fi": "Koulutus 1"}}]
+        }
+        """
+        .formatted(extraProperty);
   }
 }
