@@ -13,5 +13,5 @@ import org.springframework.core.ParameterizedTypeReference;
 
 public interface InferenceService<T, R> {
 
-  R infer(String endpoint, T payload, ParameterizedTypeReference<R> responseType);
+  R infer(InferenceEndpoint endpoint, T payload, ParameterizedTypeReference<R> responseType);
 }

@@ -129,7 +129,9 @@ jod:
         en: ""
         sv: ""
   keskustelu:
-    endpoint: ""
+    endpoint:
+      name: ""
+      component: ""
   ai-tunnistus:
     osaamiset:
       endpoint: ""

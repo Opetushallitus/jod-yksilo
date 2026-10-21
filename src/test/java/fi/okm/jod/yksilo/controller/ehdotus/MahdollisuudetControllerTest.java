@@ -13,7 +13,6 @@ import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.KOULUTUSMAHDOLLISUUS;
 import static fi.okm.jod.yksilo.domain.MahdollisuusTyyppi.TYOMAHDOLLISUUS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -32,6 +31,7 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
+import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
@@ -352,7 +352,8 @@ class MahdollisuudetControllerTest {
         .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
-    when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
+    when(inferenceService.infer(any(InferenceEndpoint.class), any(), any()))
+        .thenReturn(inferenceResponse);
     var response =
         mockMvc
             .perform(
@@ -516,7 +517,8 @@ class MahdollisuudetControllerTest {
         .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
-    when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
+    when(inferenceService.infer(any(InferenceEndpoint.class), any(), any()))
+        .thenReturn(inferenceResponse);
     var response =
         mockMvc
             .perform(
@@ -648,7 +650,8 @@ class MahdollisuudetControllerTest {
         .thenReturn(mahdollisuudet);
     when(osaaminenService.findBy(any())).thenReturn(osaamiset);
 
-    when(inferenceService.infer(anyString(), any(), any())).thenReturn(inferenceResponse);
+    when(inferenceService.infer(any(InferenceEndpoint.class), any(), any()))
+        .thenReturn(inferenceResponse);
     var response =
         mockMvc
             .perform(

@@ -27,6 +27,7 @@ import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
+import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
@@ -72,7 +73,7 @@ import org.springframework.web.bind.annotation.RestController;
 class MahdollisuudetController {
 
   private final InferenceService<Request, Response> inferenceService;
-  private final Map<Kieli, String> endpoints;
+  private final Map<Kieli, InferenceEndpoint> endpoints;
   private final MahdollisuudetService mahdollisuudetService;
   private final OsaaminenService osaaminenService;
   private final AmmattiService ammattiService;
@@ -93,7 +94,9 @@ class MahdollisuudetController {
       KoulutusService koulutusService,
       ToimintoService toimintoService) {
     this.inferenceService = inferenceService;
-    this.endpoints = properties.endpoints();
+    this.endpoints =
+        properties.endpoints().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> InferenceEndpoint.of(e.getValue())));
     this.mahdollisuudetService = mahdollisuudetService;
     this.osaaminenService = osaaminenService;
     this.ammattiService = ammattiService;
