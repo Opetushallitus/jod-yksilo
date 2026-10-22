@@ -9,11 +9,13 @@
 
 package fi.okm.jod.yksilo.dto.profiili;
 
+import fi.okm.jod.yksilo.domain.KoskiTunniste;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.validationgroup.Add;
 import fi.okm.jod.yksilo.validation.Limits;
 import fi.okm.jod.yksilo.validation.PrintableString;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -26,4 +28,15 @@ public record KoulutusKokonaisuusDto(
     @Null(groups = Add.class) UUID id,
     @NotEmpty @Size(max = 200) @PrintableString LocalizedString nimi,
     TuontiLahde tuontiLahde,
-    @Size(min = 1, max = Limits.KOULUTUS) Set<@Valid @NotNull KoulutusDto> koulutukset) {}
+    @Size(min = 1, max = Limits.KOULUTUS) Set<@Valid @NotNull KoulutusDto> koulutukset,
+    @Schema(hidden = true) @Null(groups = Add.class) KoskiTunniste koskiTunniste) {
+
+  public KoulutusKokonaisuusDto(
+      UUID id, LocalizedString nimi, TuontiLahde tuontiLahde, Set<KoulutusDto> koulutukset) {
+    this(id, nimi, tuontiLahde, koulutukset, null);
+  }
+
+  public KoulutusKokonaisuusDto withoutKoskiTunniste() {
+    return new KoulutusKokonaisuusDto(id, nimi, tuontiLahde, koulutukset);
+  }
+}
