@@ -9,15 +9,21 @@
 
 package fi.okm.jod.yksilo.controller;
 
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureRequired;
+import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.dto.SamankaltainenMahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SivuDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusFullDto;
+import fi.okm.jod.yksilo.service.SamankaltaisetMahdollisuudetService;
 import fi.okm.jod.yksilo.service.TyomahdollisuusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "tyomahdollisuudet", description = "Työmahdollisuus listing")
 public class TyomahdollisuusController {
   private final TyomahdollisuusService tyomahdollisuusService;
+  private final SamankaltaisetMahdollisuudetService samankaltaisetService;
 
   @GetMapping
   @Operation(
@@ -65,5 +72,23 @@ public class TyomahdollisuusController {
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePrivate())
         .body(tyomahdollisuusService.get(id));
+  }
+
+  @GetMapping("/{id}/samankaltaiset")
+  @FeatureRequired(Feature.SAMANKALTAISET_MAHDOLLISUUDET)
+  @Operation(
+      summary = "Get similar mahdollisuudet",
+      description =
+          "Returns at most five mahdollisuudet of the requested type that share osaamiset with the"
+              + " given työmahdollisuus. The type defaults to the type of the given työmahdollisuus.")
+  public ResponseEntity<List<SamankaltainenMahdollisuusDto>> findSamankaltaiset(
+      @PathVariable UUID id, @RequestParam(required = false) MahdollisuusTyyppi tyyppi) {
+    return ResponseEntity.ok()
+        .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePrivate())
+        .body(
+            samankaltaisetService.find(
+                MahdollisuusTyyppi.TYOMAHDOLLISUUS,
+                id,
+                tyyppi != null ? tyyppi : MahdollisuusTyyppi.TYOMAHDOLLISUUS));
   }
 }
