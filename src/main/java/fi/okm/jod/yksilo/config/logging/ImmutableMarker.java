@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import org.slf4j.Marker;
 
+@SuppressWarnings("deprecation")
 public interface ImmutableMarker extends Marker {
 
   @Override
@@ -26,7 +27,6 @@ public interface ImmutableMarker extends Marker {
   }
 
   @Override
-  @SuppressWarnings("deprecation")
   default boolean hasChildren() {
     return false;
   }
