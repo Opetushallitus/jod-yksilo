@@ -194,7 +194,7 @@ class CvResponseMapper {
             localizedString(activity.description(), kieli),
             activity.startDate(),
             activity.endDate(),
-            null);
+            mapEscoSkills(activity.escoSkills()));
     return new TeemaDto(UUID.randomUUID(), nimi, TuontiLahde.CV_TUONTI, Set.of(toiminto));
   }
 
