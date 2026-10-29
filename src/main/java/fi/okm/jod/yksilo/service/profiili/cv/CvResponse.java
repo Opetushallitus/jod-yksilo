@@ -54,5 +54,7 @@ record CvResponse(
       String name,
       String description,
       @JsonProperty("start_date") LocalDate startDate,
-      @JsonProperty("end_date") LocalDate endDate) {}
+      @JsonProperty("end_date") LocalDate endDate,
+      @JsonProperty("skill_summary") List<String> skillSummary,
+      @JsonProperty("esco_skills") List<EscoSkill> escoSkills) {}
 }

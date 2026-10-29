@@ -68,6 +68,10 @@ class CvResponseMapperTest {
     return new CvResponse.Position(title, start, end, null, description, null, null);
   }
 
+  private static CvResponse.Activity activity(String name, LocalDate start) {
+    return new CvResponse.Activity("hobby", name, "Desc", start, null, null, null);
+  }
+
   private static CvResponse.EscoSkill escoSkill(URI uri) {
     return new CvResponse.EscoSkill(uri, "label", 50.0);
   }
@@ -87,7 +91,7 @@ class CvResponseMapperTest {
             List.of(
                 new CvResponse.Education(
                     "University", List.of(degree("Degree", DATE, null, "Details")))),
-            List.of(new CvResponse.Activity("Hobby", "Name", "Description", DATE, null)));
+            List.of(activity("Name", DATE)));
 
     var tulos = map(response);
 
@@ -264,14 +268,14 @@ class CvResponseMapperTest {
 
   @Test
   void shouldExcludeActivityWithNullName() {
-    var tulos = map(withActivity(new CvResponse.Activity("Cat", null, "Desc", DATE, null)));
+    var tulos = map(withActivity(activity(null, DATE)));
 
     assertThat(tulos.teemat()).isEmpty();
   }
 
   @Test
   void shouldNotExcludeActivityWithNullStartDate() {
-    var tulos = map(withActivity(new CvResponse.Activity("Cat", "Name", "Desc", null, null)));
+    var tulos = map(withActivity(activity("Name", null)));
 
     assertThat(tulos.teemat()).isNotEmpty();
   }
@@ -295,13 +299,22 @@ class CvResponseMapperTest {
             "Details",
             List.of("Skill 1", "Skill 2"),
             List.of(escoSkill(KNOWN_SKILL_1), escoSkill(UNKNOWN_SKILL)));
+    var activity =
+        new CvResponse.Activity(
+            "volunteer",
+            "Name",
+            "Desc",
+            DATE,
+            null,
+            List.of("Skill 2"),
+            List.of(escoSkill(UNKNOWN_SKILL), escoSkill(KNOWN_SKILL_2)));
 
     var tulos =
         map(
             new CvResponse(
                 List.of(new CvResponse.WorkExperience("Company", List.of(position))),
                 List.of(new CvResponse.Education("University", List.of(entry))),
-                null));
+                List.of(activity)));
 
     assertThat(tulos.tyopaikat())
         .singleElement()
@@ -320,5 +333,12 @@ class CvResponseMapperTest {
                 assertThat(it.koulutukset())
                     .singleElement()
                     .satisfies(k -> assertThat(k.osaamiset()).containsExactly(KNOWN_SKILL_1)));
+    assertThat(tulos.teemat())
+        .singleElement()
+        .satisfies(
+            it ->
+                assertThat(it.toiminnot())
+                    .singleElement()
+                    .satisfies(t -> assertThat(t.osaamiset()).containsExactly(KNOWN_SKILL_2)));
   }
 }
