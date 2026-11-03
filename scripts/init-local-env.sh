@@ -72,11 +72,27 @@ echo "Importing data"
   docker <"$DEVDATA/yksilot.sql" exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo
 
   docker <ammattiryhma.csv exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-    -c "$(cat "$DEVDATA/ammattiryhma.sql")"
+    -c "CREATE TEMPORARY TABLE ammattiryhma_import (esco_uri TEXT, data JSONB)" \
+    -c "\COPY ammattiryhma_import(esco_uri, data) FROM STDIN (FORMAT csv, HEADER)" \
+    -c "INSERT INTO ammattiryhma (esco_uri, data)
+        SELECT esco_uri, data FROM ammattiryhma_import
+        ON CONFLICT (esco_uri) DO UPDATE SET data = EXCLUDED.data, muokattu = now()"
 
+  # expects that the json data per koodi is obtained from OPH koodisto-service
   sed 's/\\/\\\\/g' koulutuskoodi.jsonl | docker exec \
     -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-    -c "$(cat "$DEVDATA/koulutuskoodi.sql")"
+    -c "CREATE TEMPORARY TABLE koulutuskoodi_import (koodi JSONB)" \
+    -c "\COPY koulutuskoodi_import(koodi) FROM STDIN (FORMAT text)" \
+    -c "INSERT INTO koulutuskoodi (koodi)
+        SELECT koodi->>'koodiArvo' FROM koulutuskoodi_import
+        ON CONFLICT (koodi) DO NOTHING" \
+    -c "INSERT INTO koulutuskoodi_kaannos (koulutuskoodi_id, kaannos_key, nimi, kuvaus)
+        SELECT k.id, m.kieli, m.nimi, m.kuvaus
+        FROM koulutuskoodi k, koulutuskoodi_import d,
+             jsonb_to_recordset(d.koodi->'metadata') AS m(nimi TEXT, kieli TEXT, kuvaus TEXT)
+        WHERE k.koodi = d.koodi->>'koodiArvo'
+        ON CONFLICT (koulutuskoodi_id, kaannos_key) DO UPDATE
+          SET nimi = EXCLUDED.nimi, kuvaus = EXCLUDED.kuvaus"
 )
 if [[ $STARTED == true ]]; then
   docker compose stop
