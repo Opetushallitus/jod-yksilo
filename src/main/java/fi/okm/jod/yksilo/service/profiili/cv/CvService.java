@@ -169,7 +169,8 @@ public class CvService {
                     osaamiset,
                     k.osaamisetOdottaaTunnistusta(),
                     k.osaamisetTunnistusEpaonnistui(),
-                    k.osasuoritukset()),
+                    k.osasuoritukset(),
+                    k.koulutuskoodi()),
             (k, filtered) ->
                 new KoulutusKokonaisuusDto(k.id(), k.nimi(), k.tuontiLahde(), filtered)));
 

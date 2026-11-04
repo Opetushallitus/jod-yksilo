@@ -79,6 +79,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                                 Set.of(URI.create("urn:osaaminen:1")),
                                 null,
                                 null,
+                                null,
                                 null)
                           })));
 
@@ -136,6 +137,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                         LocalDate.now(),
                         null,
                         Set.of(),
+                        null,
                         null,
                         null,
                         null))));

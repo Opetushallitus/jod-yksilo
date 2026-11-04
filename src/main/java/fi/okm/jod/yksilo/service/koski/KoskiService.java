@@ -23,9 +23,11 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.entity.KoskiTehtava;
 import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
+import fi.okm.jod.yksilo.entity.koodisto.Koulutuskoodi;
 import fi.okm.jod.yksilo.repository.KoskiTehtavaRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
+import fi.okm.jod.yksilo.repository.koodisto.KoulutuskoodiRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
@@ -57,20 +59,25 @@ import tools.jackson.databind.JsonNode;
 @Slf4j
 public class KoskiService {
 
+  private static final String KOULUTUS_KOODISTO = "koulutus";
+
   private final KoulutusRepository koulutusRepository;
   private final KoskiTehtavaRepository tehtavat;
   private final YksiloRepository yksilot;
   private final KoulutusKokonaisuusService koulutusKokonaisuusService;
+  private final KoulutuskoodiRepository koulutuskoodit;
 
   public KoskiService(
       KoulutusRepository koulutusRepository,
       KoskiTehtavaRepository tehtavat,
       YksiloRepository yksilot,
-      KoulutusKokonaisuusService koulutusKokonaisuusService) {
+      KoulutusKokonaisuusService koulutusKokonaisuusService,
+      KoulutuskoodiRepository koulutuskoodit) {
     this.koulutusRepository = koulutusRepository;
     this.tehtavat = tehtavat;
     this.yksilot = yksilot;
     this.koulutusKokonaisuusService = koulutusKokonaisuusService;
+    this.koulutuskoodit = koulutuskoodit;
     log.info("Creating KoskiService");
   }
 
@@ -90,7 +97,8 @@ public class KoskiService {
                       null,
                       true,
                       null,
-                      m.osasuoritukset());
+                      m.osasuoritukset(),
+                      m.koulutuskoodi());
               return new KoulutusKokonaisuusDto(
                   UUID.randomUUID(), m.toimija(), TuontiLahde.KOSKI_TUONTI, Set.of(koulutus));
             })
@@ -102,7 +110,8 @@ public class KoskiService {
       LocalizedString kuvaus,
       LocalDate alkoi,
       LocalDate loppui,
-      Set<String> osasuoritukset) {}
+      Set<String> osasuoritukset,
+      String koulutuskoodi) {}
 
   private Stream<OpiskeluoikeusMapping> streamOpiskeluoikeudet(JsonNode koskiResponse) {
     if (koskiResponse == null) {
@@ -133,17 +142,44 @@ public class KoskiService {
 
               LocalizedString kuvaus = null;
               Set<String> osasuoritukset = null;
+              String koulutuskoodi = null;
               if (suoritukset.isArray() && !suoritukset.isEmpty()) {
                 var moduuli = suoritukset.path(0).path("koulutusmoduuli");
-                var tunniste = getLocalizedString(moduuli.path("tunniste").path("nimi"));
+                koulutuskoodi = getKoulutuskoodi(moduuli.path("tunniste"));
+                // Prefer the name from the "koulutus" koodisto, fall back to the name given by
+                // Koski
+                var tunniste =
+                    Objects.requireNonNullElseGet(
+                        getKoulutuskoodiNimi(koulutuskoodi),
+                        () -> getLocalizedString(moduuli.path("tunniste").path("nimi")));
                 var nimi = getLocalizedString(moduuli.path("nimi"));
                 kuvaus = join(tunniste, nimi);
                 osasuoritukset = getOsasuoritukset(suoritukset.path(0).path("osasuoritukset"));
               }
 
               return Stream.of(
-                  new OpiskeluoikeusMapping(toimija, kuvaus, alkoi, loppui, osasuoritukset));
+                  new OpiskeluoikeusMapping(
+                      toimija, kuvaus, alkoi, loppui, osasuoritukset, koulutuskoodi));
             });
+  }
+
+  /**
+   * Returns the Statistics Finland education code (e.g. 351301) if the tunniste refers to the
+   * "koulutus" koodisto.
+   */
+  private static String getKoulutuskoodi(JsonNode tunniste) {
+    if (!KOULUTUS_KOODISTO.equals(tunniste.path("koodistoUri").stringValue(null))) {
+      return null;
+    }
+    var koodi = tunniste.path("koodiarvo").stringValue(null);
+    return koodi != null && koodi.matches("[0-9]{6}") ? koodi : null;
+  }
+
+  private LocalizedString getKoulutuskoodiNimi(String koulutuskoodi) {
+    if (koulutuskoodi == null) {
+      return null;
+    }
+    return koulutuskoodit.findByKoodi(koulutuskoodi).map(Koulutuskoodi::getNimi).orElse(null);
   }
 
   private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
@@ -329,7 +365,8 @@ public class KoskiService {
                                     child.osaamiset(),
                                     child.osaamisetOdottaaTunnistusta(),
                                     child.osaamisetTunnistusEpaonnistui(),
-                                    child.osasuoritukset()))
+                                    child.osasuoritukset(),
+                                    child.koulutuskoodi()))
                         .collect(Collectors.toSet());
                 if (!filtered.isEmpty()) {
                   return new KoulutusKokonaisuusDto(

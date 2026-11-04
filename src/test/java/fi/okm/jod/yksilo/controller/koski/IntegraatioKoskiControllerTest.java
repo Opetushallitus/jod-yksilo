@@ -35,6 +35,7 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
+import fi.okm.jod.yksilo.repository.koodisto.KoulutuskoodiRepository;
 import fi.okm.jod.yksilo.service.koski.KoskiOauth2Service;
 import fi.okm.jod.yksilo.service.koski.KoskiService;
 import fi.okm.jod.yksilo.service.koski.NoDataException;
@@ -121,7 +122,10 @@ class IntegraatioKoskiControllerTest {
     when(koskiOauth2Service.fetchDataFromResourceServer(
             any(JodUser.class), eq(mockAuthorizedClient)))
         .thenReturn(mockDataInJson);
-    when(koskiService.mapKoulutusKokonaisuudet(mockDataInJson)).thenCallRealMethod();
+    var koulutukset =
+        new KoskiService(null, null, null, null, mock(KoulutuskoodiRepository.class))
+            .mapKoulutusKokonaisuudet(mockDataInJson);
+    when(koskiService.mapKoulutusKokonaisuudet(mockDataInJson)).thenReturn(koulutukset);
     when(koskiService.submit(any(JodUser.class), any()))
         .thenAnswer(
             inv ->

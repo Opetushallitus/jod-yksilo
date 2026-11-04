@@ -91,7 +91,8 @@ public final class Mapper {
             extractOsaamisetUris(entity),
             isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
             isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
-            entity.getOsasuoritukset());
+            entity.getOsasuoritukset(),
+            entity.getKoulutuskoodi());
   }
 
   public static TeemaDto mapTeema(Teema entity) {
