@@ -98,6 +98,7 @@ public class KoulutusKokonaisuusService {
             dto -> {
               var entity = new KoulutusKokonaisuus(yksilo, dto.nimi());
               entity.setTuontiLahde(dto.tuontiLahde());
+              entity.setKoskiTunniste(dto.koskiTunniste());
               entity = kokonaisuudet.save(entity);
               for (var koulutus : dto.koulutukset()) {
                 entity
@@ -123,6 +124,7 @@ public class KoulutusKokonaisuusService {
             .orElseThrow(KoulutusKokonaisuusService::notFound);
     entity.setNimi(dto.nimi());
     entity.setTuontiLahde(null);
+    entity.setKoskiTunniste(null);
     kokonaisuudet.save(entity);
   }
 

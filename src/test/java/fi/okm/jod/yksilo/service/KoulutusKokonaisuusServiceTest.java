@@ -15,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fi.okm.jod.yksilo.domain.Kieli;
+import fi.okm.jod.yksilo.domain.KoskiTunniste;
 import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
+import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
@@ -116,6 +118,24 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
 
     var result = service.get(user, id);
     assertNull(result.tuontiLahde());
+  }
+
+  @Test
+  void shouldClearKoskiTunnisteOnKoulutusKokonaisuusUpdate() {
+    var id =
+        service.add(
+            user,
+            new KoulutusKokonaisuusDto(
+                null,
+                ls(Kieli.FI, "nimi"),
+                TuontiLahde.KOSKI_TUONTI,
+                Collections.emptySet(),
+                KoskiTunniste.ofOid("1.2.246.562.15.20709430670")));
+
+    service.update(user, new KoulutusKokonaisuusUpdateDto(id, ls(Kieli.SV, "namn")));
+    simulateCommit();
+
+    assertNull(entityManager.find(KoulutusKokonaisuus.class, id).getKoskiTunniste());
   }
 
   @Test
