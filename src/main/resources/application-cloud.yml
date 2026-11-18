@@ -50,6 +50,8 @@ server:
   forward-headers-strategy: none
   shutdown: graceful
   tomcat:
+    # Longer than the 60 s ALB idle timeout, so the ALB never reuses a connection Tomcat is closing.
+    keep-alive-timeout: 65s
     custom:
       secure-connector: true
   servlet:

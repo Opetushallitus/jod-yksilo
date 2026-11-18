@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 import software.amazon.awssdk.services.sagemakerruntime.model.InvokeEndpointRequest;
+import software.amazon.awssdk.services.sagemakerruntime.model.InvokeEndpointResponse;
 import software.amazon.awssdk.services.sagemakerruntime.model.ModelErrorException;
 import software.amazon.awssdk.services.sagemakerruntime.model.ModelNotReadyException;
 import software.amazon.awssdk.services.sagemakerruntime.model.SageMakerRuntimeException;
@@ -57,7 +58,7 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
               .body(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(payload)))
               .build();
 
-      var response = sageMakerClient.invokeEndpoint(request);
+      var response = invokeEndpoint(request);
       var javaType = objectMapper.getTypeFactory().constructType(responseType.getType());
       return objectMapper.readValue(response.body().asInputStream(), javaType);
 
@@ -80,6 +81,21 @@ public class SageMakerInferenceService<T, R> implements InferenceService<T, R> {
       throw new ServiceException("Inference failed", e);
     } finally {
       span.end();
+    }
+  }
+
+  /** Invokes the endpoint, retrying once if the model container did not respond at all. */
+  private InvokeEndpointResponse invokeEndpoint(InvokeEndpointRequest request) {
+    try {
+      return sageMakerClient.invokeEndpoint(request);
+    } catch (ModelErrorException e) {
+      // Original status 0 means no response from the container (e.g. it closed a reused
+      // connection); the SDK does not retry model errors.
+      if (e.statusCode() == 424 && Integer.valueOf(0).equals(e.originalStatusCode())) {
+        log.warn("No response from SageMaker model, retrying once: {}", e.originalMessage());
+        return sageMakerClient.invokeEndpoint(request);
+      }
+      throw e;
     }
   }
 }
