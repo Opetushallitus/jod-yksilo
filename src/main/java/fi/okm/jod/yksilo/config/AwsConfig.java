@@ -9,10 +9,12 @@
 
 package fi.okm.jod.yksilo.config;
 
+import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.http.apache5.Apache5HttpClient;
 import software.amazon.awssdk.regions.providers.AwsRegionProvider;
 import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -38,8 +40,13 @@ public class AwsConfig {
     return SageMakerRuntimeClient.builder()
         .credentialsProvider(credentialsProvider)
         .region(regionProvider.getRegion())
+        // SageMaker allows invocations up to 60 s, so a slower attempt is not abandoned and resent.
+        .httpClientBuilder(Apache5HttpClient.builder().socketTimeout(Duration.ofSeconds(60)))
         .overrideConfiguration(
-            c -> c.retryStrategy(StandardRetryStrategy.builder().maxAttempts(4).build()))
+            c ->
+                c.retryStrategy(StandardRetryStrategy.builder().maxAttempts(4).build())
+                    // Stays under the 60 s CloudFront and ALB timeouts.
+                    .apiCallTimeout(Duration.ofSeconds(55)))
         .build();
   }
 
