@@ -112,6 +112,7 @@ public class KoulutusService {
     entity.setLoppuPvm(dto.loppuPvm());
     entity.setOsaamisenTunnistusStatus(tunnistaOsaamiset ? OsaamisenTunnistusStatus.WAIT : null);
     entity.setOsasuoritukset(dto.osasuoritukset());
+    entity.setKoulutuskoodi(dto.koulutuskoodi());
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.addLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));

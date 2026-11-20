@@ -138,8 +138,12 @@ class TmtImportMapper {
 
     var nimi = asLocalizedString(education.getCustomDegreeName());
 
-    if (nimi == null && education.getDegreeCode() instanceof String degreeCode) {
-      nimi = koulutuskoodit.findByKoodi(degreeCode).map(Koulutuskoodi::getNimi).orElse(null);
+    String koulutuskoodi = null;
+    if (education.getDegreeCode() instanceof String degreeCode && degreeCode.matches("[0-9]{6}")) {
+      koulutuskoodi = degreeCode;
+      if (nimi == null) {
+        nimi = koulutuskoodit.findByKoodi(degreeCode).map(Koulutuskoodi::getNimi).orElse(null);
+      }
     }
 
     var kuvaus = extractDescription(education.getDescription());
@@ -157,6 +161,7 @@ class TmtImportMapper {
         .osaamisetOdottaaTunnistusta(false)
         .osaamisetTunnistusEpaonnistui(false)
         .osasuoritukset(null)
+        .koulutuskoodi(koulutuskoodi)
         .build();
   }
 
