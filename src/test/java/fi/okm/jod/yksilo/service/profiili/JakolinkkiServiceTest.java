@@ -434,7 +434,11 @@ class JakolinkkiServiceTest extends AbstractServiceTest {
     jakolinkkiService.update(
         user,
         dtoWithIds(jakolinkkiId, ulkoinenId)
-            .withJaetutKoulutukset(Set.of(koulutukset.getLast().getId())));
+            .withJaetutKoulutukset(
+                koulutukset.stream()
+                    .filter(k -> "Koulutus 2".equals(k.getNimi().get(Kieli.FI)))
+                    .map(KoulutusKokonaisuus::getId)
+                    .collect(toSet())));
 
     var after = jakolinkkiService.getContent(ulkoinenId);
     assertThat(after.koulutusKokonaisuudet())
