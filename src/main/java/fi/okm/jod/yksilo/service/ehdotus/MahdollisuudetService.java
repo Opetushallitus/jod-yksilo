@@ -9,7 +9,6 @@
 
 package fi.okm.jod.yksilo.service.ehdotus;
 
-import fi.okm.jod.yksilo.controller.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;

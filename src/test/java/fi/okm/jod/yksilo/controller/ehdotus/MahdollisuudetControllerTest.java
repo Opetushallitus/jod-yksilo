@@ -20,7 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fi.okm.jod.yksilo.config.mapping.MappingConfig;
-import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.EndpointProperties;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.LocalizedString;
@@ -31,6 +30,9 @@ import fi.okm.jod.yksilo.errorhandler.ErrorInfoFactory;
 import fi.okm.jod.yksilo.service.AmmattiService;
 import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuusEhdotusService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuusEhdotusService.EndpointProperties;
+import fi.okm.jod.yksilo.service.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
 import fi.okm.jod.yksilo.service.inference.InferenceService;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
@@ -62,7 +64,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(value = MahdollisuudetController.class)
-@Import({ErrorInfoFactory.class, MappingConfig.class})
+@Import({ErrorInfoFactory.class, MappingConfig.class, MahdollisuusEhdotusService.class})
 @Execution(ExecutionMode.SAME_THREAD)
 class MahdollisuudetControllerTest {
 
@@ -78,7 +80,7 @@ class MahdollisuudetControllerTest {
   @MockitoBean private ToimintoService toimintoService;
 
   @MockitoBean
-  private InferenceService<MahdollisuudetController.Request, MahdollisuudetController.Response>
+  private InferenceService<MahdollisuusEhdotusService.Request, MahdollisuusEhdotusService.Response>
       inferenceService;
 
   @TestConfiguration
@@ -330,7 +332,7 @@ class MahdollisuudetControllerTest {
                 null,
                 null,
                 null)));
-    var inferenceResponse = new MahdollisuudetController.Response();
+    var inferenceResponse = new MahdollisuusEhdotusService.Response();
     inferenceResponse.addAll(
         List.of(
             new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
@@ -495,7 +497,7 @@ class MahdollisuudetControllerTest {
                 null,
                 null,
                 null)));
-    var inferenceResponse = new MahdollisuudetController.Response();
+    var inferenceResponse = new MahdollisuusEhdotusService.Response();
     inferenceResponse.addAll(
         List.of(
             new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),
@@ -629,7 +631,7 @@ class MahdollisuudetControllerTest {
                 null,
                 null,
                 null)));
-    var inferenceResponse = new MahdollisuudetController.Response();
+    var inferenceResponse = new MahdollisuusEhdotusService.Response();
     inferenceResponse.addAll(
         List.of(
             new Suggestion(listOfIds.get(0), 0.99d, TYOMAHDOLLISUUS.name()),

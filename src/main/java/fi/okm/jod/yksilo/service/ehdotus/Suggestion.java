@@ -7,7 +7,7 @@
  * Licensed under the EUPL-1.2-or-later.
  */
 
-package fi.okm.jod.yksilo.controller.ehdotus;
+package fi.okm.jod.yksilo.service.ehdotus;
 
 import java.util.UUID;
 
