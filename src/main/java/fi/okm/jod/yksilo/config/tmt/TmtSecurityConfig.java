@@ -10,15 +10,10 @@
 package fi.okm.jod.yksilo.config.tmt;
 
 import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.Oauth2CallbackFilter;
 import fi.okm.jod.yksilo.config.RequireRoleFilter;
-import fi.okm.jod.yksilo.config.SessionLoginAttribute;
 import fi.okm.jod.yksilo.domain.Kieli;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.net.URI;
 import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +40,6 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
 @Configuration
@@ -117,8 +111,9 @@ public class TmtSecurityConfig {
                                 .accessTokenResponseClient(
                                     createAccessTokenResponseClient(restClient))))
         .addFilterBefore(
-            new CallbackFilter(registrationId), OAuth2AuthorizationRequestRedirectFilter.class)
-        .addFilterBefore(new RequireRoleFilter(JodRole.FULL_USER), CallbackFilter.class)
+            new Oauth2CallbackFilter(registrationId),
+            OAuth2AuthorizationRequestRedirectFilter.class)
+        .addFilterBefore(new RequireRoleFilter(JodRole.FULL_USER), Oauth2CallbackFilter.class)
         .build();
   }
 
@@ -137,26 +132,6 @@ public class TmtSecurityConfig {
         throw new OAuth2AuthorizationException(new OAuth2Error(ex.getError().getErrorCode()), ex);
       }
     };
-  }
-
-  @RequiredArgsConstructor
-  static class CallbackFilter extends OncePerRequestFilter {
-    private final String registrationId;
-
-    @Override
-    protected void doFilterInternal(
-        HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-        throws java.io.IOException, ServletException {
-      if (request.getRequestURI() instanceof String uri
-          && uri.startsWith(request.getContextPath() + "/oauth2/authorization/" + registrationId)
-          && "GET".equals(request.getMethod())
-          && request.getParameter("callback") instanceof String cb
-          && request.getSession(false) instanceof HttpSession session) {
-        session.setAttribute(
-            SessionLoginAttribute.CALLBACK_FRONTEND.getKey(), URI.create(cb).normalize().getPath());
-      }
-      filterChain.doFilter(request, response);
-    }
   }
 
   @Bean(autowireCandidate = false)

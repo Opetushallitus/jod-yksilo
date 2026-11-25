@@ -23,7 +23,6 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -32,7 +31,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -76,18 +74,12 @@ public class Koulutus implements OsaamisenLahde {
   @BatchSize(size = 100)
   private Set<YksilonOsaaminen> osaamiset;
 
-  @Setter
-  @Enumerated(EnumType.STRING)
-  private OsaamisenTunnistusStatus osaamisenTunnistusStatus; // null = No need for tunnistus.
-
   @Column(nullable = false, updatable = false)
   private Instant luotu;
 
   @Column(nullable = false)
   @UpdateTimestamp
   private Instant muokattu;
-
-  @Setter @Transient private Set<String> osasuoritukset;
 
   protected Koulutus() {
     // For JPA

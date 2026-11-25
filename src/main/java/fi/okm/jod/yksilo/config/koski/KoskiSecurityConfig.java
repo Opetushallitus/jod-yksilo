@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.config.koski;
 
 import fi.okm.jod.yksilo.config.JodRole;
+import fi.okm.jod.yksilo.config.Oauth2CallbackFilter;
 import fi.okm.jod.yksilo.config.RequireRoleFilter;
 import fi.okm.jod.yksilo.domain.Kieli;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +21,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
 
@@ -34,7 +39,8 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class KoskiSecurityConfig {
 
-  private static final String AUTHORIZE_CALLBACK_URL = "/oauth2/response/koski";
+  private static final String AUTHORIZE_CALLBACK_URL =
+      "/oauth2/response/" + KoskiOauth2Config.REGISTRATION_ID;
 
   @Bean
   @SuppressWarnings("java:S4502")
@@ -47,7 +53,7 @@ public class KoskiSecurityConfig {
       throws Exception {
     log.info("Configuring Koski OAuth2 integration...");
 
-    return http.securityMatcher("/oauth2/*/koski")
+    return http.securityMatcher("/oauth2/*/" + KoskiOauth2Config.REGISTRATION_ID)
         .csrf(csrf -> csrf.ignoringRequestMatchers(AUTHORIZE_CALLBACK_URL))
         .requestCache(RequestCacheConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
@@ -63,16 +69,26 @@ public class KoskiSecurityConfig {
               client.authorizedClientRepository(authorizedClientRepository);
             })
         .addFilterBefore(
-            new RequireRoleFilter(JodRole.FULL_USER),
+            new Oauth2CallbackFilter(KoskiOauth2Config.REGISTRATION_ID),
             OAuth2AuthorizationRequestRedirectFilter.class)
+        .addFilterBefore(new RequireRoleFilter(JodRole.FULL_USER), Oauth2CallbackFilter.class)
         .build();
   }
 
-  private static RestClientAuthorizationCodeTokenResponseClient createAccessTokenResponseClient(
-      RestClient oauthRestClient) {
+  private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+      createAccessTokenResponseClient(RestClient oauthRestClient) {
     var responseClient = new RestClientAuthorizationCodeTokenResponseClient();
     responseClient.setRestClient(oauthRestClient);
-    return responseClient;
+    return request -> {
+      try {
+        return responseClient.getTokenResponse(request);
+      } catch (OAuth2AuthorizationException ex) {
+        // The error_description can contain personal data (e.g. oppija OID) and would end up in
+        // the redirect URL, so log it here and pass on only the error code.
+        log.warn("Koski OAuth2 token request failed: {}", ex.getError());
+        throw new OAuth2AuthorizationException(new OAuth2Error(ex.getError().getErrorCode()), ex);
+      }
+    };
   }
 
   private static DefaultOAuth2AuthorizationRequestResolver createKoskiAuthorizationRequestResolver(

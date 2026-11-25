@@ -14,7 +14,6 @@ import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusUpdateDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
-import fi.okm.jod.yksilo.event.OsaamisetTunnistusEvent;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
@@ -30,7 +29,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +40,6 @@ public class KoulutusKokonaisuusService {
   private final YksiloRepository yksilot;
   private final KoulutusKokonaisuusRepository kokonaisuudet;
   private final KoulutusService koulutusService;
-  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Transactional(readOnly = true)
   public List<KoulutusKokonaisuusDto> findAll(JodUser user) {
@@ -52,18 +49,10 @@ public class KoulutusKokonaisuusService {
   }
 
   public List<UUID> addManyForImport(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    return addManyForImport(user, dtos, false);
-  }
-
-  public List<UUID> addManyForImport(
-      JodUser user, Set<KoulutusKokonaisuusDto> dtos, boolean skipOsaamistenTunnistus) {
-    var tunnistaOsaamiset = !skipOsaamistenTunnistus;
-    var koulutukset =
-        add(user, dtos, tunnistaOsaamiset).flatMap(dto -> dto.getKoulutukset().stream()).toList();
-    if (tunnistaOsaamiset) {
-      applicationEventPublisher.publishEvent(new OsaamisetTunnistusEvent(user, koulutukset));
-    }
-    return koulutukset.stream().map(Koulutus::getId).toList();
+    return addEntities(user, dtos)
+        .flatMap(dto -> dto.getKoulutukset().stream())
+        .map(Koulutus::getId)
+        .toList();
   }
 
   public UUID add(JodUser user, KoulutusKokonaisuusDto dto) {
@@ -72,13 +61,12 @@ public class KoulutusKokonaisuusService {
   }
 
   public SequencedSet<UUID> add(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
-    return add(user, dtos, false)
+    return addEntities(user, dtos)
         .map(KoulutusKokonaisuus::getId)
         .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
-  private Stream<KoulutusKokonaisuus> add(
-      JodUser user, Set<KoulutusKokonaisuusDto> dtos, boolean tunnistaOsaamiset) {
+  private Stream<KoulutusKokonaisuus> addEntities(JodUser user, Set<KoulutusKokonaisuusDto> dtos) {
     var yksilo = yksilot.getReferenceById(user.getId());
     if (kokonaisuudet.countByYksilo(yksilo) + dtos.size() > Limits.KOULUTUSKOKONAISUUS) {
       throw new ServiceValidationException("Too many KoulutusKokonaisuus");
@@ -100,9 +88,7 @@ public class KoulutusKokonaisuusService {
               entity.setTuontiLahde(dto.tuontiLahde());
               entity = kokonaisuudet.save(entity);
               for (var koulutus : dto.koulutukset()) {
-                entity
-                    .getKoulutukset()
-                    .add(koulutusService.add(entity, koulutus, tunnistaOsaamiset));
+                entity.getKoulutukset().add(koulutusService.add(entity, koulutus));
               }
               return entity;
             });

@@ -10,6 +10,7 @@
 package fi.okm.jod.yksilo.domain;
 
 public enum KoskiTehtavaTila {
+  ODOTTAA,
   VALMIS,
   POISTETTU,
   EPAONNISTUNUT

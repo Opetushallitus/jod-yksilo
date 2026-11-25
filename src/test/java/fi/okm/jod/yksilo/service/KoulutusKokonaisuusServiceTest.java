@@ -76,10 +76,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                                 ls(Kieli.FI, "kuvaus"),
                                 LocalDate.now(),
                                 null,
-                                Set.of(URI.create("urn:osaaminen:1")),
-                                null,
-                                null,
-                                null)
+                                Set.of(URI.create("urn:osaaminen:1")))
                           })));
 
           simulateCommit();
@@ -130,15 +127,7 @@ class KoulutusKokonaisuusServiceTest extends AbstractServiceTest {
                 TuontiLahde.TMT_TUONTI,
                 Set.of(
                     new KoulutusDto(
-                        null,
-                        ls(Kieli.FI, "koulutus"),
-                        null,
-                        LocalDate.now(),
-                        null,
-                        Set.of(),
-                        null,
-                        null,
-                        null))));
+                        null, ls(Kieli.FI, "koulutus"), null, LocalDate.now(), null, Set.of()))));
     simulateCommit();
 
     var result = service.get(user, id);

@@ -21,6 +21,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +46,11 @@ public class KoskiTehtava extends JodEntity {
   @Column(nullable = false)
   private KoskiTehtavaTila tila;
 
+  // The extraction result arrives concurrently with the user's own changes to the task.
+  @Version
+  @Column(nullable = false)
+  private long versio;
+
   @Setter
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
@@ -53,9 +59,26 @@ public class KoskiTehtava extends JodEntity {
   protected KoskiTehtava() {}
 
   public KoskiTehtava(Yksilo yksilo, KoskiTehtavaDto.Tulos tulos) {
+    this(yksilo, KoskiTehtavaTila.VALMIS, tulos);
+  }
+
+  private KoskiTehtava(Yksilo yksilo, KoskiTehtavaTila tila, KoskiTehtavaDto.Tulos tulos) {
     this.id = UUID.randomUUID();
     this.yksilo = yksilo;
-    this.tila = KoskiTehtavaTila.VALMIS;
+    this.tila = tila;
     this.tulos = tulos;
+  }
+
+  /**
+   * A task waiting for the skills to be extracted, holding the educations without skills in case
+   * the extraction fails.
+   */
+  public static KoskiTehtava waiting(Yksilo yksilo, KoskiTehtavaDto.Tulos withoutSkills) {
+    return new KoskiTehtava(yksilo, KoskiTehtavaTila.ODOTTAA, withoutSkills);
+  }
+
+  /** Completes a waiting task with the educations it holds. */
+  public void finish() {
+    this.tila = KoskiTehtavaTila.VALMIS;
   }
 }

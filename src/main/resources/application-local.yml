@@ -3,6 +3,9 @@ jod:
     apiKey: "test-${random.uuid}"
   cv:
     request-queue: http://localhost:8430
+  koski:
+    extraction:
+      request-queue: http://localhost:8431
 
 logging:
   level:

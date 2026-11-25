@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class KoskiOauth2Config {
 
-  private static final String REGISTRATION_ID = "koski";
+  public static final String REGISTRATION_ID = "koski";
 
   private final String resourceServer;
 

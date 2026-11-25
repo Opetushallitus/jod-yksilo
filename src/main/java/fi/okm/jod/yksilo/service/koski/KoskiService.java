@@ -11,228 +11,172 @@ package fi.okm.jod.yksilo.service.koski;
 
 import static java.util.function.Function.identity;
 
+import fi.okm.jod.yksilo.config.feature.Feature;
+import fi.okm.jod.yksilo.config.feature.FeatureConfiguration;
 import fi.okm.jod.yksilo.config.koski.KoskiOauth2Config;
 import fi.okm.jod.yksilo.domain.JodUser;
-import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoskiTehtavaTila;
-import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.domain.TuontiLahde;
 import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaDto;
 import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaSaveDto;
+import fi.okm.jod.yksilo.dto.profiili.KoskiTehtavaSaveDto.Lapsi;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusKokonaisuusDto;
 import fi.okm.jod.yksilo.entity.KoskiTehtava;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.repository.KoskiTehtavaRepository;
-import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.repository.YksiloRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
+import fi.okm.jod.yksilo.service.ServiceConflictException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
 import fi.okm.jod.yksilo.service.profiili.KoulutusKokonaisuusService;
-import fi.okm.jod.yksilo.service.profiili.Mapper;
 import fi.okm.jod.yksilo.service.profiili.ProfileDeletedEvent;
+import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @ConditionalOnBean(KoskiOauth2Config.class)
 @Service
 @Slf4j
 public class KoskiService {
 
-  private final KoulutusRepository koulutusRepository;
   private final KoskiTehtavaRepository tehtavat;
   private final YksiloRepository yksilot;
   private final KoulutusKokonaisuusService koulutusKokonaisuusService;
+  private final KoskiReader reader;
+  private final KoskiClient koskiClient;
 
-  public KoskiService(
-      KoulutusRepository koulutusRepository,
+  /** Absent when no extraction service is configured. */
+  private final KoskiExtractionSender sender;
+
+  private final FeatureConfiguration features;
+  private final JsonMapper jsonMapper;
+
+  /**
+   * A waiting task opened after this long completes without extracted skills. Until opened, it
+   * still accepts a late extraction result.
+   */
+  private final Duration extractionTimeout;
+
+  /** Larger requests than this are imported without skills; SQS takes up to 1 MiB. */
+  private final long maxExtractionRequestBytes;
+
+  private static final Set<KoskiTehtavaTila> ACTIVE =
+      Set.of(KoskiTehtavaTila.ODOTTAA, KoskiTehtavaTila.VALMIS);
+
+  KoskiService(
       KoskiTehtavaRepository tehtavat,
       YksiloRepository yksilot,
-      KoulutusKokonaisuusService koulutusKokonaisuusService) {
-    this.koulutusRepository = koulutusRepository;
+      KoulutusKokonaisuusService koulutusKokonaisuusService,
+      KoskiReader reader,
+      KoskiClient koskiClient,
+      ObjectProvider<KoskiExtractionSender> sender,
+      FeatureConfiguration features,
+      JsonMapper jsonMapper,
+      @Value("${jod.koski.extraction.timeout:PT1H}") Duration extractionTimeout,
+      @Value("${jod.koski.extraction.max-request-bytes:900000}") long maxExtractionRequestBytes) {
     this.tehtavat = tehtavat;
     this.yksilot = yksilot;
     this.koulutusKokonaisuusService = koulutusKokonaisuusService;
-    log.info("Creating KoskiService");
-  }
-
-  public List<KoulutusKokonaisuusDto> mapKoulutusKokonaisuudet(JsonNode koskiResponse) {
-    return streamOpiskeluoikeudet(koskiResponse)
-        .map(
-            m -> {
-              // KoulutusDto.nimi is required; fall back to institution when degree name is missing
-              var koulutusNimi = m.kuvaus() != null ? m.kuvaus() : m.toimija();
-              var koulutus =
-                  new KoulutusDto(
-                      UUID.randomUUID(),
-                      koulutusNimi,
-                      null,
-                      m.alkoi(),
-                      m.loppui(),
-                      null,
-                      true,
-                      null,
-                      m.osasuoritukset());
-              return new KoulutusKokonaisuusDto(
-                  UUID.randomUUID(), m.toimija(), TuontiLahde.KOSKI_TUONTI, Set.of(koulutus));
-            })
-        .toList();
-  }
-
-  private record OpiskeluoikeusMapping(
-      LocalizedString toimija,
-      LocalizedString kuvaus,
-      LocalDate alkoi,
-      LocalDate loppui,
-      Set<String> osasuoritukset) {}
-
-  private Stream<OpiskeluoikeusMapping> streamOpiskeluoikeudet(JsonNode koskiResponse) {
-    if (koskiResponse == null) {
-      return Stream.of();
-    }
-
-    return koskiResponse
-        .path("opiskeluoikeudet")
-        .valueStream()
-        .flatMap(
-            node -> {
-              var toimija =
-                  getLocalizedString(
-                      node.has("oppilaitos")
-                          ? node.path("oppilaitos").path("nimi")
-                          : node.path("koulutustoimija").path("nimi"));
-
-              if (toimija == null) {
-                log.info(
-                    "Koski opiskeluoikeus {} is missing toimija name, skipping",
-                    node.path("oid").stringValue());
-                return Stream.of();
-              }
-
-              var alkoi = getLocalDate(node.path("alkamispäivä"));
-              var loppui = getLocalDate(node.path("päättymispäivä"));
-              var suoritukset = node.path("suoritukset");
-
-              LocalizedString kuvaus = null;
-              Set<String> osasuoritukset = null;
-              if (suoritukset.isArray() && !suoritukset.isEmpty()) {
-                var moduuli = suoritukset.path(0).path("koulutusmoduuli");
-                var tunniste = getLocalizedString(moduuli.path("tunniste").path("nimi"));
-                var nimi = getLocalizedString(moduuli.path("nimi"));
-                kuvaus = join(tunniste, nimi);
-                osasuoritukset = getOsasuoritukset(suoritukset.path(0).path("osasuoritukset"));
-              }
-
-              return Stream.of(
-                  new OpiskeluoikeusMapping(toimija, kuvaus, alkoi, loppui, osasuoritukset));
-            });
-  }
-
-  private static Set<String> getOsasuoritukset(JsonNode osasuoritukset) {
-    return osasuoritukset == null
-        ? Set.of()
-        : osasuoritukset
-            .valueStream()
-            .map(
-                node ->
-                    node.path("koulutusmoduuli")
-                        .path("nimi")
-                        .path(Kieli.FI.getKoodi())
-                        .stringValue(null))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+    this.reader = reader;
+    this.koskiClient = koskiClient;
+    this.sender = sender.getIfAvailable();
+    this.features = features;
+    this.jsonMapper = jsonMapper;
+    this.extractionTimeout = extractionTimeout;
+    this.maxExtractionRequestBytes = maxExtractionRequestBytes;
+    log.info("Creating KoskiService (skill extraction configured: {})", this.sender != null);
   }
 
   /**
-   * Joins two LocalizedString instances by concatenating their values with ": " as separator.
+   * Imports the user's educations from Koski into a new import task. While a task is still being
+   * processed, that task is returned instead and Koski is not called.
    *
-   * <p>Only the language keys present in the lhs are included in the result.
+   * <p>Not transactional: Koski and the extraction service are called outside a transaction.
    */
-  @SuppressWarnings("unchecked")
-  static LocalizedString join(LocalizedString lhs, LocalizedString rhs) {
+  public KoskiTehtavaDto startImport(JodUser user, OAuth2AccessToken accessToken) {
+    var pending = findPending(user);
+    return pending
+        .map(this::toDto)
+        .orElseGet(() -> submit(user, koskiClient.fetch(user, accessToken)));
+  }
 
-    if (lhs == null || rhs == null) {
-      return lhs;
+  /**
+   * Creates an import task from a Koski response, replacing the user's unfinished ones. With skill
+   * extraction enabled the task waits for the extraction service; otherwise, or if the request
+   * cannot be sent, the educations are imported without skills.
+   */
+  KoskiTehtavaDto submit(JodUser user, JsonNode koskiResponse) {
+    tehtavat.discard(user.getId(), ACTIVE);
+    var yksilo = yksilot.getReferenceById(user.getId());
+    var educations = reader.read(koskiResponse);
+    var withoutSkills = new KoskiTehtavaDto.Tulos(educations.koulutuskokonaisuudet());
+    if (!isExtractionEnabled() || educations.extraction().isEmpty()) {
+      return toDto(tehtavat.save(new KoskiTehtava(yksilo, withoutSkills)));
     }
-
-    return new LocalizedString(
-        Map.ofEntries(
-            lhs.asMap().entrySet().stream()
-                .map(
-                    entry ->
-                        (rhs.get(entry.getKey()) instanceof String s)
-                            ? Map.entry(entry.getKey(), String.join(": ", entry.getValue(), s))
-                            : entry)
-                .toArray(Map.Entry[]::new)));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static LocalizedString getLocalizedString(JsonNode text) {
-    if (text == null || text.isEmpty() || !text.isObject()) {
-      return null;
+    var tehtava = KoskiTehtava.waiting(yksilo, withoutSkills);
+    var request =
+        new KoskiExtractionRequest(tehtava.getId(), user.getId(), educations.extraction());
+    var size = jsonMapper.writeValueAsBytes(request).length;
+    if (size > maxExtractionRequestBytes) {
+      log.warn("Koski extraction request of {} bytes is too large, importing without skills", size);
+      return toDto(tehtavat.save(new KoskiTehtava(yksilo, withoutSkills)));
     }
-
-    var values =
-        Stream.of(Kieli.values())
-            .map(
-                kieli ->
-                    (text.path(kieli.getKoodi()).stringValue(null) instanceof String value)
-                        ? Map.entry(kieli, value)
-                        : null)
-            .filter(Objects::nonNull)
-            .toArray(Map.Entry[]::new);
-
-    return LocalizedString.fromJsonNormalized(Map.ofEntries(values));
-  }
-
-  private static LocalDate getLocalDate(JsonNode node) {
-    return node != null && node.isString() ? LocalDate.parse(node.asString()) : null;
-  }
-
-  private static final Set<OsaamisenTunnistusStatus> statuses =
-      Set.of(OsaamisenTunnistusStatus.DONE, OsaamisenTunnistusStatus.FAIL);
-
-  @Transactional(readOnly = true)
-  public List<KoulutusDto> getOsaamisetIdentified(JodUser user, List<UUID> uuids) {
-    return koulutusRepository
-        .findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
-            user.getId(), uuids, statuses)
-        .stream()
-        .map(Mapper::mapKoulutus)
-        .toList();
-  }
-
-  @Transactional
-  public KoskiTehtavaDto submit(JodUser user, List<KoulutusKokonaisuusDto> data) {
-    var tulos = new KoskiTehtavaDto.Tulos(data == null ? List.of() : data);
-    var tehtava = tehtavat.save(new KoskiTehtava(yksilot.getReferenceById(user.getId()), tulos));
+    try {
+      tehtava = tehtavat.saveAndFlush(tehtava);
+    } catch (DataIntegrityViolationException _) {
+      throw new ServiceConflictException("Koski import task already in progress");
+    }
+    try {
+      sender.send(request);
+    } catch (Exception e) {
+      log.error(
+          "Sending Koski extraction request failed for task {}, importing without skills",
+          tehtava.getId(),
+          e);
+      tehtava.finish();
+      tehtava = tehtavat.save(tehtava);
+    }
     return toDto(tehtava);
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public KoskiTehtavaDto getStatus(JodUser user, UUID id) {
     return tehtavat
         .findByIdAndYksilo(id, yksilot.getReferenceById(user.getId()))
+        .map(this::finishIfTimedOut)
         .map(this::toDto)
         .orElseThrow(() -> new NotFoundException("Task not found"));
+  }
+
+  /** The user's waiting or finished but unsaved import tasks, newest first, without results. */
+  @Transactional(readOnly = true)
+  public List<KoskiTehtavaDto> findUnfinished(JodUser user) {
+    return tehtavat
+        .findByYksiloAndTilaInOrderByLuotuDesc(yksilot.getReferenceById(user.getId()), ACTIVE)
+        .stream()
+        .map(t -> new KoskiTehtavaDto(t.getId(), t.getTila(), null))
+        .toList();
   }
 
   @Transactional
@@ -252,11 +196,9 @@ public class KoskiService {
       throw new ServiceValidationException("No selections match the task result");
     }
 
-    var ids =
-        koulutusKokonaisuusService.addManyForImport(user, selected, dto.skipOsaamistenTunnistus());
+    var ids = koulutusKokonaisuusService.addManyForImport(user, selected);
 
-    tehtava.setTila(KoskiTehtavaTila.POISTETTU);
-    tehtava.setTulos(null);
+    discard(tehtava);
     return ids;
   }
 
@@ -264,11 +206,9 @@ public class KoskiService {
   public void delete(JodUser user, UUID id) {
     var tehtava =
         tehtavat.findByIdAndYksilo(id, yksilot.getReferenceById(user.getId())).orElse(null);
-    if (tehtava == null) {
-      return;
+    if (tehtava != null) {
+      discard(tehtava);
     }
-    tehtava.setTulos(null);
-    tehtava.setTila(KoskiTehtavaTila.POISTETTU);
   }
 
   @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
@@ -277,6 +217,7 @@ public class KoskiService {
     var deleted =
         tehtavat.deleteExpired(
             Set.of(
+                KoskiTehtavaTila.ODOTTAA,
                 KoskiTehtavaTila.VALMIS,
                 KoskiTehtavaTila.EPAONNISTUNUT,
                 KoskiTehtavaTila.POISTETTU),
@@ -294,7 +235,51 @@ public class KoskiService {
   }
 
   private KoskiTehtavaDto toDto(KoskiTehtava t) {
-    return new KoskiTehtavaDto(t.getId(), t.getTila(), t.getTulos());
+    // A waiting task holds the educations without skills, not yet its result.
+    var tulos = t.getTila() == KoskiTehtavaTila.VALMIS ? t.getTulos() : null;
+    return new KoskiTehtavaDto(t.getId(), t.getTila(), tulos);
+  }
+
+  private boolean isExtractionEnabled() {
+    return sender != null && features.isFeatureEnabled(Feature.KOSKI_EXTRACTION);
+  }
+
+  /** The user's task still waiting for skill extraction, if it has not timed out. */
+  private Optional<KoskiTehtava> findPending(JodUser user) {
+    var pending =
+        tehtavat.findByYksiloIdAndTilaAndLuotuAfter(
+            user.getId(), KoskiTehtavaTila.ODOTTAA, Instant.now().minus(extractionTimeout));
+    pending.ifPresent(
+        t -> log.info("Koski import task {} is still being processed, continuing it", t.getId()));
+    return pending;
+  }
+
+  private boolean isTimedOut(KoskiTehtava t) {
+    return t.getLuotu().isBefore(Instant.now().minus(extractionTimeout));
+  }
+
+  private KoskiTehtava finishIfTimedOut(KoskiTehtava t) {
+    if (t.getTila() == KoskiTehtavaTila.ODOTTAA && isTimedOut(t)) {
+      log.warn(
+          "Koski skill extraction for task {} timed out, continuing without skills", t.getId());
+      t.finish();
+    }
+    return t;
+  }
+
+  private static void discard(KoskiTehtava t) {
+    t.setTulos(null);
+    t.setTila(KoskiTehtavaTila.POISTETTU);
+  }
+
+  /** The offered osaamiset that were also selected. */
+  private static Set<URI> selectedOsaamiset(Set<URI> offered, Set<URI> selected) {
+    if (offered == null || selected == null) {
+      return Set.of();
+    }
+    return offered.stream()
+        .filter(selected::contains)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   static Set<KoulutusKokonaisuusDto> filterSelected(
@@ -315,9 +300,12 @@ public class KoskiService {
               var selection = index.get(item.id());
               var children = item.koulutukset();
               if (selection.lapset() != null && children != null) {
+                var selectedChildren =
+                    selection.lapset().stream()
+                        .collect(Collectors.toMap(Lapsi::id, identity(), (a, _) -> a));
                 var filtered =
                     children.stream()
-                        .filter(child -> selection.lapset().contains(child.id()))
+                        .filter(child -> selectedChildren.containsKey(child.id()))
                         .map(
                             child ->
                                 new KoulutusDto(
@@ -326,10 +314,9 @@ public class KoskiService {
                                     child.kuvaus(),
                                     child.alkuPvm(),
                                     child.loppuPvm(),
-                                    child.osaamiset(),
-                                    child.osaamisetOdottaaTunnistusta(),
-                                    child.osaamisetTunnistusEpaonnistui(),
-                                    child.osasuoritukset()))
+                                    selectedOsaamiset(
+                                        child.osaamiset(),
+                                        selectedChildren.get(child.id()).osaamiset())))
                         .collect(Collectors.toSet());
                 if (!filtered.isEmpty()) {
                   return new KoulutusKokonaisuusDto(

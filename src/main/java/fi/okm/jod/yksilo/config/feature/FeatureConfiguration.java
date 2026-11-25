@@ -16,12 +16,12 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "jod.feature")
-class FeatureConfiguration {
+public class FeatureConfiguration {
   @Getter(AccessLevel.PACKAGE)
   @Setter(AccessLevel.PACKAGE) // for configuration refresh
   private Map<Feature, Boolean> flags;
 
-  boolean isFeatureEnabled(Feature feature) {
+  public boolean isFeatureEnabled(Feature feature) {
     return flags != null && flags.getOrDefault(feature, false);
   }
 }

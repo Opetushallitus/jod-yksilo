@@ -14,19 +14,13 @@ import static fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi.KOULUTUS;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.OsaamisenLahdeDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface KoulutusRepository
     extends JpaRepository<Koulutus, UUID>, OsaamisenLahdeRepository<Koulutus> {
@@ -47,19 +41,6 @@ public interface KoulutusRepository
   Optional<Koulutus> findByKokonaisuusYksiloIdAndKokonaisuusIdAndId(
       UUID id, UUID tyopaikkaId, UUID id1);
 
-  List<Koulutus> findByKokonaisuusYksiloIdAndIdInAndOsaamisenTunnistusStatusIn(
-      UUID id, List<UUID> uuids, Set<OsaamisenTunnistusStatus> statusesToReturn);
-
   @EntityGraph(attributePaths = {"kokonaisuus", "kokonaisuus.yksilo"})
   List<Koulutus> findByKokonaisuusYksiloIdAndIdIn(UUID yksiloId, Collection<UUID> ids);
-
-  @Query(
-      """
-      UPDATE Koulutus k SET k.osaamisenTunnistusStatus = 'FAIL'
-      WHERE k.osaamisenTunnistusStatus = 'WAIT'
-      AND k.luotu < :maxAge
-      """)
-  @Modifying
-  @Transactional
-  void clearPendingTunnistus(Instant maxAge);
 }
