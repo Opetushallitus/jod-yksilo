@@ -11,14 +11,23 @@ package fi.okm.jod.yksilo.config;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/** Enforce authenticated user with specified role. */
+/**
+ * Enforce authenticated user with specified role.
+ *
+ * <p>Meant for filter chains where the check must happen before filters that run ahead of the
+ * {@code ExceptionTranslationFilter} (e.g. OAuth2 client filters), so the failure is forwarded
+ * directly to the error page. Throwing would also end up there, via the servlet container, but
+ * would get logged as an unhandled error.
+ */
 public final class RequireRoleFilter implements Filter {
   private final String role;
 
@@ -33,7 +42,12 @@ public final class RequireRoleFilter implements Filter {
     var authentication = securityContext.getAuthentication();
     if (authentication == null
         || authentication.getAuthorities().stream().noneMatch(a -> role.equals(a.getAuthority()))) {
-      throw new InsufficientAuthenticationException("User does not have required role: " + role);
+      request.setAttribute(
+          RequestDispatcher.ERROR_EXCEPTION,
+          new InsufficientAuthenticationException("User does not have required role: " + role));
+      ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+      request.getRequestDispatcher("/error").forward(request, response);
+      return;
     }
     chain.doFilter(request, response);
   }

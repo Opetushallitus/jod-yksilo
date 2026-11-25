@@ -28,7 +28,6 @@ import fi.okm.jod.yksilo.dto.profiili.suunnitelma.PolunSuunnitelmaDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
 import fi.okm.jod.yksilo.entity.Osaaminen;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.PolunSuunnitelma;
 import fi.okm.jod.yksilo.entity.Tavoite;
 import fi.okm.jod.yksilo.entity.Teema;
@@ -88,10 +87,7 @@ public final class Mapper {
             entity.getKuvaus(),
             entity.getAlkuPvm(),
             entity.getLoppuPvm(),
-            extractOsaamisetUris(entity),
-            isOsaamisetOdottaaTunnistusta(entity.getOsaamisenTunnistusStatus()),
-            isOsaamisetTunnistusEpaonnistui(entity.getOsaamisenTunnistusStatus()),
-            entity.getOsasuoritukset());
+            extractOsaamisetUris(entity));
   }
 
   public static TeemaDto mapTeema(Teema entity) {
@@ -184,10 +180,6 @@ public final class Mapper {
         .collect(Collectors.toSet());
   }
 
-  private static Boolean isOsaamisetOdottaaTunnistusta(OsaamisenTunnistusStatus status) {
-    return status == null ? null : status == OsaamisenTunnistusStatus.WAIT;
-  }
-
   public static PolunSuunnitelmaDto mapPolunSuunnitelma(PolunSuunnitelma entity) {
     if (entity == null) {
       return null;
@@ -201,10 +193,6 @@ public final class Mapper {
         koulutusMahdollisuusId,
         osaamiset,
         entity.getLuotu());
-  }
-
-  private static Boolean isOsaamisetTunnistusEpaonnistui(OsaamisenTunnistusStatus status) {
-    return status == null ? null : status == OsaamisenTunnistusStatus.FAIL;
   }
 
   private static OsaamisenLahdeDto mapOsaamisenLahde(@NonNull YksilonOsaaminen entity) {

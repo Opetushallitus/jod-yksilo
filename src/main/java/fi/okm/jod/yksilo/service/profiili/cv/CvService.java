@@ -160,16 +160,7 @@ public class CvService {
             KoulutusDto::id,
             KoulutusDto::osaamiset,
             (k, osaamiset) ->
-                new KoulutusDto(
-                    k.id(),
-                    k.nimi(),
-                    k.kuvaus(),
-                    k.alkuPvm(),
-                    k.loppuPvm(),
-                    osaamiset,
-                    k.osaamisetOdottaaTunnistusta(),
-                    k.osaamisetTunnistusEpaonnistui(),
-                    k.osasuoritukset()),
+                new KoulutusDto(k.id(), k.nimi(), k.kuvaus(), k.alkuPvm(), k.loppuPvm(), osaamiset),
             (k, filtered) ->
                 new KoulutusKokonaisuusDto(k.id(), k.nimi(), k.tuontiLahde(), filtered)));
 

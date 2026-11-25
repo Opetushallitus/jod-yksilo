@@ -10,7 +10,6 @@
 package fi.okm.jod.yksilo.dto.profiili.export;
 
 import fi.okm.jod.yksilo.domain.LocalizedString;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Set;
@@ -22,6 +21,4 @@ public record KoulutusExportDto(
     LocalDate loppuPvm,
     LocalizedString nimi,
     LocalizedString kuvaus,
-    Set<URI> osaamiset,
-    OsaamisenTunnistusStatus osaamisenTunnistusStatus,
-    Set<String> osasuoritukset) {}
+    Set<URI> osaamiset) {}

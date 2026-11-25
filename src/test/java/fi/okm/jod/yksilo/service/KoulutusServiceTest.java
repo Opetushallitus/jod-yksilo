@@ -14,14 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.LocalizedString;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
-import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.YksilonOsaaminenService;
@@ -30,7 +27,6 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,10 +61,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   null,
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
-                  Set.of(URI.create("urn:osaaminen:1")),
-                  null,
-                  null,
-                  null));
+                  Set.of(URI.create("urn:osaaminen:1"))));
           entityManager.flush();
           entityManager.clear();
 
@@ -91,10 +84,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                       null,
                       LocalDate.of(2021, 1, 1),
                       null,
-                      Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
-                      null,
-                      null,
-                      null));
+                      Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
           entityManager.flush();
           entityManager.clear();
 
@@ -113,10 +103,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                   null,
                   LocalDate.of(2021, 1, 1),
                   LocalDate.of(2021, 12, 31),
-                  updated,
-                  null,
-                  null,
-                  null));
+                  updated));
           entityManager.flush();
           entityManager.clear();
 
@@ -137,10 +124,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
-                null,
-                null,
-                null));
+                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
     simulateCommit();
@@ -158,10 +142,7 @@ class KoulutusServiceTest extends AbstractServiceTest {
             null,
             LocalDate.of(2021, 1, 1),
             null,
-            Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
-            null,
-            null,
-            null));
+            Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
 
     var id =
         service.add(
@@ -173,63 +154,10 @@ class KoulutusServiceTest extends AbstractServiceTest {
                 null,
                 LocalDate.of(2021, 1, 1),
                 null,
-                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2")),
-                null,
-                null,
-                null));
+                Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"))));
     simulateCommit();
     service.delete(user, kokonaisuusId, id);
     simulateCommit();
     assertNotNull(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
-  }
-
-  @Test
-  void shouldCompleteOsaamisetTunnistus() {
-    var koulutus1 = new Koulutus(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
-    koulutus1.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
-
-    var koulutusKokonaisuus2 =
-        new KoulutusKokonaisuus(
-            entityManager.find(Yksilo.class, user.getId()),
-            new LocalizedString(Map.of(Kieli.FI, "Testi 2")));
-    entityManager.persist(koulutusKokonaisuus2);
-    var koulutus2 = new Koulutus(koulutusKokonaisuus2);
-    koulutus2.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
-
-    entityManager.persist(koulutus1);
-    entityManager.persist(koulutus2);
-    simulateCommit();
-
-    service.completeOsaamisetTunnistus(
-        koulutus1, OsaamisenTunnistusStatus.DONE, Set.of(URI.create("urn:osaaminen:1")));
-    service.completeOsaamisetTunnistus(koulutus2, OsaamisenTunnistusStatus.FAIL, null);
-    simulateCommit();
-
-    var updatedKoulutus1 = entityManager.find(Koulutus.class, koulutus1.getId());
-    var updatedKoulutus2 = entityManager.find(Koulutus.class, koulutus2.getId());
-
-    assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus1.getOsaamisenTunnistusStatus());
-    assertEquals(1, updatedKoulutus1.getOsaamiset().size());
-    assertEquals(OsaamisenTunnistusStatus.FAIL, updatedKoulutus2.getOsaamisenTunnistusStatus());
-    assertEquals(0, updatedKoulutus2.getOsaamiset().size());
-  }
-
-  @Test
-  void shouldAddOsaamisetToKoulutusWhenUpdatingStatus() {
-    var koulutus = new Koulutus(entityManager.find(KoulutusKokonaisuus.class, kokonaisuusId));
-    koulutus.setOsaamisenTunnistusStatus(OsaamisenTunnistusStatus.WAIT);
-    entityManager.persist(koulutus);
-    simulateCommit();
-
-    var osaamiset = Set.of(URI.create("urn:osaaminen:1"), URI.create("urn:osaaminen:2"));
-    service.completeOsaamisetTunnistus(koulutus, OsaamisenTunnistusStatus.DONE, osaamiset);
-
-    var updatedKoulutus = entityManager.find(Koulutus.class, koulutus.getId());
-    assertEquals(OsaamisenTunnistusStatus.DONE, updatedKoulutus.getOsaamisenTunnistusStatus());
-    assertTrue(
-        updatedKoulutus.getOsaamiset().stream()
-            .map(osaaminen -> osaaminen.getOsaaminen().getUri())
-            .collect(Collectors.toSet())
-            .containsAll(osaamiset));
   }
 }

@@ -13,6 +13,7 @@ import fi.okm.jod.yksilo.domain.KoskiTehtavaTila;
 import fi.okm.jod.yksilo.entity.KoskiTehtava;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -31,5 +32,29 @@ public interface KoskiTehtavaRepository extends JpaRepository<KoskiTehtava, UUID
   @Query("DELETE FROM KoskiTehtava t WHERE t.tila in :tila AND t.luotu < :cutoff")
   int deleteExpired(@Param("tila") Set<KoskiTehtavaTila> tila, @Param("cutoff") Instant cutoff);
 
+  /** Discards the user's tasks in the given states; their results are removed. */
+  @Transactional
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
+  @Query(
+      """
+      UPDATE KoskiTehtava t
+      SET t.tila = fi.okm.jod.yksilo.domain.KoskiTehtavaTila.POISTETTU,
+          t.tulos = null,
+          t.versio = t.versio + 1,
+          t.muokattu = CURRENT_TIMESTAMP
+      WHERE t.yksilo.id = :yksiloId AND t.tila IN :tila
+      """)
+  int discard(@Param("yksiloId") UUID yksiloId, @Param("tila") Set<KoskiTehtavaTila> tila);
+
+  List<KoskiTehtava> findByYksiloAndTilaInOrderByLuotuDesc(
+      Yksilo yksilo, Set<KoskiTehtavaTila> tila);
+
+  /** At most one task per user is ODOTTAA (unique index idx_koski_tehtava_odottaa). */
+  @Transactional(readOnly = true)
+  Optional<KoskiTehtava> findByYksiloIdAndTilaAndLuotuAfter(
+      UUID yksiloId, KoskiTehtavaTila tila, Instant cutoff);
+
   void deleteByYksilo(Yksilo yksilo);
+
+  Optional<KoskiTehtava> findByIdAndYksiloId(UUID id, UUID yksiloId);
 }

@@ -13,24 +13,18 @@ import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.entity.Koulutus;
 import fi.okm.jod.yksilo.entity.KoulutusKokonaisuus;
-import fi.okm.jod.yksilo.entity.OsaamisenTunnistusStatus;
 import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.KoulutusKokonaisuusRepository;
 import fi.okm.jod.yksilo.repository.KoulutusRepository;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.profiili.ProfileLimitException.ProfileItem;
 import fi.okm.jod.yksilo.validation.Limits;
-import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,17 +95,11 @@ public class KoulutusService {
   }
 
   Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto) {
-    return add(kokonaisuus, dto, false);
-  }
-
-  Koulutus add(KoulutusKokonaisuus kokonaisuus, KoulutusDto dto, boolean tunnistaOsaamiset) {
     var entity = new Koulutus(kokonaisuus);
     entity.setNimi(dto.nimi());
     entity.setKuvaus(dto.kuvaus());
     entity.setAlkuPvm(dto.alkuPvm());
     entity.setLoppuPvm(dto.loppuPvm());
-    entity.setOsaamisenTunnistusStatus(tunnistaOsaamiset ? OsaamisenTunnistusStatus.WAIT : null);
-    entity.setOsasuoritukset(dto.osasuoritukset());
     entity = koulutukset.save(entity);
     if (dto.osaamiset() != null) {
       osaamiset.addLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));
@@ -127,7 +115,6 @@ public class KoulutusService {
     entity.setLoppuPvm(dto.loppuPvm());
     koulutukset.save(entity);
     if (dto.osaamiset() != null) {
-      entity.setOsaamisenTunnistusStatus(null);
       osaamiset.updateLahteenOsaamiset(entity, osaamiset.getOsaamiset(dto.osaamiset()));
     }
   }
@@ -136,22 +123,6 @@ public class KoulutusService {
     koulutus.getKokonaisuus().setTuontiLahde(null);
     osaamiset.deleteAll(koulutus.getOsaamiset());
     koulutukset.delete(koulutus);
-  }
-
-  public void completeOsaamisetTunnistus(
-      Koulutus koulutus, OsaamisenTunnistusStatus newStatus, @Nullable Set<URI> newOsaamiset) {
-    koulutus.setOsaamisenTunnistusStatus(newStatus);
-    if (newOsaamiset != null && !newOsaamiset.isEmpty()) {
-      osaamiset.addLahteenOsaamiset(koulutus, osaamiset.getOsaamiset(newOsaamiset));
-    }
-    koulutukset.save(koulutus);
-  }
-
-  @Scheduled(fixedDelay = 30, initialDelay = 1, timeUnit = TimeUnit.MINUTES)
-  void clearPendingTunnistus() {
-    // Clear pending tunnistus statuses
-    // This is a temporary fix to ensure that no waiting statuses are left forever.
-    koulutukset.clearPendingTunnistus(Instant.now().minusSeconds(1800));
   }
 
   static NotFoundException notFound() {

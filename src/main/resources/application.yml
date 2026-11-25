@@ -132,9 +132,6 @@ jod:
     endpoint:
       name: ""
       component: ""
-  ai-tunnistus:
-    osaamiset:
-      endpoint: ""
   mpassid:
     enabled: false
   koodistot:

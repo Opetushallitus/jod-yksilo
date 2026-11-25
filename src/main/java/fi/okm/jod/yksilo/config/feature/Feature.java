@@ -17,5 +17,7 @@ public enum Feature {
   JAKOLINKKI,
   MAHDOLLISUUDET_HAKU,
   CV_IMPORT,
-  TMT_INTEGRATION
+  TMT_INTEGRATION,
+  /** Skill extraction of the Koski import; without it educations are imported without skills. */
+  KOSKI_EXTRACTION
 }

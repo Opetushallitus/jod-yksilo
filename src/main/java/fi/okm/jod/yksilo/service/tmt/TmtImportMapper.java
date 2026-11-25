@@ -154,9 +154,6 @@ class TmtImportMapper {
         .alkuPvm(alkuPvm)
         .loppuPvm(loppuPvm)
         .osaamiset(osaamiset)
-        .osaamisetOdottaaTunnistusta(false)
-        .osaamisetTunnistusEpaonnistui(false)
-        .osasuoritukset(null)
         .build();
   }
 
