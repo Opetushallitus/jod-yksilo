@@ -9,26 +9,23 @@
 
 package fi.okm.jod.yksilo.controller.ehdotus;
 
-import fi.okm.jod.yksilo.controller.ehdotus.MahdollisuudetController.Request.Data;
 import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.KoulutusmahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
 import fi.okm.jod.yksilo.domain.OsaamisenLahdeTyyppi;
 import fi.okm.jod.yksilo.domain.TyomahdollisuusAineisto;
-import fi.okm.jod.yksilo.dto.AmmattiDto;
 import fi.okm.jod.yksilo.dto.MahdollisuusDto;
-import fi.okm.jod.yksilo.dto.OsaaminenDto;
 import fi.okm.jod.yksilo.dto.SuunnitelmaEhdotusDto;
 import fi.okm.jod.yksilo.dto.profiili.KoulutusDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimenkuvaDto;
 import fi.okm.jod.yksilo.dto.profiili.ToimintoDto;
 import fi.okm.jod.yksilo.dto.tyomahdollisuus.TyomahdollisuusDto;
-import fi.okm.jod.yksilo.service.AmmattiService;
-import fi.okm.jod.yksilo.service.OsaaminenService;
 import fi.okm.jod.yksilo.service.ehdotus.MahdollisuudetService;
-import fi.okm.jod.yksilo.service.inference.InferenceEndpoint;
-import fi.okm.jod.yksilo.service.inference.InferenceService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuusEhdotusService;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuusEhdotusService.KuvausData;
+import fi.okm.jod.yksilo.service.ehdotus.MahdollisuusEhdotusService.Request;
+import fi.okm.jod.yksilo.service.ehdotus.Suggestion;
 import fi.okm.jod.yksilo.service.profiili.KoulutusService;
 import fi.okm.jod.yksilo.service.profiili.ToimenkuvaService;
 import fi.okm.jod.yksilo.service.profiili.ToimintoService;
@@ -39,8 +36,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +47,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,39 +64,23 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "ehdotus")
 class MahdollisuudetController {
 
-  private final InferenceService<Request, Response> inferenceService;
-  private final Map<Kieli, InferenceEndpoint> endpoints;
+  private final MahdollisuusEhdotusService mahdollisuusEhdotusService;
   private final MahdollisuudetService mahdollisuudetService;
-  private final OsaaminenService osaaminenService;
-  private final AmmattiService ammattiService;
   private final ToimenkuvaService toimenkuvaService;
   private final KoulutusService koulutusService;
   private final ToimintoService toimintoService;
 
-  @ConfigurationProperties("jod.recommendation.mahdollisuus")
-  public record EndpointProperties(Map<Kieli, String> endpoints) {}
-
   MahdollisuudetController(
-      InferenceService<Request, Response> inferenceService,
-      EndpointProperties properties,
+      MahdollisuusEhdotusService mahdollisuusEhdotusService,
       MahdollisuudetService mahdollisuudetService,
-      OsaaminenService osaaminenService,
-      AmmattiService ammattiService,
       ToimenkuvaService toimenkuvaService,
       KoulutusService koulutusService,
       ToimintoService toimintoService) {
-    this.inferenceService = inferenceService;
-    this.endpoints =
-        properties.endpoints().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> InferenceEndpoint.of(e.getValue())));
+    this.mahdollisuusEhdotusService = mahdollisuusEhdotusService;
     this.mahdollisuudetService = mahdollisuudetService;
-    this.osaaminenService = osaaminenService;
-    this.ammattiService = ammattiService;
     this.toimenkuvaService = toimenkuvaService;
     this.koulutusService = koulutusService;
     this.toimintoService = toimintoService;
-
-    log.info("Creating MahdollisuudetController, endpoint: {}", endpoints);
   }
 
   @PostMapping
@@ -115,30 +91,18 @@ class MahdollisuudetController {
       @AuthenticationPrincipal JodUser user) {
     log.info("Creating the suggestions");
 
-    if (endpoints.get(lang) == null) {
+    if (!mahdollisuusEhdotusService.supports(lang)) {
       throw new IllegalArgumentException("Unsupported language: " + lang);
     }
 
     final var mahdollisuusIds =
         mahdollisuudetService.fetchTyoAndKoulutusMahdollisuusIdsWithTypes(sort, lang);
 
-    final var osaamiset =
-        ehdotus.osaamiset() == null
-            ? Set.<URI>of()
-            : Stream.concat(
-                    osaaminenService.findBy(ehdotus.osaamiset).stream().map(OsaaminenDto::uri),
-                    ammattiService.findBy(ehdotus.osaamiset).stream().map(AmmattiDto::uri))
-                .collect(Collectors.toSet());
+    final var osaamiset = mahdollisuusEhdotusService.knownOsaamiset(ehdotus.osaamiset());
 
     final var osaamisetVapaateksti = ehdotus.osaamisetVapaateksti;
 
-    final var kiinnostukset =
-        ehdotus.kiinnostukset() == null
-            ? Set.<URI>of()
-            : Stream.concat(
-                    osaaminenService.findBy(ehdotus.kiinnostukset).stream().map(OsaaminenDto::uri),
-                    ammattiService.findBy(ehdotus.kiinnostukset).stream().map(AmmattiDto::uri))
-                .collect(Collectors.toSet());
+    final var kiinnostukset = mahdollisuusEhdotusService.knownOsaamiset(ehdotus.kiinnostukset());
 
     final var kiinnostuksetVapaateksti = ehdotus.kiinnostuksetVapaateksti;
 
@@ -171,23 +135,18 @@ class MahdollisuudetController {
       Set<URI> kiinnostukset,
       Set<KuvausData> kuvaukset) {
     // TODO: add language support when supported by kohtaanto inference endpoint
-    var request =
-        new Request(
-            new Data(
-                osaamiset,
-                ehdotus.osaamisetVapaateksti,
-                ehdotus.osaamisPainotus,
-                kiinnostukset,
-                ehdotus.kiinnostuksetVapaateksti,
-                ehdotus.kiinnostusPainotus,
-                ehdotus.escoListPainotus,
-                ehdotus.openTextPainotus,
-                kuvaukset));
-
-    return inferenceService
-        .infer(endpoints.get(lang), request, new ParameterizedTypeReference<>() {})
-        .stream()
-        .collect(Collectors.toMap(Suggestion::id, r -> r, (exising, newValue) -> exising));
+    return mahdollisuusEhdotusService.infer(
+        lang,
+        new Request.Data(
+            osaamiset,
+            ehdotus.osaamisetVapaateksti,
+            ehdotus.osaamisPainotus,
+            kiinnostukset,
+            ehdotus.kiinnostuksetVapaateksti,
+            ehdotus.kiinnostusPainotus,
+            ehdotus.escoListPainotus,
+            ehdotus.openTextPainotus,
+            kuvaukset));
   }
 
   private List<EhdotusDto> populateEmptyEhdotusDtos(Map<UUID, MahdollisuusDto> ids) {
@@ -358,21 +317,6 @@ class MahdollisuudetController {
     LASKEVA
   }
 
-  public record Request(Data data) {
-    record Data(
-        Set<URI> osaamiset,
-        String osaamisetText,
-        double osaamisPainotus,
-        Set<URI> kiinnostukset,
-        String kiinnostuksetText,
-        double kiinnostusPainotus,
-        double escoListPainotus,
-        double openTextPainotus,
-        Set<KuvausData> kuvaukset) {}
-  }
-
-  public record KuvausData(String otsikko, String kuvaus, LocalDate alkuPvm, LocalDate loppuPvm) {}
-
   /**
    * This record describes metadata related to the proposal, based on which the proposals can be
    * sorted or filtered.
@@ -474,9 +418,6 @@ class MahdollisuudetController {
       @Size(max = 1000) Set<LuoEhdotusKuvausDto> kuvaukset) {}
 
   public record LuoEhdotusKuvausDto(@NotNull OsaamisenLahdeTyyppi tyyppi, @NotNull UUID id) {}
-
-  @SuppressWarnings("serial")
-  static class Response extends ArrayList<fi.okm.jod.yksilo.controller.ehdotus.Suggestion> {}
 
   @PostMapping("/polku")
   @Operation(
