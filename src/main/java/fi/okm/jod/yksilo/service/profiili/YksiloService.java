@@ -47,18 +47,22 @@ public class YksiloService {
     var email = yksilot.getEmail(user.getQualifiedPersonId()).orElse(null);
 
     if (!yksilo.getTervetuloapolku()) {
-      if (getNationalPersonIdentifier(user) instanceof FinnishPersonIdentifier id) {
-        tunnisteTyyppi = PersonIdentifierType.FIN;
-        sukupuoli = id.getGender();
-        syntymavuosi = id.getBirthYear();
-        kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
-        email = user.getAttribute(Attribute.MAIL).orElse(null);
-      } else if (user.getAttribute(Attribute.PERSON_IDENTIFIER).isPresent()) {
-        tunnisteTyyppi = PersonIdentifierType.EIDAS;
-        syntymavuosi =
-            user.getAttribute(Attribute.DATE_OF_BIRTH)
-                .map(it -> LocalDate.parse(it).getYear())
-                .orElse(null);
+      switch (user.personIdentifierType()) {
+        case FIN -> {
+          var id = FinnishPersonIdentifier.of(user.getPersonId());
+          tunnisteTyyppi = PersonIdentifierType.FIN;
+          sukupuoli = id.getGender();
+          syntymavuosi = id.getBirthYear();
+          kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
+          email = user.getAttribute(Attribute.MAIL).orElse(null);
+        }
+        case EIDAS -> {
+          tunnisteTyyppi = PersonIdentifierType.EIDAS;
+          syntymavuosi = getEidasBirthYear(user);
+        }
+        case null, default -> {
+          // no identification attributes available
+        }
       }
     }
 
@@ -84,23 +88,23 @@ public class YksiloService {
     yksilo.setAidinkieli(dto.aidinkieli());
     yksilo.setValittuKieli(dto.valittuKieli());
 
-    if (getNationalPersonIdentifier(user) instanceof FinnishPersonIdentifier id) {
-
-      yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), id.getBirthYear()));
-      yksilo.setSukupuoli(validate(dto.sukupuoli(), id.getGender()));
-      var kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
-      yksilo.setKotikunta(validate(dto.kotikunta(), kotikunta));
-
-    } else if (user.getAttribute(Attribute.PERSON_IDENTIFIER).isPresent()) {
-
-      var syntymavuosi =
-          user.getAttribute(Attribute.DATE_OF_BIRTH)
-              .map(it -> LocalDate.parse(it).getYear())
-              .orElse(null);
-      yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), syntymavuosi));
-      yksilo.setSukupuoli(dto.sukupuoli());
-      if (dto.kotikunta() != null) {
-        throw new ServiceValidationException("Kotikunta not supported eIDAS users");
+    switch (user.personIdentifierType()) {
+      case FIN -> {
+        var id = FinnishPersonIdentifier.of(user.getPersonId());
+        yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), id.getBirthYear()));
+        yksilo.setSukupuoli(validate(dto.sukupuoli(), id.getGender()));
+        var kotikunta = user.getAttribute(Attribute.KOTIKUNTA_KUNTANUMERO).orElse(null);
+        yksilo.setKotikunta(validate(dto.kotikunta(), kotikunta));
+      }
+      case EIDAS -> {
+        yksilo.setSyntymavuosi(validate(dto.syntymavuosi(), getEidasBirthYear(user)));
+        yksilo.setSukupuoli(dto.sukupuoli());
+        if (dto.kotikunta() != null) {
+          throw new ServiceValidationException("Kotikunta not supported eIDAS users");
+        }
+      }
+      case null, default -> {
+        // no identification attributes to validate against
       }
     }
     yksilot.updateEmail(user.getQualifiedPersonId(), dto.email());
@@ -116,9 +120,9 @@ public class YksiloService {
     return value;
   }
 
-  private static FinnishPersonIdentifier getNationalPersonIdentifier(JodUser user) {
-    return user.getAttribute(Attribute.NATIONAL_IDENTIFICATION_NUMBER)
-        .map(FinnishPersonIdentifier::of)
+  private static Integer getEidasBirthYear(JodUser user) {
+    return user.getAttribute(Attribute.DATE_OF_BIRTH)
+        .map(it -> LocalDate.parse(it).getYear())
         .orElse(null);
   }
 

@@ -228,7 +228,7 @@ class ResponseTokenConverter implements Converter<ResponseToken, Saml2Authentica
                         return new Yksilo(yksiloId);
                       });
           yksilot.save(yksilo);
-          return new JodSaml2Principal(yksiloId, assertionAccessor.getAttributes());
+          return new JodSaml2Principal(yksiloId, pid, assertionAccessor.getAttributes());
         });
   }
 

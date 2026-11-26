@@ -73,6 +73,11 @@ public class JodOidcPrincipal implements OidcUser, JodUser {
   }
 
   @Override
+  public PersonIdentifierType personIdentifierType() {
+    return PersonIdentifierType.ONR;
+  }
+
+  @Override
   public String getQualifiedPersonId() {
     return PersonIdentifierType.ONR.asQualifiedIdentifier(getOppijanumero());
   }
