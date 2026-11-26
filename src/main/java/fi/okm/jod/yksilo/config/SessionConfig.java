@@ -20,6 +20,7 @@ import fi.okm.jod.yksilo.config.login.JodOidcPrincipal;
 import fi.okm.jod.yksilo.config.login.JodSaml2Principal;
 import fi.okm.jod.yksilo.controller.KeskusteluController.InferenceSession;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import io.lettuce.core.RedisCredentialsProvider;
 import java.net.URL;
 import java.util.Collections;
@@ -126,11 +127,15 @@ public class SessionConfig implements BeanClassLoaderAware {
   }
 
   @JsonTypeInfo(use = Id.CLASS)
-  @JsonIncludeProperties({"id", "attributes"})
+  @JsonIncludeProperties({"id", "identifierType", "attributes"})
   public abstract static class JodSaml2PrincipalMixin {
     @JsonCreator
     JodSaml2PrincipalMixin(
         @JsonProperty("id") UUID id,
+        @JsonProperty("identifierType") PersonIdentifierType identifierType,
         @JsonProperty("attributes") Map<String, List<Object>> attributes) {}
+
+    @JsonProperty("identifierType")
+    abstract PersonIdentifierType personIdentifierType();
   }
 }

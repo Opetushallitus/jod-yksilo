@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.testutil;
 import fi.okm.jod.yksilo.config.login.Attribute;
 import fi.okm.jod.yksilo.domain.FinnishPersonIdentifier;
 import fi.okm.jod.yksilo.domain.JodUser;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +34,11 @@ public record TestJodUser(UUID id, FinnishPersonIdentifier personIdentifier) imp
   @Override
   public String familyName() {
     return "User-" + getPersonId();
+  }
+
+  @Override
+  public PersonIdentifierType personIdentifierType() {
+    return PersonIdentifierType.FIN;
   }
 
   @Override

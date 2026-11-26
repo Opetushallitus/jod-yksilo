@@ -16,15 +16,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fi.okm.jod.yksilo.config.login.Attribute;
+import fi.okm.jod.yksilo.domain.JodUser;
 import fi.okm.jod.yksilo.domain.Kieli;
 import fi.okm.jod.yksilo.domain.MahdollisuusTyyppi;
+import fi.okm.jod.yksilo.domain.PersonIdentifierType;
 import fi.okm.jod.yksilo.domain.Sukupuoli;
 import fi.okm.jod.yksilo.dto.profiili.TavoiteDto;
 import fi.okm.jod.yksilo.dto.profiili.YksiloDto;
+import fi.okm.jod.yksilo.entity.Yksilo;
 import fi.okm.jod.yksilo.repository.TyomahdollisuusRepository;
 import fi.okm.jod.yksilo.service.AbstractServiceTest;
 import fi.okm.jod.yksilo.service.NotFoundException;
 import fi.okm.jod.yksilo.service.ServiceValidationException;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -91,5 +98,88 @@ class YksiloServiceTest extends AbstractServiceTest {
             Kieli.EN,
             "user@example.org");
     assertThrows(ServiceValidationException.class, () -> service.update(user, tiedot));
+  }
+
+  /**
+   * An eIDAS authenticated user whose response also contains a Finnish national identifier. The
+   * birth year in the national identifier (1999) differs from the eIDAS date of birth (1985) so
+   * that it is observable which one is used.
+   */
+  @Nested
+  class EidasUserWithFinnishIdentifier {
+
+    private static final String HETU = "010199-9986";
+    private static final int EIDAS_BIRTH_YEAR = 1985;
+
+    private JodUser eidasUser;
+
+    @BeforeEach
+    void createEidasUser() {
+      var eidasId = "FI/FI/" + HETU;
+      var yksilo =
+          new Yksilo(
+              yksiloRepository.upsertTunnistusData(
+                  PersonIdentifierType.EIDAS.asQualifiedIdentifier(eidasId), null, "Eva", "Eidas"));
+      eidasUser = new EidasUser(entityManager.persist(yksilo).getId(), eidasId, HETU);
+    }
+
+    @Test
+    void isReportedAsEidasWithBirthYearFromDateOfBirth() {
+      var tiedot = service.get(eidasUser);
+
+      assertEquals(PersonIdentifierType.EIDAS, tiedot.tunnisteTyyppi());
+      assertEquals(EIDAS_BIRTH_YEAR, tiedot.syntymavuosi());
+    }
+
+    @Test
+    void canConfirmBirthYearFromDateOfBirth() {
+      var tiedot =
+          new YksiloDto(null, true, true, true, EIDAS_BIRTH_YEAR, null, null, "fi", Kieli.EN, null);
+
+      assertDoesNotThrow(() -> service.update(eidasUser, tiedot));
+    }
+
+    private record EidasUser(UUID id, String eidasId, String hetu) implements JodUser {
+
+      @Override
+      public UUID getId() {
+        return id;
+      }
+
+      @Override
+      public String givenName() {
+        return "Eva";
+      }
+
+      @Override
+      public String familyName() {
+        return "Eidas";
+      }
+
+      @Override
+      public PersonIdentifierType personIdentifierType() {
+        return PersonIdentifierType.EIDAS;
+      }
+
+      @Override
+      public String getPersonId() {
+        return eidasId;
+      }
+
+      @Override
+      public String getQualifiedPersonId() {
+        return PersonIdentifierType.EIDAS.asQualifiedIdentifier(eidasId);
+      }
+
+      @Override
+      public Optional<String> getAttribute(Attribute attribute) {
+        return switch (attribute) {
+          case PERSON_IDENTIFIER -> Optional.of(eidasId);
+          case NATIONAL_IDENTIFICATION_NUMBER -> Optional.of(hetu);
+          case DATE_OF_BIRTH -> Optional.of(EIDAS_BIRTH_YEAR + "-06-15");
+          default -> Optional.empty();
+        };
+      }
+    }
   }
 }

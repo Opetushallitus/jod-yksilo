@@ -12,6 +12,7 @@ package fi.okm.jod.yksilo.domain;
 import fi.okm.jod.yksilo.config.login.Attribute;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public interface JodUser {
 
@@ -24,6 +25,11 @@ public interface JodUser {
   String getPersonId();
 
   String getQualifiedPersonId();
+
+  /** Type of the person identifier, determined by the authentication method. */
+  default @Nullable PersonIdentifierType personIdentifierType() {
+    return null;
+  }
 
   default Optional<String> getAttribute(Attribute attribute) {
     return Optional.empty();
