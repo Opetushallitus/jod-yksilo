@@ -1,6 +1,7 @@
 INSERT INTO osaaminen(id, uri)
 SELECT id, 'urn:osaaminen:' || id
 FROM generate_series(1, 9) AS id;
+SELECT SETVAL('osaaminen_id_seq', (SELECT MAX(id) FROM osaaminen));
 
 INSERT INTO osaaminen_kaannos
   (osaaminen_id, kaannos_key, nimi, kuvaus)
@@ -16,6 +17,7 @@ INSERT INTO osaaminen_versio(versio) values (1);
 INSERT INTO ammatti(id, koodi, uri)
 SELECT id, id, 'urn:ammatti:' || id
 FROM generate_series(1, 9) AS id;
+SELECT SETVAL('ammatti_id_seq', (SELECT MAX(id) FROM ammatti));
 
 INSERT INTO ammatti_kaannos
   (ammatti_id, kaannos_key, nimi, kuvaus)

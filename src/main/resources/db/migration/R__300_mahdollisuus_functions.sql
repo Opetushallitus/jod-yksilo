@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tyomahdollisuus_data.import
 
 CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.clear()
   LANGUAGE SQL
+  SECURITY DEFINER
 BEGIN
   ATOMIC
   UPDATE tyomahdollisuus
@@ -17,6 +18,7 @@ END;
 
 CREATE OR REPLACE PROCEDURE tyomahdollisuus_data.import()
   LANGUAGE sql
+  SECURITY DEFINER
 BEGIN
   ATOMIC
 
@@ -126,6 +128,7 @@ CREATE TABLE IF NOT EXISTS koulutusmahdollisuus_data.import
 
 CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.clear()
   LANGUAGE SQL
+  SECURITY DEFINER
 BEGIN
   ATOMIC
   UPDATE koulutusmahdollisuus
@@ -135,6 +138,7 @@ END;
 
 CREATE OR REPLACE PROCEDURE koulutusmahdollisuus_data.import()
   LANGUAGE SQL
+  SECURITY DEFINER
 BEGIN
   ATOMIC
 
@@ -255,3 +259,8 @@ BEGIN
   SELECT koulutusmahdollisuus_jakauma_id, arvo, osuus
   FROM distribution_values;
 END;
+
+-- The procedures run as their owner, so the data loader can import data without write access to
+-- the target tables. SQL-standard bodies are bound at creation time, so search_path is not a concern.
+REVOKE ALL ON PROCEDURE tyomahdollisuus_data.clear(), tyomahdollisuus_data.import(), koulutusmahdollisuus_data.clear(), koulutusmahdollisuus_data.import() FROM PUBLIC;
+GRANT EXECUTE ON PROCEDURE tyomahdollisuus_data.clear(), tyomahdollisuus_data.import(), koulutusmahdollisuus_data.clear(), koulutusmahdollisuus_data.import() TO dataloader;
