@@ -1,0 +1,40 @@
+// Version rules for the io.github.ben-manes.versions plugin; apply after the plugin.
+// Rejects pre-releases, major updates (unless -PallowMajorUpdates) and Spring Boot minor updates.
+
+static boolean hasMajorVersion(String version) {
+  return version.split("\\.")[0].isInteger()
+}
+
+static int majorVersion(String version) {
+  return Integer.valueOf(version.split("\\.")[0])
+}
+
+static List<Integer> majorMinorVersion(String version) {
+  return version.split("\\.").take(2).collect { Integer.valueOf(it) }
+}
+
+static boolean hasMajorMinorVersionChangeForGroup(String group, selection) {
+  return selection.candidate.group == group
+      && hasMajorVersion(selection.currentVersion)
+      && majorMinorVersion(selection.candidate.version) != majorMinorVersion(selection.currentVersion)
+}
+
+static boolean isPreReleaseVersion(String version) {
+  return version.containsIgnoreCase("alpha")
+      || version.containsIgnoreCase("beta")
+      || version.matches(".*[.-](?i:M)\\d+")
+      || version.matches(".*[.-](?i:RC)\\d+")
+      || version.matches(".*[.-](?i:CR)\\d+")
+}
+
+tasks.named("dependencyUpdates").configure {
+  checkConstraints = true
+  checkBuildEnvironmentConstraints = true
+  rejectVersionIf {
+    !isPreReleaseVersion(it.currentVersion) && isPreReleaseVersion(it.candidate.version)
+        || (!project.hasProperty("allowMajorUpdates")
+        && hasMajorVersion(it.currentVersion)
+        && majorVersion(it.candidate.version) > majorVersion(it.currentVersion))
+        || hasMajorMinorVersionChangeForGroup("org.springframework.boot", it)
+  }
+}

@@ -1,10 +1,17 @@
 pluginManagement {
   plugins {
-    id 'org.springframework.boot' version '4.1.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
 
-    id "com.diffplug.spotless" version "8.10.4"
-    id "com.github.spotbugs" version "6.5.13"
+    id 'com.diffplug.spotless' version "${spotlessVersion}"
+    id 'com.github.spotbugs' version "${spotbugsPluginVersion}"
+    id 'org.sonarqube' version "${sonarqubeVersion}"
+    id 'org.springdoc.openapi-gradle-plugin' version "${springdocOpenapiPluginVersion}"
+
+    id 'io.github.ben-manes.versions' version "${versionsPluginVersion}"
+    id 'org.flywaydb.flyway' version "${flywayVersion}"
+    id 'com.gorylenko.gradle-git-properties' version "${gitPropertiesPluginVersion}"
+    id 'org.openapi.generator' version "${openapiGeneratorVersion}"
   }
 }
 
