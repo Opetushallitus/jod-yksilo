@@ -1,5 +1,3 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-
 buildscript {
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
@@ -14,16 +12,17 @@ plugins {
   id 'io.spring.dependency-management'
 
   id 'checkstyle'
-  id "com.diffplug.spotless"
-  id "com.github.spotbugs"
-  id "org.sonarqube" version "6.3.1.5724"
-  id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
+  id 'com.diffplug.spotless'
+  id 'com.github.spotbugs'
+  id 'org.sonarqube'
+  id 'org.springdoc.openapi-gradle-plugin'
 
-  id "io.github.ben-manes.versions" version "0.66.0"
-  id "org.flywaydb.flyway" version "${flywayVersion}"
-  id "com.gorylenko.gradle-git-properties" version "4.0.1"
-
+  id 'io.github.ben-manes.versions'
+  id 'org.flywaydb.flyway'
+  id 'com.gorylenko.gradle-git-properties'
 }
+
+apply from: 'gradle/dependency-updates.gradle'
 
 group = 'fi.okm.jod'
 version = '0.0.1-SNAPSHOT'
@@ -41,10 +40,6 @@ compileJava {
 repositories {
   mavenCentral()
   maven { url = "https://build.shibboleth.net/nexus/content/repositories/releases/" }
-}
-
-ext {
-  spotbugsVersion = "4.10.5"
 }
 
 gitProperties {
@@ -85,38 +80,38 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-flyway'
   implementation "org.flywaydb:flyway-database-postgresql"
 
-  implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.2.1')
+  implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}")
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
   implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
-  // TODO: drop version requirements when spring-cloud-aws-dependencies brings in >= 5.0.4
+  // TODO: drop version requirements when spring-cloud-aws-dependencies brings in >= 5.0.5
   implementation('org.springframework.cloud:spring-cloud-context') {
-    version { require '5.0.4' }
+    version { require springCloudVersion }
     because 'vulnerability fix'
   }
   implementation('org.springframework.cloud:spring-cloud-commons') {
-    version { require '5.0.4' }
+    version { require springCloudVersion }
     because 'keep aligned with spring-cloud-context'
   }
 
-  implementation platform('software.amazon.awssdk:bom:2.57.5')
+  implementation platform("software.amazon.awssdk:bom:${awsSdkVersion}")
   implementation 'software.amazon.awssdk:apache5-client'
   implementation 'software.amazon.awssdk:http-auth-aws'
   implementation 'software.amazon.awssdk:rds'
   implementation 'software.amazon.awssdk:sagemakerruntime'
   implementation 'software.amazon.awssdk:s3'
 
-  implementation 'com.google.guava:guava:33.7.2-jre'
+  implementation "com.google.guava:guava:${guavaVersion}"
 
   implementation "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"
   implementation "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"
 
   // Caffeine cache implementation
-  implementation 'com.github.ben-manes.caffeine:caffeine:3.3.1'
+  implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
 
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.2.0'
-  developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
-  swaggerUiDocs 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
+  implementation "org.springdoc:springdoc-openapi-starter-webmvc-api:${springdocVersion}"
+  developmentOnly "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+  swaggerUiDocs "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -147,9 +142,9 @@ dependencies {
   testCompileOnly 'org.projectlombok:lombok'
 
   // spotbugs
-  implementation "com.github.spotbugs:spotbugs-annotations:$spotbugsVersion"
+  implementation "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
 
-  schemaSpy 'org.schemaspy:schemaspy:7.0.2'
+  schemaSpy "org.schemaspy:schemaspy:${schemaspyVersion}"
   schemaSpy 'org.postgresql:postgresql'
 
   mockitoAgent('org.mockito:mockito-core') {
@@ -159,7 +154,7 @@ dependencies {
 }
 
 checkstyle {
-  toolVersion = '13.11.0'
+  toolVersion = checkstyleVersion
   showViolations = true
 
   def archive = configurations.checkstyle.filter {
@@ -181,7 +176,7 @@ checkstyleMain {
 spotless {
   java {
     target 'src/*/**/*.java'
-    googleJavaFormat()
+    googleJavaFormat(googleJavaFormatVersion)
     licenseHeader '''\
     /*
      * Copyright (c) $YEAR The Finnish Ministry of Education and Culture, The Finnish
@@ -197,7 +192,7 @@ spotless {
 }
 
 jacoco {
-  toolVersion = "0.8.16"
+  toolVersion = jacocoVersion
 }
 
 test.finalizedBy jacocoTestReport
@@ -294,32 +289,6 @@ openApi {
             "--spring.config.additional-location=${projectDir}/src/test/resources/application-default.yml",
             "--spring.docker.compose.file=${projectDir}/compose-test.yml",
             "--spring.docker.compose.stop.command=down",]
-  }
-}
-
-boolean hasMajorVersion(String version) {
-  return !project.hasProperty("allowMajorUpdates") && version.split("\\.").length >= 3;
-}
-
-static int majorVersion(String version) {
-  return Integer.valueOf(version.split("\\.")[0]);
-}
-
-static boolean isPreReleaseVersion(String version) {
-  return version.containsIgnoreCase("alpha")
-      || version.containsIgnoreCase("beta")
-      || version.matches(".*[.-](?i:M)\\d+")
-      || version.matches(".*[.-](?i:RC)\\d+")
-      || version.matches(".*[.-](?i:CR)\\d+")
-}
-
-tasks.named("dependencyUpdates", DependencyUpdatesTask).configure {
-  checkConstraints = true
-  checkBuildEnvironmentConstraints = true
-  rejectVersionIf {
-    !isPreReleaseVersion(it.currentVersion) && isPreReleaseVersion(it.candidate.version)
-        || (hasMajorVersion(it.currentVersion)
-        && majorVersion(it.candidate.version) > majorVersion(it.currentVersion))
   }
 }
 

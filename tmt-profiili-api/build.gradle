@@ -1,8 +1,11 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
   id 'java-library'
-  id "org.openapi.generator" version "7.26.0"
+  id 'org.springframework.boot' apply false
+  id 'io.spring.dependency-management'
+  id 'org.openapi.generator'
 }
 
 repositories {
@@ -15,10 +18,15 @@ java {
   }
 }
 
+dependencyManagement {
+  imports {
+    mavenBom SpringBootPlugin.BOM_COORDINATES
+  }
+}
+
 dependencies {
-  implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-  // Jackson 3 for Spring Boot 4
-  implementation 'tools.jackson.core:jackson-databind:3.1.8'
+  implementation 'jakarta.annotation:jakarta.annotation-api'
+  implementation 'tools.jackson.core:jackson-databind'
 }
 
 tasks.register("openApiGenerateP51", GenerateTask) {

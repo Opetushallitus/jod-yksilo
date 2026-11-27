@@ -22,7 +22,7 @@ dependencies {
   // Spring Boot 4: renamed starters
   implementation 'org.springframework.boot:spring-boot-starter-webmvc'
   implementation 'org.springframework.boot:spring-boot-starter-validation'
-  implementation 'com.nimbusds:nimbus-jose-jwt:10.9.1'
+  implementation "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}"
   implementation project(':tmt-profiili-api')
   annotationProcessor 'org.projectlombok:lombok'
   compileOnly 'org.projectlombok:lombok'
@@ -38,7 +38,7 @@ tasks.named('test', Test) {
 spotless {
   java {
     target 'src/*/**/*.java'
-    googleJavaFormat()
+    googleJavaFormat(googleJavaFormatVersion)
     licenseHeader '''\
     /*
      * Copyright (c) $YEAR The Finnish Ministry of Education and Culture, The Finnish
