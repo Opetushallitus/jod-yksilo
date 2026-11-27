@@ -36,22 +36,15 @@ host=${host%-\>*}
 echo "Importing data"
 # shellcheck disable=SC1009
 (
-  DEVDATA="$(dirname "$(realpath "$0")")/devdata"
+  SCRIPTS="$(dirname "$(realpath "$0")")"
+  DEVDATA="$SCRIPTS/devdata"
   cd ./tmp/data
 
-  for esco in "skills" "skill_descriptions" "occupations" "occupation_descriptions"; do
-
-    if [[ $esco == *"_descriptions" ]]; then
-      filter='to_entries | .[]'
-    else
-      filter='.[]'
-    fi
-
-    jq -c "$filter" "$esco.json" | sed 's/\\/\\\\/g' |
+  for esco in "skills:skill" "occupations:occupation"; do
+    "$SCRIPTS/esco-to-jsonl.sh" "${esco%%:*}.json" "${esco#*:}_descriptions.json" |
       docker exec -i -e PGPASSWORD=yksilo "$DB" psql -q -1 -U yksilo yksilo \
-        -c "TRUNCATE TABLE esco_data.$esco" \
-        -c "\COPY esco_data.${esco}(data) FROM STDIN (FORMAT text)"
-
+        -c "TRUNCATE TABLE esco_data.${esco%%:*}" \
+        -c "\COPY esco_data.${esco%%:*}(data) FROM STDIN (FORMAT text)"
   done
 
   for mahdollisuus in "tyomahdollisuus" "koulutusmahdollisuus"; do
